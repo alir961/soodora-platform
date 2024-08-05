@@ -1,0 +1,23 @@
+stages:
+  - build
+
+variables:
+  GRADLE_USER_HOME: "$CI_PROJECT_DIR/.gradle"
+
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .gradle/wrapper
+    - .gradle/caches
+
+before_script:
+  - export GRADLE_USER_HOME="$CI_PROJECT_DIR/.gradle"
+
+build:
+  stage: build
+  image: gradle:jdk21-alpine
+  script:
+    - ./gradlew clean buildWithoutTests --no-daemon
+  artifacts:
+    paths:
+      - build/libs/
