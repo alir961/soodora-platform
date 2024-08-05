@@ -1,10 +1,10 @@
-package com.grooveconductor.api;
+package com.grooveconductor.rest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ApiApplicationTests {
+class RestApplicationTests {
 
 	@Test
 	void contextLoads() {
