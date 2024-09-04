@@ -10,4 +10,8 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>domain</artifactId>
+
+    <properties>
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
 </project>

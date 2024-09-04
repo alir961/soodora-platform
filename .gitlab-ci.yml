@@ -22,5 +22,5 @@ build:
     - mvn $MAVEN_CLI_OPTS clean install -DskipTests
   artifacts:
     paths:
-      - api/target/*.jar
+      - rest/target/*.jar
     expire_in: 1 week
