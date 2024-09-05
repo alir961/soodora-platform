@@ -19,7 +19,7 @@
 	<description>API of GrooveConductor application</description>
 
 	<modules>
-		<module>internal</module>
+		<module>persistence</module>
 		<module>domain</module>
 		<module>rest</module>
 	</modules>
