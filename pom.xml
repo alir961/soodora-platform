@@ -19,10 +19,11 @@
 	<description>API of GrooveConductor application</description>
 
 	<modules>
-		<module>internal</module>
+		<module>persistence</module>
 		<module>domain</module>
 		<module>rest</module>
-	</modules>
+        <module>application</module>
+    </modules>
 
 	<properties>
 		<java.version>21</java.version>
