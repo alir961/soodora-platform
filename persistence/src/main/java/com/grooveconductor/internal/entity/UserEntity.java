@@ -36,6 +36,12 @@ public class UserEntity implements EntityDTO<UserDTO> {
     @Column(nullable = false)
     private String password;
 
+    @Column(unique = false, nullable = true)
+    private String firstname;
+
+    @Column(unique = false, nullable = true)
+    private String lastname;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;
@@ -46,7 +52,7 @@ public class UserEntity implements EntityDTO<UserDTO> {
 
     @Override
     public UserDTO toDTO() {
-        return new UserDTO(slug, username, email);
+        return new UserDTO(slug, username, email, firstname, lastname);
     }
 
 }
