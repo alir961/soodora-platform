@@ -28,10 +28,12 @@ public class UserRepositoryImpl implements UserRepository {
     public UserDTO save(RegisterCommand command) {
         UserEntity entity = new UserEntity();
 
+        entity.setSlug(generateUniqueSlug());
         entity.setUsername(command.username());
         entity.setEmail(command.email());
         entity.setPassword(command.password());
-        entity.setSlug(generateUniqueSlug());
+        entity.setFirstname(command.firstname());
+        entity.setLastname(command.lastname());
         return repository.save(entity).toDTO();
     }
 
