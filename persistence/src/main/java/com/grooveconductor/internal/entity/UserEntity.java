@@ -1,6 +1,5 @@
 package com.grooveconductor.internal.entity;
 
-import com.grooveconductor.domain.dto.EntityDTO;
 import com.grooveconductor.domain.dto.UserDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,7 +17,7 @@ import static java.util.UUID.randomUUID;
 @Setter
 @Entity(name = "users")
 @NoArgsConstructor
-public class UserEntity implements EntityDTO<UserDTO> {
+public class UserEntity implements DomainEntity<UserDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

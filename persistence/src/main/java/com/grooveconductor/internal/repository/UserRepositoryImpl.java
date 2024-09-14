@@ -1,15 +1,16 @@
 package com.grooveconductor.internal.repository;
 
 import com.grooveconductor.domain.command.RegisterCommand;
+import com.grooveconductor.domain.dto.Identifier;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.domain.exception.UnknownSlugException;
-import com.grooveconductor.domain.exception.UnknownEmailException;
+import com.grooveconductor.domain.exception.UnknownIdentifierException;
 import com.grooveconductor.domain.repository.UserRepository;
 import com.grooveconductor.internal.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.grooveconductor.internal.utils.SlugGenerator.generateSlug;
 
@@ -19,18 +20,13 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository repository;
 
-    protected UserEntity findUserBySlugOrThrow(String slug) {
-        return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find user with slug #" + slug));
-    }
-
     @Override
     public UserDTO save(RegisterCommand command) {
         UserEntity entity = new UserEntity();
 
         entity.setSlug(generateUniqueSlug());
         entity.setUsername(command.username());
-        entity.setEmail(command.email());
+        entity.setEmail(command.email().value());
         entity.setPassword(command.password());
         entity.setFirstname(command.firstname());
         entity.setLastname(command.lastname());
@@ -38,15 +34,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public UserDTO findBySlug(String slug) {
-        return findUserBySlugOrThrow(slug).toDTO();
-    }
-
-    @Override
-    public UserDTO findByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + email + "'"))
-                .toDTO();
+    public UserDTO find(Identifier identifier) {
+        return findUserByIdentifier(identifier).toDTO();
     }
 
     @Override
@@ -57,28 +46,36 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteBySlug(String slug) {
-        UserEntity user = findUserBySlugOrThrow(slug);
+    public void delete(Identifier identifier) {
+        UserEntity user = findUserByIdentifier(identifier);
 
         repository.deleteById(user.getId());
     }
 
     @Override
-    public boolean isSlugUsed(String slug) {
-        return repository.findBySlug(slug).isPresent();
+    public boolean isUsed(Identifier identifier) {
+        try {
+            findUserByIdentifier(identifier);
+            return true;
+        } catch (UnknownIdentifierException exception) {
+            return false;
+        }
     }
 
     @Override
-    public boolean isEmailUsed(String email) {
-        return repository.findByEmail(email).isPresent();
+    public String retrieveEncodedPassword(Identifier identifier) {
+        return findUserByIdentifier(identifier)
+                .getPassword();
     }
 
-    @Override
-    public String retrieveEncodedPassword(String email) {
-        UserEntity user = repository.findByEmail(email)
-                .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + email + "'"));
+    private UserEntity findUserByIdentifier(Identifier identifier) throws UnknownIdentifierException {
+        String value = identifier.value();
+        Optional<UserEntity> findEntity = switch (identifier.type()) {
+            case EMAIL -> repository.findByEmail(value);
+            case SLUG -> repository.findBySlug(value);
+        };
 
-        return user.getPassword();
+        return findEntity.orElseThrow(() -> new UnknownIdentifierException("Unable to find user '" + value + "'"));
     }
 
     private String generateUniqueSlug() {

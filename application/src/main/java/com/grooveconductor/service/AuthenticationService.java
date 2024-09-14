@@ -21,12 +21,12 @@ public class AuthenticationService {
     public void registerUser(RegisterCommand command) {
         String encodedPassword = passwordEncoder.encode(command.password());
 
-        if (userRepository.isEmailUsed(command.email())) throw new UserUnityException("Email is already used");
+        if (userRepository.isUsed(command.email())) throw new UserUnityException("Email is already used");
         userRepository.save(new RegisterCommand(command.username(), command.email(), encodedPassword, command.firstname(), command.lastname()));
     }
 
     public String loginUser(LoginCommand command) {
-        UserDTO user = userRepository.findByEmail(command.email());
+        UserDTO user = userRepository.find(command.email());
         String password = userRepository.retrieveEncodedPassword(command.email());
 
         if (!passwordEncoder.matches(command.password(), password))

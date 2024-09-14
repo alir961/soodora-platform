@@ -1,8 +1,9 @@
 package com.grooveconductor.request;
 
 import com.grooveconductor.domain.command.LoginCommand;
-import com.grooveconductor.domain.command.RegisterCommand;
 import com.grooveconductor.exception.InvalidRequestException;
+
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEmail;
 
 public record LoginRequest(String email, String password) implements Request<LoginCommand> {
 
@@ -11,7 +12,7 @@ public record LoginRequest(String email, String password) implements Request<Log
         if (email == null || email.trim().isBlank()) throw new InvalidRequestException("Missing email");
         if (password == null || password.isBlank()) throw new InvalidRequestException("Missing password");
 
-        return new LoginCommand(email.trim(), password);
+        return new LoginCommand(createFromEmail(email.trim()), password);
     }
 
 }

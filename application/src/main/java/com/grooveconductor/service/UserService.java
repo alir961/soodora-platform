@@ -1,7 +1,7 @@
 package com.grooveconductor.service;
 
+import com.grooveconductor.domain.dto.Identifier;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.domain.exception.UnknownEmailException;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.UserRepository;
 import com.grooveconductor.exception.UnknownUserException;
@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEmail;
 import static java.util.Collections.emptyList;
 
 @Service
@@ -26,25 +27,17 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    public UserDTO retrieveUserBySlug(String slug) {
+    public UserDTO retrieveUser(Identifier identifier) {
         try {
-            return userRepository.findBySlug(slug);
+            return userRepository.find(identifier);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public UserDTO retrieveUserByEmail(String email) {
+    public void deleteUser(Identifier identifier) throws UnknownUserException {
         try {
-            return userRepository.findByEmail(email);
-        } catch (UnknownEmailException exception) {
-            throw new UnknownUserException(exception.getMessage());
-        }
-    }
-
-    public void deleteUserBySlug(String slug) throws UnknownUserException {
-        try {
-            userRepository.deleteBySlug(slug);
+            userRepository.delete(identifier);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
@@ -52,7 +45,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDTO user = retrieveUserByEmail(username);
+        UserDTO user = retrieveUser(createFromEmail(username));
 
         return new User(user.email(), null, emptyList());
     }
