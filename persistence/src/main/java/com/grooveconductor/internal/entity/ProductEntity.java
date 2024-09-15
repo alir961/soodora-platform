@@ -27,7 +27,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     @Column
     private String description;
 
-    @Column
+    @Column(length = 5000)
     private String imageUrl;
 
     @Column
