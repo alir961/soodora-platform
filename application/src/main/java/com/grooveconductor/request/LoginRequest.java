@@ -8,7 +8,7 @@ import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEma
 public record LoginRequest(String email, String password) implements Request<LoginCommand> {
 
     @Override
-    public LoginCommand toCommand() {
+    public LoginCommand toCommand() throws InvalidRequestException {
         if (email == null || email.trim().isBlank()) throw new InvalidRequestException("Missing email");
         if (password == null || password.isBlank()) throw new InvalidRequestException("Missing password");
 

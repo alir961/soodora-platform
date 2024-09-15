@@ -11,6 +11,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static java.util.UUID.randomUUID;
 
 @Getter
@@ -48,6 +49,10 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @UpdateTimestamp
     @Column
     private Date updatedAt;
+
+    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    @JoinColumn(unique = true)
+    private ArtistEntity artist;
 
     @Override
     public UserDTO toDTO() {

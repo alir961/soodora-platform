@@ -1,9 +1,11 @@
 package com.grooveconductor.service;
 
+import com.grooveconductor.domain.dto.ArtistDTO;
 import com.grooveconductor.domain.dto.Identifier;
 import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.UserRepository;
+import com.grooveconductor.exception.ArtistException;
 import com.grooveconductor.exception.UnknownUserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -41,6 +43,15 @@ public class UserService implements UserDetailsService {
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
+    }
+
+    public boolean isArtist(Identifier identifier) {
+        return userRepository.retrieveArtist(identifier).isPresent();
+    }
+
+    public ArtistDTO findArtist(Identifier identifier) {
+        return userRepository.retrieveArtist(identifier)
+                .orElseThrow(() -> new ArtistException("Must be an artist to do this action"));
     }
 
     @Override

@@ -4,11 +4,16 @@ import com.grooveconductor.domain.command.LoginCommand;
 import com.grooveconductor.domain.command.RegisterCommand;
 import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.domain.repository.UserRepository;
+import com.grooveconductor.exception.AuthenticationException;
 import com.grooveconductor.exception.UnknownUserException;
 import com.grooveconductor.exception.UserUnityException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEmail;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,13 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(command.password(), password))
             throw new UnknownUserException("Invalid password");
         return jwtTokenService.generateToken(user);
+    }
+
+    public UserDTO getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (!authentication.isAuthenticated()) throw new AuthenticationException("User must be authenticated");
+        return userRepository.find(createFromEmail(authentication.getPrincipal().toString()));
     }
 
 }
