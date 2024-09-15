@@ -2,6 +2,7 @@ package com.grooveconductor.internal.repository;
 
 import com.grooveconductor.domain.command.CreateProductCommand;
 import com.grooveconductor.domain.dto.ProductDTO;
+import com.grooveconductor.domain.exception.UnknownNameException;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.ProductRepository;
 import com.grooveconductor.internal.entity.ProductEntity;
@@ -24,7 +25,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     protected ProductEntity findProductByNameOrThrow(String name) {
         return repository.findByName(name)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find product with name :" + name));
+                .orElseThrow(() -> new UnknownNameException("Unable to find product with name :" + name));
     }
 
     @Override
@@ -62,7 +63,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void deleteBySlug(String slug) {
         Optional<ProductEntity> product = repository.findBySlug(slug);
 
-        repository.deleteById(product.get().getId());
+        repository.deleteById(product.orElseThrow().getId());
     }
 
     @Override
@@ -80,7 +81,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         try {
             findByName(name);
             return true;
-        } catch (UnknownSlugException exception) {
+        } catch (UnknownNameException exception) {
             return false;
         }
     }
