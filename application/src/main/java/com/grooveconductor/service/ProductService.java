@@ -4,8 +4,8 @@ import com.grooveconductor.domain.command.CreateProductCommand;
 import com.grooveconductor.domain.dto.ProductDTO;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.ProductRepository;
+import com.grooveconductor.exception.ProductUnityException;
 import com.grooveconductor.exception.UnknownUserException;
-import com.grooveconductor.exception.UserUnityException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -67,7 +67,7 @@ public class ProductService {
         String slug = generateUniqueSlug();
 
         if (productRepository.isNameUsed(command.name()))
-            throw new UserUnityException("Name is already used");
+            throw new ProductUnityException("Name is already used");
 
         productRepository.save(new CreateProductCommand(command.name(), command.description(), command.imageUrl(), command.category(), command.price(), command.quantity()), slug);
         return slug;
