@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromSlug;
+
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -21,12 +23,12 @@ public class UserController {
 
     @GetMapping("/{slug}")
     public UserDTO getUser(@PathVariable String slug) {
-        return service.retrieveUserBySlug(slug);
+        return service.retrieveUser(createFromSlug(slug));
     }
 
     @DeleteMapping("/{slug}")
     public void deleteUser(@PathVariable("slug") String slug) {
-        service.deleteUserBySlug(slug);
+        service.deleteUser(createFromSlug(slug));
     }
 
 }

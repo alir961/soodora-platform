@@ -1,7 +1,9 @@
 package com.grooveconductor.rest.controller;
 
+import com.grooveconductor.domain.dto.ArtistDTO;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.domain.repository.UserRepository;
+import com.grooveconductor.service.ArtistService;
+import com.grooveconductor.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -9,17 +11,29 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEmail;
+
 @RestController
 @RequestMapping("/profile")
 @RequiredArgsConstructor
 public class ProfileController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
+    private final ArtistService artistService;
 
     @GetMapping
     public UserDTO getLoggedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getPrincipal().toString();
-        return userRepository.findByEmail(currentEmail);
+
+        return userService.retrieveUser(createFromEmail(currentEmail));
     }
+
+    @GetMapping("/artist")
+    public ArtistDTO getLoggedArtist() {
+        UserDTO user = getLoggedUser();
+
+        return userService.findArtist(user.identifier());
+    }
+
 }

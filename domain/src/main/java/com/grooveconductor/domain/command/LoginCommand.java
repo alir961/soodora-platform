@@ -1,5 +1,7 @@
 package com.grooveconductor.domain.command;
 
-public record LoginCommand(String email, String password) {
+import com.grooveconductor.domain.dto.Identifier;
+
+public record LoginCommand(Identifier email, String password) {
 
 }

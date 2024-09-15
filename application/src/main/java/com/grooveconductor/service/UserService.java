@@ -1,9 +1,11 @@
 package com.grooveconductor.service;
 
+import com.grooveconductor.domain.dto.ArtistDTO;
+import com.grooveconductor.domain.dto.Identifier;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.domain.exception.UnknownEmailException;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.UserRepository;
+import com.grooveconductor.exception.ArtistException;
 import com.grooveconductor.exception.UnknownUserException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEmail;
 import static java.util.Collections.emptyList;
 
 @Service
@@ -26,33 +29,34 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    public UserDTO retrieveUserBySlug(String slug) {
+    public UserDTO retrieveUser(Identifier identifier) {
         try {
-            return userRepository.findBySlug(slug);
+            return userRepository.find(identifier);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public UserDTO retrieveUserByEmail(String email) {
+    public void deleteUser(Identifier identifier) throws UnknownUserException {
         try {
-            return userRepository.findByEmail(email);
-        } catch (UnknownEmailException exception) {
+            userRepository.delete(identifier);
+        } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public void deleteUserBySlug(String slug) throws UnknownUserException {
-        try {
-            userRepository.deleteBySlug(slug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownUserException(exception.getMessage());
-        }
+    public boolean isArtist(Identifier identifier) {
+        return userRepository.retrieveArtist(identifier).isPresent();
+    }
+
+    public ArtistDTO findArtist(Identifier identifier) {
+        return userRepository.retrieveArtist(identifier)
+                .orElseThrow(() -> new ArtistException("Must be an artist to do this action"));
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDTO user = retrieveUserByEmail(username);
+        UserDTO user = retrieveUser(createFromEmail(username));
 
         return new User(user.email(), null, emptyList());
     }

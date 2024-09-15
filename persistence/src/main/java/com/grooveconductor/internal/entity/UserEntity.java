@@ -1,6 +1,5 @@
 package com.grooveconductor.internal.entity;
 
-import com.grooveconductor.domain.dto.EntityDTO;
 import com.grooveconductor.domain.dto.UserDTO;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,13 +11,14 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.util.Date;
 import java.util.UUID;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static java.util.UUID.randomUUID;
 
 @Getter
 @Setter
 @Entity(name = "users")
 @NoArgsConstructor
-public class UserEntity implements EntityDTO<UserDTO> {
+public class UserEntity implements DomainEntity<UserDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -49,6 +49,10 @@ public class UserEntity implements EntityDTO<UserDTO> {
     @UpdateTimestamp
     @Column
     private Date updatedAt;
+
+    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    @JoinColumn(unique = true)
+    private ArtistEntity artist;
 
     @Override
     public UserDTO toDTO() {
