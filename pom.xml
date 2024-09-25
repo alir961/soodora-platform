@@ -12,14 +12,14 @@
 
 	<groupId>com.grooveconductor</groupId>
 	<artifactId>api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${project.version}</version>
 	<packaging>pom</packaging>
 
 	<name>A.P.I</name>
 	<description>API of GrooveConductor application</description>
 
 	<modules>
-		<module>persistence</module>
+		<module>infrastructure</module>
 		<module>domain</module>
 		<module>rest</module>
         <module>application</module>
@@ -27,6 +27,7 @@
 
 	<properties>
 		<java.version>21</java.version>
+		<project.version>0.0.1-SNAPSHOT</project.version>
 	</properties>
 
 	<dependencies>

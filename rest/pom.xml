@@ -21,17 +21,17 @@
         <dependency>
             <groupId>com.grooveconductor</groupId>
             <artifactId>application</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.grooveconductor</groupId>
             <artifactId>domain</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.grooveconductor</groupId>
-            <artifactId>persistence</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <artifactId>infrastructure</artifactId>
+            <version>${project.version}</version>
             <scope>runtime</scope>
         </dependency>
 
