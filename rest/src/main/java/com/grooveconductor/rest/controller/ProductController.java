@@ -8,6 +8,7 @@ import com.grooveconductor.rest.response.CreateProductResponse;
 import com.grooveconductor.rest.response.ExceptionResponse;
 import com.grooveconductor.rest.response.JsonResponse;
 import com.grooveconductor.service.ProductService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class ProductController {
 
     private final ProductService service;
