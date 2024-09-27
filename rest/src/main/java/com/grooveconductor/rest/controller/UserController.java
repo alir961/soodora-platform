@@ -2,6 +2,7 @@ package com.grooveconductor.rest.controller;
 
 import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,6 +13,7 @@ import static com.grooveconductor.domain.factory.IdentifierFactory.createFromSlu
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+@SecurityRequirement(name = "bearerAuth")
 public class UserController {
 
     private final UserService service;
