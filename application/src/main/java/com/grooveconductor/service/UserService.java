@@ -3,7 +3,7 @@ package com.grooveconductor.service;
 import com.grooveconductor.domain.dto.ArtistDTO;
 import com.grooveconductor.domain.dto.Identifier;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.domain.exception.UnknownSlugException;
+import com.grooveconductor.domain.exception.UnknownIdentifierException;
 import com.grooveconductor.domain.repository.UserRepository;
 import com.grooveconductor.exception.ArtistException;
 import com.grooveconductor.exception.UnknownUserException;
@@ -32,7 +32,7 @@ public class UserService implements UserDetailsService {
     public UserDTO retrieveUser(Identifier identifier) {
         try {
             return userRepository.find(identifier);
-        } catch (UnknownSlugException exception) {
+        } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
@@ -40,7 +40,7 @@ public class UserService implements UserDetailsService {
     public void deleteUser(Identifier identifier) throws UnknownUserException {
         try {
             userRepository.delete(identifier);
-        } catch (UnknownSlugException exception) {
+        } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
