@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import HomePage from '../views/HomePage.vue'
-import AuthPage from '../views/AuthPage.vue';
-import ProfilePage from '../views/ProfilePage.vue';
+import AccountPage from '../views/AccountPage.vue';
+import MarketPlacePage from '../views/MarketPlacePage.vue'
+import PlaylistPage from '../views/PlaylistPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -15,14 +16,19 @@ const routes: Array<RouteRecordRaw> = [
     component: HomePage
   },
   {
-    path: '/auth',
-    name: 'Auth',
-    component: AuthPage
+    path: '/account',
+    name: 'Account',
+    component: AccountPage
   },
   {
-    path: '/profile',
-    name: 'Profile',
-    component: ProfilePage
+    path: '/marketplace',
+    name: 'Marketplace',
+    component: MarketPlacePage
+  },
+  {
+    path: '/playlist',
+    name: 'Playlist',
+    component: PlaylistPage
   }
 ]
 
