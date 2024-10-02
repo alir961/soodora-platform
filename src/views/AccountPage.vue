@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import {IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonItem, IonLabel} from '@ionic/vue';
-import {getToken, saveToken} from '@/utils/localStorage';
-import { useRouter } from 'vue-router';
-import {onMounted, ref} from 'vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonItem } from '@ionic/vue';
+import { getToken, getUserInfoFromPreferences, removeToken, removeUserInfo, saveToken, saveUserInfo } from '@/utils/localStorage';
+import { onMounted, ref } from 'vue';
 import axios from 'axios';
 
 const email = ref('');
@@ -11,8 +10,28 @@ const username = ref('');
 const firstname = ref('');
 const lastname = ref('');
 const isLogin = ref(true);
-const router = useRouter();
+const userInfo = ref(null);
+const isLogged = ref(false);
 const apiUrl = import.meta.env.VITE_API_URL;
+
+const getUserInfo = async () => {
+  const token = await getToken();
+
+  if (token) {
+    try {
+      const response = await axios.get(apiUrl + '/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      userInfo.value = response.data;
+      await saveUserInfo(userInfo);
+      console.log('Succeed to fetch user info');
+    } catch (error) {
+      console.error('Failed to fetch user info:', error);
+    }
+  }
+};
 
 const login = async () => {
   try {
@@ -22,12 +41,16 @@ const login = async () => {
     });
     const token = response.data.token;
     await saveToken(token);
-    await router.push('/profile');
+    isLogged.value = true;
+    await getUserInfo();
     console.log('Login successful, Token:', token);
-    window.location.reload();
   } catch (error) {
     console.error('Login failed:', error);
   }
+};
+
+const toggleAuth = () => {
+  isLogin.value = !isLogin.value;
 };
 
 const signup = async () => {
@@ -42,17 +65,23 @@ const signup = async () => {
     console.log('SignUp successful:', response);
     toggleAuth();
   } catch (error) {
-    console.error('SignUp failed:', error);
+    console.error('SignUp failed:', error.request.response);
   }
 };
 
-const toggleAuth = () => {
-  isLogin.value = !isLogin.value;
+const logout = async () => {
+  await removeToken();
+  await removeUserInfo();
+  isLogged.value = false;
+  userInfo.value = null;
+  console.log('Logged out successfully, token and user infos removed.');
 };
 
-onMounted(() => {
-  if (getToken())
-    router.push('/profile');
+onMounted(async () => {
+  const token = await getToken();
+  isLogged.value = token !== undefined && token !== null;
+  userInfo.value = await getUserInfoFromPreferences();
+  console.log(userInfo.value);
 });
 </script>
 
@@ -71,43 +100,36 @@ onMounted(() => {
         </ion-toolbar>
       </ion-header>
 
-      <div id="auth-container">
+      <div id="auth-container" v-if="!isLogged">
         <strong>{{ isLogin ? 'Welcome Back!' : 'Create Your Account' }}</strong>
         <p>{{ isLogin ? 'Please log in to continue' : 'Sign up to get started' }}</p>
 
         <ion-item v-if="isLogin">
-          <ion-label position="floating">Email</ion-label>
-          <ion-input type="email" v-model="email"></ion-input>
+          <ion-input placeholder="Email" type="email" v-model="email"></ion-input>
         </ion-item>
 
         <ion-item v-if="isLogin">
-          <ion-label position="floating">Password</ion-label>
-          <ion-input type="password" v-model="password"></ion-input>
+          <ion-input placeholder="Password" type="password" v-model="password"></ion-input>
         </ion-item>
 
         <ion-item v-if="!isLogin">
-          <ion-label position="floating">Username</ion-label>
-          <ion-input type="text" v-model="username"></ion-input>
+          <ion-input placeholder="Username" type="text" v-model="username"></ion-input>
         </ion-item>
 
         <ion-item v-if="!isLogin">
-          <ion-label position="floating">Firstname</ion-label>
-          <ion-input type="text" v-model="firstname"></ion-input>
+          <ion-input placeholder="Firstname" type="text" v-model="firstname"></ion-input>
         </ion-item>
 
         <ion-item v-if="!isLogin">
-          <ion-label position="floating">Lastname</ion-label>
-          <ion-input type="text" v-model="lastname"></ion-input>
+          <ion-input placeholder="Lastname" type="text" v-model="lastname"></ion-input>
         </ion-item>
 
         <ion-item v-if="!isLogin">
-          <ion-label position="floating">Email</ion-label>
-          <ion-input type="email" v-model="email"></ion-input>
+          <ion-input placeholder="Email" type="email" v-model="email"></ion-input>
         </ion-item>
 
         <ion-item v-if="!isLogin">
-          <ion-label position="floating">Password</ion-label>
-          <ion-input type="password" v-model="password"></ion-input>
+          <ion-input placeholder="Password" type="password" v-model="password"></ion-input>
         </ion-item>
 
         <ion-button expand="block" @click="isLogin ? login() : signup()">
@@ -118,6 +140,23 @@ onMounted(() => {
           {{ isLogin ? "Don't have an account?" : 'Already have an account?' }}
           <span @click="toggleAuth" class="interactive-link">{{ isLogin ? 'Sign up here' : 'Log in here' }}</span>
         </p>
+      </div>
+
+      <div v-else-if="userInfo === null">
+        <p>Loading...</p>
+      </div>
+
+      <div v-else>
+        <div id="profile-container">
+          <strong>Welcome, {{ userInfo.username }}</strong>
+          <p>Email : {{ userInfo.email }}</p>
+          <p>Firstname : {{ userInfo.firstname }}</p>
+          <p>Lastname : {{ userInfo.lastname }}</p>
+
+          <ion-button expand="block" color="danger" @click="logout">
+            Log Out
+          </ion-button>
+        </div>
       </div>
     </ion-content>
   </ion-page>
@@ -171,5 +210,31 @@ onMounted(() => {
 #auth-container a {
   text-decoration: none;
   color: #3880ff;
+}
+
+#profile-container {
+  text-align: center;
+  padding: 20px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+#profile-container strong {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+#profile-container p {
+  font-size: 16px;
+  line-height: 22px;
+  color: #8c8c8c;
+  margin: 8px 0;
+}
+
+ion-button {
+  margin-top: 20px;
 }
 </style>

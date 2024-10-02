@@ -8,17 +8,36 @@ const saveToken = async (token: string) => {
 };
 
 const getToken = async () => {
-    return (await Preferences.get({key: 'BearerToken'})).value;
+    const result = await Preferences.get({ key: 'BearerToken' });
+    return result.value;
 };
 
 const removeToken = async () => {
     await Preferences.remove({ key: 'BearerToken' });
 };
 
-const logout = async () => {
-    await removeToken();
-    window.location.reload()
-    console.log('Logged out successfully, token removed.');
+const saveUserInfo = async (userInfo) => {
+    await Preferences.set({
+        key: 'userInfo',
+        value: JSON.stringify(userInfo.value),
+    });
 };
 
-export { saveToken, removeToken, logout, getToken };
+const removeUserInfo = async () => {
+    await Preferences.remove({ key: 'userInfo' });
+};
+
+const getUserInfoFromPreferences = async () => {
+    const storedUserInfo = await Preferences.get({ key: 'userInfo' });
+    if (storedUserInfo.value) {
+        try {
+            return JSON.parse(storedUserInfo.value);
+        } catch (error) {
+            console.error('Error parsing userInfo:', error);
+            return null;
+        }
+    }
+    return null;
+};
+
+export { saveToken, removeToken, getToken, saveUserInfo, removeUserInfo, getUserInfoFromPreferences };
