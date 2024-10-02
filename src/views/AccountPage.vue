@@ -81,7 +81,6 @@ onMounted(async () => {
   const token = await getToken();
   isLogged.value = token !== undefined && token !== null;
   userInfo.value = await getUserInfoFromPreferences();
-  console.log(userInfo.value);
 });
 </script>
 
@@ -165,7 +164,7 @@ onMounted(async () => {
 <style scoped>
 #auth-container {
   text-align: center;
-  padding: 20px;
+  padding: 5%;
   position: absolute;
   left: 0;
   right: 0;
@@ -174,25 +173,25 @@ onMounted(async () => {
 }
 
 #auth-container strong {
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 1.5em;
+  line-height: 2em;
 }
 
 #auth-container p {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 1em;
+  line-height: 1.375em;
   color: #8c8c8c;
-  margin: 8px 0;
+  margin: 1em 0;
 }
 
 #auth-container ion-item {
-  margin-top: 20px;
+  margin-top: 5%;
 }
 
 .small-text {
-  margin-top: 16px;
+  margin-top: 4%;
   color: #8c8c8c;
-  font-size: 14px;
+  font-size: 0.875em;
 }
 
 .interactive-link {
@@ -214,7 +213,7 @@ onMounted(async () => {
 
 #profile-container {
   text-align: center;
-  padding: 20px;
+  padding: 5%;
   position: absolute;
   left: 0;
   right: 0;
@@ -223,18 +222,18 @@ onMounted(async () => {
 }
 
 #profile-container strong {
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 1.5em;
+  line-height: 2em;
 }
 
 #profile-container p {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 1em;
+  line-height: 1.375em;
   color: #8c8c8c;
-  margin: 8px 0;
+  margin: 1em 0;
 }
 
 ion-button {
-  margin-top: 20px;
+  margin-top: 5%;
 }
 </style>
