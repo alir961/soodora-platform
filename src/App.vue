@@ -33,3 +33,9 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, homeOutline, musicalNotesOutline, personOutline } from "ionicons/icons";
 </script>
+
+<style>
+.header-background {
+  display: none;
+}
+</style>
