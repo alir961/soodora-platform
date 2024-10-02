@@ -22,7 +22,6 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 public class ProductController {
 
     private final ProductService service;
@@ -32,16 +31,19 @@ public class ProductController {
         return service.retrieveAllProducts();
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{slug}")
     public ProductDTO getProduct(@PathVariable String slug) {
         return service.retrieveProduct(slug);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
         service.deleteBySlug(slug);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
         try {
