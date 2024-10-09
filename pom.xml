@@ -23,6 +23,7 @@
 		<module>domain</module>
 		<module>rest</module>
         <module>application</module>
+        <module>test</module>
     </modules>
 
 	<properties>

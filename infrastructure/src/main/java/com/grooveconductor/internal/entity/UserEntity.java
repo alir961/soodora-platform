@@ -24,7 +24,7 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id = randomUUID();
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String slug;
 
     @Column(unique = true, nullable = false)
@@ -36,10 +36,10 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @Column(nullable = false)
     private String password;
 
-    @Column(unique = false, nullable = true)
+    @Column
     private String firstname;
 
-    @Column(unique = false, nullable = true)
+    @Column
     private String lastname;
 
     @CreationTimestamp

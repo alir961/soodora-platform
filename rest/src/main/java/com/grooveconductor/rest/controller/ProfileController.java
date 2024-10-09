@@ -2,7 +2,6 @@ package com.grooveconductor.rest.controller;
 
 import com.grooveconductor.domain.dto.ArtistDTO;
 import com.grooveconductor.domain.dto.UserDTO;
-import com.grooveconductor.service.ArtistService;
 import com.grooveconductor.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import static com.grooveconductor.domain.factory.IdentifierFactory.createFromEma
 public class ProfileController {
 
     private final UserService userService;
-    private final ArtistService artistService;
 
     @GetMapping
     public UserDTO getLoggedUser() {
