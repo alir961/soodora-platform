@@ -2,6 +2,7 @@ image: maven:3-eclipse-temurin-21-alpine
 
 stages:
   - build
+  - test
 
 variables:
   MAVEN_CLI_OPTS: "--batch-mode --update-snapshots"
@@ -23,4 +24,20 @@ build:
   artifacts:
     paths:
       - rest/target/*.jar
+    expire_in: 1 week
+
+test:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test
+    - mvn $MAVEN_CLI_OPTS verify
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - "**/target/surefire-reports/*.xml"
+        - "**/target/failsafe-reports/*.xml"
+    paths:
+      - ./**/target/surefire-reports/
+      - ./**/target/failsafe-reports/
     expire_in: 1 week
