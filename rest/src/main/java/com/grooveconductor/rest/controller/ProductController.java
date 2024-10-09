@@ -29,7 +29,10 @@ public class ProductController {
     private final AuthenticationService authenticationService;
 
     @GetMapping
-    public List<ProductDTO> getProducts() {
+    public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
+        if (userSlug != null) {
+            return service.retrieveAllProductsOfUserBySlug(userSlug);
+        }
         return service.retrieveAllProducts();
     }
 
@@ -43,12 +46,6 @@ public class ProductController {
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
         service.deleteBySlug(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @GetMapping("/user")
-    public List<ProductDTO> getProductsOfUser(@RequestParam("userSlug") String userSlug) {
-        return service.retrieveAllProductsOfUserBySlug(userSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
