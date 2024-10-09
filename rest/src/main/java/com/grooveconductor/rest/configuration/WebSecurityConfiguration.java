@@ -21,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import static org.springframework.http.HttpMethod.GET;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -33,7 +34,7 @@ public class WebSecurityConfiguration {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
-    @Value("${frontURL}")
+    @Value("${frontURL:localhost}")
     private String frontURL;
 
     @Bean
@@ -51,7 +52,7 @@ public class WebSecurityConfiguration {
                                 "/swagger-resources/**"
                                 )
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, "/products").permitAll()
+                        .requestMatchers(GET, "/products").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -80,12 +81,12 @@ public class WebSecurityConfiguration {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
         config.setAllowCredentials(true);
         config.addAllowedOrigin(frontURL);
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

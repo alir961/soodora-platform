@@ -1,16 +1,17 @@
 package com.grooveconductor.rest.configuration;
 
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
-import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
+
+import static io.swagger.v3.oas.annotations.enums.SecuritySchemeIn.HEADER;
+import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 
 @SecurityScheme(
         name = "bearerAuth",
         description = "JWT auth",
         scheme = "bearer",
-        type = SecuritySchemeType.HTTP,
+        type = HTTP,
         bearerFormat = "JWT",
-        in = SecuritySchemeIn.HEADER
+        in = HEADER
 )
 public class OpenApiConfiguration {
 }
