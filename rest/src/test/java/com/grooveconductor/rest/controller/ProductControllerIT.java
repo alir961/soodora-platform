@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 
 import static com.grooveconductor.rest.JsonStringify.asJsonString;
+import static com.grooveconductor.test.ProductFactory.buildDefaultProduct;
+import static com.grooveconductor.test.UserFactory.buildDefaultUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -38,7 +40,7 @@ class ProductControllerIT {
     @Test
     void getProductsSuccess() throws Exception {
         // GIVEN
-        ProductDTO product = new ProductDTO("product-slug", "Product Name", "Description", "image-url", "category-url", 50, 10, "user-slug");
+        ProductDTO product = buildDefaultProduct();
         when(productService.retrieveAllProducts()).thenReturn(Collections.singletonList(product));
 
         // WHEN & THEN
@@ -51,7 +53,7 @@ class ProductControllerIT {
     @Test
     void getProductSuccess() throws Exception {
         // GIVEN
-        ProductDTO product = new ProductDTO("product-slug", "Product Name", "Description", "image-url", "category", 50, 10, "user-slug");
+        ProductDTO product = buildDefaultProduct();
         when(productService.retrieveProduct("product-slug")).thenReturn(product);
 
         // WHEN & THEN
@@ -72,7 +74,7 @@ class ProductControllerIT {
     void createProductSuccess() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest("Product Name", "Description", "image-url", "category", 100, 10);
-        UserDTO user = new UserDTO("user-slug", "username", "email@example.com", "John", "Doe");
+        UserDTO user = buildDefaultUser();
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
 
@@ -91,7 +93,7 @@ class ProductControllerIT {
     void createProductInvalidRequest() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest(null, null, "image-url", "category", 0, 0);
-        UserDTO user = new UserDTO("user-slug", "username", "email@example.com", "John", "Doe");
+        UserDTO user = buildDefaultUser();
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
 
