@@ -1,12 +1,13 @@
 package com.grooveconductor.rest.controller;
 
 import com.grooveconductor.domain.dto.ProductDTO;
+import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.exception.InvalidRequestException;
 import com.grooveconductor.exception.ProductUnityException;
 import com.grooveconductor.request.CreateProductRequest;
-import com.grooveconductor.rest.response.CreateProductResponse;
 import com.grooveconductor.rest.response.ExceptionResponse;
 import com.grooveconductor.rest.response.JsonResponse;
+import com.grooveconductor.service.AuthenticationService;
 import com.grooveconductor.service.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ProductController {
 
     private final ProductService service;
+    private final AuthenticationService authenticationService;
 
     @GetMapping
     public List<ProductDTO> getProducts() {
@@ -44,12 +46,19 @@ public class ProductController {
     }
 
     @SecurityRequirement(name = "bearerAuth")
-    @PostMapping
-    public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
-        try {
-            String slug = service.createProduct(createProductRequest.toCommand());
+    @GetMapping("/user")
+    public List<ProductDTO> getProductsOfUser(@RequestParam("userSlug") String userSlug) {
+        return service.retrieveAllProductsOfUserBySlug(userSlug);
+    }
 
-            return new ResponseEntity<>(new CreateProductResponse(slug), CREATED);
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping
+    public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreateProductRequest createPlaylistRequest) {
+        UserDTO user = authenticationService.getAuthenticatedUser();
+        try {
+            service.createProduct(createPlaylistRequest.toCommand(), user);
+
+            return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
