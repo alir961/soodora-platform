@@ -42,7 +42,7 @@ class ProductControllerIT {
     private JwtTokenService jwtTokenService;
 
     @Test
-    void getProductsSuccess() throws Exception {
+    void getProducts_Success() throws Exception {
         // GIVEN
         ProductDTO product = buildDefaultProduct();
         when(productService.retrieveAllProducts()).thenReturn(Collections.singletonList(product));
@@ -55,7 +55,7 @@ class ProductControllerIT {
     }
 
     @Test
-    void getProductSuccess() throws Exception {
+    void getProduct_Success() throws Exception {
         // GIVEN
         ProductDTO product = buildDefaultProduct();
         when(productService.retrieveProduct("product-slug")).thenReturn(product);
@@ -68,7 +68,7 @@ class ProductControllerIT {
     }
 
     @Test
-    void deleteProductSuccess() throws Exception {
+    void deleteProduct_Success() throws Exception {
         // GIVEN
         doNothing().when(productService).deleteProductBySlug("product-slug");
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
@@ -81,7 +81,7 @@ class ProductControllerIT {
     }
 
     @Test
-    void createProductSuccess() throws Exception {
+    void createProduct_Success() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest("Product Name", "Description", "image-url", "category", 100, 10);
         UserDTO user = buildDefaultUser();
@@ -99,7 +99,7 @@ class ProductControllerIT {
 
 
     @Test
-    void createProductInvalidRequest() throws Exception {
+    void createProduct_InvalidRequest() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest(null, null, "image-url", "category", 0, 0);
         UserDTO user = buildDefaultUser();
