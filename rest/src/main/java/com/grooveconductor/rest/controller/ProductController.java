@@ -28,6 +28,19 @@ public class ProductController {
     private final ProductService service;
     private final AuthenticationService authenticationService;
 
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping
+    public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreateProductRequest createPlaylistRequest) {
+        try {
+            UserDTO user = authenticationService.getAuthenticatedUser();
+            service.createProduct(createPlaylistRequest.toCommand(), user);
+
+            return new ResponseEntity<>(CREATED);
+        } catch (InvalidRequestException | ProductUnityException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
+    }
+
     @GetMapping
     public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
         if (userSlug != null) {
@@ -46,19 +59,6 @@ public class ProductController {
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
         service.deleteProductBySlug(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping
-    public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreateProductRequest createPlaylistRequest) {
-        try {
-            UserDTO user = authenticationService.getAuthenticatedUser();
-            service.createProduct(createPlaylistRequest.toCommand(), user);
-
-            return new ResponseEntity<>(CREATED);
-        } catch (InvalidRequestException | ProductUnityException exception) {
-            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
-        }
     }
 
 }
