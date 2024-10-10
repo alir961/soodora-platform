@@ -51,8 +51,8 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreateProductRequest createPlaylistRequest) {
-        UserDTO user = authenticationService.getAuthenticatedUser();
         try {
+            UserDTO user = authenticationService.getAuthenticatedUser();
             service.createProduct(createPlaylistRequest.toCommand(), user);
 
             return new ResponseEntity<>(CREATED);

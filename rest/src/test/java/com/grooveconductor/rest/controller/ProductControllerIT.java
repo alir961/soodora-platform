@@ -5,6 +5,7 @@ import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.exception.InvalidRequestException;
 import com.grooveconductor.request.CreateProductRequest;
 import com.grooveconductor.service.AuthenticationService;
+import com.grooveconductor.service.JwtTokenService;
 import com.grooveconductor.service.ProductService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,9 @@ class ProductControllerIT {
     @MockBean
     private AuthenticationService authenticationService;
 
+    @MockBean
+    private JwtTokenService jwtTokenService;
+
     @Test
     void getProductsSuccess() throws Exception {
         // GIVEN
@@ -65,9 +69,15 @@ class ProductControllerIT {
 
     @Test
     void deleteProductSuccess() throws Exception {
+        // GIVEN
+        doNothing().when(productService).deleteBySlug("product-slug");
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
         // WHEN & THEN
-        mockMvc.perform(delete("/products/product-slug"))
+        mockMvc.perform(delete("/products/product-slug")
+                .header("Authorization", "Bearer token"))
             .andExpect(status().isOk());
+        verify(productService, times(1)).deleteBySlug("product-slug");
     }
 
     @Test
@@ -78,7 +88,6 @@ class ProductControllerIT {
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
 
-        // For void methods, use doNothing().when(...)
         doNothing().when(productService).createProduct(any(), any());
 
         // WHEN & THEN
@@ -97,7 +106,6 @@ class ProductControllerIT {
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
 
-        // For void methods, use doThrow() to mock exceptions
         doThrow(InvalidRequestException.class).when(productService).createProduct(any(), any());
 
         // WHEN & THEN

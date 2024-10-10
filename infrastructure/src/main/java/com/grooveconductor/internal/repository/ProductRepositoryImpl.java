@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static com.grooveconductor.internal.utils.SlugGenerator.generateSlug;
 
@@ -42,8 +43,8 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public ProductDTO save(CreateProductCommand command, UserDTO user) {
         ProductEntity entity = new ProductEntity();
-        UserEntity userEntity = userRepository.findByEmail(user.email())
-            .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + user.email() + "'"));
+        UserEntity userEntity = userRepository.findBySlug(user.slug())
+            .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + user.slug() + "'"));
 
         entity.setName(command.name());
         entity.setPrice(command.price());
@@ -91,7 +92,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public boolean isProductNameUsedByUser(String name, String userSlug) {
         List<ProductEntity> userProducts = findProductsByUserSlugOrThrow(userSlug);
-        return userProducts.stream().anyMatch(products -> products.getName().equalsIgnoreCase(name));
+        Stream<ProductEntity> productsOfUser = userProducts.stream();
+
+        return productsOfUser.anyMatch(products -> products.getName().equalsIgnoreCase(name));
     }
 
     private String generateUniqueSlug() {
