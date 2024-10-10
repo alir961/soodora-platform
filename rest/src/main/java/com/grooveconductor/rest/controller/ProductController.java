@@ -45,7 +45,7 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
-        service.deleteBySlug(slug);
+        service.deleteProductBySlug(slug);
     }
 
     @SecurityRequirement(name = "bearerAuth")

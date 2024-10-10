@@ -36,9 +36,9 @@ public class ProductService {
         }
     }
 
-    public void deleteBySlug(String slug) throws UnknownUserException {
+    public void deleteProductBySlug(String slug) throws UnknownUserException {
         try {
-            productRepository.deleteBySlug(slug);
+            productRepository.deleteProductBySlug(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }

@@ -88,23 +88,23 @@ class ProductServiceTest {
     @Test
     void deleteProduct_Success() {
         // GIVEN
-        doNothing().when(productRepository).deleteBySlug(PRODUCT.slug());
+        doNothing().when(productRepository).deleteProductBySlug(PRODUCT.slug());
 
         // WHEN
-        Executable executable = () -> productService.deleteBySlug(PRODUCT.slug());
+        Executable executable = () -> productService.deleteProductBySlug(PRODUCT.slug());
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository, times(1)).deleteBySlug(PRODUCT.slug());
+        verify(productRepository, times(1)).deleteProductBySlug(PRODUCT.slug());
     }
 
     @Test
     void deleteProduct_UnknownSlug() {
         // GIVEN
-        doThrow(UnknownSlugException.class).when(productRepository).deleteBySlug(anyString());
+        doThrow(UnknownSlugException.class).when(productRepository).deleteProductBySlug(anyString());
 
         // WHEN
-        Executable executable = () -> productService.deleteBySlug("unknown-slug");
+        Executable executable = () -> productService.deleteProductBySlug("unknown-slug");
 
         // THEN
         assertThrows(UnknownUserException.class, executable);

@@ -13,7 +13,7 @@ public interface ProductRepository {
     ProductDTO findBySlug(String slug);
     List<ProductDTO> findAll();
     List<ProductDTO> findProductsByUserSlug(String slug);
-    void deleteBySlug(String slug);
+    void deleteProductBySlug(String slug);
     boolean isProductNameUsedByUser(String name, String userSlug);
 
 }

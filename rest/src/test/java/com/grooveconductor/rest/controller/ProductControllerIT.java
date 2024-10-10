@@ -70,14 +70,14 @@ class ProductControllerIT {
     @Test
     void deleteProductSuccess() throws Exception {
         // GIVEN
-        doNothing().when(productService).deleteBySlug("product-slug");
+        doNothing().when(productService).deleteProductBySlug("product-slug");
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
 
         // WHEN & THEN
         mockMvc.perform(delete("/products/product-slug")
                 .header("Authorization", "Bearer token"))
             .andExpect(status().isOk());
-        verify(productService, times(1)).deleteBySlug("product-slug");
+        verify(productService, times(1)).deleteProductBySlug("product-slug");
     }
 
     @Test

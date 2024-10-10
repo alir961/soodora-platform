@@ -83,7 +83,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public void deleteBySlug(String slug) {
+    public void deleteProductBySlug(String slug) {
         Optional<ProductEntity> product = repository.findBySlug(slug);
 
         repository.deleteById(product.orElseThrow().getId());
