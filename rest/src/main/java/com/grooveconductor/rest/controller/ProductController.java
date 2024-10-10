@@ -30,10 +30,10 @@ public class ProductController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreateProductRequest createPlaylistRequest) {
+    public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
         try {
             UserDTO user = authenticationService.getAuthenticatedUser();
-            service.createProduct(createPlaylistRequest.toCommand(), user);
+            service.createProduct(createProductRequest.toCommand(), user);
 
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {

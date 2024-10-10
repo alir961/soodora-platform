@@ -2,6 +2,7 @@ package com.grooveconductor.internal.repository;
 
 import com.grooveconductor.internal.InfrastructureTestConfiguration;
 import com.grooveconductor.internal.entity.ProductEntity;
+import com.grooveconductor.internal.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,6 +25,9 @@ class ProductJpaRepositoryTest {
     @Autowired
     private ProductJpaRepository productRepository;
 
+    @Autowired
+    private UserJpaRepository userRepository;
+
     private ProductEntity productEntity;
 
     @BeforeEach
@@ -37,7 +41,6 @@ class ProductJpaRepositoryTest {
         productEntity.setCategory("category");
         productEntity.setPrice(100);
         productEntity.setQuantity(10);
-        productEntity.setUserSlug("user-slug");
 
         productRepository.save(productEntity);
     }
@@ -82,13 +85,28 @@ class ProductJpaRepositoryTest {
 
     @Test
     void testFindProductsByUserSlug_ProductsExist() {
+        UserEntity user = new UserEntity();
+        user.setSlug("user-slug");
+        user.setUsername("username");
+        user.setEmail("user@example.com");
+        user.setPassword("password");
+        user.setFirstname("John");
+        user.setLastname("Doe");
+        user = userRepository.save(user);
+
+        ProductEntity product = new ProductEntity();
+        product.setSlug("playlist-slug");
+        product.setName("My Playlist");
+        product.setDescription("A test playlist");
+        product.setUser(user);
+        productRepository.save(product);
+
         // WHEN
         Optional<List<ProductEntity>> foundProducts = productRepository.findProductsByUserSlug("user-slug");
 
         // THEN
         assertTrue(foundProducts.isPresent());
         assertFalse(foundProducts.get().isEmpty());
-        assertEquals("user-slug", foundProducts.get().getFirst().getUserSlug());
     }
 
     @Test
@@ -97,7 +115,6 @@ class ProductJpaRepositoryTest {
         Optional<List<ProductEntity>> foundProducts = productRepository.findProductsByUserSlug("unknown-user-slug");
 
         // THEN
-        assertTrue(foundProducts.isPresent());
         assertTrue(foundProducts.get().isEmpty());
     }
 
@@ -113,7 +130,6 @@ class ProductJpaRepositoryTest {
         newProduct.setCategory("new-category");
         newProduct.setPrice(200);
         newProduct.setQuantity(5);
-        newProduct.setUserSlug("new-user-slug");
 
         // WHEN
         ProductEntity savedProduct = productRepository.save(newProduct);
