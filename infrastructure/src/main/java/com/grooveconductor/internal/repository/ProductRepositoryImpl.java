@@ -54,7 +54,6 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
-        entity.setUserSlug(userEntity.getSlug());
         return repository.save(entity).toDTO();
     }
 

@@ -42,9 +42,6 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     @Column
     private long quantity;
 
-    @Column
-    private String userSlug;
-
     @ManyToOne
     @JoinColumn
     private UserEntity user;
@@ -59,7 +56,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
 
     @Override
     public ProductDTO toDTO() {
-        return new ProductDTO(slug, name, description, imageUrl, category, price, quantity, userSlug);
+        return new ProductDTO(slug, name, description, imageUrl, category, price, quantity, user.getSlug());
     }
 
 }
