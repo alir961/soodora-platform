@@ -8,10 +8,6 @@ CREATE TABLE products
     category      VARCHAR(255)  NULL,
     price         BIGINT        NULL,
     quantity      BIGINT        NULL,
-    user_slug     VARCHAR(255)  NULL,
-    user_id       UUID          NULL,
-    created_at    datetime      NULL,
-    updated_at    datetime      NULL,
     CONSTRAINT pk_products PRIMARY KEY (id)
 );
 
