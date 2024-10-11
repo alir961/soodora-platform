@@ -43,10 +43,7 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
-        if (userSlug != null) {
-            return service.retrieveAllProductsOfUserBySlug(userSlug);
-        }
-        return service.retrieveAllProducts();
+        return service.retrieveAllProductsOfUserBySlug(userSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")

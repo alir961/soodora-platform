@@ -25,7 +25,10 @@ public class ProductService {
     }
 
     public List<ProductDTO> retrieveAllProductsOfUserBySlug(String slug) {
-        return productRepository.findProductsByUserSlug(slug);
+        if (slug != null)
+            return productRepository.findProductsByUserSlug(slug);
+        else
+            return retrieveAllProducts();
     }
 
     public ProductDTO retrieveProduct(String slug) {
