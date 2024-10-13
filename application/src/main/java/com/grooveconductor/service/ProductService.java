@@ -2,6 +2,7 @@ package com.grooveconductor.service;
 
 import com.grooveconductor.domain.command.CreateProductCommand;
 import com.grooveconductor.domain.dto.ProductDTO;
+import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.domain.exception.UnknownSlugException;
 import com.grooveconductor.domain.repository.ProductRepository;
 import com.grooveconductor.exception.ProductUnityException;
@@ -9,7 +10,6 @@ import com.grooveconductor.exception.UnknownUserException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Random;
 
 @Service
 public class ProductService {
@@ -24,6 +24,13 @@ public class ProductService {
         return productRepository.findAll();
     }
 
+    public List<ProductDTO> retrieveAllProductsOfUserBySlug(String slug) {
+        if (slug != null)
+            return productRepository.findProductsByUserSlug(slug);
+        else
+            return retrieveAllProducts();
+    }
+
     public ProductDTO retrieveProduct(String slug) {
         try {
             return productRepository.findBySlug(slug);
@@ -32,45 +39,20 @@ public class ProductService {
         }
     }
 
-    public void deleteBySlug(String slug) throws UnknownUserException {
+    public void deleteProductBySlug(String slug) throws UnknownUserException {
         try {
-            productRepository.deleteBySlug(slug);
+            productRepository.deleteProductBySlug(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    private String generateSlug() {
-        final int SLUG_LENGTH = 8;
-        final String SLUG_CHARACTERS = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        final Random random = new Random();
-
-        StringBuilder builder = new StringBuilder();
-
-        while (builder.length() < SLUG_LENGTH) {
-            int index = (int) (random.nextFloat() * SLUG_CHARACTERS.length());
-
-            builder.append(SLUG_CHARACTERS.charAt(index));
-        }
-        return builder.toString();
-    }
-
-    private String generateUniqueSlug() {
-        String slug = generateSlug();
-
-        while (!productRepository.isSlugUsed(slug))
-            slug = generateSlug();
-        return slug;
-    }
-
-    public String createProduct(CreateProductCommand command) {
-        String slug = generateUniqueSlug();
-
-        if (productRepository.isNameUsed(command.name()))
+    public void createProduct(CreateProductCommand command, UserDTO user) {
+        if (productRepository.isProductNameUsedByUser(command.name(), user.slug()))
             throw new ProductUnityException("Name is already used");
 
-        productRepository.save(new CreateProductCommand(command.name(), command.description(), command.imageUrl(), command.category(), command.price(), command.quantity()), slug);
-        return slug;
+        productRepository.save(new CreateProductCommand(command.name(), command.description(), command.imageUrl(),
+            command.category(), command.price(), command.quantity()), user);
     }
 
 }

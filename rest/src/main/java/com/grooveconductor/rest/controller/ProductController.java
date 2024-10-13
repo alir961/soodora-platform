@@ -1,12 +1,13 @@
 package com.grooveconductor.rest.controller;
 
 import com.grooveconductor.domain.dto.ProductDTO;
+import com.grooveconductor.domain.dto.UserDTO;
 import com.grooveconductor.exception.InvalidRequestException;
 import com.grooveconductor.exception.ProductUnityException;
 import com.grooveconductor.request.CreateProductRequest;
-import com.grooveconductor.rest.response.CreateProductResponse;
 import com.grooveconductor.rest.response.ExceptionResponse;
 import com.grooveconductor.rest.response.JsonResponse;
+import com.grooveconductor.service.AuthenticationService;
 import com.grooveconductor.service.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,24 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ProductController {
 
     private final ProductService service;
+    private final AuthenticationService authenticationService;
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PostMapping
+    public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
+        try {
+            UserDTO user = authenticationService.getAuthenticatedUser();
+            service.createProduct(createProductRequest.toCommand(), user);
+
+            return new ResponseEntity<>(CREATED);
+        } catch (InvalidRequestException | ProductUnityException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
+    }
 
     @GetMapping
-    public List<ProductDTO> getProducts() {
-        return service.retrieveAllProducts();
+    public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
+        return service.retrieveAllProductsOfUserBySlug(userSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
@@ -40,19 +55,7 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
-        service.deleteBySlug(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping
-    public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
-        try {
-            String slug = service.createProduct(createProductRequest.toCommand());
-
-            return new ResponseEntity<>(new CreateProductResponse(slug), CREATED);
-        } catch (InvalidRequestException | ProductUnityException exception) {
-            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
-        }
+        service.deleteProductBySlug(slug);
     }
 
 }
