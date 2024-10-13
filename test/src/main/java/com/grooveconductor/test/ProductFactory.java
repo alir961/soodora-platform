@@ -1,6 +1,6 @@
 package com.grooveconductor.test;
 
-import com.grooveconductor.domain.dto.ProductDTO;
+import com.grooveconductor.domain.product.ProductDTO;
 
 public class ProductFactory {
 

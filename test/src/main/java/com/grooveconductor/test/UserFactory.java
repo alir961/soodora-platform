@@ -1,6 +1,6 @@
 package com.grooveconductor.test;
 
-import com.grooveconductor.domain.dto.UserDTO;
+import com.grooveconductor.domain.user.UserDTO;
 import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PRIVATE;

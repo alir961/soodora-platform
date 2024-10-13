@@ -1,7 +1,7 @@
 package com.grooveconductor.test;
 
-import com.grooveconductor.domain.PlaylistPrivacy;
-import com.grooveconductor.domain.dto.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistPrivacy;
+import com.grooveconductor.domain.playlist.PlaylistDto;
 
 public class PlaylistFactory {
 

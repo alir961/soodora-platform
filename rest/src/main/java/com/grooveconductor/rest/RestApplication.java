@@ -9,8 +9,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"com.grooveconductor"})
-@EntityScan(basePackages = {"com.grooveconductor.internal.entity"})
-@EnableJpaRepositories(basePackages = {"com.grooveconductor.internal.repository"})
+@EntityScan(basePackages = {"com.grooveconductor.infrastructure"})
+@EnableJpaRepositories(basePackages = {"com.grooveconductor.infrastructure"})
 @PropertySource("classpath:application-persistence.properties")
 public class RestApplication {
 
