@@ -62,7 +62,7 @@ public class UserEntity implements DomainEntity<UserDTO> {
     private List<ProductEntity> products;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
-    private Set<PlaylistEntity> playlists;
+    private List<PlaylistEntity> playlists;
 
     @ManyToMany
     @JoinTable(

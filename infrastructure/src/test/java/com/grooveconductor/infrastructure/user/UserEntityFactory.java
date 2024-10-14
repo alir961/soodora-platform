@@ -23,7 +23,7 @@ public class UserEntityFactory extends UserFactory {
             new Date(),
             null,
             emptyList(),
-            emptySet(),
+            emptyList(),
             emptySet()
         );
     }

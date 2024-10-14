@@ -80,7 +80,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<ProductDTO> retrieveProducts(Identifier identifier) {
-        return findUserByIdentifier(identifier).getProducts().stream()
+        return findUserByIdentifierOrThrows(identifier).getProducts().stream()
             .map(DomainEntity::toDTO)
             .toList();
     }
