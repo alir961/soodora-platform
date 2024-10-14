@@ -2,7 +2,7 @@
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonItem } from '@ionic/vue';
 import { getToken, getUserInfoFromPreferences, removeToken, removeUserInfo, saveToken, saveUserInfo } from '@/utils/localStorage';
 import { onMounted, ref } from 'vue';
-import axios from 'axios';
+import { login as authLogin, signup as authSignup, getUserInfo } from '@/services/authService';
 
 const email = ref('');
 const password = ref('');
@@ -12,40 +12,34 @@ const lastname = ref('');
 const isLogin = ref(true);
 const userInfo = ref(null);
 const isLogged = ref(false);
-const apiUrl = import.meta.env.VITE_API_URL;
-
-const getUserInfo = async () => {
-  const token = await getToken();
-
-  if (token) {
-    try {
-      const response = await axios.get(apiUrl + '/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      userInfo.value = response.data;
-      await saveUserInfo(userInfo);
-      console.log('Succeed to fetch user info');
-    } catch (error) {
-      console.error('Failed to fetch user info:', error);
-    }
-  }
-};
 
 const login = async () => {
   try {
-    const response = await axios.post(apiUrl + '/auth/login', {
-      email: email.value,
-      password: password.value
-    });
-    const token = response.data.token;
+    const { token } = await authLogin(email.value, password.value);
     await saveToken(token);
     isLogged.value = true;
-    await getUserInfo();
+    await fetchUserInfo();
     console.log('Login successful, Token:', token);
   } catch (error) {
     console.error('Login failed:', error);
+  }
+};
+
+const signup = async () => {
+  try {
+    await authSignup(username.value, firstname.value, lastname.value, email.value, password.value);
+    toggleAuth();
+  } catch (error) {
+    console.error('SignUp failed:', error);
+  }
+};
+
+const fetchUserInfo = async () => {
+  try {
+    userInfo.value = await getUserInfo();
+    await saveUserInfo(userInfo);
+  } catch (error) {
+    console.error('Failed to fetch user info:', error);
   }
 };
 
@@ -53,28 +47,11 @@ const toggleAuth = () => {
   isLogin.value = !isLogin.value;
 };
 
-const signup = async () => {
-  try {
-    const response = await axios.post(apiUrl + '/auth/register', {
-      username: username.value,
-      firstname: firstname.value,
-      lastname: lastname.value,
-      email: email.value,
-      password: password.value
-    });
-    console.log('SignUp successful:', response);
-    toggleAuth();
-  } catch (error) {
-    console.error('SignUp failed:', error.request.response);
-  }
-};
-
 const logout = async () => {
   await removeToken();
   await removeUserInfo();
   isLogged.value = false;
   userInfo.value = null;
-  console.log('Logged out successfully, token and user infos removed.');
 };
 
 onMounted(async () => {

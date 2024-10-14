@@ -2,42 +2,30 @@
 import { ref, onMounted } from 'vue';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon, IonModal, IonInput, IonItem , IonSelect, IonSelectOption } from '@ionic/vue';
 import { add } from 'ionicons/icons';
-import axios from 'axios';
-import {getToken, getUserInfoFromPreferences} from "@/utils/localStorage";
+import { getUserInfoFromPreferences } from "@/utils/localStorage";
+import { fetchPlaylists, createPlaylist } from "@/services/playlistService";
 
 const playlists = ref([]);
 const focusedPlaylist = ref(null);
 const showModal = ref(false);
 const newPlaylist = ref({ name: '', description: '', imageUrl: '', privacy: 'PUBLIC' });
-const apiUrl = import.meta.env.VITE_API_URL;
 
-const fetchPlaylists = async () => {
-  const token = await getToken();
+const loadPlaylists = async () => {
   const userInfo = await getUserInfoFromPreferences();
   try {
-    const response = await axios.get(`${apiUrl}/playlists?userSlug=` + `${userInfo.slug}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    playlists.value = response.data;
+    playlists.value = await fetchPlaylists(userInfo.slug);
   } catch (error) {
-    console.error('Failed to fetch playlists:', error);
+    console.error('Failed to load playlists:', error);
   }
 };
 
-const createPlaylist = async () => {
-  const token = await getToken();
+const handleCreatePlaylist = async () => {
   try {
-    await axios.post(`${apiUrl}/playlists`, newPlaylist.value, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    await fetchPlaylists();
+    await createPlaylist(newPlaylist.value);
+    await loadPlaylists();
     showModal.value = false;
   } catch (error) {
-    console.error('Failed to create playlist:', error.response.data.reason);
+    console.error('Failed to create playlist:', error);
   }
 };
 
@@ -46,7 +34,7 @@ const focusPlaylist = (playlist) => {
 };
 
 onMounted(() => {
-  fetchPlaylists();
+  loadPlaylists();
 });
 </script>
 
@@ -95,7 +83,7 @@ onMounted(() => {
             </ion-toolbar>
           </ion-header>
           <ion-content>
-            <form @submit.prevent="createPlaylist">
+            <form @submit.prevent="handleCreatePlaylist">
               <ion-item>
                 <ion-input placeholder="Name" v-model="newPlaylist.name"></ion-input>
               </ion-item>

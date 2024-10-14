@@ -2,58 +2,28 @@
 import { ref, onMounted } from 'vue';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon, IonModal, IonInput, IonItem } from '@ionic/vue';
 import { add } from 'ionicons/icons';
-import axios from 'axios';
-import {getToken} from "@/utils/localStorage";
+import { fetchProducts, createProduct } from '@/services/productService';
 
 const products = ref([]);
-const vendorMap = ref({});
 const focusedProduct = ref(null);
 const showModal = ref(false);
-const newProduct = ref({ name: '', description: '', imageUrl: '', category: '', price: 0, quantity: 0 });
-const apiUrl = import.meta.env.VITE_API_URL;
+const newProduct = ref({ name: '', description: '', imageUrl: '', category: '', price: 0.00, quantity: 0 });
 
-const fetchVendors = async () => {
-  const token = await getToken();
-  const vendorSlugs = products.value
-      .map(product => product.userSlug)
-      .filter((userSlug, index, self) => self.indexOf(userSlug) === index);
-
-  const vendorPromises = vendorSlugs.map(userSlug =>
-      axios.get(`${apiUrl}/users/${userSlug}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }).then(response => {
-        vendorMap.value[userSlug] = response.data;
-      }).catch(error => {
-        console.error(`Failed to fetch vendor info for userSlug ${userSlug}:`, error);
-      })
-  );
-  await Promise.all(vendorPromises);
-};
-
-const fetchProducts = async () => {
+const loadProducts = async () => {
   try {
-    const response = await axios.get(`${apiUrl}/products`);
-    products.value = response.data;
-    await fetchVendors();
+    products.value = await fetchProducts();
   } catch (error) {
-    console.error('Failed to fetch products:', error);
+    console.error('Error loading products:', error);
   }
 };
 
-const createProduct = async () => {
-  const token = await getToken();
+const submitProduct = async () => {
   try {
-    await axios.post(`${apiUrl}/products`, newProduct.value, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-    });
-    await fetchProducts();
+    await createProduct(newProduct.value);
+    await loadProducts();
     showModal.value = false;
   } catch (error) {
-    console.error('Failed to create product:', error.response.data.reason);
+    console.error('Failed to create product:', error);
   }
 };
 
@@ -62,9 +32,10 @@ const focusProduct = (product) => {
 };
 
 onMounted(() => {
-  fetchProducts();
+  loadProducts();
 });
 </script>
+
 
 <template>
   <ion-page>
@@ -97,7 +68,7 @@ onMounted(() => {
                 <p>{{ product.description }}</p>
                 <p>Price: {{ product.price.toFixed(2) }}€</p>
                 <p>Available Quantity: {{ product.quantity }}</p>
-                <p>Vendor: {{ vendorMap[product.userSlug]?.username }}</p> <!-- Update this line -->
+                <p>Vendor: {{ product.vendor.username }}</p>
                 <ion-button v-if="focusedProduct === product" expand="block">Add to Cart</ion-button>
               </ion-card-content>
             </ion-card>
@@ -114,7 +85,7 @@ onMounted(() => {
             </ion-toolbar>
           </ion-header>
           <ion-content>
-            <form @submit.prevent="createProduct">
+            <form @submit.prevent="submitProduct">
               <ion-item>
                 <ion-input placeholder="Name" v-model="newProduct.name"></ion-input>
               </ion-item>
