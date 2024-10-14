@@ -1,6 +1,7 @@
 package com.grooveconductor.rest.playlist;
 
 import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistFilter;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.playlist.PlaylistUnityException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
@@ -24,15 +26,15 @@ import static org.springframework.http.HttpStatus.*;
 @SecurityRequirement(name = "bearerAuth")
 public class PlaylistController {
 
-    private final PlaylistService service;
+    private final PlaylistService playlistService;
     private final AuthenticationService authenticationService;
 
     @PostMapping
     public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreatePlaylistRequest createPlaylistRequest) {
         try {
             UserDTO user = authenticationService.getAuthenticatedUser();
-            service.createPlaylist(createPlaylistRequest.toCommand(), user);
 
+            playlistService.createPlaylist(createPlaylistRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -41,24 +43,19 @@ public class PlaylistController {
 
     @GetMapping
     public List<PlaylistDto> getPlaylists(@RequestParam(value = "userSlug", required = false) String userSlug) {
-        return service.retrieveAllPlaylistsOfUserBySlug(userSlug);
-    }
+        PlaylistFilter filter = new PlaylistFilter(ofNullable(userSlug));
 
-    @GetMapping("/me")
-    public List<PlaylistDto> getAuthenticatedUserPlaylists() {
-        UserDTO user = authenticationService.getAuthenticatedUser();
-
-        return service.retrieveAllPlaylistsOfUserBySlug(user.slug());
+        return playlistService.retrievePlaylists(filter);
     }
 
     @GetMapping("/{slug}")
     public PlaylistDto getPlaylist(@PathVariable String slug) {
-        return service.retrievePlaylistBySlug(slug);
+        return playlistService.retrievePlaylistBySlug(slug);
     }
 
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
-        service.deletePlaylistBySlug(slug);
+        playlistService.deletePlaylistBySlug(slug);
     }
 
 }

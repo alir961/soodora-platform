@@ -50,6 +50,50 @@ class PlaylistControllerIT {
     private static final PlaylistDto PLAYLIST_3 = buildDefaultPlaylist("playlistSlug3", "Playlist 3");
 
     @Test
+    void createPlaylist_Success() throws Exception {
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
+        mockMvc.perform(post("/playlists")
+                .contentType("application/json")
+                .content(asJsonString(createPlaylistRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isCreated());
+    }
+
+    @Test
+    void createPlaylist_InvalidRequest() throws Exception {
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", "", "");
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        doThrow(new InvalidRequestException("Invalid request")).when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
+
+        mockMvc.perform(post("/playlists")
+                .contentType("application/json")
+                .content(asJsonString(createPlaylistRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createPlaylist_PlaylistNameUsed() throws Exception {
+        UserDTO user = buildDefaultUser();
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
+
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user@example.com");
+        when(authenticationService.getAuthenticatedUser()).thenReturn(user);
+
+        doThrow(new PlaylistUnityException("Name is already used"))
+            .when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), eq(user));
+
+        mockMvc.perform(post("/playlists")
+                .contentType("application/json")
+                .content(asJsonString(createPlaylistRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.reason").value("Name is already used"));
+    }
+
+    @Test
     void retrievePlaylists_Success() throws Exception {
         when(playlistService.retrieveAllPlaylists()).thenReturn(asList(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3));
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
@@ -128,50 +172,6 @@ class PlaylistControllerIT {
     void deletePlaylist_Forbidden() throws Exception {
         mockMvc.perform(delete("/playlists/playlistSlug1"))
             .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void createPlaylist_Success() throws Exception {
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
-
-        mockMvc.perform(post("/playlists")
-                .contentType("application/json")
-                .content(asJsonString(createPlaylistRequest))
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isCreated());
-    }
-
-    @Test
-    void createPlaylist_InvalidRequest() throws Exception {
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", "", "");
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
-        doThrow(new InvalidRequestException("Invalid request")).when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
-
-        mockMvc.perform(post("/playlists")
-                .contentType("application/json")
-                .content(asJsonString(createPlaylistRequest))
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void createPlaylist_PlaylistNameUsed() throws Exception {
-        UserDTO user = buildDefaultUser();
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
-
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user@example.com");
-        when(authenticationService.getAuthenticatedUser()).thenReturn(user);
-
-        doThrow(new PlaylistUnityException("Name is already used"))
-            .when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), eq(user));
-
-        mockMvc.perform(post("/playlists")
-                .contentType("application/json")
-                .content(asJsonString(createPlaylistRequest))
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.reason").value("Name is already used"));
     }
 
 }

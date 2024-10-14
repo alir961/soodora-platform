@@ -3,14 +3,14 @@ package com.grooveconductor.infrastructure.user;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.artist.ArtistEntity;
 import com.grooveconductor.infrastructure.common.DomainEntity;
+import com.grooveconductor.infrastructure.playlist.PlaylistEntity;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -20,6 +20,7 @@ import static java.util.UUID.randomUUID;
 @Setter
 @Entity(name = "users")
 @NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity implements DomainEntity<UserDTO> {
 
     @Id
@@ -52,9 +53,12 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @Column
     private Date updatedAt;
 
-    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     @JoinColumn(unique = true)
+    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private ArtistEntity artist;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    private List<PlaylistEntity> playlists;
 
     @Override
     public UserDTO toDTO() {

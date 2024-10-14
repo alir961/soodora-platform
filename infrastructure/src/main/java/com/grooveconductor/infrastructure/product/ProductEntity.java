@@ -17,6 +17,7 @@ import static java.util.UUID.randomUUID;
 @Setter
 @Entity(name = "products")
 @NoArgsConstructor
+@AllArgsConstructor
 public class ProductEntity implements DomainEntity<ProductDTO> {
 
     @Id

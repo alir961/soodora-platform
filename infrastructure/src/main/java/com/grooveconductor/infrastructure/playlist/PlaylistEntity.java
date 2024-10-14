@@ -5,6 +5,7 @@ import com.grooveconductor.domain.playlist.PlaylistDto;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import static java.util.UUID.randomUUID;
 @Setter
 @Entity(name = "playlists")
 @NoArgsConstructor
+@AllArgsConstructor
 public class PlaylistEntity implements DomainEntity<PlaylistDto> {
 
     @Id
@@ -36,7 +38,7 @@ public class PlaylistEntity implements DomainEntity<PlaylistDto> {
     private String description;
 
     @Column
-    private PlaylistPrivacy state;
+    private PlaylistPrivacy privacy;
 
     @Column(length = 5000)
     private String imageUrl;
@@ -55,7 +57,7 @@ public class PlaylistEntity implements DomainEntity<PlaylistDto> {
 
     @Override
     public PlaylistDto toDTO() {
-        return new PlaylistDto(slug, name, description, state, imageUrl, user.getSlug());
+        return new PlaylistDto(slug, name, description, privacy, imageUrl, user.getSlug());
     }
 
 }

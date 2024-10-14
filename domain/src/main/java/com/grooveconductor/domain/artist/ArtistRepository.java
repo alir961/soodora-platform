@@ -10,6 +10,5 @@ public interface ArtistRepository {
     ArtistDTO find(String slug);
     List<ArtistDTO> findAll();
     void delete(String slug);
-    boolean isUsed(String slug);
 
 }

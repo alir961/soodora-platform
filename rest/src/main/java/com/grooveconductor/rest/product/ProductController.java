@@ -1,6 +1,7 @@
 package com.grooveconductor.rest.product;
 
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.ProductFilter;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.product.ProductUnityException;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -33,8 +35,8 @@ public class ProductController {
     public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
         try {
             UserDTO user = authenticationService.getAuthenticatedUser();
-            service.createProduct(createProductRequest.toCommand(), user);
 
+            service.createProduct(createProductRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -43,7 +45,9 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
-        return service.retrieveAllProductsOfUserBySlug(userSlug);
+        ProductFilter filter = new ProductFilter(ofNullable(userSlug));
+
+        return service.retrieveProducts(filter);
     }
 
     @SecurityRequirement(name = "bearerAuth")

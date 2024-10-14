@@ -58,12 +58,6 @@ public class ArtistRepositoryImpl implements ArtistRepository {
         repository.delete(entity);
     }
 
-    @Override
-    public boolean isUsed(String slug) {
-        return repository.findBySlug(slug)
-                .isPresent();
-    }
-
     private String generateUniqueSlug() {
         String slug = generateSlug();
 

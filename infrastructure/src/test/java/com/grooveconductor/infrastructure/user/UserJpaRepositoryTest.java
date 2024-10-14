@@ -11,7 +11,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
-import static java.util.UUID.randomUUID;
+import static com.grooveconductor.infrastructure.user.UserEntityFactory.buildDefaultUserEntity;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
@@ -26,15 +26,7 @@ class UserJpaRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        userEntity = new UserEntity();
-        userEntity.setId(randomUUID());
-        userEntity.setSlug("slug");
-        userEntity.setUsername("username");
-        userEntity.setEmail("user@example.com");
-        userEntity.setPassword("password");
-        userEntity.setFirstname("John");
-        userEntity.setLastname("Doe");
-
+        userEntity = buildDefaultUserEntity();
         userRepository.save(userEntity);
     }
 
@@ -89,21 +81,17 @@ class UserJpaRepositoryTest {
     @Test
     void testSaveUser() {
         // GIVEN
-        UserEntity newUser = new UserEntity();
-        newUser.setId(randomUUID());
-        newUser.setSlug("newslug");
-        newUser.setUsername("newuser");
+        UserEntity newUser = buildDefaultUserEntity();
+
+        newUser.setSlug("new-slug");
         newUser.setEmail("newuser@example.com");
-        newUser.setPassword("password");
-        newUser.setFirstname("New");
-        newUser.setLastname("User");
 
         // WHEN
         UserEntity savedUser = userRepository.save(newUser);
 
         // THEN
         assertNotNull(savedUser.getId());
-        assertEquals("newslug", savedUser.getSlug());
+        assertEquals("new-slug", savedUser.getSlug());
         assertEquals("newuser@example.com", savedUser.getEmail());
     }
 
@@ -113,8 +101,7 @@ class UserJpaRepositoryTest {
         userRepository.delete(userEntity);
 
         // THEN
-        Optional<UserEntity> foundUser = userRepository.findById(userEntity.getId());
-        assertFalse(foundUser.isPresent());
+        assertFalse(userRepository.existsById(userEntity.getId()));
     }
 
 }

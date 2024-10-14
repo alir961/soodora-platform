@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.user;
 
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.playlist.PlaylistDto;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
@@ -43,8 +44,8 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDTO> findAll() {
         return repository.findAll().stream()
-                .map(UserEntity::toDTO)
-                .toList();
+            .map(UserEntity::toDTO)
+            .toList();
     }
 
     @Override
@@ -67,13 +68,20 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public String retrieveEncodedPassword(Identifier identifier) {
         return findUserByIdentifier(identifier)
-                .getPassword();
+            .getPassword();
     }
 
     @Override
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
         return ofNullable(findUserByIdentifier(identifier).getArtist())
-                .map(DomainEntity::toDTO);
+            .map(DomainEntity::toDTO);
+    }
+
+    @Override
+    public List<PlaylistDto> retrievePlaylists(Identifier identifier) {
+        return findUserByIdentifier(identifier).getPlaylists().stream()
+            .map(DomainEntity::toDTO)
+            .toList();
     }
 
     private UserEntity findUserByIdentifier(Identifier identifier) throws UnknownIdentifierException {

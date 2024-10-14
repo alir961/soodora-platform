@@ -1,11 +1,9 @@
 package com.grooveconductor.application.playlist;
 
-import com.grooveconductor.domain.playlist.PlaylistPrivacy;
-import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.playlist.PlaylistRepository;
+import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,10 +12,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.grooveconductor.test.PlaylistFactory.buildDefaultPlaylist;
 import static com.grooveconductor.test.UserFactory.buildDefaultUser;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,16 +26,49 @@ import static org.mockito.Mockito.*;
 class PlaylistServiceTest {
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private PlaylistRepository playlistRepository;
+
     private PlaylistService playlistService;
 
-    private static final PlaylistDto PLAYLIST = buildDefaultPlaylist("PlaylistSlug", "PlaylistName1");
-    private static final List<PlaylistDto> PLAYLISTS = List.of(PLAYLIST);
+    private static final PlaylistDto PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
+    private static final PlaylistDto PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
+    private static final PlaylistDto PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
+    private static final List<PlaylistDto> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
     private static final UserDTO USER = buildDefaultUser();
 
     @BeforeEach
     void setUp() {
-        playlistService = new PlaylistService(playlistRepository);
+        playlistService = new PlaylistService(userRepository, playlistRepository);
+    }
+
+    @Test
+    void createPlaylist_Success() {
+        // GIVEN
+        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
+        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(false);
+        when(playlistRepository.save(any(), eq(USER))).thenReturn(PLAYLIST_1);
+
+        // WHEN
+        playlistService.createPlaylist(command, USER);
+
+        // THEN
+        verify(playlistRepository, times(1)).save(any(), eq(USER));
+    }
+
+    @Test
+    void createPlaylist_NameAlreadyUsed() {
+        // GIVEN
+        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
+        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(true);
+
+        // WHEN
+        Executable executable = () -> playlistService.createPlaylist(command, USER);
+
+        // THEN
+        assertThrows(PlaylistUnityException.class, executable);
     }
 
     @Test
@@ -63,16 +96,33 @@ class PlaylistServiceTest {
     }
 
     @Test
-    void retrievePlaylistBySlug_Success() {
+    void retrievePlaylists_NoFilter() {
         // GIVEN
-        String slug = PLAYLIST.slug();
-        when(playlistRepository.findBySlug(slug)).thenReturn(PLAYLIST);
+        PlaylistFilter noFilter = new PlaylistFilter(empty());
+
+        when(playlistRepository.findAll()).thenReturn(PLAYLISTS);
 
         // WHEN
-        PlaylistDto retrievedPlaylist = playlistService.retrievePlaylistBySlug(slug);
+        List<PlaylistDto> retrievedPlaylists = playlistService.retrievePlaylists(noFilter);
 
         // THEN
-        assertEquals(PLAYLIST, retrievedPlaylist);
+        assertEquals(PLAYLISTS, retrievedPlaylists);
+    }
+
+    @Test
+    void retrievePlaylist_FilterUserSlug() {
+        // GIVEN
+        PlaylistFilter filter = new PlaylistFilter(Optional.of(USER.slug()));
+
+        when(userRepository.retrievePlaylists(any())).thenReturn(List.of(PLAYLIST_1, PLAYLIST_3));
+
+        // WHEN
+        List<PlaylistDto> retrievedPlaylist = playlistService.retrievePlaylists(filter);
+
+        // THEN
+        assertEquals(2, retrievedPlaylist.size());
+        assertEquals(PLAYLIST_1, retrievedPlaylist.get(0));
+        assertEquals(PLAYLIST_3, retrievedPlaylist.get(1));
     }
 
     @Test
@@ -92,55 +142,26 @@ class PlaylistServiceTest {
     @Test
     void deletePlaylistBySlug_Success() {
         // GIVEN
-        String slug = PLAYLIST.slug();
-        doNothing().when(playlistRepository).deletePlaylistBySlug(slug);
+        doNothing().when(playlistRepository).deletePlaylistBySlug(PLAYLIST_1.slug());
 
         // WHEN
-        Executable executable = () -> playlistService.deletePlaylistBySlug(slug);
+        Executable executable = () -> playlistService.deletePlaylistBySlug(PLAYLIST_1.slug());
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(playlistRepository, times(1)).deletePlaylistBySlug(slug);
+        verify(playlistRepository, times(1)).deletePlaylistBySlug(PLAYLIST_1.slug());
     }
 
     @Test
     void deletePlaylistBySlug_Unknown() {
         // GIVEN
-        String slug = PLAYLIST.slug();
-        doThrow(UnknownSlugException.class).when(playlistRepository).deletePlaylistBySlug(slug);
+        doThrow(UnknownSlugException.class).when(playlistRepository).deletePlaylistBySlug(PLAYLIST_1.slug());
 
         // WHEN
-        Executable executable = () -> playlistService.deletePlaylistBySlug(slug);
+        Executable executable = () -> playlistService.deletePlaylistBySlug(PLAYLIST_1.slug());
 
         // THEN
-        assertThrows(UnknownSlugException.class, executable);
-    }
-
-    @Test
-    void createPlaylist_Success() {
-        // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
-        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(false);
-        when(playlistRepository.save(any(), eq(USER))).thenReturn(PLAYLIST);
-
-        // WHEN
-        playlistService.createPlaylist(command, USER);
-
-        // THEN
-        verify(playlistRepository, times(1)).save(any(), eq(USER));
-    }
-
-    @Test
-    void createPlaylist_NameAlreadyUsed() {
-        // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
-        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(true);
-
-        // WHEN
-        Executable executable = () -> playlistService.createPlaylist(command, USER);
-
-        // THEN
-        assertThrows(PlaylistUnityException.class, executable);
+        assertThrows(UnknownPlaylistException.class, executable);
     }
 
 }
