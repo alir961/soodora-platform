@@ -22,44 +22,44 @@ import static java.util.Optional.ofNullable;
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
 
-    private final UserJpaRepository repository;
+    private final UserJpaRepository userRepository;
 
     @Override
     public UserDTO save(RegisterCommand command) {
-        UserEntity entity = new UserEntity();
+        UserEntity user = new UserEntity();
 
-        entity.setSlug(generateUniqueSlug());
-        entity.setUsername(command.username());
-        entity.setEmail(command.email().value());
-        entity.setPassword(command.password());
-        entity.setFirstname(command.firstname());
-        entity.setLastname(command.lastname());
-        return repository.save(entity).toDTO();
+        user.setSlug(generateUniqueSlug());
+        user.setUsername(command.username());
+        user.setEmail(command.email().value());
+        user.setPassword(command.password());
+        user.setFirstname(command.firstname());
+        user.setLastname(command.lastname());
+        return userRepository.save(user).toDTO();
     }
 
     @Override
     public UserDTO find(Identifier identifier) {
-        return findUserByIdentifier(identifier).toDTO();
+        return findUserByIdentifierOrThrows(identifier).toDTO();
     }
 
     @Override
     public List<UserDTO> findAll() {
-        return repository.findAll().stream()
+        return userRepository.findAll().stream()
             .map(UserEntity::toDTO)
             .toList();
     }
 
     @Override
     public void delete(Identifier identifier) {
-        UserEntity user = findUserByIdentifier(identifier);
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
 
-        repository.deleteById(user.getId());
+        userRepository.deleteById(user.getId());
     }
 
     @Override
     public boolean isUsed(Identifier identifier) {
         try {
-            findUserByIdentifier(identifier);
+            findUserByIdentifierOrThrows(identifier);
             return true;
         } catch (UnknownIdentifierException exception) {
             return false;
@@ -68,13 +68,13 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public String retrieveEncodedPassword(Identifier identifier) {
-        return findUserByIdentifier(identifier)
+        return findUserByIdentifierOrThrows(identifier)
             .getPassword();
     }
 
     @Override
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
-        return ofNullable(findUserByIdentifier(identifier).getArtist())
+        return ofNullable(findUserByIdentifierOrThrows(identifier).getArtist())
             .map(DomainEntity::toDTO);
     }
 
@@ -87,16 +87,16 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
-        return findUserByIdentifier(identifier).getPlaylists().stream()
+        return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
             .map(DomainEntity::toDTO)
             .toList();
     }
 
-    private UserEntity findUserByIdentifier(Identifier identifier) throws UnknownIdentifierException {
+    private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {
         String value = identifier.value();
         Optional<UserEntity> findEntity = switch (identifier.type()) {
-            case EMAIL -> repository.findByEmail(value);
-            case SLUG -> repository.findBySlug(value);
+            case EMAIL -> userRepository.findByEmail(value);
+            case SLUG -> userRepository.findBySlug(value);
         };
 
         return findEntity.orElseThrow(() -> new UnknownIdentifierException("Unable to find user '" + value + "'"));
@@ -105,7 +105,7 @@ public class UserRepositoryImpl implements UserRepository {
     private String generateUniqueSlug() {
         String slug = generateSlug();
 
-        while (repository.findBySlug(slug).isPresent())
+        while (userRepository.findBySlug(slug).isPresent())
             slug = generateSlug();
         return slug;
     }
