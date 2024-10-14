@@ -7,6 +7,7 @@ import com.grooveconductor.application.artist.ArtistService;
 import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,10 @@ import static org.springframework.http.HttpStatus.ACCEPTED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RestController
-@RequiredArgsConstructor
-@RequestMapping("/artists")
 @SecurityRequirement(name = "bearerAuth")
+@RequiredArgsConstructor
+@RequestMapping(path = "/artists")
+@Tag(name = "Artist Controller")
 public class ArtistController {
 
     private final AuthenticationService authenticationService;

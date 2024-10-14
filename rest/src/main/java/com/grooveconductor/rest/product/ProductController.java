@@ -11,6 +11,7 @@ import com.grooveconductor.rest.common.JsonResponse;
 import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.product.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,6 +26,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @RequestMapping("/products")
 @RequiredArgsConstructor
+@Tag(name = "Product Controller")
 public class ProductController {
 
     private final ProductService service;

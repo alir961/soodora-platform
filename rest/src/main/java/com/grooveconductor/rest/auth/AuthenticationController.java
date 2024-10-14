@@ -8,6 +8,7 @@ import com.grooveconductor.application.auth.RegisterRequest;
 import com.grooveconductor.rest.common.ExceptionResponse;
 import com.grooveconductor.rest.common.JsonResponse;
 import com.grooveconductor.application.auth.AuthenticationService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import static org.springframework.http.HttpStatus.*;
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentication Controller")
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;

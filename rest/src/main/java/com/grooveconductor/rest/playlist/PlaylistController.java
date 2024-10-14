@@ -1,6 +1,6 @@
 package com.grooveconductor.rest.playlist;
 
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.PlaylistFilter;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.common.InvalidRequestException;
@@ -11,6 +11,7 @@ import com.grooveconductor.rest.common.JsonResponse;
 import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.playlist.PlaylistService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 @RequestMapping("/playlists")
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Playlist Controller")
 public class PlaylistController {
 
     private final PlaylistService playlistService;
@@ -42,14 +44,14 @@ public class PlaylistController {
     }
 
     @GetMapping
-    public List<PlaylistDto> getPlaylists(@RequestParam(value = "userSlug", required = false) String userSlug) {
+    public List<PlaylistDTO> getPlaylists(@RequestParam(value = "userSlug", required = false) String userSlug) {
         PlaylistFilter filter = new PlaylistFilter(ofNullable(userSlug));
 
         return playlistService.retrievePlaylists(filter);
     }
 
     @GetMapping("/{slug}")
-    public PlaylistDto getPlaylist(@PathVariable String slug) {
+    public PlaylistDTO getPlaylist(@PathVariable String slug) {
         return playlistService.retrievePlaylistBySlug(slug);
     }
 

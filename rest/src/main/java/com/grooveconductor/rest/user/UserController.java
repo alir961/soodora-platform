@@ -3,6 +3,7 @@ package com.grooveconductor.rest.user;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/users")
 @RequiredArgsConstructor
 @SecurityRequirement(name = "bearerAuth")
+@Tag(name = "User Controller")
 public class UserController {
 
     private final UserService service;

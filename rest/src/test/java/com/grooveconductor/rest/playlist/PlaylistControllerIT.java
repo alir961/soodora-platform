@@ -1,6 +1,6 @@
 package com.grooveconductor.rest.playlist;
 
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.application.common.InvalidRequestException;
@@ -45,9 +45,9 @@ class PlaylistControllerIT {
     @MockBean
     private JwtTokenService jwtTokenService;
 
-    private static final PlaylistDto PLAYLIST_1 = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
-    private static final PlaylistDto PLAYLIST_2 = buildDefaultPlaylist("playlistSlug2", "Playlist 2");
-    private static final PlaylistDto PLAYLIST_3 = buildDefaultPlaylist("playlistSlug3", "Playlist 3");
+    private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
+    private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("playlistSlug2", "Playlist 2");
+    private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("playlistSlug3", "Playlist 3");
 
     @Test
     void createPlaylist_Success() throws Exception {
