@@ -3,7 +3,7 @@ import { getToken } from '@/utils/localStorage';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-export const fetchPlaylists = async (userSlug: string) => {
+const fetchPlaylists = async (userSlug: string) => {
     const token = await getToken();
     try {
         const response = await axios.get(`${apiUrl}/playlists?userSlug=${userSlug}`, {
@@ -17,7 +17,7 @@ export const fetchPlaylists = async (userSlug: string) => {
     }
 };
 
-export const createPlaylist = async (newPlaylist: any) => {
+const createPlaylist = async (newPlaylist: any) => {
     const token = await getToken();
     try {
         await axios.post(`${apiUrl}/playlists`, newPlaylist, {
@@ -29,3 +29,5 @@ export const createPlaylist = async (newPlaylist: any) => {
         throw error;
     }
 };
+
+export { fetchPlaylists, createPlaylist };

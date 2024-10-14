@@ -3,7 +3,7 @@ import {getToken} from '@/utils/localStorage';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-export const login = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
     try {
         const response = await axios.post(apiUrl + '/auth/login', { email, password });
         return response.data;
@@ -12,7 +12,7 @@ export const login = async (email: string, password: string) => {
     }
 };
 
-export const signup = async (username: string, firstname: string, lastname: string, email: string, password: string) => {
+const signup = async (username: string, firstname: string, lastname: string, email: string, password: string) => {
     try {
         return await axios.post(apiUrl + '/auth/register', {
             username,
@@ -26,7 +26,7 @@ export const signup = async (username: string, firstname: string, lastname: stri
     }
 };
 
-export const getUserInfo = async () => {
+const getUserInfo = async () => {
     const token = await getToken();
 
     if (!token)
@@ -41,3 +41,5 @@ export const getUserInfo = async () => {
         throw error;
     }
 };
+
+export { login, signup, getUserInfo };

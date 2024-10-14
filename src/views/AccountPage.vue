@@ -128,6 +128,7 @@ onMounted(async () => {
           <p>Email : {{ userInfo.email }}</p>
           <p>Firstname : {{ userInfo.firstname }}</p>
           <p>Lastname : {{ userInfo.lastname }}</p>
+          <p>Roles : {{ userInfo.roles.toString() }}</p>
 
           <ion-button expand="block" color="danger" @click="logout">
             Log Out
