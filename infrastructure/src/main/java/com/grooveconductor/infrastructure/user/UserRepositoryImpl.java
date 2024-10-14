@@ -2,7 +2,7 @@ package com.grooveconductor.infrastructure.user;
 
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
@@ -78,7 +78,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<PlaylistDto> retrievePlaylists(Identifier identifier) {
+    public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
         return findUserByIdentifier(identifier).getPlaylists().stream()
             .map(DomainEntity::toDTO)
             .toList();

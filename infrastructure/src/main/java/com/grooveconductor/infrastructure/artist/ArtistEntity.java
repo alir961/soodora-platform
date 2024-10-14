@@ -51,7 +51,12 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
 
     @Override
     public ArtistDTO toDTO() {
-        return new ArtistDTO(slug, name, description, imageUrl);
+        return new ArtistDTO(
+            slug,
+            name,
+            description,
+            imageUrl
+        );
     }
 
 }

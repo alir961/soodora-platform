@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.playlist;
 
 import com.grooveconductor.domain.playlist.PlaylistPrivacy;
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import jakarta.persistence.*;
@@ -22,7 +22,7 @@ import static java.util.UUID.randomUUID;
 @Entity(name = "playlists")
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaylistEntity implements DomainEntity<PlaylistDto> {
+public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -56,8 +56,15 @@ public class PlaylistEntity implements DomainEntity<PlaylistDto> {
     private Date updatedAt;
 
     @Override
-    public PlaylistDto toDTO() {
-        return new PlaylistDto(slug, name, description, privacy, imageUrl, user.getSlug());
+    public PlaylistDTO toDTO() {
+        return new PlaylistDTO(
+            slug,
+            name,
+            description,
+            privacy,
+            imageUrl,
+            user.toDTO()
+        );
     }
 
 }

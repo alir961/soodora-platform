@@ -2,7 +2,7 @@ package com.grooveconductor.application.playlist;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.PlaylistFilter;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.playlist.PlaylistRepository;
@@ -21,17 +21,17 @@ public class PlaylistService {
     private final UserRepository userRepository;
     private final PlaylistRepository playlistRepository;
 
-    public List<PlaylistDto> retrieveAllPlaylists() {
+    public List<PlaylistDTO> retrieveAllPlaylists() {
         return playlistRepository.findAll();
     }
 
-    public List<PlaylistDto> retrievePlaylists(PlaylistFilter filter) {
+    public List<PlaylistDTO> retrievePlaylists(PlaylistFilter filter) {
         if (filter.userSlug().isPresent())
             return userRepository.retrievePlaylists(createFromSlug(filter.userSlug().get()));
         return retrieveAllPlaylists();
     }
 
-    public PlaylistDto retrievePlaylistBySlug(String slug) {
+    public PlaylistDTO retrievePlaylistBySlug(String slug) {
         return playlistRepository.findBySlug(slug);
     }
 

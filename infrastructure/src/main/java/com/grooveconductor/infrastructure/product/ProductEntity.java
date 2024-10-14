@@ -59,7 +59,16 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
 
     @Override
     public ProductDTO toDTO() {
-        return new ProductDTO(slug, name, description, imageUrl, category, price, quantity, user.getSlug());
+        return new ProductDTO(
+            slug,
+            name,
+            description,
+            imageUrl,
+            category,
+            price,
+            quantity,
+            user.toDTO()
+        );
     }
 
 }

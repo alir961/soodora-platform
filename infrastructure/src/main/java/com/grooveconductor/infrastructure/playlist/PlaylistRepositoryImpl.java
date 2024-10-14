@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.playlist;
 
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
-import com.grooveconductor.domain.playlist.PlaylistDto;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.PlaylistRepository;
@@ -32,7 +32,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public PlaylistDto save(CreatePlaylistCommand command, UserDTO user) {
+    public PlaylistDTO save(CreatePlaylistCommand command, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
             .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + user.slug()));
         PlaylistEntity entity = new PlaylistEntity();
@@ -47,12 +47,12 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
-    public PlaylistDto findBySlug(String slug) {
+    public PlaylistDTO findBySlug(String slug) {
         return findPlaylistBySlugOrThrow(slug).toDTO();
     }
 
     @Override
-    public List<PlaylistDto> findAll() {
+    public List<PlaylistDTO> findAll() {
         return repository.findAll().stream()
             .map(PlaylistEntity::toDTO)
             .toList();

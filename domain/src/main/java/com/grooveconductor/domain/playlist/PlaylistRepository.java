@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface PlaylistRepository {
 
-    PlaylistDto save(CreatePlaylistCommand command, UserDTO user);
-    PlaylistDto findBySlug(String slug);
-    List<PlaylistDto> findAll();
+    PlaylistDTO save(CreatePlaylistCommand command, UserDTO user);
+    PlaylistDTO findBySlug(String slug);
+    List<PlaylistDTO> findAll();
     void deletePlaylistBySlug(String slug);
     boolean isPlaylistNameUsedByUser(String name, String userSlug);
 

@@ -33,10 +33,10 @@ class PlaylistServiceTest {
 
     private PlaylistService playlistService;
 
-    private static final PlaylistDto PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
-    private static final PlaylistDto PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
-    private static final PlaylistDto PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
-    private static final List<PlaylistDto> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
+    private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
+    private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
+    private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
+    private static final List<PlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
     private static final UserDTO USER = buildDefaultUser();
 
     @BeforeEach
@@ -77,7 +77,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findAll()).thenReturn(PLAYLISTS);
 
         // WHEN
-        List<PlaylistDto> retrievedPlaylists = playlistService.retrieveAllPlaylists();
+        List<PlaylistDTO> retrievedPlaylists = playlistService.retrieveAllPlaylists();
 
         // THEN
         assertEquals(PLAYLISTS, retrievedPlaylists);
@@ -89,7 +89,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findAll()).thenReturn(emptyList());
 
         // WHEN
-        List<PlaylistDto> retrievedPlaylists = playlistService.retrieveAllPlaylists();
+        List<PlaylistDTO> retrievedPlaylists = playlistService.retrieveAllPlaylists();
 
         // THEN
         assertTrue(retrievedPlaylists.isEmpty());
@@ -103,7 +103,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findAll()).thenReturn(PLAYLISTS);
 
         // WHEN
-        List<PlaylistDto> retrievedPlaylists = playlistService.retrievePlaylists(noFilter);
+        List<PlaylistDTO> retrievedPlaylists = playlistService.retrievePlaylists(noFilter);
 
         // THEN
         assertEquals(PLAYLISTS, retrievedPlaylists);
@@ -117,7 +117,7 @@ class PlaylistServiceTest {
         when(userRepository.retrievePlaylists(any())).thenReturn(List.of(PLAYLIST_1, PLAYLIST_3));
 
         // WHEN
-        List<PlaylistDto> retrievedPlaylist = playlistService.retrievePlaylists(filter);
+        List<PlaylistDTO> retrievedPlaylist = playlistService.retrievePlaylists(filter);
 
         // THEN
         assertEquals(2, retrievedPlaylist.size());
