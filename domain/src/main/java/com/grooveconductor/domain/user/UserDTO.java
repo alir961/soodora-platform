@@ -1,5 +1,7 @@
 package com.grooveconductor.domain.user;
 
+import java.util.Set;
+
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 
 public record UserDTO(
@@ -7,7 +9,8 @@ public record UserDTO(
     String username,
     String email,
     String firstname,
-    String lastname
+    String lastname,
+    Set<String> roles
 ) {
 
     public Identifier identifier() {

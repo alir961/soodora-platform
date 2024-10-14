@@ -1,4 +1,4 @@
-package com.grooveconductor.rest.common;
+package com.grooveconductor.rest.configuratin;
 
 import com.grooveconductor.application.user.UserService;
 import com.grooveconductor.rest.auth.JwtRequestFilter;
