@@ -12,6 +12,7 @@ import com.grooveconductor.infrastructure.common.DomainEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,7 @@ public class UserRepositoryImpl implements UserRepository {
         user.setPassword(command.password());
         user.setFirstname(command.firstname());
         user.setLastname(command.lastname());
+        user.setRoles(new HashSet<>());
         return userRepository.save(user).toDTO();
     }
 
