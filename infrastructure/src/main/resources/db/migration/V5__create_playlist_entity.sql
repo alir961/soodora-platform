@@ -4,7 +4,7 @@ CREATE TABLE playlists
     slug          VARCHAR(255)  NULL,
     name          VARCHAR(255)  NULL,
     description   VARCHAR(255)  NULL,
-    state         TINYINT(255)  NULL,
+    privacy       TINYINT(255)  NULL,
     image_url     VARCHAR(5000) NULL,
     user_id       UUID          NULL,
     created_at    datetime      NULL,
