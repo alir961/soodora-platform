@@ -4,6 +4,7 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.artist.ArtistEntity;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.playlist.PlaylistEntity;
+import com.grooveconductor.infrastructure.product.ProductEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -56,6 +57,9 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @JoinColumn(unique = true)
     @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private ArtistEntity artist;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    private List<ProductEntity> products;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PlaylistEntity> playlists;

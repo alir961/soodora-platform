@@ -62,13 +62,6 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<ProductDTO> findProductsByUserSlug(String slug) {
-        return findProductsByUserSlugOrThrow(slug).stream()
-            .map(ProductEntity::toDTO)
-            .toList();
-    }
-
-    @Override
     public void deleteProductBySlug(String slug) {
         Optional<ProductEntity> product = repository.findBySlug(slug);
 

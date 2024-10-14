@@ -7,18 +7,20 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.domain.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+
 @Service
+@RequiredArgsConstructor
 public class ProductService {
 
+    private final UserRepository userRepository;
     private final ProductRepository productRepository;
-
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
-    }
 
     public void createProduct(CreateProductCommand command, UserDTO user) {
         if (productRepository.isProductNameUsedByUser(command.name(), user.slug()))
@@ -32,7 +34,7 @@ public class ProductService {
 
     public List<ProductDTO> retrieveProducts(ProductFilter filter) {
         if (filter.userSlug().isPresent())
-            return productRepository.findProductsByUserSlug(filter.userSlug().get());
+            return userRepository.retrieveProducts(createFromSlug(filter.userSlug().get()));
         else return retrieveAllProducts();
     }
 

@@ -26,11 +26,6 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
             .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
     }
 
-    protected List<PlaylistEntity> findPlaylistByUserSlugOrThrow(String slug) {
-        return repository.findPlaylistsByUserSlug(slug)
-            .orElseThrow(() -> new UnknownSlugException("Unable to find playlist of a user with slug: #" + slug));
-    }
-
     @Override
     public PlaylistDTO save(CreatePlaylistCommand command, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -68,9 +63,10 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     public boolean isPlaylistNameUsedByUser(String name, String userSlug) {
-        List<PlaylistEntity> userPlaylists = findPlaylistByUserSlugOrThrow(userSlug);
+        UserEntity user = userRepository.findBySlug(userSlug)
+            .orElseThrow(() -> new UnknownSlugException("Unable to find playlist of a user with slug: #" + userSlug));
 
-        return userPlaylists.stream()
+        return user.getPlaylists().stream()
             .anyMatch(playlist -> playlist.getName().equalsIgnoreCase(name));
     }
 

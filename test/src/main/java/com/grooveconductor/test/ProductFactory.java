@@ -22,4 +22,17 @@ public class ProductFactory {
         );
     }
 
+    public static ProductDTO buildProduct(String suffix) {
+        return new ProductDTO(
+            "slug-" + suffix,
+            "Name" + suffix,
+            "Description",
+            "imageUrl",
+            "category",
+            100,
+            10,
+            buildDefaultUser()
+        );
+    }
+
 }

@@ -9,7 +9,6 @@ public interface ProductRepository {
     ProductDTO save(CreateProductCommand command, UserDTO user);
     ProductDTO findBySlug(String slug);
     List<ProductDTO> findAll();
-    List<ProductDTO> findProductsByUserSlug(String slug);
     void deleteProductBySlug(String slug);
     boolean isProductNameUsedByUser(String name, String userSlug);
 

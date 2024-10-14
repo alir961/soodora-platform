@@ -3,6 +3,7 @@ package com.grooveconductor.domain.user;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.product.ProductDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +17,7 @@ public interface UserRepository {
     boolean isUsed(Identifier identifier);
     String retrieveEncodedPassword(Identifier identifier);
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
+    List<ProductDTO> retrieveProducts(Identifier identifier);
     List<PlaylistDTO> retrievePlaylists(Identifier identifier);
 
 }

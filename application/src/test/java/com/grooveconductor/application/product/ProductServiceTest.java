@@ -7,6 +7,7 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,7 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static com.grooveconductor.test.ProductFactory.buildDefaultProduct;
+import static com.grooveconductor.test.ProductFactory.buildProduct;
 import static com.grooveconductor.test.UserFactory.buildDefaultUser;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -26,19 +27,25 @@ import static org.mockito.Mockito.*;
 class ProductServiceTest {
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private ProductRepository productRepository;
+
     private ProductService productService;
 
-    private static final ProductDTO PRODUCT = buildDefaultProduct();
-    private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT);
+    private static final ProductDTO PRODUCT_1 = buildProduct("1");
+    private static final ProductDTO PRODUCT_2 = buildProduct("2");
+    private static final ProductDTO PRODUCT_3 = buildProduct("3");
+    private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final UserDTO USER = buildDefaultUser();
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
-        PRODUCT.name(), PRODUCT.description(), PRODUCT.imageUrl(), PRODUCT.category(), PRODUCT.price(), PRODUCT.quantity()
+        PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(), PRODUCT_1.quantity()
     );
 
     @BeforeEach
     void setUp() {
-        productService = new ProductService(productRepository);
+        productService = new ProductService(userRepository, productRepository);
     }
 
     @Test
@@ -54,29 +61,31 @@ class ProductServiceTest {
     }
 
     @Test
-    void retrieveAllProductsOfUser_Success() {
+    void retrieveProducts_FilteredByUserSlug() {
         // GIVEN
         ProductFilter filter = new ProductFilter(Optional.of(USER.slug()));
 
-        when(productRepository.findProductsByUserSlug(USER.slug())).thenReturn(PRODUCTS);
+        when(userRepository.retrieveProducts(any())).thenReturn(List.of(PRODUCT_1, PRODUCT_3));
 
         // WHEN
         List<ProductDTO> retrievedProducts = productService.retrieveProducts(filter);
 
         // THEN
-        assertEquals(PRODUCTS, retrievedProducts);
+        assertEquals(2, retrievedProducts.size());
+        assertEquals(PRODUCT_1, retrievedProducts.get(0));
+        assertEquals(PRODUCT_3, retrievedProducts.get(1));
     }
 
     @Test
     void retrieveProduct_Success() {
         // GIVEN
-        when(productRepository.findBySlug(PRODUCT.slug())).thenReturn(PRODUCT);
+        when(productRepository.findBySlug(PRODUCT_1.slug())).thenReturn(PRODUCT_1);
 
         // WHEN
-        ProductDTO retrievedProduct = productService.retrieveProduct(PRODUCT.slug());
+        ProductDTO retrievedProduct = productService.retrieveProduct(PRODUCT_1.slug());
 
         // THEN
-        assertEquals(PRODUCT, retrievedProduct);
+        assertEquals(PRODUCT_1, retrievedProduct);
     }
 
     @Test
@@ -94,14 +103,14 @@ class ProductServiceTest {
     @Test
     void deleteProduct_Success() {
         // GIVEN
-        doNothing().when(productRepository).deleteProductBySlug(PRODUCT.slug());
+        doNothing().when(productRepository).deleteProductBySlug(PRODUCT_1.slug());
 
         // WHEN
-        Executable executable = () -> productService.deleteProductBySlug(PRODUCT.slug());
+        Executable executable = () -> productService.deleteProductBySlug(PRODUCT_1.slug());
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository, times(1)).deleteProductBySlug(PRODUCT.slug());
+        verify(productRepository, times(1)).deleteProductBySlug(PRODUCT_1.slug());
     }
 
     @Test
