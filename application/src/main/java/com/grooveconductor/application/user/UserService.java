@@ -36,6 +36,10 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public boolean existsUser(Identifier identifier) {
+        return userRepository.isUsed(identifier);
+    }
+
     public void deleteUser(Identifier identifier) throws UnknownUserException {
         try {
             userRepository.delete(identifier);

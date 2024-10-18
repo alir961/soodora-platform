@@ -53,6 +53,7 @@ public class WebSecurityConfiguration {
                                 )
                         .permitAll()
                         .requestMatchers(GET, "/products").permitAll()
+                        .requestMatchers("/auth/google").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(AbstractHttpConfigurer::disable)
