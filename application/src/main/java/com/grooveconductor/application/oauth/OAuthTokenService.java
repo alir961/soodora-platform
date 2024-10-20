@@ -30,7 +30,7 @@ public class OAuthTokenService {
     public String retrieveUserAccessToken(OAuthProvider provider, UserDTO user) {
         if (userAccessTokens.containsKey(user.slug()))
             return userAccessTokens.get(user.slug());
-        RefreshableAuthorization authorization = googleService.callRefreshTokenAPI(retrieveUserRefreshToken(provider, user));
+        RefreshableAuthorization authorization = googleService.refreshOAuthToken(retrieveUserRefreshToken(provider, user));
 
         userAccessTokens.put(user.slug(), authorization.accessToken());
         return authorization.accessToken();
