@@ -1,4 +1,4 @@
-package com.grooveconductor.test;
+package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.user.UserDTO;
 import lombok.NoArgsConstructor;

@@ -1,8 +1,8 @@
 package com.grooveconductor.application.user;
 
 import com.grooveconductor.domain.user.Identifier;
-import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
+import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +15,7 @@ import java.util.List;
 
 import static com.grooveconductor.domain.user.Identifier.IdentifierType.EMAIL;
 import static com.grooveconductor.domain.user.Identifier.IdentifierType.SLUG;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.TestConstants.USER;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,7 +28,6 @@ class UserServiceTest {
     private UserRepository userRepository;
     private UserService userService;
 
-    private static final UserDTO USER = buildDefaultUser();
     private static final List<UserDTO> USERS = List.of(USER);
 
     @BeforeEach

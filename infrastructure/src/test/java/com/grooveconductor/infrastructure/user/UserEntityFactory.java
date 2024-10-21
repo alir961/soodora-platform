@@ -1,6 +1,6 @@
 package com.grooveconductor.infrastructure.user;
 
-import com.grooveconductor.test.UserFactory;
+import com.grooveconductor.test.factory.UserFactory;
 
 import java.util.Date;
 

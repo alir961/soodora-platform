@@ -1,12 +1,12 @@
 package com.grooveconductor.application.auth;
 
-import com.grooveconductor.domain.auth.LoginCommand;
-import com.grooveconductor.domain.auth.RegisterCommand;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.user.UnknownIdentifierException;
-import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.application.user.UserUnityException;
+import com.grooveconductor.domain.auth.LoginCommand;
+import com.grooveconductor.domain.auth.RegisterCommand;
+import com.grooveconductor.domain.user.UnknownIdentifierException;
+import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,11 +15,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.grooveconductor.test.TestConstants.USER;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.crypto.password.NoOpPasswordEncoder.*;
+import static org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
@@ -31,8 +32,6 @@ class AuthenticationServiceTest {
     private UserRepository userRepository;
 
     private AuthenticationService authenticationService;
-
-    private static final UserDTO USER = buildDefaultUser();
 
     @BeforeEach
     void setUp() {

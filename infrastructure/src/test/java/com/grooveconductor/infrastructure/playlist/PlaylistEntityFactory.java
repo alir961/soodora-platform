@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.playlist;
 
 import com.grooveconductor.infrastructure.user.UserEntity;
-import com.grooveconductor.test.PlaylistFactory;
+import com.grooveconductor.test.factory.PlaylistFactory;
 
 import java.util.Date;
 

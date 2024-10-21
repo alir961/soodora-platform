@@ -2,8 +2,6 @@ package com.grooveconductor.application.oauth;
 
 import com.grooveconductor.application.google.GoogleService;
 import com.grooveconductor.domain.oauth.OAuthTokenRepository;
-import com.grooveconductor.domain.oauth.RefreshableAuthorization;
-import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,8 +10,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
-import static org.junit.jupiter.api.Assertions.*;
+import static com.grooveconductor.test.TestConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -26,11 +25,6 @@ class OAuthTokenServiceTest {
     private GoogleService googleService;
 
     private OAuthTokenService oauthTokenService;
-
-    private static final UserDTO USER = buildDefaultUser();
-    private static final String ACCESS_TOKEN = "access-token";
-    private static final String REFRESH_TOKEN = "refresh-token";
-    private static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(ACCESS_TOKEN, REFRESH_TOKEN, 60);
 
     @BeforeEach
     void setUp() {

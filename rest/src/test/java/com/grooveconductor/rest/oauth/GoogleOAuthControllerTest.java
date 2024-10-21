@@ -4,8 +4,6 @@ import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.google.GoogleService;
 import com.grooveconductor.application.oauth.OAuthTokenService;
 import com.grooveconductor.application.user.UserService;
-import com.grooveconductor.domain.oauth.RefreshableAuthorization;
-import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +16,12 @@ import java.net.URI;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
-import static org.hamcrest.Matchers.*;
+import static com.grooveconductor.test.TestConstants.*;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,13 +41,6 @@ class GoogleOAuthControllerTest {
 
     @MockBean
     private JwtTokenService jwtTokenService;
-
-    private static final String JWT_TOKEN = "token";
-    private static final UserDTO USER = buildDefaultUser();
-    private static final String REDIRECT_URL = "http://localhost:8080/";
-    private static final String ACCESS_TOKEN = "access-token";
-    private static final String REFRESH_TOKEN = "refresh-token";
-    private static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(ACCESS_TOKEN, REFRESH_TOKEN, 60);
 
     @BeforeEach
     void setUp() {

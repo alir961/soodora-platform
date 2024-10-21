@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.product;
 
 import com.grooveconductor.infrastructure.user.UserEntity;
-import com.grooveconductor.test.ProductFactory;
+import com.grooveconductor.test.factory.ProductFactory;
 
 import java.util.Date;
 

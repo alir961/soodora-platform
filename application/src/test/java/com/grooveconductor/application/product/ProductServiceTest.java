@@ -1,12 +1,11 @@
 package com.grooveconductor.application.product;
 
+import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.product.ProductFilter;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.ProductRepository;
-import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,8 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static com.grooveconductor.test.ProductFactory.buildProduct;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.ProductFactory.buildProduct;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -38,7 +37,6 @@ class ProductServiceTest {
     private static final ProductDTO PRODUCT_2 = buildProduct("2");
     private static final ProductDTO PRODUCT_3 = buildProduct("3");
     private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
-    private static final UserDTO USER = buildDefaultUser();
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
         PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(), PRODUCT_1.quantity()
     );

@@ -13,8 +13,10 @@ import java.util.Map;
 
 import static com.grooveconductor.application.google.GoogleService.AUTH_URL;
 import static com.grooveconductor.application.google.GoogleService.SCOPE;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static com.grooveconductor.test.TestConstants.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class GoogleServiceTest {
@@ -25,9 +27,6 @@ class GoogleServiceTest {
     private GoogleService googleService;
 
     private final static String QUERY_PARAMS = "?client_id=clientId&redirect_uri=redirectUri&response_type=code&access_type=offline";
-    private static final String ACCESS_TOKEN = "access-token";
-    private static final String REFRESH_TOKEN = "refresh-token";
-    private static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(ACCESS_TOKEN, REFRESH_TOKEN, 60);
 
     @BeforeEach
     void setUp() {

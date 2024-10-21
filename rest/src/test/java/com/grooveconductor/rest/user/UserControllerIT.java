@@ -1,10 +1,10 @@
 package com.grooveconductor.rest.user;
 
+import com.grooveconductor.application.auth.JwtTokenService;
+import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.application.user.UserService;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.application.user.UnknownUserException;
-import com.grooveconductor.application.auth.JwtTokenService;
-import com.grooveconductor.application.user.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
