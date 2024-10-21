@@ -1,13 +1,15 @@
 package com.grooveconductor.application.youtube;
 
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.services.youtube.YouTube;
-import com.google.api.services.youtube.model.PlaylistListResponse;
+import com.grooveconductor.application.common.ExternalServiceException;
 import com.grooveconductor.application.oauth.OAuthTokenService;
 import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.domain.youtube.YoutubeAdapter;
+import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.List;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 
@@ -16,19 +18,16 @@ import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 public class YoutubeService {
 
     private final OAuthTokenService oauthTokenService;
+    private final YoutubeAdapter youtubeAdapter;
 
-    private final YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), null)
-        .setApplicationName("GrooveConductor")
-        .build();
+    public List<YoutubePlaylistDTO> getPlaylists(UserDTO user) throws ExternalServiceException {
+        try {
+            String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
 
-    public PlaylistListResponse getPlaylists(UserDTO user) throws Exception {
-        String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
-        YouTube.Playlists.List request = youtube.playlists()
-            .list("snippet,contentDetails")
-            .setMine(true)
-            .setOauthToken(accessToken);
-
-        return request.execute();
+            return youtubeAdapter.fetchUserPlaylists(accessToken);
+        } catch (IOException exception) {
+            throw new ExternalServiceException(exception.getMessage());
+        }
     }
 
 }
