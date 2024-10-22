@@ -1,12 +1,12 @@
 package com.grooveconductor.rest.product;
 
-import com.grooveconductor.domain.product.ProductDTO;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.application.common.InvalidRequestException;
-import com.grooveconductor.application.product.CreateProductRequest;
 import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.auth.JwtTokenService;
+import com.grooveconductor.application.common.InvalidRequestException;
+import com.grooveconductor.application.product.CreateProductRequest;
 import com.grooveconductor.application.product.ProductService;
+import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,13 +17,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 
 import static com.grooveconductor.rest.JsonStringify.asJsonString;
-import static com.grooveconductor.test.ProductFactory.buildDefaultProduct;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.factory.ProductFactory.buildDefaultProduct;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

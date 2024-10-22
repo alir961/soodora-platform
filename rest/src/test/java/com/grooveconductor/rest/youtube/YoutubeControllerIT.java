@@ -1,0 +1,71 @@
+package com.grooveconductor.rest.youtube;
+
+import com.grooveconductor.application.auth.AuthenticationService;
+import com.grooveconductor.application.auth.JwtTokenService;
+import com.grooveconductor.application.youtube.YoutubeService;
+import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static com.grooveconductor.test.TestConstants.JWT_TOKEN;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+class YoutubeControllerIT {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private YoutubeService youtubeService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
+
+    @MockBean
+    private JwtTokenService jwtTokenService;
+
+    private static final YoutubePlaylistDTO PLAYLIST_1 = buildDefaultYoutubePlaylist("1");
+    private static final YoutubePlaylistDTO PLAYLIST_2 = buildDefaultYoutubePlaylist("2");
+    private static final YoutubePlaylistDTO PLAYLIST_3 = buildDefaultYoutubePlaylist("3");
+    private static final List<YoutubePlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
+
+    @Test
+    void getAuthenticatedUserYoutubePlaylists_Success() throws Exception {
+        // GIVEN
+        when(jwtTokenService.getEmailFromToken(JWT_TOKEN)).thenReturn(USER.email());
+        when(authenticationService.getAuthenticatedUser()).thenReturn(USER);
+        when(youtubeService.getPlaylists(USER)).thenReturn(PLAYLISTS);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/youtube/playlists")
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(3)))
+            .andExpect(jsonPath("$[0].id").value("1"))
+            .andExpect(jsonPath("$[1].id").value("2"))
+            .andExpect(jsonPath("$[2].id").value("3"));
+    }
+
+    @Test
+    void getAuthenticatedUserYoutubePlaylists_Forbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/youtube/playlists")
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isForbidden());
+    }
+
+}

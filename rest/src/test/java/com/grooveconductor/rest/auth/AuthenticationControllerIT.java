@@ -1,10 +1,10 @@
 package com.grooveconductor.rest.auth;
 
-import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.application.auth.AuthenticationService;
+import com.grooveconductor.application.auth.RegisterRequest;
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.application.user.UserUnityException;
-import com.grooveconductor.application.auth.RegisterRequest;
-import com.grooveconductor.application.auth.AuthenticationService;
+import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,7 +13,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.grooveconductor.rest.JsonStringify.asJsonString;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;

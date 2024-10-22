@@ -1,9 +1,9 @@
-package com.grooveconductor.test;
+package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.product.ProductDTO;
 import lombok.NoArgsConstructor;
 
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static lombok.AccessLevel.PROTECTED;
 
 @NoArgsConstructor(access = PROTECTED)

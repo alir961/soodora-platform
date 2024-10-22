@@ -1,8 +1,10 @@
 package com.grooveconductor.application.playlist;
 
-import com.grooveconductor.domain.playlist.*;
-import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
+import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
+import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.PlaylistFilter;
+import com.grooveconductor.domain.playlist.PlaylistRepository;
 import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +16,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static com.grooveconductor.test.PlaylistFactory.buildDefaultPlaylist;
-import static com.grooveconductor.test.UserFactory.buildDefaultUser;
+import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.PlaylistFactory.buildDefaultPlaylist;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,7 +40,6 @@ class PlaylistServiceTest {
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
     private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
     private static final List<PlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
-    private static final UserDTO USER = buildDefaultUser();
 
     @BeforeEach
     void setUp() {
@@ -47,7 +49,8 @@ class PlaylistServiceTest {
     @Test
     void createPlaylist_Success() {
         // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
+        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PUBLIC, "imageUrl");
+
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(false);
         when(playlistRepository.save(any(), eq(USER))).thenReturn(PLAYLIST_1);
 
@@ -61,7 +64,8 @@ class PlaylistServiceTest {
     @Test
     void createPlaylist_NameAlreadyUsed() {
         // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PlaylistPrivacy.PUBLIC, "imageUrl");
+        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PUBLIC, "imageUrl");
+
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(true);
 
         // WHEN
