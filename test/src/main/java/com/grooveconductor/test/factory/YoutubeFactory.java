@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static lombok.AccessLevel.PROTECTED;
 
 @NoArgsConstructor(access = PROTECTED)
@@ -20,6 +21,7 @@ public class YoutubeFactory {
             "Description",
             PUBLISH_DATE,
             "http://youtube.com/thumbnail.jpg",
+            PUBLIC,
             buildDefaultYoutubeChannel(),
             10
         );
@@ -32,6 +34,7 @@ public class YoutubeFactory {
             "Description",
             PUBLISH_DATE,
             "http://youtube.com/thumbnail.jpg",
+            PUBLIC,
             buildDefaultYoutubeChannel(),
             10
         );

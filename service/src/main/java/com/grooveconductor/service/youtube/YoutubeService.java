@@ -3,6 +3,8 @@ package com.grooveconductor.service.youtube;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.youtube.YoutubeAdapter;
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
+import com.grooveconductor.domain.youtube.YoutubePlaylistItemDTO;
+import com.grooveconductor.domain.youtube.YoutubeServiceException;
 import com.grooveconductor.service.common.ExternalServiceException;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +27,17 @@ public class YoutubeService {
             String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
 
             return youtubeAdapter.fetchUserPlaylists(accessToken);
-        } catch (IOException exception) {
+        } catch (YoutubeServiceException | IOException exception) {
+            throw new ExternalServiceException(exception.getMessage());
+        }
+    }
+
+    public List<YoutubePlaylistItemDTO> getPlaylistItems(UserDTO user, String playlistId) throws ExternalServiceException {
+        try {
+            String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
+
+            return youtubeAdapter.fetchPlaylistItems(accessToken, playlistId);
+        } catch (YoutubeServiceException | IOException exception) {
             throw new ExternalServiceException(exception.getMessage());
         }
     }
