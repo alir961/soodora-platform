@@ -1,4 +1,5 @@
 import {Preferences} from "@capacitor/preferences";
+import {Ref} from "vue";
 
 const saveToken = async (token: string) => {
     await Preferences.set({
@@ -16,7 +17,7 @@ const removeToken = async () => {
     await Preferences.remove({ key: 'BearerToken' });
 };
 
-const saveUserInfo = async (userInfo) => {
+const saveUserInfo = async (userInfo: Ref) => {
     await Preferences.set({
         key: 'userInfo',
         value: JSON.stringify(userInfo.value),

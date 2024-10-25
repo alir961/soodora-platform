@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getToken } from '@/utils/localStorage';
+import {Ref} from "vue";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -12,7 +13,7 @@ const fetchProducts = async () => {
     }
 };
 
-const createProduct = async (newProduct) => {
+const createProduct = async (newProduct: Ref) => {
     const token = await getToken();
     try {
         await axios.post(`${apiUrl}/products`, newProduct, {
