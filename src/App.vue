@@ -1,6 +1,6 @@
 <template>
   <ion-app>
-    <ion-tabs>
+    <ion-tabs v-if="route.path !== '/auth'"> <!-- Show tabs only if not on the /auth route -->
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
 
@@ -26,12 +26,17 @@
 
       </ion-tab-bar>
     </ion-tabs>
+
+    <ion-router-outlet v-if="route.path === '/auth'"></ion-router-outlet>
   </ion-app>
 </template>
 
 <script setup lang="ts">
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, homeOutline, musicalNotesOutline, personOutline } from "ionicons/icons";
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 </script>
 
 <style>

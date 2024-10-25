@@ -4,6 +4,18 @@ import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, 
 import { add } from 'ionicons/icons';
 import { getUserInfoFromPreferences } from "@/utils/localStorage";
 import { fetchPlaylists, createPlaylist } from "@/services/playlistService";
+import { useRouter } from 'vue-router';
+import { getToken } from '@/utils/localStorage';
+
+const router = useRouter();
+
+onMounted(async () => {
+  const token = await getToken();
+  
+  if (!token) {
+    router.push('/auth');
+  }
+});
 
 const playlists = ref([]);
 const focusedPlaylist = ref(null);
