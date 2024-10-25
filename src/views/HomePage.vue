@@ -14,8 +14,16 @@
       </ion-header>
 
       <div id="container">
-        <strong>Ready to LogIn or SignUp in our App?</strong>
-        <p>Start with GrooveConductor <router-link to="/account" style="text-decoration: none; color: #3880ff;">Auth Page</router-link></p>
+        <strong>Coming soon</strong>
+        <p>Start with
+          <a 
+              href="http://letmegooglethat.com/?q=How+to+make+a+home+page+in+vue" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style="text-decoration: none; color: #3880ff;">
+              GrooveConductor
+          </a>
+        </p>
       </div>
     </ion-content>
   </ion-page>
@@ -23,12 +31,25 @@
 
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getToken } from '@/utils/localStorage';
+
+const router = useRouter();
+
+onMounted(async () => {
+  const token = await getToken();
+  
+  if (!token) {
+    router.push('/auth');
+  }
+});
+
 </script>
 
 <style scoped>
 #container {
   text-align: center;
-  
   position: absolute;
   left: 0;
   right: 0;

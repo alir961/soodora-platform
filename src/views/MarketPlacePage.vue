@@ -3,6 +3,18 @@ import { ref, onMounted } from 'vue';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon, IonModal, IonInput, IonItem } from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import { fetchProducts, createProduct } from '@/services/productService';
+import { useRouter } from 'vue-router';
+import { getToken } from '@/utils/localStorage';
+
+const router = useRouter();
+
+onMounted(async () => {
+  const token = await getToken();
+  
+  if (!token) {
+    router.push('/auth');
+  }
+});
 
 const products = ref([]);
 const focusedProduct = ref(null);
