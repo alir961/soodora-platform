@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from '@ionic/vue';
-import { getToken, getUserInfoFromPreferences, removeToken, removeUserInfo } from '@/utils/localStorage';
+import {getToken, getUserInfoFromPreferences, removeToken, removeUserInfo} from '@/utils/localStorage';
 import { onMounted, ref } from 'vue';
-import { getUserInfo } from '@/services/authService';
 import { useRouter } from 'vue-router';
 
 const userInfo = ref(null);
@@ -11,7 +10,7 @@ const router = useRouter();
 
 const fetchUserInfo = async () => {
   try {
-    userInfo.value = await getUserInfo();
+    userInfo.value = await getUserInfoFromPreferences();
   } catch (error) {
     console.error('Failed to fetch user info:', error);
   }
@@ -21,7 +20,7 @@ const logout = async () => {
   await removeToken();
   await removeUserInfo();
   isLogged.value = false;
-  router.push('/auth');
+  await router.push('/auth');
 };
 
 onMounted(async () => {
@@ -29,7 +28,7 @@ onMounted(async () => {
   isLogged.value = token !== undefined && token !== null;
 
   if (!isLogged.value) {
-    router.push('/auth');
+    await router.push('/auth');
   } else {
     await fetchUserInfo();
   }

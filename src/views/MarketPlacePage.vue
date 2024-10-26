@@ -7,15 +7,6 @@ import { useRouter } from 'vue-router';
 import { getToken } from '@/utils/localStorage';
 
 const router = useRouter();
-
-onMounted(async () => {
-  const token = await getToken();
-  
-  if (!token) {
-    router.push('/auth');
-  }
-});
-
 const products = ref([]);
 const focusedProduct = ref(null);
 const showModal = ref(false);
@@ -31,7 +22,7 @@ const loadProducts = async () => {
 
 const submitProduct = async () => {
   try {
-    await createProduct(newProduct.value);
+    await createProduct(newProduct);
     await loadProducts();
     showModal.value = false;
   } catch (error) {
@@ -43,8 +34,14 @@ const focusProduct = (product) => {
   focusedProduct.value = focusedProduct.value === product ? null : product;
 };
 
-onMounted(() => {
-  loadProducts();
+onMounted(async () => {
+  const token = await getToken();
+
+  if (!token) {
+    await router.push('/auth');
+  } else {
+    await loadProducts();
+  }
 });
 </script>
 

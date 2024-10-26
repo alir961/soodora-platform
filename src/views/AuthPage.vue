@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonItem } from '@ionic/vue';
-import { getToken, getUserInfoFromPreferences, removeToken, removeUserInfo, saveToken, saveUserInfo } from '@/utils/localStorage';
+import { getToken, saveToken, saveUserInfo } from '@/utils/localStorage';
 import { onMounted, ref } from 'vue';
-import { login as authLogin, signup as authSignup } from '@/services/authService';
+import {getUserInfo, login as authLogin, signup as authSignup} from '@/services/authService';
 import { useRouter } from 'vue-router';
 
 const email = ref('');
@@ -12,16 +12,19 @@ const firstname = ref('');
 const lastname = ref('');
 const isLogin = ref(true);
 const isLogged = ref(false);
+const userInfo = ref(null);
 const router = useRouter();
 
 const login = async () => {
   try {
     const { token } = await authLogin(email.value, password.value);
     await saveToken(token);
+    userInfo.value = await getUserInfo();
+    await saveUserInfo(userInfo);
     isLogged.value = true;
     console.log('Login successful, Token:', token);
 
-    router.push('/home');
+    await router.push('/home');
   } catch (error) {
     console.error('Login failed:', error);
   }
@@ -40,18 +43,11 @@ const toggleAuth = () => {
   isLogin.value = !isLogin.value;
 };
 
-const logout = async () => {
-  await removeToken();
-  await removeUserInfo();
-  isLogged.value = false;
-};
-
 onMounted(async () => {
   const token = await getToken();
-  // Check if token exists to determine if the user is logged in
   isLogged.value = token !== undefined && token !== null;
   if (isLogged.value) {
-    router.push('/home');
+    await router.push('/home');
   }
 });
 </script>

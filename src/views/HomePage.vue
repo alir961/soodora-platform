@@ -41,7 +41,7 @@ onMounted(async () => {
   const token = await getToken();
   
   if (!token) {
-    router.push('/auth');
+    await router.push('/auth');
   }
 });
 
