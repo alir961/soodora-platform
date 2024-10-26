@@ -38,7 +38,7 @@ const routes: Array<RouteRecordRaw> = [
     component: AuthPage
   },
   {
-    path: '/:catchAll(.*)', // Catch-all route for 404 errors
+    path: '/:catchAll(.*)',
     name: 'NotFound',
     component: NotFoundPage
   }

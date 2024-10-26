@@ -16,7 +16,7 @@ const fetchProducts = async () => {
 const createProduct = async (newProduct: Ref) => {
     const token = await getToken();
     try {
-        await axios.post(`${apiUrl}/products`, newProduct, {
+        await axios.post(`${apiUrl}/products`, newProduct.value, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },

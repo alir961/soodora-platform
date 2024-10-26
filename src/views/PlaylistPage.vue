@@ -8,15 +8,6 @@ import { useRouter } from 'vue-router';
 import { getToken } from '@/utils/localStorage';
 
 const router = useRouter();
-
-onMounted(async () => {
-  const token = await getToken();
-  
-  if (!token) {
-    router.push('/auth');
-  }
-});
-
 const playlists = ref([]);
 const focusedPlaylist = ref(null);
 const showModal = ref(false);
@@ -45,8 +36,14 @@ const focusPlaylist = (playlist) => {
   focusedPlaylist.value = focusedPlaylist.value === playlist ? null : playlist;
 };
 
-onMounted(() => {
-  loadPlaylists();
+onMounted(async () => {
+  const token = await getToken();
+
+  if (!token) {
+    await router.push('/auth');
+  } else {
+    await loadPlaylists();
+  }
 });
 </script>
 
