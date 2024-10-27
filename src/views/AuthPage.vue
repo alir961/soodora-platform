@@ -57,7 +57,11 @@ onMounted(async () => {
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">{{ isLogin ? 'Login' : 'Sign Up' }}</ion-title>
+          <div id="toolbar">
+            <div id="toolbar-title">
+              <ion-title size="large">GrooveConductor</ion-title>
+            </div>
+          </div>
         </ion-toolbar>
       </ion-header>
 
@@ -102,17 +106,31 @@ onMounted(async () => {
           <span @click="toggleAuth" class="interactive-link">{{ isLogin ? 'Sign up here' : 'Log in here' }}</span>
         </p>
       </div>
-
     </ion-content>
   </ion-page>
 </template>
 
 <style scoped>
+
+#toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 10%;
+  margin-bottom: 4%;
+}
+
+#toolbar-title{
+  padding-left: 3%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+}
+
 #auth-container {
   text-align: center;
   padding: 5%;
-  padding-left: 20%;
-  padding-right: 20%;
+  padding-left: 15%;
+  padding-right: 15%;
   position: absolute;
   left: 0;
   right: 0;

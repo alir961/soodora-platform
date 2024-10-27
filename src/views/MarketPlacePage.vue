@@ -10,7 +10,7 @@ const router = useRouter();
 const products = ref([]);
 const focusedProduct = ref(null);
 const showModal = ref(false);
-const newProduct = ref({ name: '', description: '', imageUrl: '', category: '', price: 0.00, quantity: 0 });
+const newProduct = ref({ name: '', description: '', imageUrl: '', category: '', price: null, quantity: null });
 
 const loadProducts = async () => {
   try {
@@ -45,22 +45,21 @@ onMounted(async () => {
 });
 </script>
 
-
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>MarketPlace</ion-title>
-        <ion-button slot="end" @click="showModal = true" :inert="showModal">
-          <ion-icon :icon="add"></ion-icon>
-        </ion-button>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">MarketPlace</ion-title>
+          <div id="toolbar">
+            <div id="toolbar-title">
+              <ion-title size="large">MarketPlace</ion-title>
+            </div>
+            <div id="toolbar-button">
+              <ion-button style="height: 70%; width: 50%; --border-radius: 15px;" size="small" @click="showModal = true" :inert="showModal">
+                <ion-icon :icon="add"></ion-icon>
+              </ion-button>
+            </div>
+          </div>
         </ion-toolbar>
       </ion-header>
 
@@ -118,15 +117,11 @@ onMounted(async () => {
           </ion-content>
         </div>
       </ion-modal>
-
     </ion-content>
   </ion-page>
 </template>
 
 <style scoped>
-ion-card {
-  margin: 2%;
-}
 
 ion-card-title {
   font-size: 1.5rem;
@@ -134,6 +129,28 @@ ion-card-title {
 
 ion-card-subtitle {
   color: #666;
+}
+
+#toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 4%;
+  margin-bottom: 4%;
+}
+
+#toolbar-title{
+  padding-left: 3%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+}
+
+#toolbar-button{
+  width: 25%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }
 
 img {

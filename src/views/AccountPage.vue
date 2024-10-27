@@ -37,28 +37,41 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-header :translucent="true">
-      <ion-toolbar>
-        <ion-title>Account</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
     <ion-content :fullscreen="true">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <div id="toolbar">
+            <div id="toolbar-title">
+              <ion-title size="large">Account</ion-title>
+            </div>
+          </div>
+        </ion-toolbar>
+      </ion-header>
+
       <div v-if="userInfo === null">
-        <p>Loading...</p>
+        <div id="loading-text">
+          <p>Loading...</p>
+        </div>
       </div>
 
       <div v-else>
         <div id="profile-container">
-          <strong>Welcome, {{ userInfo.username }}</strong>
-          <p>Email: {{ userInfo.email }}</p>
-          <p>Firstname: {{ userInfo.firstname }}</p>
-          <p>Lastname: {{ userInfo.lastname }}</p>
-          <p>Roles: {{ userInfo.roles.toString() }}</p>
-
-          <ion-button expand="block" color="danger" @click="logout">
-            Log Out
-          </ion-button>
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Welcome, {{ userInfo.username }}</ion-card-title>
+              <ion-card-subtitle>Account information</ion-card-subtitle>
+            </ion-card-header>
+        
+            <ion-card-content>
+              <p>Email: {{ userInfo.email }}</p>
+              <p>Firstname: {{ userInfo.firstname }}</p>
+              <p>Lastname: {{ userInfo.lastname }}</p>
+              <p>Roles: {{ userInfo.roles.toString() }}</p>
+            </ion-card-content>
+            <ion-button style="margin-bottom: 10%; padding-right: 30%; padding-left: 30%;" expand="block" color="danger" @click="logout">
+              Log Out
+            </ion-button>
+          </ion-card>
         </div>
       </div>
     </ion-content>
@@ -66,13 +79,39 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-#profile-container {
+
+#toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 4%;
+  margin-bottom: 4%;
+}
+
+#toolbar-title{
+  padding-left: 3%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+}
+
+#loading-text {
   text-align: center;
+  top: 50%;
+  transform: translateY(-50%);
+  position: absolute;
+  left: 0;
+  right: 0;
+  font-size: 2.0em;
+  color: #8c8c8c;
+  font-weight: 800;
+}
+
+#profile-container {
   padding: 5%;
   position: absolute;
   left: 0;
   right: 0;
-  top: 50%;
+  top: 40%;
   transform: translateY(-50%);
 }
 
@@ -84,14 +123,7 @@ onMounted(async () => {
 #profile-container p {
   font-size: 1em;
   line-height: 1.375em;
-  color: #8c8c8c;
   margin: 1em 0;
 }
 
-ion-button {
-  padding-top: 40px;
-  padding-left: 35%;
-  padding-right: 35%;
-
-}
 </style>
