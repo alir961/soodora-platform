@@ -30,4 +30,18 @@ const createPlaylist = async (newPlaylist: any) => {
     }
 };
 
-export { fetchPlaylists, createPlaylist };
+const fetchPlaylistBySlug = async (slug: string) => {
+    const token = await getToken();
+    try {
+      const response = await axios.get(`${apiUrl}/playlists/${slug}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      return response.data; // Assuming the response contains the playlist data
+    } catch (error) {
+      throw error;
+    }
+  };
+
+export { fetchPlaylists, createPlaylist, fetchPlaylistBySlug }; // Export the new function

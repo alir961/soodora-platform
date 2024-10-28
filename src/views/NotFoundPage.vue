@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonPage } from "@ionic/vue";
+import { IonPage, IonTitle, IonToolbar, IonHeader, IonButton, IonContent } from "@ionic/vue";
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -11,6 +11,11 @@ const goHome = () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>GrooveConductor</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -40,11 +45,11 @@ const goHome = () => {
   display: flex;
   flex-direction: row;
   justify-content: center;
-  margin-top: 10%;
+  margin-top: 4%;
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;

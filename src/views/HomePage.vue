@@ -18,6 +18,11 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>Home</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -47,7 +52,7 @@ onMounted(async () => {
 
 <style scoped>
 
-ion-title{
+ion-title {
   align-items: center;
 }
 
@@ -59,7 +64,7 @@ ion-title{
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;

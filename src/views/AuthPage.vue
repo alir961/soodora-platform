@@ -54,6 +54,11 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>GrooveConductor</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -112,6 +117,10 @@ onMounted(async () => {
 
 <style scoped>
 
+ion-button {
+  margin-top: 5%;
+}
+
 #toolbar {
   display: flex;
   flex-direction: row;
@@ -120,7 +129,7 @@ onMounted(async () => {
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;
@@ -172,7 +181,4 @@ onMounted(async () => {
   color: #0056b3;
 }
 
-ion-button {
-  margin-top: 5%;
-}
 </style>

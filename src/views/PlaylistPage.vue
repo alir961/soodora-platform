@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon, IonModal, IonInput, IonItem , IonSelect, IonSelectOption } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonRow, IonGrid, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonButton, IonIcon, IonModal, IonInput, IonItem, IonSelect, IonSelectOption } from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import { getUserInfoFromPreferences } from "@/utils/localStorage";
 import { fetchPlaylists, createPlaylist } from "@/services/playlistService";
@@ -32,8 +32,8 @@ const handleCreatePlaylist = async () => {
   }
 };
 
-const focusPlaylist = (playlist) => {
-  focusedPlaylist.value = focusedPlaylist.value === playlist ? null : playlist;
+const goToPlaylistDetails = (slug) => {
+  router.push({ name: 'PlaylistDetails', params: { slug } });
 };
 
 onMounted(async () => {
@@ -49,6 +49,11 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>Playlists</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -67,17 +72,20 @@ onMounted(async () => {
 
       <ion-grid>
         <ion-row>
-          <ion-col size="12" size-md="6" size-lg="4" v-for="playlist in playlists" :key="playlist.id">
-            <ion-card @click="focusPlaylist(playlist)" :class="{ focused: focusedPlaylist === playlist }">
-              <img :src="playlist.imageUrl" alt="Playlist Image" />
-              <ion-card-header>
-                <ion-card-title>{{ playlist.name }}</ion-card-title>
-                <ion-card-subtitle>{{ playlist.privacy }}</ion-card-subtitle>
-              </ion-card-header>
-              <ion-card-content>
-                <p>{{ playlist.description }}</p>
-                <ion-button v-if="focusedPlaylist === playlist" expand="block">View Details</ion-button>
-              </ion-card-content>
+          <ion-col size="12" size-md="6" size-lg="4" v-for="playlist in playlists" :key="playlist.slug">
+            <ion-card @click="goToPlaylistDetails(playlist.slug)">
+              <div id="card-text">
+                <ion-card-header>
+                  <ion-card-title>{{ playlist.name }}</ion-card-title>
+                  <ion-card-subtitle>{{ playlist.privacy }}</ion-card-subtitle>
+                </ion-card-header>
+                <ion-card-content>
+                  <p>{{ playlist.description }}</p>
+                </ion-card-content>
+              </div>
+              <div id="card-image">
+                <img id="image" :src="playlist.imageUrl" alt="Playlist Image"/>
+              </div>
             </ion-card>
           </ion-col>
         </ion-row>
@@ -106,7 +114,7 @@ onMounted(async () => {
                 <ion-select v-model="newPlaylist.privacy" placeholder="Privacy">
                   <ion-select-option value="PUBLIC">Public</ion-select-option>
                   <ion-select-option value="PRIVATE">Private</ion-select-option>
-                  <ion-select-option value="PRIVATE">Protected</ion-select-option>
+                  <ion-select-option value="PROTECTED">Protected</ion-select-option>
                 </ion-select>
               </ion-item>
               <ion-button expand="block" type="submit" :disabled="!newPlaylist.name">Create Playlist</ion-button>
@@ -120,12 +128,39 @@ onMounted(async () => {
 
 <style scoped>
 
+ion-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  height: 15vh;
+}
+
 ion-card-title {
   font-size: 1.5rem;
 }
 
 ion-card-subtitle {
   color: #666;
+}
+
+#card-text {
+  height: 100%;
+  width: 60%;
+}
+
+#card-image {
+  width: 40%;
+  height: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 3%;
+}
+
+#image {
+  height: 100%;
+  border-radius: 20px;
 }
 
 #toolbar {
@@ -136,24 +171,18 @@ ion-card-subtitle {
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;
 }
 
-#toolbar-button{
+#toolbar-button {
   width: 25%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
-}
-
-img {
-  width: 100%;
-  height: auto;
-  border-radius: 0.5em;
 }
 
 .focused {

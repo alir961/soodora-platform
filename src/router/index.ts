@@ -5,6 +5,7 @@ import HomePage from '../views/HomePage.vue';
 import AccountPage from '../views/AccountPage.vue';
 import MarketPlacePage from '../views/MarketPlacePage.vue';
 import PlaylistPage from '../views/PlaylistPage.vue';
+import PlaylistDetailsPage from '@/views/PlaylistDetailsPage.vue';
 import NotFoundPage from '../views/NotFoundPage.vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -36,6 +37,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/auth',
     name: 'Auth',
     component: AuthPage
+  },
+  {
+    path: '/playlists/:slug',
+    name: 'PlaylistDetails',
+    component: PlaylistDetailsPage,
   },
   {
     path: '/:catchAll(.*)',

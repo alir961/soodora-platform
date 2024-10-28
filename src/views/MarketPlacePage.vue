@@ -47,6 +47,11 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>MarketPlace</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -139,13 +144,13 @@ ion-card-subtitle {
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;
 }
 
-#toolbar-button{
+#toolbar-button {
   width: 25%;
   display: flex;
   flex-direction: row;

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonCardTitle, IonCard, IonCardSubtitle, IonCardHeader, IonCardContent } from '@ionic/vue';
 import {getToken, getUserInfoFromPreferences, removeToken, removeUserInfo} from '@/utils/localStorage';
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -37,6 +37,11 @@ onMounted(async () => {
 
 <template>
   <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>Account</ion-title>
+      </ion-toolbar>
+    </ion-header>
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
@@ -56,7 +61,7 @@ onMounted(async () => {
 
       <div v-else>
         <div id="profile-container">
-          <ion-card>
+          <ion-card style="border-radius: 20px;">
             <ion-card-header>
               <ion-card-title>Welcome, {{ userInfo.username }}</ion-card-title>
               <ion-card-subtitle>Account information</ion-card-subtitle>
@@ -88,7 +93,7 @@ onMounted(async () => {
   margin-bottom: 4%;
 }
 
-#toolbar-title{
+#toolbar-title {
   padding-left: 3%;
   padding-top: 2%;
   padding-bottom: 2%;
