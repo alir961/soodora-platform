@@ -3,10 +3,15 @@ package com.grooveconductor.application.auth;
 import com.grooveconductor.application.common.Request;
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.application.common.InvalidRequestException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 
-public record LoginRequest(String email, String password) implements Request<LoginCommand> {
+public record LoginRequest(
+    @Schema(example = "string@example.com")
+    String email,
+    @Schema(example = "stringString#")
+    String password) implements Request<LoginCommand> {
 
     @Override
     public LoginCommand toCommand() throws InvalidRequestException {

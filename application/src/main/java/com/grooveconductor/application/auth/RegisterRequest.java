@@ -3,10 +3,18 @@ package com.grooveconductor.application.auth;
 import com.grooveconductor.application.common.Request;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.application.common.InvalidRequestException;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 
-public record RegisterRequest(String username, String email, String password, String firstname, String lastname) implements Request<RegisterCommand> {
+public record RegisterRequest(
+    String username,
+    @Schema(example = "string@example.com")
+    String email,
+    @Schema(example = "stringString#")
+    String password,
+    String firstname,
+    String lastname) implements Request<RegisterCommand> {
 
     @Override
     public RegisterCommand toCommand() throws InvalidRequestException {
