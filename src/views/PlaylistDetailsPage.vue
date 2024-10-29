@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { IonTitle, IonToolbar, IonHeader, IonContent, IonPage, IonCard, IonCardHeader, IonCardContent, IonCardSubtitle, IonIcon, IonModal, IonButton, IonItem, IonInput, IonSelect, IonSelectOption } from '@ionic/vue';
-import { createOutline } from 'ionicons/icons';
-import { useRoute } from 'vue-router';
+import { IonTitle, IonToolbar, IonHeader, IonContent, IonPage, IonCard, IonCardContent, IonCardSubtitle, IonIcon, IonModal, IonButton, IonButtons, IonItem, IonInput, IonSelect, IonSelectOption } from '@ionic/vue';
+import { arrowBack, createOutline } from 'ionicons/icons';
+import { useRoute, useRouter } from 'vue-router';
 import { fetchPlaylistBySlug } from '@/services/playlistService';
 import { getUserInfoFromPreferences } from '@/utils/localStorage';
 
 const route = useRoute();
+const router = useRouter();
 const playlist = ref({ name: '', description: '', imageUrl: '', privacy: '' });
 const userInfo = ref(null);
 const showModal = ref(false);
 
-// Load the playlist data by slug
 const loadPlaylist = async () => {
-  const slug = route.params.slug;
+  const slug: string = String(route.params.slug);
   try {
     playlist.value = await fetchPlaylistBySlug(slug);
   } catch (error) {
@@ -21,7 +21,6 @@ const loadPlaylist = async () => {
   }
 };
 
-// Load the user information
 const fetchUserInfo = async () => {
   try {
     userInfo.value = await getUserInfoFromPreferences();
@@ -30,14 +29,21 @@ const fetchUserInfo = async () => {
   }
 };
 
-// Save the updated playlist
 const handleUpdatePlaylist = async () => {
   try {
     await updatePlaylist(route.params.slug, playlist.value);
-    showModal.value = false; // Close the modal after updating
+    showModal.value = false;
   } catch (error) {
     console.error('Failed to update playlist:', error);
   }
+};
+
+const goBack = () => {
+  document.querySelectorAll('[aria-hidden="true"]').forEach(element => {
+    element.removeAttribute('aria-hidden');
+  });
+
+  router.back();
 };
 
 onMounted(async () => {
@@ -48,8 +54,13 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-header :translucent="true">
+    <ion-header :translucent="true" :aria-hidden="!showModal">
       <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-button @click="goBack()">
+            <ion-icon :icon="arrowBack" style="color: #3880ff"></ion-icon>
+          </ion-button>
+        </ion-buttons>
         <ion-title>{{ playlist.name }}</ion-title>
       </ion-toolbar>
     </ion-header>

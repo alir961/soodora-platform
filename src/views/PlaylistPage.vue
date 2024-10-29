@@ -9,7 +9,6 @@ import { getToken } from '@/utils/localStorage';
 
 const router = useRouter();
 const playlists = ref([]);
-const focusedPlaylist = ref(null);
 const showModal = ref(false);
 const newPlaylist = ref({ name: '', description: '', imageUrl: '', privacy: 'PUBLIC' });
 
@@ -32,7 +31,7 @@ const handleCreatePlaylist = async () => {
   }
 };
 
-const goToPlaylistDetails = (slug) => {
+const goToPlaylistDetails = (slug: string) => {
   router.push({ name: 'PlaylistDetails', params: { slug } });
 };
 
@@ -183,11 +182,6 @@ ion-card-subtitle {
   flex-direction: row;
   justify-content: center;
   align-items: center;
-}
-
-.focused {
-  border: 0.200em solid #3880ff;
-  transform: scale(1.05);
 }
 
 .modal-content {
