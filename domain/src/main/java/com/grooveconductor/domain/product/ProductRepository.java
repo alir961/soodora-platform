@@ -7,6 +7,7 @@ import java.util.List;
 public interface ProductRepository {
 
     ProductDTO save(CreateProductCommand command, UserDTO user);
+    ProductDTO update(UpdateProductCommand command, String slug);
     ProductDTO findBySlug(String slug);
     List<ProductDTO> findAll();
     void deleteProductBySlug(String slug);

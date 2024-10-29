@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.product;
 
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.ProductRepository;
@@ -47,6 +48,26 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();
+    }
+
+    @Override
+    public ProductDTO update(UpdateProductCommand command, String slug) {
+        ProductEntity existingProduct = findProductBySlugOrThrow(slug);
+
+        if (!command.name().equals(existingProduct.getName()))
+            existingProduct.setName(command.name());
+        if (!command.description().equals(existingProduct.getDescription()))
+            existingProduct.setDescription(command.description());
+        if (!command.category().equals(existingProduct.getCategory()))
+            existingProduct.setCategory(command.category());
+        if (!command.imageUrl().equals(existingProduct.getImageUrl()))
+            existingProduct.setImageUrl(command.imageUrl());
+        if (command.price() != existingProduct.getPrice())
+            existingProduct.setPrice(command.price());
+        if (command.quantity() != existingProduct.getQuantity())
+            existingProduct.setQuantity(command.quantity());
+
+        return repository.save(existingProduct).toDTO();
     }
 
     @Override

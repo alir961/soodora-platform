@@ -2,10 +2,7 @@ package com.grooveconductor.application.product;
 
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.product.CreateProductCommand;
-import com.grooveconductor.domain.product.ProductDTO;
-import com.grooveconductor.domain.product.ProductFilter;
-import com.grooveconductor.domain.product.ProductRepository;
+import com.grooveconductor.domain.product.*;
 import com.grooveconductor.domain.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,6 +33,7 @@ class ProductServiceTest {
     private static final ProductDTO PRODUCT_1 = buildProduct("1");
     private static final ProductDTO PRODUCT_2 = buildProduct("2");
     private static final ProductDTO PRODUCT_3 = buildProduct("3");
+    private static final String slug1 = "slug1";
     private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
         PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(), PRODUCT_1.quantity()
@@ -96,6 +94,29 @@ class ProductServiceTest {
 
         // THEN
         assertThrows(UnknownUserException.class, executable);
+    }
+
+    @Test
+    void updateProduct_Success() {
+        UpdateProductCommand updateCommand = new UpdateProductCommand("Updated Name", "Updated Description", "newImageUrl", "newCategory", 150, 5);
+
+        when(productRepository.update(updateCommand, slug1)).thenReturn(PRODUCT_1);
+
+        ProductDTO updatedProduct = productService.updateProduct(updateCommand, slug1);
+
+        assertEquals(PRODUCT_1, updatedProduct);
+        verify(productRepository, times(1)).update(any(UpdateProductCommand.class), eq(slug1));
+    }
+
+    @Test
+    void updateProduct_UnknownSlug() {
+        UpdateProductCommand updateCommand = new UpdateProductCommand("Updated Name", "Updated Description", "newImageUrl", "newCategory", 150, 5);
+
+        when(productRepository.update(updateCommand, slug1)).thenThrow(new UnknownSlugException("Slug not found"));
+
+        assertThrows(ProductUnityException.class, () -> {
+            productService.updateProduct(updateCommand, slug1);
+        });
     }
 
     @Test
