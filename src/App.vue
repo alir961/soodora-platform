@@ -9,11 +9,6 @@
           <ion-label>Home</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="account" href="/account">
-          <ion-icon :icon="personOutline" />
-          <ion-label>Account</ion-label>
-        </ion-tab-button>
-
         <ion-tab-button tab="marketplace" href="/marketplace">
           <ion-icon :icon="cartOutline" />
           <ion-label>Marketplace</ion-label>
@@ -22,6 +17,11 @@
         <ion-tab-button tab="playlist" href="/playlist">
           <ion-icon :icon="musicalNotesOutline" />
           <ion-label>Playlist</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="account" href="/account">
+          <ion-icon :icon="personOutline" />
+          <ion-label>Account</ion-label>
         </ion-tab-button>
 
       </ion-tab-bar>

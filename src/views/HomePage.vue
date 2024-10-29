@@ -1,3 +1,21 @@
+<script setup lang="ts">
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { getToken } from '@/utils/localStorage';
+
+const router = useRouter();
+
+onMounted(async () => {
+  const token = await getToken();
+  
+  if (!token) {
+    await router.push('/auth');
+  }
+});
+
+</script>
+
 <template>
   <ion-page>
     <ion-header :translucent="true">
@@ -5,11 +23,14 @@
         <ion-title>Home</ion-title>
       </ion-toolbar>
     </ion-header>
-
     <ion-content :fullscreen="true">
       <ion-header collapse="condense">
         <ion-toolbar>
-          <ion-title size="large">Home</ion-title>
+          <div id="toolbar">
+            <div id="toolbar-title">
+              <ion-title size="large">Home</ion-title>
+            </div>
+          </div>
         </ion-toolbar>
       </ion-header>
 
@@ -29,25 +50,26 @@
   </ion-page>
 </template>
 
-<script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/vue';
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { getToken } from '@/utils/localStorage';
-
-const router = useRouter();
-
-onMounted(async () => {
-  const token = await getToken();
-  
-  if (!token) {
-    await router.push('/auth');
-  }
-});
-
-</script>
-
 <style scoped>
+
+ion-title {
+  align-items: center;
+}
+
+#toolbar {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 4%;
+  margin-bottom: 4%;
+}
+
+#toolbar-title {
+  padding-left: 3%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+}
+
 #container {
   text-align: center;
   position: absolute;
