@@ -1,7 +1,9 @@
 package com.grooveconductor.rest.playlist;
 
+import com.grooveconductor.application.playlist.*;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.PlaylistFilter;
+import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.playlist.PlaylistUnityException;
@@ -53,6 +55,18 @@ public class PlaylistController {
     @GetMapping("/{slug}")
     public PlaylistDTO getPlaylist(@PathVariable String slug) {
         return playlistService.retrievePlaylistBySlug(slug);
+    }
+
+    @PutMapping("/{slug}")
+    public ResponseEntity<JsonResponse> updatePlaylist(@PathVariable String slug, @RequestBody UpdatePlaylistRequest request) {
+        try {
+            UpdatePlaylistCommand command = request.toCommand();
+
+            playlistService.updatePlaylist(command, slug);
+            return new ResponseEntity<>(ACCEPTED);
+        } catch (InvalidRequestException | UnknownPlaylistException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{slug}")

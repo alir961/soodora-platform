@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.playlist;
 
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.PlaylistRepository;
@@ -39,6 +40,22 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();
+    }
+
+    @Override
+    public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
+        PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
+
+        if (command.name() != null && !command.name().equals(existingPlaylist.getName()))
+            existingPlaylist.setName(command.name());
+        if (command.description() != null && !command.description().equals(existingPlaylist.getDescription()))
+            existingPlaylist.setDescription(command.description());
+        if (command.imageUrl() != null && !command.imageUrl().equals(existingPlaylist.getImageUrl()))
+            existingPlaylist.setImageUrl(command.imageUrl());
+        if (command.privacyState() != null && !command.privacyState().equals(existingPlaylist.getPrivacy()))
+            existingPlaylist.setPrivacy(command.privacyState());
+
+        return repository.save(existingPlaylist).toDTO();
     }
 
     @Override
