@@ -5,7 +5,9 @@ import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.product.CreateProductRequest;
 import com.grooveconductor.application.product.ProductService;
+import com.grooveconductor.application.product.UpdateProductRequest;
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -41,47 +44,13 @@ class ProductControllerIT {
     @MockBean
     private JwtTokenService jwtTokenService;
 
-    @Test
-    void getProducts_Success() throws Exception {
-        // GIVEN
-        ProductDTO product = buildDefaultProduct();
-        when(productService.retrieveAllProducts()).thenReturn(Collections.singletonList(product));
-
-        // WHEN & THEN
-        mockMvc.perform(get("/products"))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    void getProduct_Success() throws Exception {
-        // GIVEN
-        ProductDTO product = buildDefaultProduct();
-        when(productService.retrieveProduct("product-slug")).thenReturn(product);
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user@example.com");
-
-        // WHEN & THEN
-        mockMvc.perform(get("/products/product-slug")
-                .header("Authorization", "Bearer token"))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void deleteProduct_Success() throws Exception {
-        // GIVEN
-        doNothing().when(productService).deleteProductBySlug("product-slug");
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
-
-        // WHEN & THEN
-        mockMvc.perform(delete("/products/product-slug")
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isOk());
-        verify(productService, times(1)).deleteProductBySlug("product-slug");
-    }
+    private static final ProductDTO A_PRODUCT = buildDefaultProduct();
 
     @Test
     void createProduct_Success() throws Exception {
         // GIVEN
-        CreateProductRequest request = new CreateProductRequest("Product Name", "Description", "image-url", "category", 100, 10);
+        CreateProductRequest request = new CreateProductRequest("Product Name", "Description",
+            "image-url", "category", 100, 10);
         UserDTO user = buildDefaultUser();
 
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
@@ -115,6 +84,66 @@ class ProductControllerIT {
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(request)))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void getProducts_Success() throws Exception {
+        when(productService.retrieveAllProducts()).thenReturn(Collections.singletonList(A_PRODUCT));
+
+        mockMvc.perform(get("/products"))
+            .andExpect(status().isOk());
+    }
+
+    @Test
+    void getProduct_Success() throws Exception {
+        when(productService.retrieveProduct("product-slug")).thenReturn(A_PRODUCT);
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user@example.com");
+
+        mockMvc.perform(get("/products/product-slug")
+                .header("Authorization", "Bearer token"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void updateProduct_Success() throws Exception {
+        UpdateProductRequest updateProductRequest = new UpdateProductRequest("Updated Product Name",
+            "Updated Description", "image", "Updated Category", 10,  20);
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
+        mockMvc.perform(put("/products/productSlug1")
+                .contentType("application/json")
+                .content(asJsonString(updateProductRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isAccepted());
+    }
+
+    @Test
+    void updateProduct_InvalidRequest() throws Exception {
+        UpdateProductRequest updateProductRequest = new UpdateProductRequest("", "", "",
+            "", 0, 0);
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        doThrow(new InvalidRequestException("Invalid request"))
+            .when(productService).updateProduct(any(UpdateProductCommand.class), eq("productSlug1"));
+
+        mockMvc.perform(put("/products/productSlug1")
+                .contentType("application/json")
+                .content(asJsonString(updateProductRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.reason").value("Price is not valid"));
+    }
+
+    @Test
+    void deleteProduct_Success() throws Exception {
+        // GIVEN
+        doNothing().when(productService).deleteProductBySlug("product-slug");
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/products/product-slug")
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isOk());
+        verify(productService, times(1)).deleteProductBySlug("product-slug");
     }
 
 }

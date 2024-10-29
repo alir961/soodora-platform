@@ -43,9 +43,9 @@ public class UserRepositoryImpl implements UserRepository {
         if (!command.username().equals(existingUser.getUsername()))
             existingUser.setUsername(command.username());
         if (!command.firstname().equals(existingUser.getFirstname()))
-            existingUser.setUsername(command.firstname());
+            existingUser.setFirstname(command.firstname());
         if (!command.lastname().equals(existingUser.getLastname()))
-            existingUser.setUsername(command.lastname());
+            existingUser.setLastname(command.lastname());
 
         return userRepository.save(existingUser).toDTO();
     }

@@ -1,9 +1,12 @@
 package com.grooveconductor.rest.user;
 
 import com.grooveconductor.application.auth.JwtTokenService;
+import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.application.user.UpdateUserRequest;
 import com.grooveconductor.application.user.UserService;
 import com.grooveconductor.domain.user.Identifier;
+import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +16,14 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.rest.JsonStringify.asJsonString;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -111,6 +114,34 @@ class UserControllerIT {
         // WHEN & THEN
         mockMvc.perform(get("/users/slug1"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateUser_Success() throws Exception {
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("newUsername", "firstname", "lastname");
+
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
+        mockMvc.perform(put("/users/" + USER_1.slug())
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isAccepted());
+    }
+
+    @Test
+    void updateUser_InvalidRequest() throws Exception {
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "");
+
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        doThrow(new InvalidRequestException("Invalid Request")).when(userService).updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()));
+
+        mockMvc.perform(put("/users/" + USER_1.slug())
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.reason").value("Invalid Request"));
     }
 
     @Test
