@@ -4,10 +4,7 @@ import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.product.ProductDTO;
-import com.grooveconductor.domain.user.Identifier;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.user.UnknownIdentifierException;
-import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.domain.user.*;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -38,6 +35,21 @@ public class UserRepositoryImpl implements UserRepository {
         user.setRoles(new HashSet<>());
         return userRepository.save(user).toDTO();
     }
+
+    @Override
+    public UserDTO update(UpdateUserCommand command, Identifier identifier) {
+        UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
+
+        if (!command.username().equals(existingUser.getUsername()))
+            existingUser.setUsername(command.username());
+        if (!command.firstname().equals(existingUser.getFirstname()))
+            existingUser.setUsername(command.firstname());
+        if (!command.lastname().equals(existingUser.getLastname()))
+            existingUser.setUsername(command.lastname());
+
+        return userRepository.save(existingUser).toDTO();
+    }
+
 
     @Override
     public UserDTO find(Identifier identifier) {

@@ -1,7 +1,13 @@
 package com.grooveconductor.rest.user;
 
+import com.grooveconductor.application.common.InvalidRequestException;
+import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.application.user.UpdateUserRequest;
+import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.user.UserService;
+import com.grooveconductor.rest.common.ExceptionResponse;
+import com.grooveconductor.rest.common.JsonResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +42,18 @@ public class UserController {
         UserDTO user = service.retrieveUser(createFromSlug(slug));
 
         return new ResponseEntity<>(user, OK);
+    }
+
+    @PutMapping("/{slug}")
+    public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
+        try {
+            UpdateUserCommand command = request.toCommand();
+
+            service.updateUser(command, slug);
+            return new ResponseEntity<>(ACCEPTED);
+        } catch (InvalidRequestException | UnknownUserException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
     }
 
     @DeleteMapping("/{slug}")

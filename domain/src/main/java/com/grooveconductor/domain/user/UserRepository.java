@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface UserRepository {
 
     UserDTO save(RegisterCommand command);
+    UserDTO update(UpdateUserCommand command, Identifier identifier);
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
     void delete(Identifier identifier);

@@ -1,9 +1,6 @@
 package com.grooveconductor.application.user;
 
-import com.grooveconductor.domain.user.Identifier;
-import com.grooveconductor.domain.user.UnknownIdentifierException;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.domain.user.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -99,6 +96,37 @@ class UserServiceTest {
 
         // THEN
         assertEquals(USER, retrievedUser);
+    }
+
+    @Test
+    void updateUser_Success() {
+        // GIVEN
+        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
+        Identifier identifier = new Identifier(SLUG, USER.slug());
+
+        when(userRepository.update(updateCommand, identifier)).thenReturn(USER);
+
+        // WHEN
+        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug());
+
+        // THEN
+        assertEquals(USER, updatedUser);
+        verify(userRepository, times(1)).update(updateCommand, identifier);
+    }
+
+    @Test
+    void updateUser_UnknownIdentifier() {
+        // GIVEN
+        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
+        Identifier identifier = new Identifier(SLUG, USER.slug());
+
+        when(userRepository.update(updateCommand, identifier)).thenThrow(new UnknownIdentifierException("Identifier not found"));
+
+        // WHEN
+        Executable executable = () -> userService.updateUser(updateCommand, USER.slug());
+
+        // THEN
+        assertThrows(UnknownIdentifierException.class, executable);
     }
 
     @Test
