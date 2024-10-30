@@ -1,0 +1,75 @@
+<script setup lang="ts">
+import {IonButton, IonCard, IonIcon, onIonViewWillEnter} from '@ionic/vue';
+import {deleteBearerToken, deleteUserData} from '@/store/localStorage';
+import {ref} from 'vue';
+import {Router, useRouter} from 'vue-router';
+import {User} from '@/entity/User';
+import {redirectLogin} from '@/utils';
+import ProfileComponent from '@/component/user/ProfileComponent.vue';
+import {retrieveAuthenticatedProfile} from '@/client/profileClient';
+import ApplicationViewport from '@/view/ApplicationViewport.vue';
+
+const router: Router = useRouter();
+const userData = ref(null as User | null);
+
+const fetchUserData = async () => {
+  try {
+    userData.value = await retrieveAuthenticatedProfile();
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  }
+};
+
+const logout = async () => {
+  await deleteBearerToken();
+  await deleteUserData();
+  await redirectLogin(router);
+};
+
+onIonViewWillEnter(async () => {
+  await fetchUserData();
+});
+</script>
+
+<template>
+  <ApplicationViewport title="Account" authenticated>
+    <div v-if="!userData" class="loading">
+      <p>Loading...</p>
+    </div>
+
+    <ion-card v-else>
+      <ProfileComponent :profile="userData"/>
+    </ion-card>
+
+    <ion-button expand="block" @click="logout" id="logout-button">
+      <ion-icon :icon="logOutOutline"/>
+      Logout
+    </ion-button>
+  </ApplicationViewport>
+</template>
+
+<style scoped>
+.loading {
+  text-align: center;
+  font-size: 2.0em;
+  color: #8c8c8c;
+  font-weight: 800;
+}
+
+ion-card {
+  border-radius: 20px;
+  margin: 0 20px 20px 20px;
+}
+
+#logout-button {
+  --background: #cc2222;
+  --color: white;
+
+  border-radius: 20px;
+  margin: 0 20px 20px 20px;
+
+  & ion-icon {
+    margin-right: 10px;
+  }
+}
+</style>
