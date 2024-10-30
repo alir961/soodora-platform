@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { getToken } from '@/utils/localStorage';
+import {Ref} from "vue";
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -13,6 +14,20 @@ const fetchPlaylists = async (userSlug: string) => {
         });
         return response.data;
     } catch (error)  {
+        throw error;
+    }
+};
+
+const updatePlaylist = async (slug: string, playlistData: Ref) => {
+    const token = await getToken();
+    try {
+        const response = await axios.put(`${apiUrl}/playlists/${slug}`, playlistData.value, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
         throw error;
     }
 };
@@ -44,4 +59,4 @@ const fetchPlaylistBySlug = async (slug: string) => {
     }
   };
 
-export { fetchPlaylists, createPlaylist, fetchPlaylistBySlug }; // Export the new function
+export { fetchPlaylists, createPlaylist, fetchPlaylistBySlug, updatePlaylist };

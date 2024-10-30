@@ -3,7 +3,7 @@ import { ref, onMounted } from 'vue';
 import { IonTitle, IonToolbar, IonHeader, IonContent, IonPage, IonCard, IonCardContent, IonCardSubtitle, IonIcon, IonModal, IonButton, IonButtons, IonItem, IonInput, IonSelect, IonSelectOption } from '@ionic/vue';
 import { arrowBack, createOutline } from 'ionicons/icons';
 import { useRoute, useRouter } from 'vue-router';
-import { fetchPlaylistBySlug } from '@/services/playlistService';
+import { fetchPlaylistBySlug, updatePlaylist } from '@/services/playlistService';
 import { getUserInfoFromPreferences } from '@/utils/localStorage';
 
 const route = useRoute();
@@ -30,8 +30,9 @@ const fetchUserInfo = async () => {
 };
 
 const handleUpdatePlaylist = async () => {
+  const slug: string = String(route.params.slug);
   try {
-    await updatePlaylist(route.params.slug, playlist.value);
+    await updatePlaylist(slug, playlist);
     showModal.value = false;
   } catch (error) {
     console.error('Failed to update playlist:', error);
