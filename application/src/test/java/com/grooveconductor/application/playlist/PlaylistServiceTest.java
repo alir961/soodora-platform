@@ -11,7 +11,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Optional;
+
+import static java.util.Optional.of;
 
 import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static com.grooveconductor.test.TestConstants.USER;
@@ -36,7 +37,7 @@ class PlaylistServiceTest {
     private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
     private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
-    private static final String slug1 = "slug1";
+    private static final String SLUG_1 = "slug1";
     private static final List<PlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
 
     @BeforeEach
@@ -75,24 +76,32 @@ class PlaylistServiceTest {
 
     @Test
     void updatePlaylist_Success() {
-        UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand("Updated Name", "Updated Description", "newImageUrl", PUBLIC);
+        UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand(
+            of("Updated Name"),
+            of("Updated Description"),
+            of("newImageUrl"),
+            of(PUBLIC));
 
-        when(playlistRepository.update(updateCommand, slug1)).thenReturn(PLAYLIST_1);
+        when(playlistRepository.update(updateCommand, SLUG_1)).thenReturn(PLAYLIST_1);
 
-        PlaylistDTO updatedPlaylist = playlistService.updatePlaylist(updateCommand, slug1);
+        PlaylistDTO updatedPlaylist = playlistService.updatePlaylist(updateCommand, SLUG_1);
 
         assertEquals(PLAYLIST_1, updatedPlaylist);
-        verify(playlistRepository, times(1)).update(any(UpdatePlaylistCommand.class), eq(slug1));
+        verify(playlistRepository, times(1)).update(any(UpdatePlaylistCommand.class), eq(SLUG_1));
     }
 
     @Test
     void updatePlaylist_UnknownSlug() {
-        UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand("Updated Name", "Updated Description", "newImageUrl", PUBLIC);
+        UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand(
+            of("Updated Name"),
+            of("Updated Description"),
+            of("newImageUrl"),
+            of(PUBLIC));
 
-        when(playlistRepository.update(updateCommand, slug1)).thenThrow(new UnknownSlugException("Slug not found"));
+        when(playlistRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));
 
         assertThrows(PlaylistUnityException.class, () -> {
-            playlistService.updatePlaylist(updateCommand, slug1);
+            playlistService.updatePlaylist(updateCommand, SLUG_1);
         });
     }
 
@@ -137,7 +146,7 @@ class PlaylistServiceTest {
     @Test
     void retrievePlaylist_FilterUserSlug() {
         // GIVEN
-        PlaylistFilter filter = new PlaylistFilter(Optional.of(USER.slug()));
+        PlaylistFilter filter = new PlaylistFilter(of(USER.slug()));
 
         when(userRepository.retrievePlaylists(any())).thenReturn(List.of(PLAYLIST_1, PLAYLIST_3));
 

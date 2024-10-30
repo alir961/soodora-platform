@@ -4,7 +4,11 @@ import com.grooveconductor.domain.artist.CreateArtistCommand;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.common.Request;
 
-public record CreateArtistRequest(String name, String description, String imageUrl) implements Request<CreateArtistCommand> {
+public record CreateArtistRequest(
+    String name,
+    String description,
+    String imageUrl
+) implements Request<CreateArtistCommand> {
 
     @Override
     public CreateArtistCommand toCommand() throws InvalidRequestException{

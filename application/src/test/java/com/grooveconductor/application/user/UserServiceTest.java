@@ -17,6 +17,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static java.util.Optional.of;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
@@ -101,7 +102,10 @@ class UserServiceTest {
     @Test
     void updateUser_Success() {
         // GIVEN
-        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
+        UpdateUserCommand updateCommand = new UpdateUserCommand(
+            of("New Name"),
+            of("Name"),
+            of("lastName"));
         Identifier identifier = new Identifier(SLUG, USER.slug());
 
         when(userRepository.update(updateCommand, identifier)).thenReturn(USER);
@@ -117,7 +121,10 @@ class UserServiceTest {
     @Test
     void updateUser_UnknownIdentifier() {
         // GIVEN
-        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
+        UpdateUserCommand updateCommand = new UpdateUserCommand(
+            of("New Name"),
+            of("Name"),
+            of("lastName"));
         Identifier identifier = new Identifier(SLUG, USER.slug());
 
         when(userRepository.update(updateCommand, identifier)).thenThrow(new UnknownIdentifierException("Identifier not found"));

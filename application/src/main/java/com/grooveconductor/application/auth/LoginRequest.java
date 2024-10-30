@@ -11,7 +11,8 @@ public record LoginRequest(
     @Schema(example = "string@example.com")
     String email,
     @Schema(example = "stringString#")
-    String password) implements Request<LoginCommand> {
+    String password
+) implements Request<LoginCommand> {
 
     @Override
     public LoginCommand toCommand() throws InvalidRequestException {

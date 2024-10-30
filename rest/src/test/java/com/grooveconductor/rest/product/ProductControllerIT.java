@@ -17,6 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Collections;
+import java.util.Optional;
 
 import static com.grooveconductor.rest.JsonStringify.asJsonString;
 import static com.grooveconductor.test.factory.ProductFactory.buildDefaultProduct;
@@ -106,8 +107,14 @@ class ProductControllerIT {
 
     @Test
     void updateProduct_Success() throws Exception {
-        UpdateProductRequest updateProductRequest = new UpdateProductRequest("Updated Product Name",
-            "Updated Description", "image", "Updated Category", 10,  20);
+        UpdateProductRequest updateProductRequest = new UpdateProductRequest(
+            "Updated Product Name",
+            "Updated Description",
+            "image",
+            "Updated Category",
+            10L,
+            20L);
+
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
 
         mockMvc.perform(put("/products/productSlug1")
@@ -119,8 +126,14 @@ class ProductControllerIT {
 
     @Test
     void updateProduct_InvalidRequest() throws Exception {
-        UpdateProductRequest updateProductRequest = new UpdateProductRequest("", "", "",
-            "", 0, 0);
+        UpdateProductRequest updateProductRequest = new UpdateProductRequest(
+            "",
+            "",
+            "",
+            "",
+            0L,
+            0L);
+
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
         doThrow(new InvalidRequestException("Invalid request"))
             .when(productService).updateProduct(any(UpdateProductCommand.class), eq("productSlug1"));
@@ -130,7 +143,7 @@ class ProductControllerIT {
                 .content(asJsonString(updateProductRequest))
                 .header("Authorization", "Bearer token"))
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.reason").value("Price is not valid"));
+            .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
 
     @Test

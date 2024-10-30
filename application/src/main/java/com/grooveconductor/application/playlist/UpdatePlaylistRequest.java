@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
+import static java.util.Optional.ofNullable;
 
 public record UpdatePlaylistRequest(
     String name,
@@ -16,7 +17,8 @@ public record UpdatePlaylistRequest(
         "Playlist privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")
     String privacy,
-    String imageUrl) implements Request<UpdatePlaylistCommand> {
+    String imageUrl
+) implements Request<UpdatePlaylistCommand> {
 
   static String privacyValues = Stream.of(PlaylistPrivacy.values())
       .map(Enum::toString)
@@ -27,10 +29,10 @@ public record UpdatePlaylistRequest(
     PlaylistPrivacy privacyState = parsePrivacy(privacy);
 
     return new UpdatePlaylistCommand(
-        name,
-        description,
-        imageUrl,
-        privacyState);
+        ofNullable(name),
+        ofNullable(description),
+        ofNullable(imageUrl),
+        ofNullable(privacyState));
   }
 
   private PlaylistPrivacy parsePrivacy(String privacy) {

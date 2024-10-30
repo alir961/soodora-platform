@@ -118,7 +118,10 @@ class UserControllerIT {
 
     @Test
     void updateUser_Success() throws Exception {
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("newUsername", "firstname", "lastname");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest(
+            "newUsername",
+            "firstname",
+            "lastname");
 
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
 
@@ -131,7 +134,10 @@ class UserControllerIT {
 
     @Test
     void updateUser_InvalidRequest() throws Exception {
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest(
+            "",
+            "",
+            "");
 
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
         doThrow(new InvalidRequestException("Invalid Request")).when(userService).updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()));

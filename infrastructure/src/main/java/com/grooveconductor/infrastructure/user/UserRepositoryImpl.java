@@ -40,12 +40,12 @@ public class UserRepositoryImpl implements UserRepository {
     public UserDTO update(UpdateUserCommand command, Identifier identifier) {
         UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
 
-        if (!command.username().equals(existingUser.getUsername()))
-            existingUser.setUsername(command.username());
-        if (!command.firstname().equals(existingUser.getFirstname()))
-            existingUser.setFirstname(command.firstname());
-        if (!command.lastname().equals(existingUser.getLastname()))
-            existingUser.setLastname(command.lastname());
+        if (command.getUsername() != null && !command.getUsername().isBlank() && !command.getUsername().equals(existingUser.getUsername()))
+            existingUser.setUsername(command.getUsername());
+        if (command.getFirstname() != null && !command.getFirstname().isBlank() && !command.getFirstname().equals(existingUser.getFirstname()))
+            existingUser.setFirstname(command.getFirstname());
+        if (command.getLastname() != null && !command.getLastname().isBlank() && !command.getLastname().equals(existingUser.getLastname()))
+            existingUser.setLastname(command.getLastname());
 
         return userRepository.save(existingUser).toDTO();
     }

@@ -14,7 +14,8 @@ public record RegisterRequest(
     @Schema(example = "stringString#")
     String password,
     String firstname,
-    String lastname) implements Request<RegisterCommand> {
+    String lastname
+) implements Request<RegisterCommand> {
 
     @Override
     public RegisterCommand toCommand() throws InvalidRequestException {

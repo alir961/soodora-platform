@@ -4,7 +4,14 @@ import com.grooveconductor.application.common.Request;
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.application.common.InvalidRequestException;
 
-public record CreateProductRequest(String name, String description, String imageUrl, String category, long price, long quantity) implements Request<CreateProductCommand> {
+public record CreateProductRequest(
+    String name,
+    String description,
+    String imageUrl,
+    String category,
+    long price,
+    long quantity
+) implements Request<CreateProductCommand> {
 
     @Override
     public CreateProductCommand toCommand() {

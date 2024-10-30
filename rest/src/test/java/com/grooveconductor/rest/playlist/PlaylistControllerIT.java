@@ -97,8 +97,11 @@ class PlaylistControllerIT {
 
     @Test
     void updatePlaylist_Success() throws Exception {
-        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest("Updated Playlist Name",
-            "Updated Description", "PUBLIC", "");
+        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
+            "Updated Playlist Name",
+            "Updated Description",
+            "PUBLIC",
+            "");
 
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
 
@@ -111,8 +114,11 @@ class PlaylistControllerIT {
 
     @Test
     void updatePlaylist_InvalidRequest() throws Exception {
-        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest("", "",
-            "PUBLIC", "");
+        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
+            "",
+            "",
+            "PUBLIC",
+            "");
 
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
         doThrow(new InvalidRequestException("Invalid request"))

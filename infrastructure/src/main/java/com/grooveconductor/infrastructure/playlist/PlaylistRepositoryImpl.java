@@ -12,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
+
+import static java.util.Objects.equals;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -46,14 +49,14 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
-        if (command.name() != null && !command.name().equals(existingPlaylist.getName()))
-            existingPlaylist.setName(command.name());
-        if (command.description() != null && !command.description().equals(existingPlaylist.getDescription()))
-            existingPlaylist.setDescription(command.description());
-        if (command.imageUrl() != null && !command.imageUrl().equals(existingPlaylist.getImageUrl()))
-            existingPlaylist.setImageUrl(command.imageUrl());
-        if (command.privacyState() != null && !command.privacyState().equals(existingPlaylist.getPrivacy()))
-            existingPlaylist.setPrivacy(command.privacyState());
+        if (command.getName() != null && !command.getName().isBlank() && !command.getName().equals(existingPlaylist.getName()))
+            existingPlaylist.setName(command.getName());
+        if (command.getDescription() != null && !command.getDescription().isBlank() && !command.getDescription().equals(existingPlaylist.getDescription()))
+            existingPlaylist.setDescription(command.getDescription());
+        if (command.getImageUrl() != null && !command.getImageUrl().isBlank() && !command.getImageUrl().equals(existingPlaylist.getImageUrl()))
+            existingPlaylist.setImageUrl(command.getImageUrl());
+        if (command.getPrivacyState() != null && !command.getPrivacyState().equals(existingPlaylist.getPrivacy()))
+            existingPlaylist.setPrivacy(command.getPrivacyState());
 
         return repository.save(existingPlaylist).toDTO();
     }
