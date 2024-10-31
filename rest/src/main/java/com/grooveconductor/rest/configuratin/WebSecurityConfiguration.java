@@ -42,6 +42,7 @@ public class WebSecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers(
+                                "/status",
                                 "/auth/**",
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
