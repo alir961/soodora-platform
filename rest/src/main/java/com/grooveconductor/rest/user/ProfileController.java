@@ -1,15 +1,23 @@
 package com.grooveconductor.rest.user;
 
 import com.grooveconductor.application.auth.AuthenticationService;
+import com.grooveconductor.application.common.InvalidRequestException;
+import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.application.user.UpdateUserRequest;
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.user.UserService;
+import com.grooveconductor.rest.common.ExceptionResponse;
+import com.grooveconductor.rest.common.JsonResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import static org.springframework.http.HttpStatus.ACCEPTED;
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
 @RequestMapping("/profile")
@@ -26,6 +34,19 @@ public class ProfileController {
         UserDTO user = authenticationService.getAuthenticatedUser();
 
         return userService.retrieveUser(user.identifier());
+    }
+
+    @PutMapping
+    public ResponseEntity<JsonResponse> updateProfile(@RequestBody UpdateUserRequest request) {
+        try {
+            UserDTO user = authenticationService.getAuthenticatedUser();
+            UpdateUserCommand command = request.toCommand();
+
+            userService.updateUser(command, user.slug());
+            return new ResponseEntity<>(ACCEPTED);
+        } catch (InvalidRequestException | UnknownUserException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
     }
 
     @GetMapping("/artist")

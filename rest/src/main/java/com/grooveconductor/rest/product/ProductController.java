@@ -1,15 +1,14 @@
 package com.grooveconductor.rest.product;
 
+import com.grooveconductor.application.product.*;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.product.ProductFilter;
+import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.application.common.InvalidRequestException;
-import com.grooveconductor.application.product.ProductUnityException;
-import com.grooveconductor.application.product.CreateProductRequest;
 import com.grooveconductor.rest.common.ExceptionResponse;
 import com.grooveconductor.rest.common.JsonResponse;
 import com.grooveconductor.application.auth.AuthenticationService;
-import com.grooveconductor.application.product.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
-import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.*;
 
 
 @RestController
@@ -56,6 +54,19 @@ public class ProductController {
     @GetMapping("/{slug}")
     public ProductDTO getProduct(@PathVariable String slug) {
         return service.retrieveProduct(slug);
+    }
+
+    @SecurityRequirement(name = "bearerAuth")
+    @PutMapping("/{slug}")
+    public ResponseEntity<JsonResponse> updateProduct(@PathVariable String slug, @RequestBody UpdateProductRequest request) {
+        try {
+            UpdateProductCommand command = request.toCommand();
+
+            service.updateProduct(command, slug);
+            return new ResponseEntity<>(ACCEPTED);
+        } catch (InvalidRequestException | UnknownProductException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
     }
 
     @SecurityRequirement(name = "bearerAuth")

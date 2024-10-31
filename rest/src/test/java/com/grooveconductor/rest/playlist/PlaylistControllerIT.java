@@ -4,11 +4,13 @@ import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.playlist.CreatePlaylistRequest;
+import com.grooveconductor.application.playlist.UpdatePlaylistRequest;
 import com.grooveconductor.application.playlist.PlaylistService;
 import com.grooveconductor.application.playlist.PlaylistUnityException;
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,44 @@ class PlaylistControllerIT {
                 .header("Authorization", "Bearer token"))
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.reason").value("Name is already used"));
+    }
+
+    @Test
+    void updatePlaylist_Success() throws Exception {
+        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
+            "Updated Playlist Name",
+            "Updated Description",
+            "PUBLIC",
+            "");
+
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+
+        mockMvc.perform(put("/playlists/playlistSlug1")
+                .contentType("application/json")
+                .content(asJsonString(updatePlaylistRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isAccepted());
+    }
+
+    @Test
+    void updatePlaylist_InvalidRequest() throws Exception {
+        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
+            "",
+            "",
+            "PUBLIC",
+            "");
+
+        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        doThrow(new InvalidRequestException("Invalid request"))
+            .when(playlistService)
+            .updatePlaylist(any(UpdatePlaylistCommand.class), eq("playlistSlug1"));
+
+        mockMvc.perform(put("/playlists/playlistSlug1")
+                .contentType("application/json")
+                .content(asJsonString(updatePlaylistRequest))
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
 
     @Test

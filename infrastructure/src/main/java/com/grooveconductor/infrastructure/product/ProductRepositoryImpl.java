@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.product;
 
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.ProductRepository;
@@ -47,6 +48,26 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();
+    }
+
+    @Override
+    public ProductDTO update(UpdateProductCommand command, String slug) {
+        ProductEntity existingProduct = findProductBySlugOrThrow(slug);
+
+        if (command.getName() != null && !command.getName().isBlank() && !command.getName().equals(existingProduct.getName()))
+            existingProduct.setName(command.getName());
+        if (command.getDescription() != null && !command.getDescription().isBlank() && !command.getDescription().equals(existingProduct.getDescription()))
+            existingProduct.setDescription(command.getDescription());
+        if (command.getCategory() != null && !command.getCategory().isBlank() && !command.getCategory().equals(existingProduct.getCategory()))
+            existingProduct.setCategory(command.getCategory());
+        if (command.getImageUrl() != null && !command.getImageUrl().isBlank() && !command.getImageUrl().equals(existingProduct.getImageUrl()))
+            existingProduct.setImageUrl(command.getImageUrl());
+        if (command.getPrice() != 0 && command.getPrice() != existingProduct.getPrice())
+            existingProduct.setPrice(command.getPrice());
+        if (command.getQuantity() != 0 && command.getQuantity() != existingProduct.getQuantity())
+            existingProduct.setQuantity(command.getPrice());
+
+        return repository.save(existingProduct).toDTO();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.playlist;
 
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.PlaylistRepository;
@@ -11,6 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
+
+import static java.util.Objects.equals;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -39,6 +43,22 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();
+    }
+
+    @Override
+    public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
+        PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
+
+        if (command.getName() != null && !command.getName().isBlank() && !command.getName().equals(existingPlaylist.getName()))
+            existingPlaylist.setName(command.getName());
+        if (command.getDescription() != null && !command.getDescription().isBlank() && !command.getDescription().equals(existingPlaylist.getDescription()))
+            existingPlaylist.setDescription(command.getDescription());
+        if (command.getImageUrl() != null && !command.getImageUrl().isBlank() && !command.getImageUrl().equals(existingPlaylist.getImageUrl()))
+            existingPlaylist.setImageUrl(command.getImageUrl());
+        if (command.getPrivacyState() != null && !command.getPrivacyState().equals(existingPlaylist.getPrivacy()))
+            existingPlaylist.setPrivacy(command.getPrivacyState());
+
+        return repository.save(existingPlaylist).toDTO();
     }
 
     @Override

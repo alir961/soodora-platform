@@ -1,10 +1,8 @@
 package com.grooveconductor.application.user;
 
 import com.grooveconductor.domain.artist.ArtistDTO;
-import com.grooveconductor.domain.user.Identifier;
-import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.user.UnknownIdentifierException;
-import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.domain.common.UnknownSlugException;
+import com.grooveconductor.domain.user.*;
 import com.grooveconductor.application.artist.ArtistException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
@@ -38,6 +36,14 @@ public class UserService implements UserDetailsService {
 
     public boolean existsUser(Identifier identifier) {
         return userRepository.isUsed(identifier);
+    }
+
+    public UserDTO updateUser(UpdateUserCommand command, String slug) {
+        try {
+            return userRepository.update(command, new Identifier(Identifier.IdentifierType.SLUG, slug));
+        } catch (UnknownSlugException exception) {
+            throw new UserUnityException(exception.getMessage());
+        }
     }
 
     public void deleteUser(Identifier identifier) throws UnknownUserException {

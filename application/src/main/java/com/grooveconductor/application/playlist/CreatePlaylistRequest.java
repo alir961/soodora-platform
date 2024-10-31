@@ -17,8 +17,8 @@ public record CreatePlaylistRequest(
         "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")
     String privacy,
-    String imageUrl)
-    implements Request<CreatePlaylistCommand> {
+    String imageUrl
+) implements Request<CreatePlaylistCommand> {
 
     static String privacyValues = Stream.of(PlaylistPrivacy.values())
         .map(Enum::toString)

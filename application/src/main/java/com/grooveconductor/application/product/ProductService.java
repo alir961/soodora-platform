@@ -1,11 +1,8 @@
 package com.grooveconductor.application.product;
 
-import com.grooveconductor.domain.product.CreateProductCommand;
-import com.grooveconductor.domain.product.ProductDTO;
-import com.grooveconductor.domain.product.ProductFilter;
+import com.grooveconductor.domain.product.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.domain.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +40,14 @@ public class ProductService {
             return productRepository.findBySlug(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
+    public ProductDTO updateProduct(UpdateProductCommand command, String slug) {
+        try {
+            return productRepository.update(command, slug);
+        } catch (UnknownSlugException exception) {
+            throw new ProductUnityException(exception.getMessage());
         }
     }
 
