@@ -6,15 +6,19 @@ import {Router, useRouter} from 'vue-router';
 import {User} from '@/entity/User';
 import {redirectLogin} from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
-import {retrieveAuthenticatedProfile} from '@/client/profileClient';
+import {OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders} from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import OAuthButton from '@/view/user/OAuthButton.vue';
+import {logOutOutline} from 'ionicons/icons';
 
 const router: Router = useRouter();
 const userData = ref(null as User | null);
+const providers = ref([] as OAuthProvider[])
 
 const fetchUserData = async () => {
   try {
     userData.value = await retrieveAuthenticatedProfile();
+    providers.value = await retrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
   }
@@ -40,6 +44,8 @@ onIonViewWillEnter(async () => {
     <ion-card v-else>
       <ProfileComponent :profile="userData"/>
     </ion-card>
+
+    <OAuthButton provider="google" :linked="providers.includes('google')"/>
 
     <ion-button expand="block" @click="logout" id="logout-button">
       <ion-icon :icon="logOutOutline"/>
