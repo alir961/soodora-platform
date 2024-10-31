@@ -9,6 +9,7 @@ import {
   IonTabButton,
   IonTitle,
   IonToolbar,
+  IonButtons,
 } from '@ionic/vue';
 import {capitalize, getAuthenticatedUser} from '@/utils';
 import {deleteUserData} from '@/store/localStorage';
@@ -54,21 +55,27 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-header v-if="!fullscreen" collapse="condense" slot="toolbar">
-      <ion-buttons slot="start">
-        <slot name="buttons"></slot>
-      </ion-buttons>
+    <ion-header v-if="!fullscreen" :translucent="true">
       <ion-toolbar>
-        <div id="toolbar">
-          <div id="toolbar-title">
-            <ion-title size="large">{{ $props.title }}</ion-title>
-          </div>
-          <slot name="toolbar"></slot>
-        </div>
+        <ion-title>{{ $props.title }}</ion-title>
       </ion-toolbar>
     </ion-header>
 
     <ion-content :fullscreen="true">
+      <ion-header v-if="!fullscreen" collapse="condense">
+        <ion-buttons slot="start">
+          <slot name="buttons"></slot>
+        </ion-buttons>
+        <ion-toolbar>
+          <div id="toolbar">
+            <div id="toolbar-title">
+              <ion-title size="large">{{ $props.title }}</ion-title>
+            </div>
+            <slot name="toolbar"></slot>
+          </div>
+        </ion-toolbar>
+      </ion-header>
+
       <slot></slot>
     </ion-content>
 
