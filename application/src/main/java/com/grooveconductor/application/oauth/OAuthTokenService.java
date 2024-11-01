@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -40,6 +41,10 @@ public class OAuthTokenService {
         if (repository.hasAuthorization(provider, user))
             return repository.retrieveAuthorization(provider, user);
         throw new OAuthFlowException("Unable to retrieve user #" + user.slug() + " refresh token for " + provider);
+    }
+
+    public List<OAuthProvider> retrieveUserProviders(UserDTO user) {
+        return repository.retrieveProviders(user);
     }
 
 }

@@ -1,20 +1,22 @@
 package com.grooveconductor.rest.auth;
 
-import com.grooveconductor.application.common.InvalidRequestException;
-import com.grooveconductor.application.user.UnknownUserException;
-import com.grooveconductor.application.user.UserUnityException;
+import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.auth.LoginRequest;
 import com.grooveconductor.application.auth.RegisterRequest;
+import com.grooveconductor.application.common.InvalidRequestException;
+import com.grooveconductor.application.oauth.OAuthTokenService;
+import com.grooveconductor.application.user.UnknownUserException;
+import com.grooveconductor.application.user.UserUnityException;
+import com.grooveconductor.domain.oauth.OAuthProvider;
+import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.rest.common.ExceptionResponse;
 import com.grooveconductor.rest.common.JsonResponse;
-import com.grooveconductor.application.auth.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
 
@@ -25,6 +27,7 @@ import static org.springframework.http.HttpStatus.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
+    private final OAuthTokenService oauthTokenService;
 
     @PostMapping("/register")
     public ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request) {
@@ -45,6 +48,13 @@ public class AuthenticationController {
         } catch (UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse("Invalid credentials"), BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/providers")
+    public List<OAuthProvider> getLinkedProviders() {
+        UserDTO user = authenticationService.getAuthenticatedUser();
+
+        return oauthTokenService.retrieveUserProviders(user);
     }
 
 }

@@ -10,6 +10,8 @@ import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 @RequiredArgsConstructor
 public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
@@ -33,6 +35,13 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     public boolean hasAuthorization(OAuthProvider provider, UserDTO user) {
         return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
             .isPresent();
+    }
+
+    @Override
+    public List<OAuthProvider> retrieveProviders(UserDTO user) {
+        return repository.findByUserId(userFromDTO(user).getId()).stream()
+            .map(OAuthTokenEntity::getProvider)
+            .toList();
     }
 
     @Override

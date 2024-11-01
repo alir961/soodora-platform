@@ -4,6 +4,7 @@ import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.common.InvalidRequestException;
 import com.grooveconductor.application.user.UnknownUserException;
 import com.grooveconductor.application.user.UpdateUserRequest;
+import com.grooveconductor.application.user.UserService;
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
