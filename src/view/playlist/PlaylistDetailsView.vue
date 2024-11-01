@@ -4,15 +4,12 @@ import {IonButton, IonIcon, onIonViewWillEnter} from '@ionic/vue';
 import {arrowBack} from 'ionicons/icons';
 import {useRoute, useRouter} from 'vue-router';
 import {retrievePlaylistBySlug} from '@/client/playlistClient';
-import {loadUserData} from '@/store/localStorage';
 import {Playlist} from '@/entity/Playlist';
-import {User} from '@/entity/User';
 import PlaylistDetails from '@/component/playlist/PlaylistDetails.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
 const route = useRoute();
 const router = useRouter();
-const userInfo = ref(null as User | null);
 
 const slug: string = route.params.slug as string;
 const playlist = ref(null as Playlist | null);
@@ -25,14 +22,6 @@ const loadPlaylist = async () => {
   }
 };
 
-const fetchUserInfo = async () => {
-  try {
-    userInfo.value = await loadUserData();
-  } catch (error) {
-    console.error('Failed to fetch user info:', error);
-  }
-};
-
 const goBack = () => {
   document.querySelectorAll('[aria-hidden="true"]').forEach(element => {
     element.removeAttribute('aria-hidden');
@@ -42,7 +31,6 @@ const goBack = () => {
 
 onIonViewWillEnter(async () => {
   await loadPlaylist();
-  await fetchUserInfo();
 });
 </script>
 
