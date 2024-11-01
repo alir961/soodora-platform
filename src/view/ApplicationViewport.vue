@@ -2,25 +2,15 @@
 import {
   IonContent,
   IonHeader,
-  IonIcon,
-  IonLabel,
   IonPage,
-  IonTabBar,
-  IonTabButton,
   IonTitle,
   IonToolbar,
   IonButtons,
 } from '@ionic/vue';
-import {capitalize, getAuthenticatedUser} from '@/utils';
 import {deleteUserData} from '@/store/localStorage';
 import {checkStatus} from '@/client/authenticationClient';
-import {cartOutline, homeOutline, musicalNotesOutline, personOutline} from 'ionicons/icons';
+import {getAuthenticatedUser} from '@/utils';
 import {onMounted} from 'vue';
-
-interface TabEntry {
-  name: string;
-  icon: string;
-}
 
 const props = defineProps({
   title: {
@@ -31,13 +21,6 @@ const props = defineProps({
   offline: Boolean,
   fullscreen: Boolean,
 });
-
-const tabs: TabEntry[] = [
-  {name: 'home', icon: homeOutline},
-  {name: 'marketplace', icon: cartOutline},
-  {name: 'playlist', icon: musicalNotesOutline},
-  {name: 'account', icon: personOutline},
-];
 
 onMounted(async () => {
   try {
@@ -78,13 +61,6 @@ onMounted(async () => {
 
       <slot></slot>
     </ion-content>
-
-    <ion-tab-bar v-if="!fullscreen" slot="bottom">
-      <ion-tab-button v-for="tab in tabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
-        <ion-icon :icon="tab.icon"/>
-        <ion-label>{{ capitalize(tab.name) }}</ion-label>
-      </ion-tab-button>
-    </ion-tab-bar>
   </ion-page>
 </template>
 
