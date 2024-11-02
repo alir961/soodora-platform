@@ -2,13 +2,13 @@
 import {IonButton, onIonViewWillEnter} from '@ionic/vue';
 import {useRouter} from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import {ref} from 'vue';
+import {Ref, ref} from 'vue';
 import {checkStatus} from '@/client/authenticationClient';
 
 const INITIAL_COUNTER = 15;
 
 const router = useRouter();
-const counter = ref(INITIAL_COUNTER);
+const counter: Ref<number> = ref(INITIAL_COUNTER);
 
 const redirectHome = () => {
   router.push('/home');

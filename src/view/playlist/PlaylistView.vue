@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {Ref, ref} from 'vue';
 import {
   IonButton,
   IonContent,
@@ -23,9 +23,10 @@ import {getAuthenticatedUser} from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
-const playlists = ref([] as Playlist[]);
-const showModal = ref(false);
-const newPlaylist = ref({name: '', description: '', imageUrl: '', privacy: 'PUBLIC'});
+type PlaylistCreation = Omit<Omit<Playlist, 'slug'>, 'owner'>;
+const playlists: Ref<Playlist[]> = ref([]);
+const showModal: Ref<boolean> = ref(false);
+const newPlaylist: Ref<PlaylistCreation> = ref({name: '', description: '', imageUrl: '', privacy: 'PUBLIC'});
 
 const loadPlaylists = async () => {
   try {

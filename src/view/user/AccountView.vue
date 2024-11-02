@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {IonButton, IonCard, IonIcon, onIonViewWillEnter} from '@ionic/vue';
+import {IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController} from '@ionic/vue';
 import {deleteBearerToken, deleteUserData} from '@/store/localStorage';
-import {ref} from 'vue';
-import {Router, useRouter} from 'vue-router';
+import {Ref, ref} from 'vue';
+import {Router, useRoute, useRouter} from 'vue-router';
 import {User} from '@/entity/User';
 import {redirectLogin} from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
@@ -11,14 +11,16 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import {logOutOutline} from 'ionicons/icons';
 
+const route = useRoute();
 const router: Router = useRouter();
-const userData = ref(null as User | null);
-const providers = ref([] as OAuthProvider[])
+const userData: Ref<User | null> = ref(null);
+const linkedProviders: Ref<OAuthProvider[]> = ref([]);
+const providers: OAuthProvider[] = ['google'];
 
 const fetchUserData = async () => {
   try {
     userData.value = await retrieveAuthenticatedProfile();
-    providers.value = await retrieveLinkedOAuthProviders();
+    linkedProviders.value = await retrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
   }
@@ -31,6 +33,16 @@ const logout = async () => {
 };
 
 onIonViewWillEnter(async () => {
+  if (route.query.error === 'oauth') {
+    const toast = await toastController.create({
+      message: 'Unable to connect to OAuth provider!',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
+  }
+
   await fetchUserData();
 });
 </script>
@@ -45,7 +57,11 @@ onIonViewWillEnter(async () => {
       <ProfileComponent :profile="userData"/>
     </ion-card>
 
-    <OAuthButton provider="google" :linked="providers.includes('google')"/>
+    <OAuthButton v-for="provider in providers"
+                 :key="provider"
+                 :provider="provider"
+                 :linked="linkedProviders.includes(provider)"
+                 @unlink="fetchUserData"/>
 
     <ion-button expand="block" @click="logout" id="logout-button">
       <ion-icon :icon="logOutOutline"/>

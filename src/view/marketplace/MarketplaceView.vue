@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {Reactive, reactive, Ref, ref} from 'vue';
 import {
   IonButton,
   IonContent,
@@ -15,15 +15,22 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue';
 import {add} from 'ionicons/icons';
-import {createProduct, retrieveProducts} from '@/client/productClient';
+import {createProduct, CreateProductRequest, retrieveProducts} from '@/client/productClient';
 import {Product} from '@/entity/Product';
 import {getAuthenticatedUser} from '@/utils';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
-const products = ref([] as Product[]);
-const showModal = ref(false);
-const newProduct = ref({name: '', description: '', imageUrl: '', category: '', price: 0, quantity: 1} as Product);
+const products: Ref<Product[]> = ref([]);
+const showModal: Ref<boolean> = ref(false);
+const newProduct: Reactive<CreateProductRequest> = reactive({
+  name: '',
+  description: '',
+  imageUrl: '',
+  category: '',
+  price: 0,
+  quantity: 1,
+});
 
 const loadProducts = async () => {
   try {
@@ -35,7 +42,7 @@ const loadProducts = async () => {
 
 const submitProduct = async () => {
   try {
-    await createProduct(newProduct.value);
+    await createProduct(newProduct);
     await loadProducts();
     showModal.value = false;
   } catch (error) {
@@ -53,8 +60,7 @@ onIonViewWillEnter(async () => {
   <ApplicationViewport title="Marketplace" authenticated>
     <template #toolbar>
       <div id="toolbar-button">
-        <ion-button style="height: 70%; width: 50%; --border-radius: 15px;" size="small" @click="showModal = true"
-                    :inert="showModal">
+        <ion-button size="small" @click="showModal = true" :inert="showModal">
           <ion-icon :icon="add"></ion-icon>
         </ion-button>
       </div>
@@ -77,22 +83,28 @@ onIonViewWillEnter(async () => {
         <ion-content>
           <form @submit.prevent="submitProduct">
             <ion-item>
-              <ion-input label="Name" label-placement="floating" placeholder="Enter name" v-model="newProduct.name"></ion-input>
+              <ion-input label="Name" label-placement="floating" placeholder="Enter name"
+                         v-model="newProduct.name"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Description" label-placement="floating" placeholder="Enter description" v-model="newProduct.description"></ion-input>
+              <ion-input label="Description" label-placement="floating" placeholder="Enter description"
+                         v-model="newProduct.description"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Image URL" label-placement="floating" placeholder="Enter link to image" v-model="newProduct.imageUrl" clearInput></ion-input>
+              <ion-input label="Image URL" label-placement="floating" placeholder="Enter link to image"
+                         v-model="newProduct.imageUrl" clearInput></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Category" label-placement="floating" placeholder="Enter commas spaced categories" v-model="newProduct.category"></ion-input>
+              <ion-input label="Category" label-placement="floating" placeholder="Enter commas spaced categories"
+                         v-model="newProduct.category"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Price" label-placement="floating" placeholder="Enter price (€)" type="number" v-model="newProduct.price"></ion-input>
+              <ion-input label="Price" label-placement="floating" placeholder="Enter price (€)" type="number"
+                         v-model="newProduct.price"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Stock Number" label-placement="floating" placeholder="Enter stock number" type="number" v-model="newProduct.quantity"></ion-input>
+              <ion-input label="Stock Number" label-placement="floating" placeholder="Enter stock number" type="number"
+                         v-model="newProduct.quantity"></ion-input>
             </ion-item>
             <ion-button expand="block" type="submit">Create Product</ion-button>
           </form>
@@ -117,6 +129,13 @@ ion-card-subtitle {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+
+  & ion-button {
+    --border-radius: 15px;
+
+    height: 70%;
+    width: 50%;
+  }
 }
 
 img {

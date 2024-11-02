@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import {IonButton, IonInput, IonItem, onIonViewWillEnter} from '@ionic/vue';
 import {loadBearerToken, saveBearerToken} from '@/store/localStorage';
-import {ref} from 'vue';
+import {Ref, ref} from 'vue';
 import {callLogin, callRegister, RegisterRequest} from '@/client/authenticationClient';
-import {useRouter} from 'vue-router';
+import {Router, useRouter} from 'vue-router';
 import {retrieveAuthenticatedProfile} from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
-const email = ref('');
-const password = ref('');
-const username = ref('');
-const firstname = ref('');
-const lastname = ref('');
-const isLogin = ref(true);
-const isLogged = ref(false);
-const router = useRouter();
+const email: Ref<string> = ref('');
+const password: Ref<string> = ref('');
+const username: Ref<string> = ref('');
+const firstname: Ref<string> = ref('');
+const lastname: Ref<string> = ref('');
+const isLogin: Ref<boolean> = ref(true);
+const isLogged: Ref<boolean> = ref(false);
+const router: Router = useRouter();
 
 const login = async () => {
   try {

@@ -3,7 +3,9 @@ import {Product} from "@/entity/Product";
 import {getAuthorizedHeader} from "@/client/authenticationClient";
 import {reject} from "@/utils";
 
-async function createProduct(product: Product): Promise<void> {
+type CreateProductRequest = Omit<Omit<Product, 'slug'>, 'vendor'>
+
+async function createProduct(product: CreateProductRequest): Promise<void> {
     return axios.post('/products', product, {headers: await getAuthorizedHeader()});
 }
 
@@ -16,4 +18,5 @@ async function retrieveProducts(): Promise<Product[]> {
         });
 }
 
+export type {CreateProductRequest};
 export {retrieveProducts, createProduct};

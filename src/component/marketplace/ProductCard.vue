@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol} from "@ionic/vue";
 import {Product} from "@/entity/Product";
-import {PropType, ref} from "vue";
+import {PropType, Ref, ref} from 'vue';
 
 defineProps({
   product: {
@@ -10,7 +10,7 @@ defineProps({
   }
 });
 
-const focusedProduct = ref(null as Product | null);
+const focusedProduct: Ref<Product | null> = ref(null);
 
 const focusProduct = (product: Product) => {
   focusedProduct.value = focusedProduct.value === product ? null : product;

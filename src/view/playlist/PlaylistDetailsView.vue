@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue';
+import {Ref, ref} from 'vue';
 import {IonButton, IonIcon, onIonViewWillEnter} from '@ionic/vue';
 import {arrowBack} from 'ionicons/icons';
 import {useRoute, useRouter} from 'vue-router';
@@ -12,7 +12,9 @@ const route = useRoute();
 const router = useRouter();
 
 const slug: string = route.params.slug as string;
-const playlist = ref(null as Playlist | null);
+
+const userInfo: Ref<User | null> = ref(null);
+const playlist: Ref<Playlist | null> = ref(null);
 
 const loadPlaylist = async () => {
   try {
@@ -41,7 +43,7 @@ onIonViewWillEnter(async () => {
         <ion-icon :icon="arrowBack" style="color: #3880ff"></ion-icon>
       </ion-button>
     </template>
-    <PlaylistDetails v-if="playlist" :playlist="playlist"/>
+    <PlaylistDetails v-if="playlist" :playlist="playlist" @update="loadPlaylist"/>
   </ApplicationViewport>
 </template>
 
