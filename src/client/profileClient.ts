@@ -3,7 +3,7 @@ import {reject} from '@/utils';
 import {getAuthorizedHeader} from '@/client/authenticationClient';
 import {User} from '@/entity/User';
 
-type OAuthProvider = 'google';
+type OAuthProvider = 'google' | 'spotify' | 'soundcloud';
 
 async function retrieveAuthenticatedProfile(): Promise<User> {
     return axios.get('/profile', {headers: await getAuthorizedHeader()})

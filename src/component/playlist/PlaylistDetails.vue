@@ -27,6 +27,7 @@ const props = defineProps({
     type: Object as PropType<Playlist>,
   },
 });
+const emit = defineEmits(['update']);
 
 const editablePlaylist: Ref<Playlist> = ref(props.playlist);
 const showModal: Ref<boolean> = ref(false);
@@ -36,6 +37,8 @@ const handleUpdatePlaylist = async () => {
 
   try {
     await updatePlaylist(props.playlist.slug, editablePlaylist.value);
+
+    emit('update');
     showModal.value = false;
   } catch (error) {
     console.error('Failed to update playlist:', error);
