@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { IonButton, IonIcon } from '@ionic/vue';
+import { alertController, IonButton, IonIcon, toastController } from '@ionic/vue';
 import { logoSoundcloud, logoYoutube } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
@@ -34,13 +34,45 @@ const providers: ProviderData[] = [
 ];
 const provider: ProviderData = providers.find((provider) => provider.provider === props.provider) || providers[0];
 
-const startOAuthFlow = async () => {
+const notifyUnlink = async () => {
+  const toast = await toastController.create({
+    message: `You have unlinked ${provider.name}!`,
+    duration: 1500,
+    position: 'top',
+  });
+
+  await toast.present();
+  emit('unlink');
+};
+
+const alertButtons = [
+  {
+    text: 'Cancel',
+    role: 'cancel',
+  },
+  {
+    text: 'OK',
+    role: 'confirm',
+    handler: () => {
+      callDeleteProvider(props.provider)
+        .then(notifyUnlink)
+        .catch((reason) => console.error('Unable to unlink OAuth provider', reason));
+    },
+  },
+];
+
+const clickButton = async () => {
   if (!provider) return;
 
   if (props.linked) {
-    await callDeleteProvider(props.provider)
-      .then(() => emit('unlink'))
-      .catch((reason) => console.log('Unable to unlink OAuth provider: ' + reason));
+    const alert = await alertController.create({
+      header: 'Confirmation',
+      subHeader: 'Cannot be reversed!',
+      message: `You will unlink ${provider.name} from your account. You will need to reauthorize again before using service. Are you sure?`,
+      buttons: alertButtons,
+    });
+
+    await alert.present();
   } else {
     loadBearerToken()
       .then((token) => redirectToUrl(`http://localhost:8080/auth/${provider.provider}?token=${token}`))
@@ -50,7 +82,7 @@ const startOAuthFlow = async () => {
 </script>
 
 <template>
-  <ion-button @click="startOAuthFlow" expand="block" :class="provider.provider" :disabled="disabled">
+  <ion-button @click="clickButton" expand="block" :class="provider.provider" :disabled="disabled">
     <span class="wrapper">
       <ion-icon :icon="provider.icon" />
       {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
