@@ -17,7 +17,7 @@ import {
   IonToolbar,
 } from '@ionic/vue';
 import { Playlist } from '@/entity/Playlist';
-import { PropType, Ref, ref } from 'vue';
+import { PropType, Reactive, reactive, Ref, ref } from 'vue';
 import { updatePlaylist } from '@/client/playlistClient';
 
 const props = defineProps({
@@ -28,17 +28,21 @@ const props = defineProps({
 });
 const emit = defineEmits(['update']);
 
-const editablePlaylist: Ref<Playlist> = ref(props.playlist);
 const showModal: Ref<boolean> = ref(false);
+let editablePlaylist: Reactive<Playlist> = reactive(props.playlist);
+
+const openModal = () => {
+  editablePlaylist = props.playlist;
+  showModal.value = true;
+};
 
 const handleUpdatePlaylist = async () => {
   if (!props.playlist) return;
 
+  showModal.value = false;
   try {
-    await updatePlaylist(props.playlist.slug, editablePlaylist.value);
-
+    await updatePlaylist(props.playlist.slug, editablePlaylist);
     emit('update');
-    showModal.value = false;
   } catch (error) {
     console.error('Failed to update playlist:', error);
   }
@@ -57,7 +61,7 @@ const handleUpdatePlaylist = async () => {
             <p>{{ playlist.description }}</p>
           </div>
           <div class="edit-button">
-            <ion-icon id="button" size="large" :icon="createOutline" @click="showModal = true"></ion-icon>
+            <ion-icon id="button" size="large" :icon="createOutline" @click="openModal"></ion-icon>
           </div>
         </div>
         <div class="playlist-songs">
