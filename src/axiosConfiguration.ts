@@ -1,7 +1,7 @@
 import axios, {AxiosResponse} from 'axios';
 import {deleteBearerToken, deleteUserData} from '@/store/localStorage';
 
-declare let window: any;
+declare let window: Window;
 
 export function retrieveCallbackURL() {
     return `?callback=${window.location}`;

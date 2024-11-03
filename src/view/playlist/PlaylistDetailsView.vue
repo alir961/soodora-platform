@@ -13,7 +13,6 @@ const router = useRouter();
 
 const slug: string = route.params.slug as string;
 
-const userInfo: Ref<User | null> = ref(null);
 const playlist: Ref<Playlist | null> = ref(null);
 
 const loadPlaylist = async () => {

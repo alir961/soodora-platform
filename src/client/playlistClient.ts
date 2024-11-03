@@ -1,10 +1,12 @@
 import axios from 'axios';
-import {getAuthorizedHeader} from "@/client/authenticationClient";
-import {Playlist} from "@/entity/Playlist";
-import {reject} from "@/utils";
+import {getAuthorizedHeader} from '@/client/authenticationClient';
+import {Playlist} from '@/entity/Playlist';
+import {reject} from '@/utils';
 
-async function createPlaylist(newPlaylist: any) {
-    return axios.post(`/playlists`, newPlaylist, {headers: await getAuthorizedHeader()});
+type PlaylistCreateRequest = Omit<Omit<Playlist, 'slug'>, 'owner'>;
+
+async function createPlaylist(playlist: PlaylistCreateRequest): Promise<void> {
+    return axios.post(`/playlists`, playlist, {headers: await getAuthorizedHeader()});
 }
 
 async function retrieveUserPlaylists(userSlug: string): Promise<Playlist[]> {
@@ -29,4 +31,5 @@ async function updatePlaylist(slug: string, playlist: Playlist): Promise<void> {
     return axios.put(`/playlists/${slug}`, playlist, {headers: await getAuthorizedHeader()});
 }
 
+export type {PlaylistCreateRequest};
 export {createPlaylist, retrieveUserPlaylists, retrievePlaylistBySlug, updatePlaylist};

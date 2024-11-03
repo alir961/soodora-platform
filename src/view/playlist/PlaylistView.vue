@@ -17,16 +17,15 @@ import {
   onIonViewWillEnter,
 } from '@ionic/vue';
 import {add} from 'ionicons/icons';
-import {createPlaylist, retrieveUserPlaylists} from '@/client/playlistClient';
+import {createPlaylist, PlaylistCreateRequest, retrieveUserPlaylists} from '@/client/playlistClient';
 import {Playlist} from '@/entity/Playlist';
 import {getAuthenticatedUser} from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
-type PlaylistCreation = Omit<Omit<Playlist, 'slug'>, 'owner'>;
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
-const newPlaylist: Ref<PlaylistCreation> = ref({name: '', description: '', imageUrl: '', privacy: 'PUBLIC'});
+const newPlaylist: Ref<PlaylistCreateRequest> = ref({name: '', description: '', imageUrl: '', privacy: 'PUBLIC'});
 
 const loadPlaylists = async () => {
   try {
@@ -84,13 +83,16 @@ onIonViewWillEnter(async () => {
         <ion-content>
           <form @submit.prevent="handleCreatePlaylist">
             <ion-item>
-              <ion-input label="Name" label-placement="floating" placeholder="Enter name" v-model="newPlaylist.name"></ion-input>
+              <ion-input label="Name" label-placement="floating" placeholder="Enter name"
+                         v-model="newPlaylist.name"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Description" label-placement="floating" placeholder="Enter description" v-model="newPlaylist.description"></ion-input>
+              <ion-input label="Description" label-placement="floating" placeholder="Enter description"
+                         v-model="newPlaylist.description"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Image URL" label-placement="floating" placeholder="Enter link to image" v-model="newPlaylist.imageUrl" clearInput></ion-input>
+              <ion-input label="Image URL" label-placement="floating" placeholder="Enter link to image"
+                         v-model="newPlaylist.imageUrl" clearInput></ion-input>
             </ion-item>
             <ion-item>
               <ion-select v-model="newPlaylist.privacy" placeholder="Privacy">
