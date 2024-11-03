@@ -3,6 +3,7 @@ package com.grooveconductor.application.auth;
 import com.grooveconductor.domain.user.UserDTO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -32,9 +33,13 @@ public class JwtTokenService {
     }
 
     public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
-        Claims claims = getAllClaimsFromToken(token);
+        try {
+            Claims claims = getAllClaimsFromToken(token);
 
-        return claimsResolver.apply(claims);
+            return claimsResolver.apply(claims);
+        } catch (MalformedJwtException e) {
+            throw new AuthenticationException("Invalid JWT token");
+        }
     }
 
     public boolean validateToken(String token, UserDTO user) {

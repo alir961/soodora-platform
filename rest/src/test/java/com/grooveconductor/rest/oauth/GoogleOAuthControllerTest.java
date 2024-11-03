@@ -17,7 +17,7 @@ import java.net.URI;
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.test.TestConstants.*;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -79,7 +79,8 @@ class GoogleOAuthControllerTest {
         mockMvc.perform(get("/auth/google/callback")
                 .param("code", "code")
                 .param("state", JWT_TOKEN))
-            .andExpect(status().isOk());
+            .andExpect(status().isFound())
+            .andExpect(header().string("Location", not(containsString("error=oauth"))));
         verify(oauthTokenService, times(1)).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
     }
 
@@ -89,7 +90,8 @@ class GoogleOAuthControllerTest {
         mockMvc.perform(get("/auth/google/callback")
                 .param("code", "code")
                 .param("state", "invalid"))
-            .andExpect(status().isUnauthorized());
+            .andExpect(status().isFound())
+            .andExpect(header().string("Location", containsString("error=oauth")));
     }
 
 }

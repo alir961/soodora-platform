@@ -5,16 +5,20 @@ import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.google.GoogleService;
 import com.grooveconductor.application.oauth.OAuthTokenService;
 import com.grooveconductor.application.user.UserService;
-import com.grooveconductor.domain.oauth.RefreshableAuthorization;
 import com.grooveconductor.domain.user.UserDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.HttpStatus.FOUND;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,6 +31,9 @@ public class GoogleOAuthController {
     private final OAuthTokenService oauthTokenService;
     private final JwtTokenService jwtTokenService;
 
+    @Value("${frontURL:localhost}")
+    private String frontUrl;
+
     @GetMapping
     @ResponseStatus(FOUND)
     public HttpHeaders redirectToGoogleOAuthFlow(@RequestParam String token) {
@@ -37,12 +44,23 @@ public class GoogleOAuthController {
         return headers;
     }
 
+    @ResponseStatus(FOUND)
     @GetMapping("/callback")
-    public void googleOAuthCallback(@RequestParam String code, @RequestParam String state) {
-        UserDTO user = retrieveUserOrThrows(state);
-        RefreshableAuthorization authorization = googleService.exchangeOAuthToken(code);
+    public HttpHeaders googleOAuthCallback(@RequestParam String code, @RequestParam String state) throws URISyntaxException {
+        HttpHeaders headers = new HttpHeaders();
+        String url = frontUrl + "/account";
+        UserDTO user = null;
 
-        oauthTokenService.updateUserAuthorization(GOOGLE, user, authorization);
+        try {
+            user = retrieveUserOrThrows(state);
+            oauthTokenService.updateUserAuthorization(GOOGLE, user, googleService.exchangeOAuthToken(code));
+        } catch (AuthenticationException | HttpClientErrorException ignored) {
+            if (user != null)
+                oauthTokenService.deleteUserAuthorization(GOOGLE, user);
+            url += "?error=oauth";
+        }
+        headers.setLocation(new URI(url));
+        return headers;
     }
 
     private UserDTO retrieveUserOrThrows(String token) throws AuthenticationException {
