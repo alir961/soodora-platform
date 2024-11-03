@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import {IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController} from '@ionic/vue';
-import {deleteBearerToken, deleteUserData} from '@/store/localStorage';
-import {Ref, ref} from 'vue';
-import {Router, useRoute, useRouter} from 'vue-router';
-import {User} from '@/entity/User';
-import {redirectLogin} from '@/utils';
+import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
+import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
+import { Ref, ref } from 'vue';
+import { Router, useRoute, useRouter } from 'vue-router';
+import { User } from '@/entity/User';
+import { redirectLogin } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
-import {OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders} from '@/client/profileClient';
+import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
-import {logOutOutline} from 'ionicons/icons';
+import { logOutOutline } from 'ionicons/icons';
 
 const route = useRoute();
 const router: Router = useRouter();
@@ -54,17 +54,18 @@ onIonViewWillEnter(async () => {
     </div>
 
     <ion-card v-else>
-      <ProfileComponent :profile="userData"/>
+      <ProfileComponent :profile="userData" />
     </ion-card>
 
-    <OAuthButton v-for="provider in providers"
-                 :key="provider"
-                 :provider="provider"
-                 :linked="linkedProviders.includes(provider)"
-                 @unlink="fetchUserData"/>
+    <OAuthButton
+      v-for="provider in providers"
+      :key="provider"
+      :provider="provider"
+      :linked="linkedProviders.includes(provider)"
+      @unlink="fetchUserData" />
 
     <ion-button expand="block" @click="logout" id="logout-button">
-      <ion-icon :icon="logOutOutline"/>
+      <ion-icon :icon="logOutOutline" />
       Logout
     </ion-button>
   </ApplicationViewport>
@@ -73,7 +74,7 @@ onIonViewWillEnter(async () => {
 <style scoped>
 .loading {
   text-align: center;
-  font-size: 2.0em;
+  font-size: 2em;
   color: #8c8c8c;
   font-weight: 800;
 }

@@ -32,12 +32,10 @@ import '@ionic/vue/css/palettes/dark.system.css';
 
 /* Theme variables */
 import './theme/variables.css';
-import {configureAxios} from "@/axiosConfiguration";
-import {addIcons} from 'ionicons';
+import { configureAxios } from '@/axiosConfiguration';
+import { addIcons } from 'ionicons';
 
-const app = createApp(App)
-  .use(IonicVue)
-  .use(router);
+const app = createApp(App).use(IonicVue).use(router);
 
 addIcons({
   'logo-spotify': 'icons/spotify.svg',

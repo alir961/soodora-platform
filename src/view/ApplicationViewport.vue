@@ -1,16 +1,9 @@
 <script setup lang="ts">
-import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
-  IonButtons,
-} from '@ionic/vue';
-import {deleteUserData} from '@/store/localStorage';
-import {checkStatus} from '@/client/authenticationClient';
-import {getAuthenticatedUser} from '@/utils';
-import {onMounted} from 'vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons } from '@ionic/vue';
+import { deleteUserData } from '@/store/localStorage';
+import { checkStatus } from '@/client/authenticationClient';
+import { getAuthenticatedUser } from '@/utils';
+import { onMounted } from 'vue';
 
 const props = defineProps({
   title: {
@@ -24,8 +17,7 @@ const props = defineProps({
 
 onMounted(async () => {
   try {
-    if (!props.offline)
-      await checkStatus();
+    if (!props.offline) await checkStatus();
     if (props.authenticated) {
       await deleteUserData();
       await getAuthenticatedUser();

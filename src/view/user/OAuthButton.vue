@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import {PropType} from 'vue';
-import {IonButton, IonIcon} from '@ionic/vue';
-import {logoSoundcloud, logoYoutube} from 'ionicons/icons';
-import {useRouter} from 'vue-router';
-import {redirectToUrl} from '@/axiosConfiguration';
-import {loadBearerToken} from '@/store/localStorage';
-import {redirectLogin} from '@/utils';
-import {OAuthProvider} from '@/client/profileClient';
-import {callDeleteProvider} from '@/client/oauthClient';
+import { PropType } from 'vue';
+import { IonButton, IonIcon } from '@ionic/vue';
+import { logoSoundcloud, logoYoutube } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
+import { redirectToUrl } from '@/axiosConfiguration';
+import { loadBearerToken } from '@/store/localStorage';
+import { redirectLogin } from '@/utils';
+import { OAuthProvider } from '@/client/profileClient';
+import { callDeleteProvider } from '@/client/oauthClient';
 
 interface ProviderData {
   provider: OAuthProvider;
@@ -28,11 +28,11 @@ const props = defineProps({
 const emit = defineEmits(['unlink']);
 
 const providers: ProviderData[] = [
-  {provider: 'google', icon: logoYoutube, name: 'YouTube'},
-  {provider: 'spotify', icon: 'logo-spotify', name: 'Spotify'},
-  {provider: 'soundcloud', icon: logoSoundcloud, name: 'Soundcloud'},
+  { provider: 'google', icon: logoYoutube, name: 'YouTube' },
+  { provider: 'spotify', icon: 'logo-spotify', name: 'Spotify' },
+  { provider: 'soundcloud', icon: logoSoundcloud, name: 'Soundcloud' },
 ];
-const provider: ProviderData = providers.find(provider => provider.provider === props.provider) || providers[0];
+const provider: ProviderData = providers.find((provider) => provider.provider === props.provider) || providers[0];
 
 const startOAuthFlow = async () => {
   if (!provider) return;
@@ -43,7 +43,7 @@ const startOAuthFlow = async () => {
       .catch((reason) => console.log('Unable to unlink OAuth provider: ' + reason));
   } else {
     loadBearerToken()
-      .then(token => redirectToUrl(`http://localhost:8080/auth/${provider.provider}?token=${token}`))
+      .then((token) => redirectToUrl(`http://localhost:8080/auth/${provider.provider}?token=${token}`))
       .catch(() => redirectLogin(router));
   }
 };
@@ -51,10 +51,10 @@ const startOAuthFlow = async () => {
 
 <template>
   <ion-button @click="startOAuthFlow" expand="block" :class="provider.provider" :disabled="disabled">
-      <span class="wrapper">
-        <ion-icon :icon="provider.icon"/>
-        {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
-      </span>
+    <span class="wrapper">
+      <ion-icon :icon="provider.icon" />
+      {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
+    </span>
   </ion-button>
 </template>
 

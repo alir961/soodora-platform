@@ -1,0 +1,25 @@
+stages:
+  - lint
+  - build
+
+lint:
+  stage: lint
+  image: node:23-alpine
+  before_script:
+    - npm ci
+  script:
+    - npm run lint
+
+build:
+  stage: build
+  image: node:23-alpine
+  before_script:
+    - npm ci
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - dist
+  only:
+    - merge_requests
+    - main

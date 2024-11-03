@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue';
-import {IonButton, IonIcon, onIonViewWillEnter} from '@ionic/vue';
-import {arrowBack} from 'ionicons/icons';
-import {useRoute, useRouter} from 'vue-router';
-import {retrievePlaylistBySlug} from '@/client/playlistClient';
-import {Playlist} from '@/entity/Playlist';
+import { Ref, ref } from 'vue';
+import { IonButton, IonIcon, onIonViewWillEnter } from '@ionic/vue';
+import { arrowBack } from 'ionicons/icons';
+import { useRoute, useRouter } from 'vue-router';
+import { retrievePlaylistBySlug } from '@/client/playlistClient';
+import { Playlist } from '@/entity/Playlist';
 import PlaylistDetails from '@/component/playlist/PlaylistDetails.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
@@ -13,7 +13,6 @@ const router = useRouter();
 
 const slug: string = route.params.slug as string;
 
-const userInfo: Ref<User | null> = ref(null);
 const playlist: Ref<Playlist | null> = ref(null);
 
 const loadPlaylist = async () => {
@@ -25,7 +24,7 @@ const loadPlaylist = async () => {
 };
 
 const goBack = () => {
-  document.querySelectorAll('[aria-hidden="true"]').forEach(element => {
+  document.querySelectorAll('[aria-hidden="true"]').forEach((element) => {
     element.removeAttribute('aria-hidden');
   });
   router.back();
@@ -43,12 +42,12 @@ onIonViewWillEnter(async () => {
         <ion-icon :icon="arrowBack" style="color: #3880ff"></ion-icon>
       </ion-button>
     </template>
-    <PlaylistDetails v-if="playlist" :playlist="playlist" @update="loadPlaylist"/>
+    <PlaylistDetails v-if="playlist" :playlist="playlist" @update="loadPlaylist" />
   </ApplicationViewport>
 </template>
 
 <style scoped>
 ion-card-subtitle {
-  font-size: 15px
+  font-size: 15px;
 }
 </style>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import {IonButton, onIonViewWillEnter} from '@ionic/vue';
-import {useRouter} from 'vue-router';
+import { IonButton, onIonViewWillEnter } from '@ionic/vue';
+import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import {Ref, ref} from 'vue';
-import {checkStatus} from '@/client/authenticationClient';
+import { Ref, ref } from 'vue';
+import { checkStatus } from '@/client/authenticationClient';
 
 const INITIAL_COUNTER = 15;
 
@@ -16,9 +16,7 @@ const redirectHome = () => {
 
 const redirectIfOnline = () => {
   const checkIfOnline = () => {
-    checkStatus()
-      .then(redirectHome)
-      .catch(redirectIfOnline);
+    checkStatus().then(redirectHome).catch(redirectIfOnline);
     console.log('Check server status...');
   };
 

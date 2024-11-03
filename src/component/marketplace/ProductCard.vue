@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import {IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol} from "@ionic/vue";
-import {Product} from "@/entity/Product";
-import {PropType, Ref, ref} from 'vue';
+import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol } from '@ionic/vue';
+import { Product } from '@/entity/Product';
+import { PropType, Ref, ref } from 'vue';
 
 defineProps({
   product: {
     required: true,
     type: Object as PropType<Product>,
-  }
+  },
 });
 
 const focusedProduct: Ref<Product | null> = ref(null);
@@ -20,7 +20,7 @@ const focusProduct = (product: Product) => {
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
     <ion-card @click="focusProduct(product)" :class="{ focused: focusedProduct === product }">
-      <img :src="product.imageUrl" :alt="`Product ${product.name}`"/>
+      <img :src="product.imageUrl" :alt="`Product ${product.name}`" />
       <ion-card-header>
         <ion-card-title>{{ product.name }}</ion-card-title>
         <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
@@ -38,7 +38,7 @@ const focusProduct = (product: Product) => {
 
 <style scoped>
 .focused {
-  border: 0.200em solid #3880ff;
+  border: 0.2em solid #3880ff;
   transform: scale(1.05);
 }
 </style>

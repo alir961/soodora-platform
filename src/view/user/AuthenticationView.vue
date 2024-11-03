@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {IonButton, IonInput, IonItem, onIonViewWillEnter} from '@ionic/vue';
-import {loadBearerToken, saveBearerToken} from '@/store/localStorage';
-import {Ref, ref} from 'vue';
-import {callLogin, callRegister, RegisterRequest} from '@/client/authenticationClient';
-import {Router, useRouter} from 'vue-router';
-import {retrieveAuthenticatedProfile} from '@/client/profileClient';
+import { IonButton, IonInput, IonItem, onIonViewWillEnter } from '@ionic/vue';
+import { loadBearerToken, saveBearerToken } from '@/store/localStorage';
+import { Ref, ref } from 'vue';
+import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
+import { Router, useRouter } from 'vue-router';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
 const email: Ref<string> = ref('');
@@ -18,7 +18,7 @@ const router: Router = useRouter();
 
 const login = async () => {
   try {
-    const token = await callLogin({email: email.value, password: password.value});
+    const token = await callLogin({ email: email.value, password: password.value });
 
     await saveBearerToken(token);
     await router.push('/home');
@@ -103,7 +103,7 @@ onIonViewWillEnter(async () => {
       </ion-button>
 
       <p class="small-text">
-        {{ isLogin ? 'Don\'t have an account?' : 'Already have an account?' }}
+        {{ isLogin ? "Don't have an account?" : 'Already have an account?' }}
         <span @click="toggleAuth" class="interactive-link">{{ isLogin ? 'Sign up here' : 'Log in here' }}</span>
       </p>
     </div>

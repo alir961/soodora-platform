@@ -1,8 +1,7 @@
 <script setup lang="ts">
-
-import {capitalize} from "@/utils";
-import {PropType} from "vue";
-import {Role} from "@/entity/User";
+import { capitalize } from '@/utils';
+import { PropType } from 'vue';
+import { Role } from '@/entity/User';
 
 interface RoleColors {
   color: string;
@@ -10,10 +9,10 @@ interface RoleColors {
 }
 
 function getRoleColors(role: Role): RoleColors {
-  if (role === 'ADMIN') return {color: '#fff', backgroundColor: "#c22"};
-  if (role === 'ARTIST') return {color: '#fff', backgroundColor: "#a5d"};
-  if (role === 'PREMIUM') return {color: '#fff', backgroundColor: "#e91"};
-  return {color: '#fff', backgroundColor: '#fff'};
+  if (role === 'ADMIN') return { color: '#fff', backgroundColor: '#c22' };
+  if (role === 'ARTIST') return { color: '#fff', backgroundColor: '#a5d' };
+  if (role === 'PREMIUM') return { color: '#fff', backgroundColor: '#e91' };
+  return { color: '#fff', backgroundColor: '#fff' };
 }
 
 defineProps({
@@ -21,13 +20,13 @@ defineProps({
     required: true,
     type: String as PropType<Role>,
   },
-})
+});
 </script>
 
 <template>
-<span :style="{...getRoleColors($props.role)}">
-  {{ capitalize($props.role) }}
-</span>
+  <span :style="{ ...getRoleColors($props.role) }">
+    {{ capitalize($props.role) }}
+  </span>
 </template>
 
 <style scoped>

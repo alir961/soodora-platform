@@ -6,10 +6,12 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
   <ApplicationViewport title="Home" authenticated>
     <div class="container">
       <strong>Coming soon</strong>
-      <p>Start with
-        <a href="http://letmegooglethat.com/?q=How+to+make+a+home+page+in+vue"
-           target="_blank"
-           rel="noopener noreferrer">
+      <p>
+        Start with
+        <a
+          href="http://letmegooglethat.com/?q=How+to+make+a+home+page+in+vue"
+          target="_blank"
+          rel="noopener noreferrer">
           GrooveConductor
         </a>
       </p>
