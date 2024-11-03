@@ -47,4 +47,8 @@ public class OAuthTokenService {
         return repository.retrieveProviders(user);
     }
 
+    public void deleteUserAuthorization(OAuthProvider provider, UserDTO user) {
+        repository.deleteAuthorization(provider, user);
+    }
+
 }

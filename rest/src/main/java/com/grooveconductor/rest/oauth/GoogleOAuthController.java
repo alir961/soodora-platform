@@ -1,6 +1,7 @@
 package com.grooveconductor.rest.oauth;
 
 import com.grooveconductor.application.auth.AuthenticationException;
+import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.google.GoogleService;
 import com.grooveconductor.application.oauth.OAuthTokenService;
@@ -30,6 +31,7 @@ public class GoogleOAuthController {
     private final UserService userService;
     private final OAuthTokenService oauthTokenService;
     private final JwtTokenService jwtTokenService;
+    private final AuthenticationService authenticationService;
 
     @Value("${frontURL:localhost}")
     private String frontUrl;
@@ -61,6 +63,13 @@ public class GoogleOAuthController {
         }
         headers.setLocation(new URI(url));
         return headers;
+    }
+
+    @DeleteMapping
+    public void deleteGoogleOAuth() {
+        UserDTO user = authenticationService.getAuthenticatedUser();
+
+        oauthTokenService.deleteUserAuthorization(GOOGLE, user);
     }
 
     private UserDTO retrieveUserOrThrows(String token) throws AuthenticationException {

@@ -1,5 +1,6 @@
 package com.grooveconductor.rest.oauth;
 
+import com.grooveconductor.application.auth.AuthenticationService;
 import com.grooveconductor.application.auth.JwtTokenService;
 import com.grooveconductor.application.google.GoogleService;
 import com.grooveconductor.application.oauth.OAuthTokenService;
@@ -19,6 +20,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.test.TestConstants.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +43,9 @@ class GoogleOAuthControllerTest {
 
     @MockBean
     private JwtTokenService jwtTokenService;
+
+    @MockBean
+    private AuthenticationService authenticationService;
 
     @BeforeEach
     void setUp() {
@@ -92,6 +97,20 @@ class GoogleOAuthControllerTest {
                 .param("state", "invalid"))
             .andExpect(status().isFound())
             .andExpect(header().string("Location", containsString("error=oauth")));
+    }
+
+    @Test
+    void deleteGoogleOAuth_Success() throws Exception {
+        // GIVEN
+        when(authenticationService.getAuthenticatedUser()).thenReturn(USER);
+        when(userService.existsUser(USER.identifier())).thenReturn(true);
+        when(googleService.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/auth/google")
+                .header("Authorization", "Bearer token"))
+            .andExpect(status().isOk());
+        verify(oauthTokenService, times(1)).deleteUserAuthorization(GOOGLE, USER);
     }
 
 }
