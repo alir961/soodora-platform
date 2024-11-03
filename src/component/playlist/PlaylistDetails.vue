@@ -1,6 +1,5 @@
 <script setup lang="ts">
-
-import {createOutline} from 'ionicons/icons';
+import { createOutline } from 'ionicons/icons';
 import {
   IonButton,
   IonCard,
@@ -17,9 +16,9 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/vue';
-import {Playlist} from '@/entity/Playlist';
-import {PropType, Ref, ref} from 'vue';
-import {updatePlaylist} from '@/client/playlistClient';
+import { Playlist } from '@/entity/Playlist';
+import { PropType, Ref, ref } from 'vue';
+import { updatePlaylist } from '@/client/playlistClient';
 
 const props = defineProps({
   playlist: {
@@ -51,7 +50,7 @@ const handleUpdatePlaylist = async () => {
     <ion-card-content>
       <div class="playlist">
         <div class="playlist-info">
-          <img class="playlist-image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`"/>
+          <img class="playlist-image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`" />
           <div class="playlist-info-text">
             <ion-card-subtitle>{{ playlist.privacy }} PLAYLIST</ion-card-subtitle>
             <p>{{ playlist.owner.username }}</p>
@@ -62,8 +61,9 @@ const handleUpdatePlaylist = async () => {
           </div>
         </div>
         <div class="playlist-songs">
-          <h1 style="font-weight:700; font-size:large; color:antiquewhite">Your playlist looks empty !</h1>
-          <ion-button style="font-weight: 700;" color="dark" id="empty-button" size="default">Add to this playlist
+          <h1 style="font-weight: 700; font-size: large; color: antiquewhite">Your playlist looks empty !</h1>
+          <ion-button style="font-weight: 700" color="dark" id="empty-button" size="default"
+            >Add to this playlist
           </ion-button>
         </div>
       </div>
@@ -81,16 +81,26 @@ const handleUpdatePlaylist = async () => {
       <ion-content>
         <form @submit.prevent="handleUpdatePlaylist">
           <ion-item>
-            <ion-input label="Name" label-placement="floating" placeholder="Enter name"
-                       v-model="editablePlaylist.name"></ion-input>
+            <ion-input
+              label="Name"
+              label-placement="floating"
+              placeholder="Enter name"
+              v-model="editablePlaylist.name"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input label="Description" label-placement="floating" placeholder="Enter description"
-                       v-model="editablePlaylist.description"></ion-input>
+            <ion-input
+              label="Description"
+              label-placement="floating"
+              placeholder="Enter description"
+              v-model="editablePlaylist.description"></ion-input>
           </ion-item>
           <ion-item>
-            <ion-input label="Image URL" label-placement="floating" placeholder="Enter playlist thumbnail"
-                       v-model="editablePlaylist.imageUrl" clear-input></ion-input>
+            <ion-input
+              label="Image URL"
+              label-placement="floating"
+              placeholder="Enter playlist thumbnail"
+              v-model="editablePlaylist.imageUrl"
+              clear-input></ion-input>
           </ion-item>
           <ion-item>
             <ion-select v-model="editablePlaylist.privacy" placeholder="Privacy">
@@ -107,7 +117,6 @@ const handleUpdatePlaylist = async () => {
 </template>
 
 <style scoped>
-
 .playlist {
   display: flex;
   flex-direction: column;

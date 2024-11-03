@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Reactive, reactive, Ref, ref} from 'vue';
+import { Reactive, reactive, Ref, ref } from 'vue';
 import {
   IonButton,
   IonContent,
@@ -14,10 +14,10 @@ import {
   IonToolbar,
   onIonViewWillEnter,
 } from '@ionic/vue';
-import {add} from 'ionicons/icons';
-import {createProduct, CreateProductRequest, retrieveProducts} from '@/client/productClient';
-import {Product} from '@/entity/Product';
-import {getAuthenticatedUser} from '@/utils';
+import { add } from 'ionicons/icons';
+import { createProduct, CreateProductRequest, retrieveProducts } from '@/client/productClient';
+import { Product } from '@/entity/Product';
+import { getAuthenticatedUser } from '@/utils';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
@@ -68,7 +68,7 @@ onIonViewWillEnter(async () => {
 
     <ion-grid>
       <ion-row>
-        <ProductCard v-for="product in products" :key="product.slug" :product="product"/>
+        <ProductCard v-for="product in products" :key="product.slug" :product="product" />
       </ion-row>
     </ion-grid>
 
@@ -83,28 +83,49 @@ onIonViewWillEnter(async () => {
         <ion-content>
           <form @submit.prevent="submitProduct">
             <ion-item>
-              <ion-input label="Name" label-placement="floating" placeholder="Enter name"
-                         v-model="newProduct.name"></ion-input>
+              <ion-input
+                label="Name"
+                label-placement="floating"
+                placeholder="Enter name"
+                v-model="newProduct.name"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Description" label-placement="floating" placeholder="Enter description"
-                         v-model="newProduct.description"></ion-input>
+              <ion-input
+                label="Description"
+                label-placement="floating"
+                placeholder="Enter description"
+                v-model="newProduct.description"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Image URL" label-placement="floating" placeholder="Enter link to image"
-                         v-model="newProduct.imageUrl" clearInput></ion-input>
+              <ion-input
+                label="Image URL"
+                label-placement="floating"
+                placeholder="Enter link to image"
+                v-model="newProduct.imageUrl"
+                clearInput></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Category" label-placement="floating" placeholder="Enter commas spaced categories"
-                         v-model="newProduct.category"></ion-input>
+              <ion-input
+                label="Category"
+                label-placement="floating"
+                placeholder="Enter commas spaced categories"
+                v-model="newProduct.category"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Price" label-placement="floating" placeholder="Enter price (€)" type="number"
-                         v-model="newProduct.price"></ion-input>
+              <ion-input
+                label="Price"
+                label-placement="floating"
+                placeholder="Enter price (€)"
+                type="number"
+                v-model="newProduct.price"></ion-input>
             </ion-item>
             <ion-item>
-              <ion-input label="Stock Number" label-placement="floating" placeholder="Enter stock number" type="number"
-                         v-model="newProduct.quantity"></ion-input>
+              <ion-input
+                label="Stock Number"
+                label-placement="floating"
+                placeholder="Enter stock number"
+                type="number"
+                v-model="newProduct.quantity"></ion-input>
             </ion-item>
             <ion-button expand="block" type="submit">Create Product</ion-button>
           </form>

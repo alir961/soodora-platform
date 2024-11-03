@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import {IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol} from "@ionic/vue";
-import {useRouter} from "vue-router";
-import {Playlist} from "@/entity/Playlist";
-import {PropType} from "vue";
+import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol } from '@ionic/vue';
+import { useRouter } from 'vue-router';
+import { Playlist } from '@/entity/Playlist';
+import { PropType } from 'vue';
 
 const router = useRouter();
 
 const goToPlaylistDetails = (slug: string) => {
-  router.push({name: 'PlaylistDetails', params: {slug}});
+  router.push({ name: 'PlaylistDetails', params: { slug } });
 };
 
 defineProps({
   playlist: {
     required: true,
     type: Object as PropType<Playlist>,
-  }
-})
+  },
+});
 </script>
 
 <template>
@@ -31,7 +31,7 @@ defineProps({
         </ion-card-content>
       </div>
       <div id="card-image">
-        <img id="image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`"/>
+        <img id="image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`" />
       </div>
     </ion-card>
   </ion-col>

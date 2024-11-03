@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {IonButton} from '@ionic/vue';
-import {useRouter} from 'vue-router';
+import { IonButton } from '@ionic/vue';
+import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
 const router = useRouter();
