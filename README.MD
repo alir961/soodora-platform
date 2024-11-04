@@ -41,7 +41,7 @@ This command will start the development server and open the application in your 
 
 Here are some useful scripts you can use during development:
 
- - `npm start`: Starts the development server.
- - `npm run build`: Compiles the application for production.
- - `npm run test`: Runs tests.
- - `npm run lint`: Lints and fixes files.
+- `npm start`: Starts the development server.
+- `npm run build`: Compiles the application for production.
+- `npm run test`: Runs tests.
+- `npm run lint`: Lints and fixes files.

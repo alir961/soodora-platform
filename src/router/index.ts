@@ -1,58 +1,64 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
-import AuthPage from '../views/AuthPage.vue';
-import HomePage from '../views/HomePage.vue';
-import AccountPage from '../views/AccountPage.vue';
-import MarketPlacePage from '../views/MarketPlacePage.vue';
-import PlaylistPage from '../views/PlaylistPage.vue';
-import PlaylistDetailsPage from '@/views/PlaylistDetailsPage.vue';
-import NotFoundPage from '../views/NotFoundPage.vue';
+import AuthView from '@/view/user/AuthenticationView.vue';
+import HomeView from '@/view/HomeView.vue';
+import AccountView from '@/view/user/AccountView.vue';
+import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
+import PlaylistView from '@/view/playlist/PlaylistView.vue';
+import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
+import NotFoundView from '@/view/NotFoundView.vue';
+import MaintenanceView from '@/view/MaintenanceView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/auth'
+    redirect: '/home',
   },
   {
     path: '/home',
     name: 'Home',
-    component: HomePage
+    component: HomeView,
+  },
+  {
+    path: '/auth',
+    name: 'Authentication',
+    component: AuthView,
   },
   {
     path: '/account',
     name: 'Account',
-    component: AccountPage
+    component: AccountView,
   },
   {
     path: '/marketplace',
     name: 'Marketplace',
-    component: MarketPlacePage
+    component: MarketPlaceView,
   },
   {
     path: '/playlist',
     name: 'Playlist',
-    component: PlaylistPage
-  },
-  {
-    path: '/auth',
-    name: 'Auth',
-    component: AuthPage
+    component: PlaylistView,
   },
   {
     path: '/playlists/:slug',
     name: 'PlaylistDetails',
-    component: PlaylistDetailsPage,
+    component: PlaylistDetailsView,
+  },
+  {
+    path: '/maintenance',
+    name: 'Maintenance',
+    component: MaintenanceView,
   },
   {
     path: '/:catchAll(.*)',
     name: 'NotFound',
-    component: NotFoundPage
-  }
+    component: NotFoundView,
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
-  routes
+  routes,
 });
 
 export default router;

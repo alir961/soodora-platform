@@ -1,2 +1,43 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
+
+:root {
+  /* Primary and Accent Colors */
+  --ion-color-primary: #b19cd9; /* Gold */
+  --ion-color-primary-rgb: 212, 175, 55;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #9a84be;
+  --ion-color-primary-tint: #c2b0e0;
+
+  --ion-color-secondary: #cba135é; /* Light Purple */
+  --ion-color-secondary-rgb: 177, 156, 217;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-contrast-rgb: 255, 255, 255;
+  --ion-color-secondary-shade: #b8962f;
+  --ion-color-secondary-tint: #e5c456;
+
+  /* Background and Text Colors */
+  --ion-background-color: #ffffff;
+  --ion-text-color: #333333;
+
+  /* Additional Shades for UI Consistency */
+  --ion-color-tertiary: #f4f4f4; /* Light Gray for Clean Look */
+  --ion-color-tertiary-rgb: 244, 244, 244;
+  --ion-color-tertiary-contrast: #333333;
+  --ion-color-tertiary-contrast-rgb: 51, 51, 51;
+
+  /* Button and UI Component Colors */
+  --ion-button-color-primary: var(--ion-color-primary);
+  --ion-button-color-secondary: var(--ion-color-secondary);
+  --ion-item-border-color: #ddd;
+}
+
+/* Text and Title Styling */
+ion-title {
+  color: var(--ion-color-primary);
+}
+
+ion-text {
+  color: var(--ion-text-color);
+}
