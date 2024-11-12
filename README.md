@@ -3,6 +3,7 @@
 GrooveConductor is a Java-based API for managing musical tracks, users, and playlists, developed with Spring Boot.
 
 [![pipeline status](https://gitlab.com/groove-conductor-eip/api/badges/main/pipeline.svg)](https://gitlab.com/groove-conductor-eip/api/-/commits/main)
+[![coverage report](https://gitlab.com/groove-conductor-eip/api/badges/main/coverage.svg)](https://gitlab.com/groove-conductor-eip/api/-/commits/main) 
 
 ## Getting Started
 
