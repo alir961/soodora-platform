@@ -3,6 +3,7 @@ image: maven:3-eclipse-temurin-21-alpine
 stages:
   - build
   - test
+  - coverage
 
 variables:
   MAVEN_CLI_OPTS: "--batch-mode --update-snapshots"
@@ -20,24 +21,44 @@ before_script:
 build:
   stage: build
   script:
-    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
       - rest/target/*.jar
+      - .m2/repository
     expire_in: 1 week
+    when: on_success
 
 test:
   stage: test
+  dependencies:
+    - build
   script:
     - mvn $MAVEN_CLI_OPTS test
-    - mvn $MAVEN_CLI_OPTS verify
   artifacts:
     when: always
     reports:
       junit:
         - "**/target/surefire-reports/*.xml"
-        - "**/target/failsafe-reports/*.xml"
     paths:
       - ./**/target/surefire-reports/
+    expire_in: 1 day
+
+coverage:
+  stage: coverage
+  dependencies:
+    - build
+  script:
+    - mvn $MAVEN_CLI_OPTS verify jacoco:report-aggregate
+    - bash coverage/extract_coverage.sh coverage/target/site/jacoco-aggregate/index.html
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - "**/target/failsafe-reports/*.xml"
+    paths:
       - ./**/target/failsafe-reports/
-    expire_in: 1 week
+      - ./**/target/site/jacoco
+      - coverage/target/site/jacoco-aggregate/
+    expire_in: 1 day
+  coverage: '/TOTAL COVERAGE = \d+(?:\.\d+)?/'
