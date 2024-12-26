@@ -28,18 +28,23 @@ const props = defineProps({
 });
 const emit = defineEmits(['update']);
 
-const showModal: Ref<boolean> = ref(false);
+const showEditPlaylistInfoModal: Ref<boolean> = ref(false);
+const showAddSongModal: Ref<boolean> = ref(false);
 let editablePlaylist: Reactive<Playlist> = reactive(props.playlist);
 
-const openModal = () => {
+const openEditPlaylistInfoModal = () => {
   editablePlaylist = props.playlist;
-  showModal.value = true;
+  showEditPlaylistInfoModal.value = true;
+};
+
+const openAddSongModal = () => {
+  showAddSongModal.value = true;
 };
 
 const handleUpdatePlaylist = async () => {
   if (!props.playlist) return;
 
-  showModal.value = false;
+  showEditPlaylistInfoModal.value = false;
   try {
     await updatePlaylist(props.playlist.slug, editablePlaylist);
     emit('update');
@@ -50,36 +55,45 @@ const handleUpdatePlaylist = async () => {
 </script>
 
 <template>
-  <ion-card>
-    <ion-card-content>
-      <div class="playlist">
-        <div class="playlist-info">
-          <img class="playlist-image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`" />
-          <div class="playlist-info-text">
-            <ion-card-subtitle>{{ playlist.privacy }} PLAYLIST</ion-card-subtitle>
-            <p>{{ playlist.owner.username }}</p>
-            <p>{{ playlist.description }}</p>
+  <div :inert="showAddSongModal || showEditPlaylistInfoModal">
+    <ion-card>
+      <ion-card-content>
+        <div class="playlist">
+          <div class="playlist-info">
+            <img class="playlist-image" :src="playlist.imageUrl" :alt="`Playlist ${playlist.name} thumbnail`" />
+            <div class="playlist-info-text">
+              <ion-card-subtitle>{{ playlist.privacy }} PLAYLIST</ion-card-subtitle>
+              <p>{{ playlist.owner.username }}</p>
+              <p>{{ playlist.description }}</p>
+            </div>
+            <div class="edit-button">
+              <ion-icon id="button" size="large" :icon="createOutline" @click="openEditPlaylistInfoModal"></ion-icon>
+            </div>
           </div>
-          <div class="edit-button">
-            <ion-icon id="button" size="large" :icon="createOutline" @click="openModal"></ion-icon>
+          <div class="playlist-songs">
+            <h1 style="font-weight: 700; font-size: large; color: antiquewhite">
+              Your playlist looks empty!
+            </h1>
+            <ion-button
+              style="font-weight: 700"
+              color="dark"
+              id="empty-button"
+              size="default"
+              @click="openAddSongModal">
+              Add to this playlist
+            </ion-button>
           </div>
         </div>
-        <div class="playlist-songs">
-          <h1 style="font-weight: 700; font-size: large; color: antiquewhite">Your playlist looks empty !</h1>
-          <ion-button style="font-weight: 700" color="dark" id="empty-button" size="default"
-            >Add to this playlist
-          </ion-button>
-        </div>
-      </div>
-    </ion-card-content>
-  </ion-card>
+      </ion-card-content>
+    </ion-card>
+  </div>
 
-  <ion-modal :isOpen="showModal">
+  <ion-modal :isOpen="showEditPlaylistInfoModal">
     <div class="modal-content">
       <ion-header>
         <ion-toolbar>
           <ion-title>Edit Playlist</ion-title>
-          <ion-button slot="end" @click="showModal = false">Close</ion-button>
+          <ion-button slot="end" @click="showEditPlaylistInfoModal = false">Close</ion-button>
         </ion-toolbar>
       </ion-header>
       <ion-content>
@@ -116,6 +130,17 @@ const handleUpdatePlaylist = async () => {
           <ion-button expand="block" type="submit">Update Playlist</ion-button>
         </form>
       </ion-content>
+    </div>
+  </ion-modal>
+
+  <ion-modal :isOpen="showAddSongModal">
+    <div class="modal-content">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Add Song</ion-title>
+          <ion-button slot="end" @click="showAddSongModal = false">Close</ion-button>
+        </ion-toolbar>
+      </ion-header>
     </div>
   </ion-modal>
 </template>

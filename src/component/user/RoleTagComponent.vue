@@ -9,9 +9,9 @@ interface RoleColors {
 }
 
 function getRoleColors(role: Role): RoleColors {
-  if (role === 'ADMIN') return { color: '#fff', backgroundColor: '#c22' };
-  if (role === 'ARTIST') return { color: '#fff', backgroundColor: '#a5d' };
   if (role === 'PREMIUM') return { color: '#fff', backgroundColor: '#e91' };
+  if (role === 'ARTIST') return { color: '#fff', backgroundColor: '#a5d' };
+  if (role === 'ADMIN') return { color: '#fff', backgroundColor: '#c22' };
   return { color: '#fff', backgroundColor: '#fff' };
 }
 
