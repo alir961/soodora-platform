@@ -48,7 +48,7 @@ class PlaylistServiceTest {
     @Test
     void createPlaylist_Success() {
         // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PUBLIC, "imageUrl");
+        CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", 0, PUBLIC, "imageUrl");
 
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(false);
         when(playlistRepository.save(any(), eq(USER))).thenReturn(PLAYLIST_1);
@@ -63,7 +63,7 @@ class PlaylistServiceTest {
     @Test
     void createPlaylist_NameAlreadyUsed() {
         // GIVEN
-        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PUBLIC, "imageUrl");
+        CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", 0, PUBLIC, "imageUrl");
 
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(true);
 
@@ -80,6 +80,7 @@ class PlaylistServiceTest {
             of("Updated Name"),
             of("Updated Description"),
             of("newImageUrl"),
+            of(0),
             of(PUBLIC));
 
         when(playlistRepository.update(updateCommand, SLUG_1)).thenReturn(PLAYLIST_1);
@@ -96,6 +97,7 @@ class PlaylistServiceTest {
             of("Updated Name"),
             of("Updated Description"),
             of("newImageUrl"),
+            of(0),
             of(PUBLIC));
 
         when(playlistRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));

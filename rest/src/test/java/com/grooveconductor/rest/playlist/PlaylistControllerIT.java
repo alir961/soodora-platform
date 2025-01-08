@@ -53,7 +53,7 @@ class PlaylistControllerIT {
 
     @Test
     void createPlaylist_Success() throws Exception {
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", 0, "PUBLIC", "");
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
 
         mockMvc.perform(post("/playlists")
@@ -65,7 +65,7 @@ class PlaylistControllerIT {
 
     @Test
     void createPlaylist_InvalidRequest() throws Exception {
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", "", "");
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", 0, "", "");
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
 
@@ -79,7 +79,7 @@ class PlaylistControllerIT {
     @Test
     void createPlaylist_PlaylistNameUsed() throws Exception {
         UserDTO user = buildDefaultUser();
-        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", "PUBLIC", "");
+        CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("Playlist Name", "Description", 0, "PUBLIC", "");
 
         when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user@example.com");
         when(authenticationService.getAuthenticatedUser()).thenReturn(user);
@@ -100,6 +100,7 @@ class PlaylistControllerIT {
         UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
             "Updated Playlist Name",
             "Updated Description",
+            0,
             "PUBLIC",
             "");
 
@@ -117,6 +118,7 @@ class PlaylistControllerIT {
         UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
             "",
             "",
+            0,
             "PUBLIC",
             "");
 

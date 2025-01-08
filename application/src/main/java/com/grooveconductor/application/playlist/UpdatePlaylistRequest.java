@@ -13,6 +13,7 @@ import static java.util.Optional.ofNullable;
 public record UpdatePlaylistRequest(
     String name,
     String description,
+    Integer numberOfTracks,
     @Schema(description =
         "Playlist privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")
@@ -32,6 +33,7 @@ public record UpdatePlaylistRequest(
         ofNullable(name),
         ofNullable(description),
         ofNullable(imageUrl),
+        ofNullable(numberOfTracks),
         ofNullable(privacyState));
   }
 

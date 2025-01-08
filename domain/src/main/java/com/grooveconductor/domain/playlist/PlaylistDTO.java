@@ -6,6 +6,7 @@ public record PlaylistDTO(
     String slug,
     String name,
     String description,
+    int numberOfTracks,
     PlaylistPrivacy privacy,
     String imageUrl,
     UserDTO owner
