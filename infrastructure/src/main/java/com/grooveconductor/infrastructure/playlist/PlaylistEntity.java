@@ -43,6 +43,9 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
     @Column(length = 5000)
     private String imageUrl;
 
+    @Column
+    private int numberOfTracks;
+
     @ManyToOne
     @JoinColumn
     private UserEntity user;
@@ -61,6 +64,7 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
             slug,
             name,
             description,
+            numberOfTracks,
             privacy,
             imageUrl,
             user.toDTO()

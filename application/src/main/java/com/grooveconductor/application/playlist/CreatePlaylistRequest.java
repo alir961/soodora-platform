@@ -13,6 +13,7 @@ import static java.util.stream.Collectors.joining;
 public record CreatePlaylistRequest(
     String name,
     String description,
+    Integer numberOfTracks,
     @Schema(description =
         "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")
@@ -31,7 +32,7 @@ public record CreatePlaylistRequest(
         if (privacy == null || !isValidPrivacyState(privacy)) throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
         PlaylistPrivacy privacyState = PlaylistPrivacy.valueOf(privacy.toUpperCase());
 
-        return new CreatePlaylistCommand(name, description, privacyState, imageUrl);
+        return new CreatePlaylistCommand(name, description, numberOfTracks, privacyState, imageUrl);
     }
 
     private boolean isValidPrivacyState(String state) {

@@ -15,6 +15,7 @@ public class PlaylistFactory {
             slug,
             name,
             "Description",
+            0,
             PUBLIC,
             "imageUrl",
             buildDefaultUser()

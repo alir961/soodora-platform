@@ -34,6 +34,7 @@ public class GoogleService {
             "&redirect_uri=" + redirectUri +
             "&response_type=code" +
             "&access_type=offline" +
+            "&prompt=consent" +
             "&scope=" + SCOPE +
             "&state=" + state;
 

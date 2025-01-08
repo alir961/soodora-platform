@@ -12,9 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Objects;
-
-import static java.util.Objects.equals;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -38,6 +35,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
         entity.setName(command.name());
         entity.setDescription(command.description());
+        entity.setNumberOfTracks(command.numberOfTracks());
         entity.setPrivacy(command.privacy());
         entity.setImageUrl(command.imageUrl());
         entity.setSlug(generateUniqueSlug());
@@ -57,7 +55,8 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
             existingPlaylist.setImageUrl(command.getImageUrl());
         if (command.getPrivacyState() != null && !command.getPrivacyState().equals(existingPlaylist.getPrivacy()))
             existingPlaylist.setPrivacy(command.getPrivacyState());
-
+        if (command.getNumberOfTracks() != existingPlaylist.getNumberOfTracks())
+            existingPlaylist.setNumberOfTracks(command.getNumberOfTracks());
         return repository.save(existingPlaylist).toDTO();
     }
 
