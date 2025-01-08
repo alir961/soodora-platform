@@ -7,13 +7,13 @@ import com.grooveconductor.application.common.InvalidRequestException;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.stream.Stream;
+
 import static java.util.stream.Collectors.joining;
-import static java.util.Optional.ofNullable;
 
 public record UpdatePlaylistRequest(
     String name,
     String description,
-    Integer numberOfTracks,
+    int numberOfTracks,
     @Schema(description =
         "Playlist privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")
@@ -30,11 +30,11 @@ public record UpdatePlaylistRequest(
     PlaylistPrivacy privacyState = parsePrivacy(privacy);
 
     return new UpdatePlaylistCommand(
-        ofNullable(name),
-        ofNullable(description),
-        ofNullable(imageUrl),
-        ofNullable(numberOfTracks),
-        ofNullable(privacyState));
+        name,
+        description,
+        imageUrl,
+        numberOfTracks,
+        privacyState);
   }
 
   private PlaylistPrivacy parsePrivacy(String privacy) {
