@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {Ref, ref} from 'vue';
+import { Ref, ref } from 'vue';
 import {
   IonButton,
   IonContent,
@@ -16,21 +16,27 @@ import {
   IonToolbar,
   onIonViewWillEnter,
 } from '@ionic/vue';
-import {add, logoYoutube} from 'ionicons/icons';
+import { add, logoYoutube } from 'ionicons/icons';
 import {
   createPlaylist,
   PlaylistCreateRequest,
   retrieveUserPlaylists,
-  retrieveYoutubePlaylists
+  retrieveYoutubePlaylists,
 } from '@/client/playlistClient';
-import {Playlist} from '@/entity/Playlist';
-import {getAuthenticatedUser} from '@/utils';
+import { Playlist } from '@/entity/Playlist';
+import { getAuthenticatedUser } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
-const newPlaylist: Ref<PlaylistCreateRequest> = ref({name: '', description: '', imageUrl: '', numberOfTracks: 0, privacy: 'PUBLIC'});
+const newPlaylist: Ref<PlaylistCreateRequest> = ref({
+  name: '',
+  description: '',
+  imageUrl: '',
+  numberOfTracks: 0,
+  privacy: 'PUBLIC',
+});
 
 const loadPlaylists = async () => {
   try {
@@ -72,17 +78,17 @@ onIonViewWillEnter(async () => {
     <template #toolbar>
       <div id="toolbar-button">
         <ion-button :inert="showModal" size="small" @click="showModal = true">
-          <ion-icon :icon="add"/>
+          <ion-icon :icon="add" />
         </ion-button>
-        <ion-button size="small" @click=FetchYoutubePlaylist>
-          <ion-icon :icon="logoYoutube"/>
+        <ion-button size="small" @click="FetchYoutubePlaylist">
+          <ion-icon :icon="logoYoutube" />
         </ion-button>
       </div>
     </template>
 
     <ion-grid>
       <ion-row>
-        <PlaylistCard v-for="playlist in playlists" :key="playlist.slug" :playlist="playlist"/>
+        <PlaylistCard v-for="playlist in playlists" :key="playlist.slug" :playlist="playlist" />
       </ion-row>
     </ion-grid>
 
@@ -98,25 +104,25 @@ onIonViewWillEnter(async () => {
           <form @submit.prevent="handleCreatePlaylist">
             <ion-item>
               <ion-input
-                  label="Name"
-                  label-placement="floating"
-                  placeholder="Enter name"
-                  v-model="newPlaylist.name"></ion-input>
+                label="Name"
+                label-placement="floating"
+                placeholder="Enter name"
+                v-model="newPlaylist.name"></ion-input>
             </ion-item>
             <ion-item>
               <ion-input
-                  label="Description"
-                  label-placement="floating"
-                  placeholder="Enter description"
-                  v-model="newPlaylist.description"></ion-input>
+                label="Description"
+                label-placement="floating"
+                placeholder="Enter description"
+                v-model="newPlaylist.description"></ion-input>
             </ion-item>
             <ion-item>
               <ion-input
-                  label="Image URL"
-                  label-placement="floating"
-                  placeholder="Enter link to image"
-                  v-model="newPlaylist.imageUrl"
-                  clearInput></ion-input>
+                label="Image URL"
+                label-placement="floating"
+                placeholder="Enter link to image"
+                v-model="newPlaylist.imageUrl"
+                clearInput></ion-input>
             </ion-item>
             <ion-item>
               <ion-select v-model="newPlaylist.privacy" placeholder="Privacy">

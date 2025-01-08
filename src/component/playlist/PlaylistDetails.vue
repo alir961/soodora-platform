@@ -71,9 +71,7 @@ const handleUpdatePlaylist = async () => {
             </div>
           </div>
           <div class="playlist-songs">
-            <h1 style="font-weight: 700; font-size: large; color: antiquewhite">
-              Your playlist looks empty!
-            </h1>
+            <h1 style="font-weight: 700; font-size: large; color: antiquewhite">Your playlist looks empty!</h1>
             <ion-button
               style="font-weight: 700"
               color="dark"

@@ -71,7 +71,6 @@ onMounted(fetchUserData);
 const showButton = () => {
   return userData.value?.roles.includes('ADMIN') || userData.value?.roles.includes('ARTIST');
 };
-
 </script>
 
 <template>

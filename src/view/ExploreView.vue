@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Ref, ref, reactive, onMounted } from 'vue';
-import { 
+import {
   IonButton,
   IonContent,
   IonHeader,
@@ -12,7 +12,7 @@ import {
   IonToolbar,
   IonGrid,
   IonRow,
- } from '@ionic/vue';
+} from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
@@ -22,7 +22,8 @@ import AudioCard from '@/component/explore/AudioCard.vue';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);
-const uploadedAudios: Ref<{ title: string; genre: string; imageUrl: string; fileUrl: string; duration: number }[]> = ref([]);
+const uploadedAudios: Ref<{ title: string; genre: string; imageUrl: string; fileUrl: string; duration: number }[]> =
+  ref([]);
 
 const newMp3 = reactive({
   title: '',
@@ -96,9 +97,8 @@ const sendMp3ToServer = async (newMp3Data: { title: string; genre: string; file:
   }
 
   try {
-    await uploadMp3(
-      //nommer les variables pour le exploreMP3Client.ts ici (je crois que ça marche comme as)
-    );
+    await uploadMp3();
+    //nommer les variables pour le exploreMP3Client.ts ici (je crois que ça marche comme as)
   } catch (error) {
     console.error('Error uploading MP3:', error);
     throw error;
@@ -158,9 +158,7 @@ const sendMp3ToServer = async (newMp3Data: { title: string; genre: string; file:
               <input type="file" accept="audio/*" @change="handleFileSelection" />
             </ion-item>
 
-            <ion-button expand="block" type="submit">
-              Upload Audio
-            </ion-button>
+            <ion-button expand="block" type="submit"> Upload Audio </ion-button>
           </form>
         </ion-content>
       </div>

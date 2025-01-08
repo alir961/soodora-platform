@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
-import {alertController} from "@ionic/vue";
+import { alertController } from '@ionic/vue';
 
 declare let window: Window;
 
