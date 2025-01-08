@@ -100,12 +100,12 @@ class ProductServiceTest {
     @Test
     void updateProduct_Success() {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
-            of("Updated Name"),
-            of("Updated Description"),
-            of("newImageUrl"),
-            of("newCategory"),
-            of(150L),
-            of(5L));
+            "Updated Name",
+           "Updated Description",
+            "newImageUrl",
+           "newCategory",
+            150L,
+            5L);
 
         when(productRepository.update(updateCommand, SLUG_1)).thenReturn(PRODUCT_1);
 
@@ -118,12 +118,12 @@ class ProductServiceTest {
     @Test
     void updateProduct_UnknownSlug() {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
-            of("Updated Name"),
-            of("Updated Description"),
-            of("newImageUrl"),
-            of("newCategory"),
-            of(150L),
-            of(5L));
+            "Updated Name",
+            "Updated Description",
+            "newImageUrl",
+            "newCategory",
+            150L,
+            5L);
 
         when(productRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));
 

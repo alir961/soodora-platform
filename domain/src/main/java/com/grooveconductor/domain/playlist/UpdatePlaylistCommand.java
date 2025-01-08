@@ -2,8 +2,6 @@ package com.grooveconductor.domain.playlist;
 
 import lombok.Getter;
 
-import java.util.Optional;
-
 @Getter
 public class UpdatePlaylistCommand {
     private final String name;
@@ -13,17 +11,17 @@ public class UpdatePlaylistCommand {
     private final PlaylistPrivacy privacyState;
 
   public UpdatePlaylistCommand(
-      Optional<String> name,
-      Optional<String> description,
-      Optional<String> imageUrl,
-      Optional<Integer> numberOfTracks,
-      Optional<PlaylistPrivacy> privacyState
+      String name,
+      String description,
+      String imageUrl,
+      int numberOfTracks,
+      PlaylistPrivacy privacyState
   ) {
 
-    this.name = name.orElse(null);
-    this.description = description.orElse(null);
-    this.numberOfTracks = numberOfTracks.orElse(0);
-    this.imageUrl = imageUrl.orElse(null);
-    this.privacyState = privacyState.orElse(null);
+    this.name = name;
+    this.description = description;
+    this.numberOfTracks = numberOfTracks;
+    this.imageUrl = imageUrl;
+    this.privacyState = privacyState;
   }
 }

@@ -77,11 +77,11 @@ class PlaylistServiceTest {
     @Test
     void updatePlaylist_Success() {
         UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand(
-            of("Updated Name"),
-            of("Updated Description"),
-            of("newImageUrl"),
-            of(0),
-            of(PUBLIC));
+            "Updated Name",
+            "Updated Description",
+            "newImageUrl",
+            0,
+            PUBLIC);
 
         when(playlistRepository.update(updateCommand, SLUG_1)).thenReturn(PLAYLIST_1);
 
@@ -94,11 +94,11 @@ class PlaylistServiceTest {
     @Test
     void updatePlaylist_UnknownSlug() {
         UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand(
-            of("Updated Name"),
-            of("Updated Description"),
-            of("newImageUrl"),
-            of(0),
-            of(PUBLIC));
+            "Updated Name",
+            "Updated Description",
+            "newImageUrl",
+            0,
+            PUBLIC);
 
         when(playlistRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));
 

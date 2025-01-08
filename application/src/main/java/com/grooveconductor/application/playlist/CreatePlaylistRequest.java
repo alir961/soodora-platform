@@ -13,7 +13,7 @@ import static java.util.stream.Collectors.joining;
 public record CreatePlaylistRequest(
     String name,
     String description,
-    Integer numberOfTracks,
+    int numberOfTracks,
     @Schema(description =
         "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
         example = "PUBLIC")

@@ -2,8 +2,6 @@ package com.grooveconductor.domain.product;
 
 import lombok.Getter;
 
-import java.util.Optional;
-
 @Getter
 public class UpdateProductCommand {
     private final String name;
@@ -14,20 +12,20 @@ public class UpdateProductCommand {
     private final long quantity;
 
   public UpdateProductCommand(
-      Optional<String> name,
-      Optional<String> description,
-      Optional<String> imageUrl,
-      Optional<String> category,
-      Optional<Long> price,
-      Optional<Long> quantity
+      String name,
+      String description,
+      String imageUrl,
+      String category,
+      Long price,
+      Long quantity
   ) {
 
-    this.name = name.orElse(null);
-    this.description = description.orElse(null);
-    this.imageUrl = imageUrl.orElse(null);
-    this.category = category.orElse(null);
-    this.price = price.orElse(0L);
-    this.quantity = quantity.orElse(0L);
+    this.name = name;
+    this.description = description;
+    this.imageUrl = imageUrl;
+    this.category = category;
+    this.price = price;
+    this.quantity = quantity;
   }
 
 }
