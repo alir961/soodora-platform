@@ -8,6 +8,7 @@ interface Playlist {
   description: string;
   privacy: PlaylistPrivacy;
   imageUrl: string;
+  numberOfTracks: number;
   owner: User;
 }
 
