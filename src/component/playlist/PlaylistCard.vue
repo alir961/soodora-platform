@@ -28,6 +28,7 @@ defineProps({
         </ion-card-header>
         <ion-card-content>
           <p>{{ playlist.description }}</p>
+          <p>Tracks: {{ playlist.numberOfTracks }}</p>
         </ion-card-content>
       </div>
       <div id="card-image">

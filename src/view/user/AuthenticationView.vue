@@ -21,7 +21,7 @@ const login = async () => {
     const token = await callLogin({ email: email.value, password: password.value });
 
     await saveBearerToken(token);
-    await router.push('/home');
+    await router.push('/explore');
     isLogged.value = true;
   } catch (error) {
     console.error('Login failed:', error);
@@ -53,7 +53,7 @@ onIonViewWillEnter(async () => {
     await loadBearerToken();
     await retrieveAuthenticatedProfile();
 
-    await router.push('/home');
+    await router.push('/explore');
   } catch (e) {
     isLogged.value = false;
   }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Reactive, reactive, Ref, ref } from 'vue';
+import { Reactive, reactive, Ref, ref, onMounted } from 'vue';
 import {
   IonButton,
   IonContent,
@@ -20,9 +20,12 @@ import { Product } from '@/entity/Product';
 import { getAuthenticatedUser } from '@/utils';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { User } from '@/entity/User';
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
+const userData: Ref<User | null> = ref(null);
 const newProduct: Reactive<CreateProductRequest> = reactive({
   name: '',
   description: '',
@@ -54,13 +57,27 @@ onIonViewWillEnter(async () => {
   await getAuthenticatedUser();
   await loadProducts();
 });
+
+const fetchUserData = async () => {
+  try {
+    userData.value = await retrieveAuthenticatedProfile();
+  } catch (error) {
+    console.error('Failed to fetch user data:', error);
+  }
+};
+
+onMounted(fetchUserData);
+
+const showButton = () => {
+  return userData.value?.roles.includes('ADMIN') || userData.value?.roles.includes('ARTIST');
+};
 </script>
 
 <template>
   <ApplicationViewport title="Marketplace" authenticated>
     <template #toolbar>
       <div id="toolbar-button">
-        <ion-button size="small" @click="showModal = true" :inert="showModal">
+        <ion-button v-if="showButton()" size="small" @click="showModal = true" :inert="showModal">
           <ion-icon :icon="add"></ion-icon>
         </ion-button>
       </div>

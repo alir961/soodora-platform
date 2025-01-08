@@ -6,7 +6,7 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 const router = useRouter();
 
 const redirectHome = () => {
-  router.push('/home');
+  router.push('/explore');
 };
 </script>
 
@@ -17,7 +17,7 @@ const redirectHome = () => {
         <h1>404</h1>
         <h2>Oops! Page Not Found 😕</h2>
         <p>Sorry, the page you are looking for doesn't exist.</p>
-        <ion-button @click="redirectHome" class="button">Go to Home</ion-button>
+        <ion-button @click="redirectHome" class="button">Back to grooving</ion-button>
       </div>
     </div>
   </ApplicationViewport>

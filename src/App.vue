@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
-import { cartOutline, homeOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
+import { cartOutline, planetOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
 
 interface TabEntry {
@@ -9,7 +9,7 @@ interface TabEntry {
 }
 
 const tabs: TabEntry[] = [
-  { name: 'home', icon: homeOutline },
+  { name: 'explore', icon: planetOutline },
   { name: 'marketplace', icon: cartOutline },
   { name: 'playlist', icon: musicalNotesOutline },
   { name: 'account', icon: personOutline },

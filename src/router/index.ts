@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import AuthView from '@/view/user/AuthenticationView.vue';
-import HomeView from '@/view/HomeView.vue';
+import HomeView from '@/view/ExploreView.vue';
 import AccountView from '@/view/user/AccountView.vue';
 import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import PlaylistView from '@/view/playlist/PlaylistView.vue';
@@ -12,11 +12,11 @@ import MaintenanceView from '@/view/MaintenanceView.vue';
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    redirect: '/home',
+    redirect: '/explore',
   },
   {
-    path: '/home',
-    name: 'Home',
+    path: '/explore',
+    name: 'Explore',
     component: HomeView,
   },
   {

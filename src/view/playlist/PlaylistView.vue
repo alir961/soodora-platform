@@ -16,8 +16,13 @@ import {
   IonToolbar,
   onIonViewWillEnter,
 } from '@ionic/vue';
-import { add } from 'ionicons/icons';
-import { createPlaylist, PlaylistCreateRequest, retrieveUserPlaylists } from '@/client/playlistClient';
+import { add, logoYoutube } from 'ionicons/icons';
+import {
+  createPlaylist,
+  PlaylistCreateRequest,
+  retrieveUserPlaylists,
+  retrieveYoutubePlaylists,
+} from '@/client/playlistClient';
 import { Playlist } from '@/entity/Playlist';
 import { getAuthenticatedUser } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
@@ -25,7 +30,13 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
-const newPlaylist: Ref<PlaylistCreateRequest> = ref({ name: '', description: '', imageUrl: '', privacy: 'PUBLIC' });
+const newPlaylist: Ref<PlaylistCreateRequest> = ref({
+  name: '',
+  description: '',
+  imageUrl: '',
+  numberOfTracks: 0,
+  privacy: 'PUBLIC',
+});
 
 const loadPlaylists = async () => {
   try {
@@ -47,6 +58,16 @@ const handleCreatePlaylist = async () => {
   }
 };
 
+const FetchYoutubePlaylist = async () => {
+  try {
+    const playlists: PlaylistCreateRequest[] = await retrieveYoutubePlaylists();
+    await Promise.all(playlists.map((playlist) => createPlaylist(playlist)));
+    await loadPlaylists();
+  } catch (error) {
+    console.error('Failed to create playlists from Youtube playlists:', error);
+  }
+};
+
 onIonViewWillEnter(async () => {
   await loadPlaylists();
 });
@@ -58,6 +79,9 @@ onIonViewWillEnter(async () => {
       <div id="toolbar-button">
         <ion-button :inert="showModal" size="small" @click="showModal = true">
           <ion-icon :icon="add" />
+        </ion-button>
+        <ion-button size="small" @click="FetchYoutubePlaylist">
+          <ion-icon :icon="logoYoutube" />
         </ion-button>
       </div>
     </template>

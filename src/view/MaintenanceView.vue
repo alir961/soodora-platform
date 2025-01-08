@@ -11,7 +11,7 @@ const router = useRouter();
 const counter: Ref<number> = ref(INITIAL_COUNTER);
 
 const redirectHome = () => {
-  router.push('/home');
+  router.push('/explore');
 };
 
 const redirectIfOnline = () => {
