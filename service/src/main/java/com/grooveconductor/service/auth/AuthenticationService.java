@@ -2,6 +2,7 @@ package com.grooveconductor.service.auth;
 
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
+import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
@@ -18,7 +19,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final JwtTokenService jwtTokenService;
+    private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -35,7 +36,7 @@ public class AuthenticationService {
 
         if (!passwordEncoder.matches(command.password(), password))
             throw new UnknownUserException("Invalid password");
-        return jwtTokenService.generateToken(user);
+        return tokenRepository.generateToken(user);
     }
 
     public UserDTO getAuthenticatedUser() {

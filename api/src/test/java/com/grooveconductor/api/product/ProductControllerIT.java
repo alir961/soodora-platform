@@ -3,8 +3,8 @@ package com.grooveconductor.api.product;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.auth.AuthenticationService;
-import com.grooveconductor.service.auth.JwtTokenService;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.CreateProductRequest;
 import com.grooveconductor.service.product.ProductService;
@@ -42,7 +42,7 @@ class ProductControllerIT {
     private AuthenticationService authenticationService;
 
     @MockBean
-    private JwtTokenService jwtTokenService;
+    private JwtTokenRepository jwtTokenService;
 
     private static final ProductDTO A_PRODUCT = buildDefaultProduct();
 

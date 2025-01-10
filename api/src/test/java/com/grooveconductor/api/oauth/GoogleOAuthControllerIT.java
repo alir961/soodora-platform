@@ -1,7 +1,7 @@
 package com.grooveconductor.api.oauth;
 
+import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.auth.AuthenticationService;
-import com.grooveconductor.service.auth.JwtTokenService;
 import com.grooveconductor.service.google.GoogleService;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
@@ -42,7 +42,7 @@ class GoogleOAuthControllerIT {
     private OAuthTokenService oauthTokenService;
 
     @MockBean
-    private JwtTokenService jwtTokenService;
+    private JwtTokenRepository jwtTokenService;
 
     @MockBean
     private AuthenticationService authenticationService;

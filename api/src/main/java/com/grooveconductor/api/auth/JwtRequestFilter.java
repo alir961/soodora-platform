@@ -1,6 +1,6 @@
 package com.grooveconductor.api.auth;
 
-import com.grooveconductor.service.auth.JwtTokenService;
+import com.grooveconductor.domain.auth.TokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,7 @@ import static org.springframework.security.core.context.SecurityContextHolder.ge
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private final JwtTokenService jwtTokenService;
+    private final TokenRepository tokenRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -32,7 +32,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private void authenticateBearerToken(HttpServletRequest request, String token) {
-        String email = jwtTokenService.getEmailFromToken(token);
+        String email = tokenRepository.getEmailFromToken(token);
         boolean isAuthenticated = getContext().getAuthentication() != null;
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(email, null, new ArrayList<>());
 

@@ -1,9 +1,9 @@
 package com.grooveconductor.api.oauth;
 
+import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.auth.AuthenticationException;
 import com.grooveconductor.service.auth.AuthenticationService;
-import com.grooveconductor.service.auth.JwtTokenService;
 import com.grooveconductor.service.google.GoogleService;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
@@ -30,7 +30,7 @@ public class GoogleOAuthController {
     private final GoogleService googleService;
     private final UserService userService;
     private final OAuthTokenService oauthTokenService;
-    private final JwtTokenService jwtTokenService;
+    private final TokenRepository tokenRepository;
     private final AuthenticationService authenticationService;
 
     @Value("${frontURL:localhost}")
@@ -74,7 +74,7 @@ public class GoogleOAuthController {
 
     private UserDTO retrieveUserOrThrows(String token) throws AuthenticationException {
         if (token == null || token.isEmpty()) throw new AuthenticationException("Token is null or empty");
-        String email = jwtTokenService.getEmailFromToken(token);
+        String email = tokenRepository.getEmailFromToken(token);
         UserDTO user = userService.retrieveUser(createFromEmail(email));
 
         if (email == null || user == null) throw new AuthenticationException("Unable to retrieve user");

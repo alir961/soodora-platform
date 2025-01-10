@@ -3,7 +3,7 @@ package com.grooveconductor.api.user;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.service.auth.JwtTokenService;
+import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
@@ -38,7 +38,7 @@ class UserControllerIT {
     private UserService userService;
 
     @MockBean
-    private JwtTokenService jwtTokenService;
+    private JwtTokenRepository jwtTokenService;
 
     private static final UserDTO USER_1 = buildDefaultUser(1);
     private static final UserDTO USER_2 = buildDefaultUser(2);

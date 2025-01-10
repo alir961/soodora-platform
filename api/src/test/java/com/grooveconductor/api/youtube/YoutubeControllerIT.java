@@ -1,8 +1,8 @@
 package com.grooveconductor.api.youtube;
 
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
+import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.auth.AuthenticationService;
-import com.grooveconductor.service.auth.JwtTokenService;
 import com.grooveconductor.service.youtube.YoutubeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ class YoutubeControllerIT {
     private AuthenticationService authenticationService;
 
     @MockBean
-    private JwtTokenService jwtTokenService;
+    private JwtTokenRepository jwtTokenService;
 
     private static final YoutubePlaylistDTO PLAYLIST_1 = buildDefaultYoutubePlaylist("1");
     private static final YoutubePlaylistDTO PLAYLIST_2 = buildDefaultYoutubePlaylist("2");

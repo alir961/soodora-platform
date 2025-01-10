@@ -4,8 +4,8 @@ import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.auth.AuthenticationService;
-import com.grooveconductor.service.auth.JwtTokenService;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.playlist.CreatePlaylistRequest;
 import com.grooveconductor.service.playlist.PlaylistService;
@@ -45,7 +45,7 @@ class PlaylistControllerIT {
     private AuthenticationService authenticationService;
 
     @MockBean
-    private JwtTokenService jwtTokenService;
+    private JwtTokenRepository jwtTokenService;
 
     private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("playlistSlug2", "Playlist 2");
