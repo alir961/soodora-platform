@@ -1,4 +1,4 @@
-package com.grooveconductor.api.configuratin;
+package com.grooveconductor.api.configuration;
 
 import com.grooveconductor.domain.auth.RoleDTO;
 import com.grooveconductor.domain.auth.RoleRepository;

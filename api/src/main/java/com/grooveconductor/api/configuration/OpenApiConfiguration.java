@@ -1,4 +1,4 @@
-package com.grooveconductor.api.configuratin;
+package com.grooveconductor.api.configuration;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Info;
