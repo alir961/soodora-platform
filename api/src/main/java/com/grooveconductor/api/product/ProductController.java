@@ -6,20 +6,19 @@ import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.product.ProductFilter;
 import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
-
 
 @RestController
 @RequestMapping("/products")
@@ -28,14 +27,14 @@ import static org.springframework.http.HttpStatus.*;
 public class ProductController {
 
     private final ProductService service;
-    private final AuthenticationService authenticationService;
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<JsonResponse> createProduct(@RequestBody CreateProductRequest createProductRequest) {
+    public ResponseEntity<JsonResponse> createProduct(
+            @AuthenticationPrincipal UserDTO user,
+            @RequestBody CreateProductRequest createProductRequest
+    ) {
         try {
-            UserDTO user = authenticationService.getAuthenticatedUser();
-
             service.createProduct(createProductRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {

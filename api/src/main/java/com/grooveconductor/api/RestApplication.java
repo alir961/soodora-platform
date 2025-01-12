@@ -14,8 +14,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @PropertySource("classpath:application-persistence.properties")
 public class RestApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(RestApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(RestApplication.class, args);
+    }
 
 }

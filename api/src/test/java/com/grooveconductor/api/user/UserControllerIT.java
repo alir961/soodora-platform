@@ -3,7 +3,7 @@ package com.grooveconductor.api.user;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
+import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
@@ -16,13 +16,15 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,7 +40,7 @@ class UserControllerIT {
     private UserService userService;
 
     @MockBean
-    private JwtTokenRepository jwtTokenService;
+    private UserRepository userRepository;
 
     private static final UserDTO USER_1 = buildDefaultUser(1);
     private static final UserDTO USER_2 = buildDefaultUser(2);
@@ -48,11 +50,11 @@ class UserControllerIT {
     void retrieveUsers_Success() throws Exception {
         // GIVEN
         when(userService.retrieveAllUsers()).thenReturn(asList(USER_1, USER_2, USER_3));
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].slug").value("slug1"))
@@ -64,19 +66,18 @@ class UserControllerIT {
     void retrieveUsers_Empty() throws Exception {
         // GIVEN
         when(userService.retrieveAllUsers()).thenReturn(emptyList());
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isNoContent());
     }
 
     @Test
     void retrieveUsers_Forbidden() throws Exception {
         // WHEN & THEN
-        mockMvc.perform(get("/users")
-                        .header("Authorization", "Bearer token"))
+        mockMvc.perform(get("/users"))
                 .andExpect(status().isForbidden());
     }
 
@@ -86,11 +87,11 @@ class UserControllerIT {
         Identifier identifier = createFromSlug("slug1");
 
         when(userService.retrieveUser(identifier)).thenReturn(USER_1);
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/users/slug1")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("slug1"))
                 .andExpect(jsonPath("$.username").value("username1"))
@@ -100,12 +101,12 @@ class UserControllerIT {
     @Test
     void retrieveUserBySlug_Unknown() throws Exception {
         // GIVEN
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
         doThrow(UnknownUserException.class).when(userService).retrieveUser(any());
 
         // WHEN & THEN
         mockMvc.perform(get("/users/unknown")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isNotFound());
     }
 
@@ -118,36 +119,38 @@ class UserControllerIT {
 
     @Test
     void updateUser_Success() throws Exception {
+        // GIVEN
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(
-            "newUsername",
-            "firstname",
-            "lastname");
+                "newUsername",
+                "firstname",
+                "lastname"
+        );
 
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
+        // WHEN & THEN
         mockMvc.perform(put("/users/" + USER_1.slug())
-                .contentType("application/json")
-                .content(asJsonString(updateUserRequest))
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isAccepted());
+                        .contentType("application/json")
+                        .content(asJsonString(updateUserRequest))
+                        .with(user(USER.email())))
+                .andExpect(status().isAccepted());
     }
 
     @Test
     void updateUser_InvalidRequest() throws Exception {
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest(
-            "",
-            "",
-            "");
+        // GIVEN
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "");
 
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid Request")).when(userService).updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()));
 
+        // WHEN & THEN
         mockMvc.perform(put("/users/" + USER_1.slug())
-                .contentType("application/json")
-                .content(asJsonString(updateUserRequest))
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.reason").value("Invalid Request"));
+                        .contentType("application/json")
+                        .content(asJsonString(updateUserRequest))
+                        .with(user(USER.email())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("Invalid Request"));
     }
 
     @Test
@@ -155,12 +158,12 @@ class UserControllerIT {
         // GIVEN
         Identifier identifier = createFromSlug("slug1");
 
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
         doNothing().when(userService).deleteUser(identifier);
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/slug1")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isOk());
         verify(userService, times(1)).deleteUser(identifier);
     }
@@ -168,12 +171,12 @@ class UserControllerIT {
     @Test
     void deleteUserBySlug_Unknown() throws Exception {
         // GIVEN
-        when(jwtTokenService.getEmailFromToken(anyString())).thenReturn("user1@example.com");
+        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
         doThrow(UnknownUserException.class).when(userService).deleteUser(any());
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/unknown")
-                        .header("Authorization", "Bearer token"))
+                        .with(user(USER.email())))
                 .andExpect(status().isNotFound());
     }
 

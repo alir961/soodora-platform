@@ -17,4 +17,5 @@ public record UserDTO(
         return createFromSlug(slug);
     }
 
+
 }

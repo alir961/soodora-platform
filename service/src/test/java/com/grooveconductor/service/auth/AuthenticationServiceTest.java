@@ -2,6 +2,7 @@ package com.grooveconductor.service.auth;
 
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
+import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
@@ -26,7 +27,7 @@ import static org.springframework.security.crypto.password.NoOpPasswordEncoder.g
 class AuthenticationServiceTest {
 
     @Mock
-    private JwtTokenService jwtTokenService;
+    private TokenRepository tokenRepository;
 
     @Mock
     private UserRepository userRepository;
@@ -35,7 +36,7 @@ class AuthenticationServiceTest {
 
     @BeforeEach
     void setUp() {
-        authenticationService = new AuthenticationService(jwtTokenService, userRepository, getInstance());
+        authenticationService = new AuthenticationService(tokenRepository, userRepository, getInstance());
     }
 
     @Test
@@ -74,7 +75,7 @@ class AuthenticationServiceTest {
 
         when(userRepository.find(any())).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(any())).thenReturn("password");
-        when(jwtTokenService.generateToken((any()))).thenReturn("token");
+        when(tokenRepository.generateToken((any()))).thenReturn("token");
 
         // WHEN
         String token = authenticationService.loginUser(command);

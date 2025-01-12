@@ -1,7 +1,7 @@
 package com.grooveconductor.api.oauth;
 
+import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
-import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.google.GoogleService;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
@@ -19,7 +19,9 @@ import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.test.TestConstants.*;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -45,7 +47,7 @@ class GoogleOAuthControllerIT {
     private JwtTokenRepository jwtTokenService;
 
     @MockBean
-    private AuthenticationService authenticationService;
+    private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
@@ -61,17 +63,17 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
-                .param("token", JWT_TOKEN))
-            .andExpect(status().isFound())
-            .andExpect(header().string("Location", is(REDIRECT_URL)));
+                        .param("token", JWT_TOKEN))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", is(REDIRECT_URL)));
     }
 
     @Test
     void redirectToGoogleOAuthFlow_Unauthorized() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
-                .param("token", "invalid"))
-            .andExpect(status().isUnauthorized());
+                        .param("token", "invalid"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -82,10 +84,10 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
-                .param("code", "code")
-                .param("state", JWT_TOKEN))
-            .andExpect(status().isFound())
-            .andExpect(header().string("Location", not(containsString("error=oauth"))));
+                        .param("code", "code")
+                        .param("state", JWT_TOKEN))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", not(containsString("error=oauth"))));
         verify(oauthTokenService, times(1)).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
     }
 
@@ -93,24 +95,24 @@ class GoogleOAuthControllerIT {
     void googleOAuthCallback_Unauthorized() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
-                .param("code", "code")
-                .param("state", "invalid"))
-            .andExpect(status().isFound())
-            .andExpect(header().string("Location", containsString("error=oauth")));
+                        .param("code", "code")
+                        .param("state", "invalid"))
+                .andExpect(status().isFound())
+                .andExpect(header().string("Location", containsString("error=oauth")));
     }
 
     @Test
     void deleteGoogleOAuth_Success() throws Exception {
         // GIVEN
-        when(authenticationService.getAuthenticatedUser()).thenReturn(USER);
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
         when(userService.existsUser(USER.identifier())).thenReturn(true);
         when(googleService.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
         mockMvc.perform(delete("/auth/google")
-                .header("Authorization", "Bearer token"))
-            .andExpect(status().isOk());
-        verify(oauthTokenService, times(1)).deleteUserAuthorization(GOOGLE, USER);
+                        .with(user(USER.email())))
+                .andExpect(status().isOk());
+        verify(oauthTokenService, times(1)).deleteUserAuthorization(eq(GOOGLE), any());
     }
 
 }

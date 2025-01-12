@@ -18,7 +18,7 @@ public class PlaylistService {
     private final UserRepository userRepository;
     private final PlaylistRepository playlistRepository;
 
-    public void createPlaylist(CreatePlaylistCommand command, UserDTO user) {
+    public void createPlaylist(CreatePlaylistCommand command, UserDTO user) throws PlaylistUnityException {
         if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.slug()))
             throw new PlaylistUnityException("Name is already used");
         playlistRepository.save(command, user);

@@ -1,6 +1,5 @@
 package com.grooveconductor.api.auth;
 
-import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.auth.RegisterRequest;
 import com.grooveconductor.service.user.UnknownUserException;
@@ -13,7 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static com.grooveconductor.api.JsonStringify.asJsonString;
-import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.TestConstants.USER;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -34,10 +33,15 @@ class AuthenticationControllerIT {
     @Test
     void registerUserSuccess() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest("username", "user@example.com", "password", "John", "Doe");
-        UserDTO user = buildDefaultUser();
+        RegisterRequest request = new RegisterRequest(
+                "username",
+                "user@example.com",
+                "password",
+                "John",
+                "Doe"
+        );
 
-        when(authenticationService.registerUser(any())).thenReturn(user);
+        when(authenticationService.registerUser(any())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/auth/register")
@@ -49,7 +53,13 @@ class AuthenticationControllerIT {
     @Test
     void registerUserAlreadyExists() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest("username", "user@example.com", "password", "John", "Doe");
+        RegisterRequest request = new RegisterRequest(
+                "username",
+                "user@example.com",
+                "password",
+                "John",
+                "Doe"
+        );
 
         when(authenticationService.registerUser(any())).thenThrow(UserUnityException.class);
 
@@ -63,7 +73,13 @@ class AuthenticationControllerIT {
     @Test
     void loginUserSuccess() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest("username", "user@example.com", "password", "John", "Doe");
+        RegisterRequest request = new RegisterRequest(
+                "username",
+                "user@example.com",
+                "password",
+                "John",
+                "Doe"
+        );
 
         when(authenticationService.loginUser(any())).thenReturn("token");
 
@@ -78,7 +94,13 @@ class AuthenticationControllerIT {
     @Test
     void loginUserBadCredentials() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest("username", "user@example.com", "password", "John", "Doe");
+        RegisterRequest request = new RegisterRequest(
+                "username",
+                "user@example.com",
+                "password",
+                "John",
+                "Doe"
+        );
 
         when(authenticationService.loginUser(any())).thenThrow(UnknownUserException.class);
 

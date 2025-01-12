@@ -4,8 +4,9 @@ import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.service.artist.ArtistException;
+import com.grooveconductor.service.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.User;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,8 +15,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static java.util.Collections.emptyList;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -26,7 +27,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findAll();
     }
 
-    public UserDTO retrieveUser(Identifier identifier) {
+    public UserDTO retrieveUser(Identifier identifier) throws UnknownIdentifierException {
         try {
             return userRepository.find(identifier);
         } catch (UnknownIdentifierException exception) {
@@ -67,7 +68,8 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDTO user = retrieveUser(createFromEmail(username));
 
-        return new User(user.email(), null, emptyList());
+        log.info(user.toString());
+        return new UserPrincipal(user);
     }
 
 }

@@ -3,7 +3,6 @@ package com.grooveconductor.api.oauth;
 import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.auth.AuthenticationException;
-import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.google.GoogleService;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
@@ -11,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -31,7 +31,6 @@ public class GoogleOAuthController {
     private final UserService userService;
     private final OAuthTokenService oauthTokenService;
     private final TokenRepository tokenRepository;
-    private final AuthenticationService authenticationService;
 
     @Value("${frontURL:localhost}")
     private String frontUrl;
@@ -66,9 +65,7 @@ public class GoogleOAuthController {
     }
 
     @DeleteMapping
-    public void deleteGoogleOAuth() {
-        UserDTO user = authenticationService.getAuthenticatedUser();
-
+    public void deleteGoogleOAuth(@AuthenticationPrincipal UserDTO user) {
         oauthTokenService.deleteUserAuthorization(GOOGLE, user);
     }
 

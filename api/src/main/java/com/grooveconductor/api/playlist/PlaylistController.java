@@ -6,13 +6,13 @@ import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.PlaylistFilter;
 import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.playlist.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,13 +28,13 @@ import static org.springframework.http.HttpStatus.*;
 public class PlaylistController {
 
     private final PlaylistService playlistService;
-    private final AuthenticationService authenticationService;
 
     @PostMapping
-    public ResponseEntity<JsonResponse> createPlaylist(@RequestBody CreatePlaylistRequest createPlaylistRequest) {
+    public ResponseEntity<JsonResponse> createPlaylist(
+            @AuthenticationPrincipal UserDTO user,
+            @RequestBody CreatePlaylistRequest createPlaylistRequest
+    ) {
         try {
-            UserDTO user = authenticationService.getAuthenticatedUser();
-
             playlistService.createPlaylist(createPlaylistRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | PlaylistUnityException exception) {

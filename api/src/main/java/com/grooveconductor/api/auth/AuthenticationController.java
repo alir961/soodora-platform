@@ -14,6 +14,7 @@ import com.grooveconductor.service.user.UserUnityException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,9 +52,7 @@ public class AuthenticationController {
     }
 
     @GetMapping("/providers")
-    public List<OAuthProvider> getLinkedProviders() {
-        UserDTO user = authenticationService.getAuthenticatedUser();
-
+    public List<OAuthProvider> getLinkedProviders(@AuthenticationPrincipal UserDTO user) {
         return oauthTokenService.retrieveUserProviders(user);
     }
 
