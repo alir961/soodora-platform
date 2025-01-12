@@ -1,6 +1,7 @@
 package com.grooveconductor.service.google;
 
 import com.grooveconductor.domain.oauth.RefreshableAuthorization;
+import com.grooveconductor.service.oauth.OAuthFacade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleService {
+public class GoogleFacade implements OAuthFacade {
 
     @Value("${oauth.google.client-id}")
     private String clientId = "clientId";
@@ -23,12 +24,13 @@ public class GoogleService {
     @Value("${oauth.google.redirect-uri}")
     private String redirectUri = "redirectUri";
 
-    private final GoogleAPIClient client;
+    private final GoogleFeignClient client;
 
     static final String SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
     static final String AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
     static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+    @Override
     public URI getOAuthAuthorizationFlowURI(String state) {
         String uriBuilder = AUTH_URL + "?client_id=" + clientId +
             "&redirect_uri=" + redirectUri +
@@ -41,6 +43,7 @@ public class GoogleService {
         return URI.create(uriBuilder);
     }
 
+    @Override
     public RefreshableAuthorization exchangeOAuthToken(String code) throws HttpClientErrorException {
         Map<String, String> body = new HashMap<>();
 
@@ -52,6 +55,7 @@ public class GoogleService {
         return client.callTokenAPI(body);
     }
 
+    @Override
     public RefreshableAuthorization refreshOAuthToken(String refreshToken) throws HttpClientErrorException {
         Map<String, String> body = new HashMap<>();
 

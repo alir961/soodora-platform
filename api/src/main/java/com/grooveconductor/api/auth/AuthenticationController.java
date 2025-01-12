@@ -8,7 +8,6 @@ import com.grooveconductor.service.auth.AuthenticationService;
 import com.grooveconductor.service.auth.LoginRequest;
 import com.grooveconductor.service.auth.RegisterRequest;
 import com.grooveconductor.service.common.InvalidRequestException;
-import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UserUnityException;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +27,6 @@ import static org.springframework.http.HttpStatus.*;
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
-    private final OAuthTokenService oauthTokenService;
 
     @PostMapping("/register")
     public ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request) {
@@ -53,7 +51,7 @@ public class AuthenticationController {
 
     @GetMapping("/providers")
     public List<OAuthProvider> getLinkedProviders(@AuthenticationPrincipal UserDTO user) {
-        return oauthTokenService.retrieveUserProviders(user);
+        return authenticationService.retrieveUserProviders(user);
     }
 
 }

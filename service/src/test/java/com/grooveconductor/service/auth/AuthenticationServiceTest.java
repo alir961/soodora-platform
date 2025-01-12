@@ -3,6 +3,7 @@ package com.grooveconductor.service.auth;
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.auth.TokenRepository;
+import com.grooveconductor.domain.oauth.OAuthTokenRepository;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
@@ -27,16 +28,24 @@ import static org.springframework.security.crypto.password.NoOpPasswordEncoder.g
 class AuthenticationServiceTest {
 
     @Mock
+    private UserRepository userRepository;
+
+    @Mock
     private TokenRepository tokenRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private OAuthTokenRepository oauthTokenRepository;
 
     private AuthenticationService authenticationService;
 
     @BeforeEach
     void setUp() {
-        authenticationService = new AuthenticationService(tokenRepository, userRepository, getInstance());
+        authenticationService = new AuthenticationService(
+                getInstance(),
+                userRepository,
+                tokenRepository,
+                oauthTokenRepository
+        );
     }
 
     @Test

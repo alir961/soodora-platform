@@ -1,7 +1,9 @@
 package com.grooveconductor.service.oauth;
 
+import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.oauth.OAuthTokenRepository;
-import com.grooveconductor.service.google.GoogleService;
+import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.service.google.GoogleFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,13 +24,24 @@ class OAuthTokenServiceTest {
     private OAuthTokenRepository oauthTokenRepository;
 
     @Mock
-    private GoogleService googleService;
+    private TokenRepository tokenRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private GoogleFacade googleFacade;
 
     private OAuthTokenService oauthTokenService;
 
     @BeforeEach
     void setUp() {
-        oauthTokenService = new OAuthTokenService(oauthTokenRepository, googleService);
+        oauthTokenService = new OAuthTokenService(
+                oauthTokenRepository,
+                tokenRepository,
+                userRepository,
+                googleFacade
+        );
     }
 
     @Test
@@ -87,7 +100,7 @@ class OAuthTokenServiceTest {
         // GIVEN
         when(oauthTokenRepository.hasAuthorization(GOOGLE, USER)).thenReturn(true);
         when(oauthTokenRepository.retrieveAuthorization(GOOGLE, USER)).thenReturn(REFRESH_TOKEN);
-        when(googleService.refreshOAuthToken(REFRESH_TOKEN)).thenReturn(AUTHORIZATION);
+        when(googleFacade.refreshOAuthToken(REFRESH_TOKEN)).thenReturn(AUTHORIZATION);
 
         // WHEN
         String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, USER);

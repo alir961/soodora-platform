@@ -23,7 +23,13 @@ public record RegisterRequest(
         if (email == null || !email.contains("@")) throw new InvalidRequestException("Email is not valid");
         if (password == null || password.length() <= 5) throw new InvalidRequestException("Password is not valid");
 
-        return new RegisterCommand(username.trim(), createFromEmail(email.trim()), password, firstname, lastname);
+        return new RegisterCommand(
+                username.trim(),
+                createFromEmail(email.trim()),
+                password,
+                firstname,
+                lastname
+        );
     }
 
 }

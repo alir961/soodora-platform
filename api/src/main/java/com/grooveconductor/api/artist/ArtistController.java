@@ -4,7 +4,6 @@ import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.artist.ArtistService;
 import com.grooveconductor.service.artist.CreateArtistRequest;
-import com.grooveconductor.service.user.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +23,6 @@ import static org.springframework.http.HttpStatus.OK;
 @Tag(name = "Artist Controller")
 public class ArtistController {
 
-    private final UserService userService;
     private final ArtistService artistService;
 
     @PostMapping("/migrate")
@@ -32,7 +30,7 @@ public class ArtistController {
             @AuthenticationPrincipal UserDTO user,
             @RequestBody CreateArtistRequest request
     ) {
-        if (userService.isArtist(user.identifier()))
+        if (artistService.isArtist(user.identifier()))
             return new ResponseEntity<>(ACCEPTED);
         artistService.createArtist(request.toCommand(), user);
         return new ResponseEntity<>(OK);

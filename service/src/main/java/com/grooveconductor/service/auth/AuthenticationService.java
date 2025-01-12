@@ -3,6 +3,8 @@ package com.grooveconductor.service.auth;
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.auth.TokenRepository;
+import com.grooveconductor.domain.oauth.OAuthProvider;
+import com.grooveconductor.domain.oauth.OAuthTokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
@@ -11,13 +13,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
 
-    private final TokenRepository tokenRepository;
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final TokenRepository tokenRepository;
+    private final OAuthTokenRepository oauthTokenRepository;
 
     public UserDTO registerUser(RegisterCommand command) {
         String encodedPassword = passwordEncoder.encode(command.password());
@@ -33,6 +38,10 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(command.password(), password))
             throw new UnknownUserException("Invalid password");
         return tokenRepository.generateToken(user);
+    }
+
+    public List<OAuthProvider> retrieveUserProviders(UserDTO user) {
+        return oauthTokenRepository.retrieveProviders(user);
     }
 
 }

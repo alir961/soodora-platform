@@ -11,26 +11,26 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.grooveconductor.service.google.GoogleService.AUTH_URL;
-import static com.grooveconductor.service.google.GoogleService.SCOPE;
+import static com.grooveconductor.service.google.GoogleFacade.AUTH_URL;
+import static com.grooveconductor.service.google.GoogleFacade.SCOPE;
 import static com.grooveconductor.test.TestConstants.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class GoogleServiceTest {
+class GoogleFacadeTest {
 
     @Mock
-    private GoogleAPIClient googleClient;
+    private GoogleFeignClient googleClient;
 
-    private GoogleService googleService;
+    private GoogleFacade googleFacade;
 
     private final static String QUERY_PARAMS = "?client_id=clientId&redirect_uri=redirectUri&response_type=code&access_type=offline&prompt=consent";
 
     @BeforeEach
     void setUp() {
-        googleService = new GoogleService(googleClient);
+        googleFacade = new GoogleFacade(googleClient);
     }
 
     @Test
@@ -39,7 +39,7 @@ class GoogleServiceTest {
         String state = "state";
 
         // WHEN
-        URI uri = googleService.getOAuthAuthorizationFlowURI(state);
+        URI uri = googleFacade.getOAuthAuthorizationFlowURI(state);
 
         // THEN
         assertNotNull(uri);
@@ -57,7 +57,7 @@ class GoogleServiceTest {
         when(googleClient.callTokenAPI(body)).thenReturn(AUTHORIZATION);
 
         // WHEN
-        RefreshableAuthorization authorization = googleService.exchangeOAuthToken(ACCESS_TOKEN);
+        RefreshableAuthorization authorization = googleFacade.exchangeOAuthToken(ACCESS_TOKEN);
 
         // THEN
         assertNotNull(authorization);
@@ -74,7 +74,7 @@ class GoogleServiceTest {
         when(googleClient.callTokenAPI(body)).thenReturn(AUTHORIZATION);
 
         // WHEN
-        RefreshableAuthorization authorization = googleService.refreshOAuthToken(REFRESH_TOKEN);
+        RefreshableAuthorization authorization = googleFacade.refreshOAuthToken(REFRESH_TOKEN);
 
         // THEN
         assertNotNull(authorization);

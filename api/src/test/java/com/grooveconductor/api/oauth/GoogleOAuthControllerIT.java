@@ -2,7 +2,8 @@ package com.grooveconductor.api.oauth;
 
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
-import com.grooveconductor.service.google.GoogleService;
+import com.grooveconductor.service.auth.AuthenticationException;
+import com.grooveconductor.service.google.GoogleFacade;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,11 +32,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class GoogleOAuthControllerIT {
 
+    private static final String INVALID_TOKEN = "invalid";
+
     @Autowired
     private MockMvc mockMvc;
 
     @MockBean
-    private GoogleService googleService;
+    private GoogleFacade googleFacade;
 
     @MockBean
     private UserService userService;
@@ -58,8 +61,7 @@ class GoogleOAuthControllerIT {
     @Test
     void redirectToGoogleOAuthFlow_Redirect() throws Exception {
         // GIVEN
-        when(userService.existsUser(USER.identifier())).thenReturn(true);
-        when(googleService.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
+        when(oauthTokenService.retrieveUserOAuthURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
@@ -70,16 +72,20 @@ class GoogleOAuthControllerIT {
 
     @Test
     void redirectToGoogleOAuthFlow_Unauthorized() throws Exception {
+        // GIVEN
+        when(oauthTokenService.retrieveUserOAuthURI(INVALID_TOKEN))
+                .thenThrow(AuthenticationException.class);
+
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
-                        .param("token", "invalid"))
+                        .param("token", INVALID_TOKEN))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void googleOAuthCallback_Success() throws Exception {
         // GIVEN
-        when(googleService.exchangeOAuthToken("code")).thenReturn(AUTHORIZATION);
+        when(googleFacade.exchangeOAuthToken("code")).thenReturn(AUTHORIZATION);
         doNothing().when(oauthTokenService).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
 
         // WHEN & THEN
@@ -88,15 +94,20 @@ class GoogleOAuthControllerIT {
                         .param("state", JWT_TOKEN))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", not(containsString("error=oauth"))));
-        verify(oauthTokenService, times(1)).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
+        verify(oauthTokenService, times(1))
+                .updateUserAuthorization(eq(GOOGLE), any(), eq(AUTHORIZATION));
     }
 
     @Test
     void googleOAuthCallback_Unauthorized() throws Exception {
+        // GIVEN
+        when(oauthTokenService.retrieveUserOrThrows(INVALID_TOKEN))
+                .thenThrow(AuthenticationException.class);
+
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
                         .param("code", "code")
-                        .param("state", "invalid"))
+                        .param("state", INVALID_TOKEN))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("error=oauth")));
     }
@@ -106,13 +117,14 @@ class GoogleOAuthControllerIT {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         when(userService.existsUser(USER.identifier())).thenReturn(true);
-        when(googleService.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
+        when(googleFacade.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
         mockMvc.perform(delete("/auth/google")
                         .with(user(USER.email())))
                 .andExpect(status().isOk());
-        verify(oauthTokenService, times(1)).deleteUserAuthorization(eq(GOOGLE), any());
+        verify(oauthTokenService, times(1))
+                .deleteUserAuthorization(eq(GOOGLE), any());
     }
 
 }

@@ -55,10 +55,6 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public boolean isArtist(Identifier identifier) {
-        return userRepository.retrieveArtist(identifier).isPresent();
-    }
-
     public ArtistDTO findArtist(Identifier identifier) {
         return userRepository.retrieveArtist(identifier)
                 .orElseThrow(() -> new ArtistException("Must be an artist to do this action"));
