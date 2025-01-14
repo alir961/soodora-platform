@@ -166,7 +166,7 @@ class ProductServiceTest {
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository, times(1)).save(any(), any());
+        verify(productRepository, times(1)).save(any(), eq(USER));
     }
 
     @Test

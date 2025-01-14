@@ -21,7 +21,6 @@ import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.test.TestConstants.*;
 import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -86,17 +85,19 @@ class GoogleOAuthControllerIT {
     @Test
     void googleOAuthCallback_Success() throws Exception {
         // GIVEN
+        when(oauthTokenService.retrieveUserOrThrows(JWT_TOKEN)).thenReturn(USER);
         when(googleFacade.exchangeOAuthToken("code")).thenReturn(AUTHORIZATION);
         doNothing().when(oauthTokenService).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
                         .param("code", "code")
-                        .param("state", JWT_TOKEN))
+                        .param("state", JWT_TOKEN)
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", not(containsString("error=oauth"))));
         verify(oauthTokenService, times(1))
-                .updateUserAuthorization(eq(GOOGLE), any(), eq(AUTHORIZATION));
+                .updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
     }
 
     @Test
@@ -125,7 +126,7 @@ class GoogleOAuthControllerIT {
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(oauthTokenService, times(1))
-                .deleteUserAuthorization(eq(GOOGLE), any());
+                .deleteUserAuthorization(eq(GOOGLE), eq(USER));
     }
 
 }

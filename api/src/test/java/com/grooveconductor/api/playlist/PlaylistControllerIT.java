@@ -105,7 +105,7 @@ class PlaylistControllerIT {
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new PlaylistUnityException("Name is already used"))
-                .when(playlistService).createPlaylist(any(), any());
+                .when(playlistService).createPlaylist(any(), eq(USER));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists")

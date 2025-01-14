@@ -17,7 +17,6 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -46,7 +45,7 @@ class YoutubeControllerIT {
     void getAuthenticatedUserYoutubePlaylists_Success() throws Exception {
         // GIVEN
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
-        when(youtubeService.getPlaylists(any())).thenReturn(PLAYLISTS);
+        when(youtubeService.getPlaylists(USER)).thenReturn(PLAYLISTS);
 
         // WHEN & THEN
         mockMvc.perform(get("/youtube/playlists")

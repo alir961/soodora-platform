@@ -14,11 +14,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Collections;
-
 import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.ProductFactory.buildDefaultProduct;
+import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -55,7 +54,7 @@ class ProductControllerIT {
         );
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doNothing().when(productService).createProduct(any(), any());
+        doNothing().when(productService).createProduct(any(), eq(USER));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
@@ -79,7 +78,8 @@ class ProductControllerIT {
         );
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doThrow(InvalidRequestException.class).when(productService).createProduct(any(), any());
+        doThrow(InvalidRequestException.class).when(productService)
+                .createProduct(any(), eq(USER));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
@@ -92,7 +92,7 @@ class ProductControllerIT {
     @Test
     void getProducts_Success() throws Exception {
         // GIVEN
-        when(productService.retrieveAllProducts()).thenReturn(Collections.singletonList(A_PRODUCT));
+        when(productService.retrieveAllProducts()).thenReturn(singletonList(A_PRODUCT));
 
         mockMvc.perform(get("/products"))
                 .andExpect(status().isOk());

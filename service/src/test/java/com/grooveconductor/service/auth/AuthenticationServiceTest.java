@@ -4,6 +4,7 @@ import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.oauth.OAuthTokenRepository;
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
@@ -81,10 +82,11 @@ class AuthenticationServiceTest {
     void loginUser_Success() {
         // GIVEN
         LoginCommand command = new LoginCommand(createFromEmail("user@example.com"), "password");
+        Identifier identifier = createFromEmail(USER.email());
 
-        when(userRepository.find(any())).thenReturn(USER);
-        when(userRepository.retrieveEncodedPassword(any())).thenReturn("password");
-        when(tokenRepository.generateToken((any()))).thenReturn("token");
+        when(userRepository.find(identifier)).thenReturn(USER);
+        when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
+        when(tokenRepository.generateToken(USER)).thenReturn("token");
 
         // WHEN
         String token = authenticationService.loginUser(command);
@@ -96,9 +98,10 @@ class AuthenticationServiceTest {
     @Test
     void loginUser_InvalidEmail() {
         // GIVEN
-        LoginCommand command = new LoginCommand(createFromEmail("unknown@example.com"), "password");
+        Identifier identifier = createFromEmail("unknown@example.com");
+        LoginCommand command = new LoginCommand(identifier, "password");
 
-        when(userRepository.find(any())).thenThrow(UnknownIdentifierException.class);
+        when(userRepository.find(identifier)).thenThrow(UnknownIdentifierException.class);
 
         // WHEN
         Executable executable = () -> authenticationService.loginUser(command);
@@ -110,10 +113,11 @@ class AuthenticationServiceTest {
     @Test
     void loginUser_InvalidPassword() {
         // GIVEN
-        LoginCommand command = new LoginCommand(createFromEmail("user@example.com"), "unknown");
+        Identifier identifier = createFromEmail(USER.email());
+        LoginCommand command = new LoginCommand(identifier, "unknown");
 
-        when(userRepository.find(any())).thenReturn(USER);
-        when(userRepository.retrieveEncodedPassword(any())).thenReturn("password");
+        when(userRepository.find(identifier)).thenReturn(USER);
+        when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
 
         // WHEN
         Executable executable = () -> authenticationService.loginUser(command);

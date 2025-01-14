@@ -103,7 +103,8 @@ class UserControllerIT {
     void retrieveUserBySlug_Unknown() throws Exception {
         // GIVEN
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
-        doThrow(UnknownUserException.class).when(userService).retrieveUser(any());
+        doThrow(UnknownUserException.class)
+                .when(userService).retrieveUser(createFromSlug("unknown"));
 
         // WHEN & THEN
         mockMvc.perform(get("/users/unknown")
