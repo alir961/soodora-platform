@@ -3,6 +3,7 @@ package com.grooveconductor.api.oauth;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.infrastructure.auth.JwtTokenRepository;
 import com.grooveconductor.service.auth.AuthenticationException;
+import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.google.GoogleFacade;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
@@ -121,7 +122,7 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/auth/google")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(oauthTokenService, times(1))
                 .deleteUserAuthorization(eq(GOOGLE), any());

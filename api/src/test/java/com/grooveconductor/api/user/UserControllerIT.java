@@ -4,6 +4,7 @@ import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
@@ -54,7 +55,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].slug").value("slug1"))
@@ -70,7 +71,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -91,7 +92,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users/slug1")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("slug1"))
                 .andExpect(jsonPath("$.username").value("username1"))
@@ -106,7 +107,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users/unknown")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -132,7 +133,7 @@ class UserControllerIT {
         mockMvc.perform(put("/users/" + USER_1.slug())
                         .contentType("application/json")
                         .content(asJsonString(updateUserRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -148,7 +149,7 @@ class UserControllerIT {
         mockMvc.perform(put("/users/" + USER_1.slug())
                         .contentType("application/json")
                         .content(asJsonString(updateUserRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid Request"));
     }
@@ -163,7 +164,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/slug1")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(userService, times(1)).deleteUser(identifier);
     }
@@ -176,7 +177,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/unknown")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 

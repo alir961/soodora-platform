@@ -26,6 +26,11 @@ public class ArtistService {
         return userRepository.retrieveArtist(identifier).isPresent();
     }
 
+    public ArtistDTO retrieveArtist(Identifier identifier) throws UnknownArtistException {
+        return userRepository.retrieveArtist(identifier)
+                .orElseThrow(() -> new UnknownArtistException("Must be an artist to do this action"));
+    }
+
     public ArtistDTO retrieveArtist(String slug) {
         return artistRepository.find(slug);
     }

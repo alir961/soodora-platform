@@ -1,9 +1,11 @@
 package com.grooveconductor.api.artist;
 
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.user.UnknownIdentifierException;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.artist.ArtistService;
 import com.grooveconductor.service.artist.CreateArtistRequest;
+import com.grooveconductor.service.artist.UnknownArtistException;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.HttpStatus.*;
+import static org.springframework.http.ResponseEntity.ok;
+import static org.springframework.http.ResponseEntity.status;
 
 @RestController
 @SecurityRequirement(name = "bearerAuth")
@@ -25,7 +28,7 @@ public class ArtistController {
 
     private final ArtistService artistService;
 
-    @PostMapping("/migrate")
+    @PostMapping(":migrate")
     public ResponseEntity<Void> migrateUser(
             @AuthenticationPrincipal UserDTO user,
             @RequestBody CreateArtistRequest request
@@ -37,13 +40,32 @@ public class ArtistController {
     }
 
     @GetMapping
-    public List<ArtistDTO> getArtists() {
-        return artistService.retrieveArtists();
+    public ResponseEntity<List<ArtistDTO>> getArtists() {
+        List<ArtistDTO> artists = artistService.retrieveArtists();
+
+        if (artists.isEmpty())
+            return status(NO_CONTENT).build();
+        return ok(artists);
     }
 
     @GetMapping("/{slug}")
-    public ArtistDTO getArtist(@PathVariable String slug) {
-        return artistService.retrieveArtist(slug);
+    public ResponseEntity<ArtistDTO> getArtist(@PathVariable String slug) {
+        try {
+            return ok(artistService.retrieveArtist(slug));
+        } catch (UnknownIdentifierException exception) {
+            return status(NOT_FOUND).build();
+        }
+    }
+
+    @GetMapping(":me")
+    public ResponseEntity<ArtistDTO> getLoggedArtist(@AuthenticationPrincipal UserDTO user) {
+        try {
+            ArtistDTO artist = artistService.retrieveArtist(user.identifier());
+
+            return ok(artist);
+        } catch (UnknownArtistException exception) {
+            return status(FORBIDDEN).build();
+        }
     }
 
 }

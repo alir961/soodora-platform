@@ -2,6 +2,7 @@ package com.grooveconductor.api.youtube;
 
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
+import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.youtube.YoutubeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,7 @@ class YoutubeControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/youtube/playlists")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].id").value("1"))

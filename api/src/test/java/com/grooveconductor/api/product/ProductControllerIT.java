@@ -2,6 +2,7 @@ package com.grooveconductor.api.product;
 
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.CreateProductRequest;
 import com.grooveconductor.service.product.ProductService;
@@ -58,7 +59,7 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                        .with(user(USER.email()))
+                        .with(user(new UserPrincipal(USER)))
                         .contentType(APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isCreated());
@@ -82,7 +83,7 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                        .with(user(USER.email()))
+                        .with(user(new UserPrincipal(USER)))
                         .contentType(APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isBadRequest());
@@ -104,7 +105,7 @@ class ProductControllerIT {
         when(productService.retrieveProduct("product-slug")).thenReturn(A_PRODUCT);
 
         mockMvc.perform(get("/products/product-slug")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
@@ -125,7 +126,7 @@ class ProductControllerIT {
         mockMvc.perform(put("/products/productSlug1")
                         .contentType("application/json")
                         .content(asJsonString(updateProductRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -148,7 +149,7 @@ class ProductControllerIT {
         mockMvc.perform(put("/products/productSlug1")
                         .contentType("application/json")
                         .content(asJsonString(updateProductRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
@@ -161,7 +162,7 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/products/product-slug")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(productService, times(1)).deleteProductBySlug("product-slug");
     }

@@ -7,13 +7,20 @@ import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.playlist.PlaylistEntity;
 import com.grooveconductor.infrastructure.product.ProductEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
 import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toSet;
 
@@ -64,7 +71,7 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PlaylistEntity> playlists;
 
-    @ManyToMany
+    @ManyToMany(fetch = EAGER)
     @JoinTable(
         name = "users_roles",
         joinColumns = @JoinColumn(

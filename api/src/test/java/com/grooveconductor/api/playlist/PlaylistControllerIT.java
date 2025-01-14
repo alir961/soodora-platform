@@ -5,6 +5,7 @@ import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
+import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.playlist.CreatePlaylistRequest;
 import com.grooveconductor.service.playlist.PlaylistService;
@@ -65,7 +66,7 @@ class PlaylistControllerIT {
         mockMvc.perform(post("/playlists")
                         .contentType("application/json")
                         .content(asJsonString(createPlaylistRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isCreated());
     }
 
@@ -87,7 +88,7 @@ class PlaylistControllerIT {
         mockMvc.perform(post("/playlists")
                         .contentType("application/json")
                         .content(asJsonString(createPlaylistRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -110,7 +111,7 @@ class PlaylistControllerIT {
         mockMvc.perform(post("/playlists")
                         .contentType("application/json")
                         .content(asJsonString(createPlaylistRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Name is already used"));
     }
@@ -132,7 +133,7 @@ class PlaylistControllerIT {
         mockMvc.perform(put("/playlists/playlistSlug1")
                         .contentType("application/json")
                         .content(asJsonString(updatePlaylistRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -156,7 +157,7 @@ class PlaylistControllerIT {
         mockMvc.perform(put("/playlists/playlistSlug1")
                         .contentType("application/json")
                         .content(asJsonString(updatePlaylistRequest))
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
@@ -169,7 +170,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
@@ -181,7 +182,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
@@ -200,7 +201,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/playlistSlug1")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("playlistSlug1"))
                 .andExpect(jsonPath("$.name").value("Playlist 1"));
@@ -214,7 +215,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/unknown")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -233,7 +234,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(playlistService, times(1)).deletePlaylistBySlug("playlistSlug1");
     }
@@ -246,7 +247,7 @@ class PlaylistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/unknown")
-                        .with(user(USER.email())))
+                        .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 

@@ -2,7 +2,6 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
-import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
@@ -46,11 +45,6 @@ public class ProfileController {
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
-    }
-
-    @GetMapping("/artist")
-    public ArtistDTO getLoggedArtist(@AuthenticationPrincipal UserDTO user) {
-        return userService.findArtist(user.identifier());
     }
 
 }

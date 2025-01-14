@@ -1,9 +1,7 @@
 package com.grooveconductor.service.user;
 
-import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.user.*;
-import com.grooveconductor.service.artist.ArtistException;
 import com.grooveconductor.service.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,11 +51,6 @@ public class UserService implements UserDetailsService {
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
-    }
-
-    public ArtistDTO findArtist(Identifier identifier) {
-        return userRepository.retrieveArtist(identifier)
-                .orElseThrow(() -> new ArtistException("Must be an artist to do this action"));
     }
 
     @Override
