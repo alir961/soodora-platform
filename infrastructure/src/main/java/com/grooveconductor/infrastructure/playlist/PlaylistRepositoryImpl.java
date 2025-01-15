@@ -1,11 +1,12 @@
 package com.grooveconductor.infrastructure.playlist;
 
+import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.PlaylistRepository;
 import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.playlist.PlaylistRepository;
+import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     @Override
     public List<PlaylistDTO> findAll() {
         return repository.findAll().stream()
-            .map(PlaylistEntity::toDTO)
+                .map(DomainEntity::toDTO)
             .toList();
     }
 

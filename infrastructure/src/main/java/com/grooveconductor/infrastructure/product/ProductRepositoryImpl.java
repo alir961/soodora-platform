@@ -1,11 +1,12 @@
 package com.grooveconductor.infrastructure.product;
 
+import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.product.ProductRepository;
+import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +79,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public List<ProductDTO> findAll() {
         return repository.findAll().stream()
-                .map(ProductEntity::toDTO)
+                .map(DomainEntity::toDTO)
                 .toList();
     }
 

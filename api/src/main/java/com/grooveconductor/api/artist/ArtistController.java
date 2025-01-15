@@ -20,10 +20,10 @@ import static org.springframework.http.ResponseEntity.ok;
 import static org.springframework.http.ResponseEntity.status;
 
 @RestController
-@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
-@RequestMapping(path = "/artists")
 @Tag(name = "Artist Controller")
+@RequestMapping(path = "/artists")
+@SecurityRequirement(name = "bearerAuth")
 public class ArtistController {
 
     private final ArtistService artistService;

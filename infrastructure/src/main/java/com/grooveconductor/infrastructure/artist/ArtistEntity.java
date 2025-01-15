@@ -2,6 +2,7 @@ package com.grooveconductor.infrastructure.artist;
 
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
+import com.grooveconductor.infrastructure.event.EventEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,6 +12,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
@@ -48,6 +50,14 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
     @JoinColumn
     @OneToOne
     private UserEntity user;
+
+    @ManyToMany
+    @JoinTable(
+            name = "artists_events",
+            joinColumns = @JoinColumn(name = "artist_id"),
+            inverseJoinColumns = @JoinColumn(name = "event_id")
+    )
+    private List<EventEntity> events;
 
     @Override
     public ArtistDTO toDTO() {

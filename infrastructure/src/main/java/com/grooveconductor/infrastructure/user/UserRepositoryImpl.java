@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.user;
 
-import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.*;
@@ -59,7 +59,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
-            .map(UserEntity::toDTO)
+                .map(DomainEntity::toDTO)
             .toList();
     }
 
