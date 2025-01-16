@@ -28,7 +28,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         user.setSlug(generateUniqueSlug());
         user.setUsername(command.username());
-        user.setEmail(command.email().value());
+        user.setEmail(command.email());
         user.setPassword(command.password());
         user.setFirstname(command.firstname());
         user.setLastname(command.lastname());

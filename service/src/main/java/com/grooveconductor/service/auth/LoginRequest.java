@@ -5,8 +5,6 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-
 public record LoginRequest(
     @Schema(example = "string@example.com")
     String email,
@@ -19,7 +17,7 @@ public record LoginRequest(
         if (email == null || email.trim().isBlank()) throw new InvalidRequestException("Missing email");
         if (password == null || password.isBlank()) throw new InvalidRequestException("Missing password");
 
-        return new LoginCommand(createFromEmail(email.trim()), password);
+        return new LoginCommand(email.trim(), password);
     }
 
 }

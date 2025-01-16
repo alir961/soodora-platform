@@ -5,8 +5,6 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-
 public record RegisterRequest(
     String username,
     @Schema(example = "string@example.com")
@@ -25,7 +23,7 @@ public record RegisterRequest(
 
         return new RegisterCommand(
                 username.trim(),
-                createFromEmail(email.trim()),
+                email.trim(),
                 password,
                 firstname,
                 lastname

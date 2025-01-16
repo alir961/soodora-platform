@@ -52,7 +52,7 @@ class AuthenticationServiceTest {
     @Test
     void registerUser_Success() {
         // GIVEN
-        RegisterCommand command = new RegisterCommand("username", createFromEmail("user@example.com"), "password", "John", "Doe");
+        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe");
 
         when(userRepository.isUsed(any())).thenReturn(false);
         when(userRepository.save(any())).thenReturn(USER);
@@ -67,7 +67,7 @@ class AuthenticationServiceTest {
     @Test
     void registerUser_NotUnique() {
         // GIVEN
-        RegisterCommand command = new RegisterCommand("username", createFromEmail("user@example.com"), "password", "John", "Doe");
+        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe");
 
         when(userRepository.isUsed(any())).thenReturn(true);
 
@@ -81,7 +81,7 @@ class AuthenticationServiceTest {
     @Test
     void loginUser_Success() {
         // GIVEN
-        LoginCommand command = new LoginCommand(createFromEmail("user@example.com"), "password");
+        LoginCommand command = new LoginCommand(USER.email(), "password");
         Identifier identifier = createFromEmail(USER.email());
 
         when(userRepository.find(identifier)).thenReturn(USER);
@@ -99,7 +99,7 @@ class AuthenticationServiceTest {
     void loginUser_InvalidEmail() {
         // GIVEN
         Identifier identifier = createFromEmail("unknown@example.com");
-        LoginCommand command = new LoginCommand(identifier, "password");
+        LoginCommand command = new LoginCommand("unknown@example.com", "password");
 
         when(userRepository.find(identifier)).thenThrow(UnknownIdentifierException.class);
 
@@ -114,7 +114,7 @@ class AuthenticationServiceTest {
     void loginUser_InvalidPassword() {
         // GIVEN
         Identifier identifier = createFromEmail(USER.email());
-        LoginCommand command = new LoginCommand(identifier, "unknown");
+        LoginCommand command = new LoginCommand(USER.email(), "unknown");
 
         when(userRepository.find(identifier)).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
