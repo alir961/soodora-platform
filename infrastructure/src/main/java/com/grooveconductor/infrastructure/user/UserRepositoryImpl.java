@@ -107,8 +107,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {
-        String value = identifier.value();
-        Optional<UserEntity> findEntity = switch (identifier.type()) {
+        String value = identifier.getValue();
+        Optional<UserEntity> findEntity = switch (identifier.getType()) {
             case EMAIL -> userRepository.findByEmail(value);
             case SLUG -> userRepository.findBySlug(value);
         };
