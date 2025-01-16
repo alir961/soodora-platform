@@ -236,7 +236,7 @@ class PlaylistControllerIT {
         mockMvc.perform(delete("/playlists/playlistSlug1")
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(playlistService, times(1)).deletePlaylistBySlug("playlistSlug1");
+        verify(playlistService).deletePlaylistBySlug("playlistSlug1");
     }
 
     @Test

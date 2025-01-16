@@ -59,7 +59,7 @@ class EventControllerIT {
                         .content(asJsonString(VALID_REQUEST))
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isCreated());
-        verify(eventService, times(1))
+        verify(eventService)
                 .createEvent(any(), eq(USER));
     }
 
@@ -83,7 +83,7 @@ class EventControllerIT {
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(new StringStartsWith("Event type must be one of")));
-        verify(eventService, times(0))
+        verify(eventService, never())
                 .createEvent(any(), eq(USER));
     }
 
@@ -107,7 +107,7 @@ class EventControllerIT {
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$").value("Title cannot be null or blank"));
-        verify(eventService, times(0))
+        verify(eventService, never())
                 .createEvent(any(), eq(USER));
     }
 

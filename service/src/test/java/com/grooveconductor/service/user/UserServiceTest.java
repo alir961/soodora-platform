@@ -114,7 +114,7 @@ class UserServiceTest {
 
         // THEN
         assertEquals(USER, updatedUser);
-        verify(userRepository, times(1)).update(updateCommand, identifier);
+        verify(userRepository).update(updateCommand, identifier);
     }
 
     @Test
@@ -147,7 +147,7 @@ class UserServiceTest {
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(userRepository, times(1)).delete(identifier);
+        verify(userRepository).delete(identifier);
     }
 
     @Test

@@ -167,7 +167,7 @@ class UserControllerIT {
         mockMvc.perform(delete("/users/slug1")
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(userService, times(1)).deleteUser(identifier);
+        verify(userService).deleteUser(identifier);
     }
 
     @Test
