@@ -3,6 +3,7 @@ package com.grooveconductor.infrastructure.artist;
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.artist.ArtistRepository;
 import com.grooveconductor.domain.artist.CreateArtistCommand;
+import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.event.EventDTO;
 import com.grooveconductor.domain.user.UnknownEmailException;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
@@ -78,7 +79,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     private ArtistEntity findArtistBySlug(String slug) throws UnknownIdentifierException {
         return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownIdentifierException("Unable to find artist '" + slug + "'"));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist '" + slug + "'"));
     }
 
 }
