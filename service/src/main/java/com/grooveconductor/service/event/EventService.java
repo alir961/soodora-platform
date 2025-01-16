@@ -21,16 +21,20 @@ public class EventService {
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
 
-    public void createEvent(CreateEventCommand command, UserDTO user) {
+    public EventDTO createEvent(CreateEventCommand command, UserDTO user) {
         ArtistDTO artist = retrieveArtistOrThrows(user);
 
-        eventRepository.save(command, artist.slug());
+        return eventRepository.save(command, artist.slug());
     }
 
     public List<EventDTO> getArtistEvents(UserDTO user) {
         ArtistDTO artist = retrieveArtistOrThrows(user);
 
         return artistRepository.retrieveEvents(artist.slug());
+    }
+
+    public List<EventDTO> getArtistEvents(String artistSlug) {
+        return artistRepository.retrieveEvents(artistSlug);
     }
 
     private ArtistDTO retrieveArtistOrThrows(UserDTO user) {

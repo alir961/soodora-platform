@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ public class EventEntity implements DomainEntity<EventDTO> {
     private LocalDateTime dateTime;
 
     @ManyToMany(mappedBy = "events")
-    private List<ArtistEntity> artists;
+    private List<ArtistEntity> artists = new ArrayList<>();
 
     @Override
     public EventDTO toDTO() {
