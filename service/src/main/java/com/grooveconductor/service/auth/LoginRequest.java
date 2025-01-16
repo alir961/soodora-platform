@@ -6,10 +6,10 @@ import com.grooveconductor.service.common.Request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record LoginRequest(
-    @Schema(example = "string@example.com")
-    String email,
-    @Schema(example = "stringString#")
-    String password
+        @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com")
+        String email,
+        @Schema(description = "Password of the account", example = "passwordPassword#!", defaultValue = "passwordPassword#!")
+        String password
 ) implements Request<LoginCommand> {
 
     @Override
