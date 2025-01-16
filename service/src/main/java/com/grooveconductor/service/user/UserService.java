@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 
 @Slf4j
 @Service
@@ -39,7 +40,7 @@ public class UserService implements UserDetailsService {
 
     public UserDTO updateUser(UpdateUserCommand command, String slug) {
         try {
-            return userRepository.update(command, new Identifier(Identifier.IdentifierType.SLUG, slug));
+            return userRepository.update(command, createFromSlug(slug));
         } catch (UnknownSlugException exception) {
             throw new UserUnityException(exception.getMessage());
         }

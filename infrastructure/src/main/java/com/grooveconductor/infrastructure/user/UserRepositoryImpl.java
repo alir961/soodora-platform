@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.user;
 
-import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.*;
@@ -28,7 +28,7 @@ public class UserRepositoryImpl implements UserRepository {
 
         user.setSlug(generateUniqueSlug());
         user.setUsername(command.username());
-        user.setEmail(command.email().value());
+        user.setEmail(command.email());
         user.setPassword(command.password());
         user.setFirstname(command.firstname());
         user.setLastname(command.lastname());
@@ -59,7 +59,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
-            .map(UserEntity::toDTO)
+                .map(DomainEntity::toDTO)
             .toList();
     }
 
@@ -107,8 +107,8 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {
-        String value = identifier.value();
-        Optional<UserEntity> findEntity = switch (identifier.type()) {
+        String value = identifier.getValue();
+        Optional<UserEntity> findEntity = switch (identifier.getType()) {
             case EMAIL -> userRepository.findByEmail(value);
             case SLUG -> userRepository.findBySlug(value);
         };

@@ -1,23 +1,21 @@
 package com.grooveconductor.domain.user;
 
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
-public record Identifier(IdentifierType type, String value) {
+import static lombok.AccessLevel.PACKAGE;
+
+@Getter
+@EqualsAndHashCode
+@RequiredArgsConstructor(access = PACKAGE)
+public class Identifier {
+
+    private final IdentifierType type;
+    private final String value;
 
     public enum IdentifierType {
         EMAIL, SLUG
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Identifier that = (Identifier) o;
-
-        return Objects.equals(value, that.value) && type == that.type;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(type, value);
-    }
 }

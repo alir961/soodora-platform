@@ -1,6 +1,7 @@
 package com.grooveconductor.api.auth;
 
 import com.grooveconductor.service.auth.AuthenticationService;
+import com.grooveconductor.service.auth.LoginRequest;
 import com.grooveconductor.service.auth.RegisterRequest;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UserUnityException;
@@ -73,12 +74,9 @@ class AuthenticationControllerIT {
     @Test
     void loginUserSuccess() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest(
-                "username",
+        LoginRequest request = new LoginRequest(
                 "user@example.com",
-                "password",
-                "John",
-                "Doe"
+                "password"
         );
 
         when(authenticationService.loginUser(any())).thenReturn("token");
@@ -94,12 +92,9 @@ class AuthenticationControllerIT {
     @Test
     void loginUserBadCredentials() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest(
-                "username",
+        LoginRequest request = new LoginRequest(
                 "user@example.com",
-                "password",
-                "John",
-                "Doe"
+                "password"
         );
 
         when(authenticationService.loginUser(any())).thenThrow(UnknownUserException.class);

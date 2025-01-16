@@ -96,7 +96,7 @@ class GoogleOAuthControllerIT {
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", not(containsString("error=oauth"))));
-        verify(oauthTokenService, times(1))
+        verify(oauthTokenService)
                 .updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
     }
 
@@ -125,7 +125,7 @@ class GoogleOAuthControllerIT {
         mockMvc.perform(delete("/auth/google")
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(oauthTokenService, times(1))
+        verify(oauthTokenService)
                 .deleteUserAuthorization(eq(GOOGLE), eq(USER));
     }
 

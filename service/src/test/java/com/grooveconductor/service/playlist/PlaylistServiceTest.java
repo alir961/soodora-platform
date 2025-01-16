@@ -56,7 +56,7 @@ class PlaylistServiceTest {
         playlistService.createPlaylist(command, USER);
 
         // THEN
-        verify(playlistRepository, times(1)).save(any(), eq(USER));
+        verify(playlistRepository).save(any(), eq(USER));
     }
 
     @Test
@@ -87,7 +87,7 @@ class PlaylistServiceTest {
         PlaylistDTO updatedPlaylist = playlistService.updatePlaylist(updateCommand, SLUG_1);
 
         assertEquals(PLAYLIST_1, updatedPlaylist);
-        verify(playlistRepository, times(1)).update(any(UpdatePlaylistCommand.class), eq(SLUG_1));
+        verify(playlistRepository).update(any(UpdatePlaylistCommand.class), eq(SLUG_1));
     }
 
     @Test
@@ -184,7 +184,7 @@ class PlaylistServiceTest {
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(playlistRepository, times(1)).deletePlaylistBySlug(PLAYLIST_1.slug());
+        verify(playlistRepository).deletePlaylistBySlug(PLAYLIST_1.slug());
     }
 
     @Test

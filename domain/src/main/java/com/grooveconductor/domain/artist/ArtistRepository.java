@@ -1,5 +1,6 @@
 package com.grooveconductor.domain.artist;
 
+import com.grooveconductor.domain.event.EventDTO;
 import com.grooveconductor.domain.user.UserDTO;
 
 import java.util.List;
@@ -10,5 +11,7 @@ public interface ArtistRepository {
     ArtistDTO find(String slug);
     List<ArtistDTO> findAll();
     void delete(String slug);
+
+    List<EventDTO> retrieveEvents(String slug);
 
 }

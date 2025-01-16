@@ -53,8 +53,8 @@ class OAuthTokenServiceTest {
         oauthTokenService.updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
 
         // THEN
-        verify(oauthTokenRepository, times(0)).deleteAuthorization(GOOGLE, USER);
-        verify(oauthTokenRepository, times(1)).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
+        verify(oauthTokenRepository, never()).deleteAuthorization(GOOGLE, USER);
+        verify(oauthTokenRepository).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
     }
 
     @Test
@@ -66,8 +66,8 @@ class OAuthTokenServiceTest {
         oauthTokenService.updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
 
         // THEN
-        verify(oauthTokenRepository, times(1)).deleteAuthorization(GOOGLE, USER);
-        verify(oauthTokenRepository, times(1)).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
+        verify(oauthTokenRepository).deleteAuthorization(GOOGLE, USER);
+        verify(oauthTokenRepository).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
     }
 
     @Test

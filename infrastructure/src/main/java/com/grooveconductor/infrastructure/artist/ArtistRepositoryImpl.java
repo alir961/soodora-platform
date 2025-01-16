@@ -1,11 +1,13 @@
 package com.grooveconductor.infrastructure.artist;
 
-import com.grooveconductor.domain.artist.CreateArtistCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
-import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.domain.artist.ArtistRepository;
+import com.grooveconductor.domain.artist.CreateArtistCommand;
+import com.grooveconductor.domain.common.UnknownSlugException;
+import com.grooveconductor.domain.event.EventDTO;
 import com.grooveconductor.domain.user.UnknownEmailException;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
-import com.grooveconductor.domain.artist.ArtistRepository;
+import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
@@ -58,6 +60,15 @@ public class ArtistRepositoryImpl implements ArtistRepository {
         repository.delete(entity);
     }
 
+    @Override
+    public List<EventDTO> retrieveEvents(String slug) {
+        ArtistEntity entity = findArtistBySlug(slug);
+
+        return entity.getEvents().stream()
+                .map(DomainEntity::toDTO)
+                .toList();
+    }
+
     private String generateUniqueSlug() {
         String slug = generateSlug();
 
@@ -68,7 +79,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     private ArtistEntity findArtistBySlug(String slug) throws UnknownIdentifierException {
         return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownIdentifierException("Unable to find artist '" + slug + "'"));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist '" + slug + "'"));
     }
 
 }

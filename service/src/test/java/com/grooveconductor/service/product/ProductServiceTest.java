@@ -111,7 +111,7 @@ class ProductServiceTest {
         ProductDTO updatedProduct = productService.updateProduct(updateCommand, SLUG_1);
 
         assertEquals(PRODUCT_1, updatedProduct);
-        verify(productRepository, times(1)).update(any(UpdateProductCommand.class), eq(SLUG_1));
+        verify(productRepository).update(any(UpdateProductCommand.class), eq(SLUG_1));
     }
 
     @Test
@@ -141,7 +141,7 @@ class ProductServiceTest {
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository, times(1)).deleteProductBySlug(PRODUCT_1.slug());
+        verify(productRepository).deleteProductBySlug(PRODUCT_1.slug());
     }
 
     @Test
@@ -166,7 +166,7 @@ class ProductServiceTest {
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository, times(1)).save(any(), eq(USER));
+        verify(productRepository).save(any(), eq(USER));
     }
 
     @Test

@@ -5,13 +5,11 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-
 public record LoginRequest(
-    @Schema(example = "string@example.com")
-    String email,
-    @Schema(example = "stringString#")
-    String password
+        @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com")
+        String email,
+        @Schema(description = "Password of the account", example = "passwordPassword#!", defaultValue = "passwordPassword#!")
+        String password
 ) implements Request<LoginCommand> {
 
     @Override
@@ -19,7 +17,7 @@ public record LoginRequest(
         if (email == null || email.trim().isBlank()) throw new InvalidRequestException("Missing email");
         if (password == null || password.isBlank()) throw new InvalidRequestException("Missing password");
 
-        return new LoginCommand(createFromEmail(email.trim()), password);
+        return new LoginCommand(email.trim(), password);
     }
 
 }

@@ -164,7 +164,7 @@ class ProductControllerIT {
         mockMvc.perform(delete("/products/product-slug")
                         .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(productService, times(1)).deleteProductBySlug("product-slug");
+        verify(productService).deleteProductBySlug("product-slug");
     }
 
 }

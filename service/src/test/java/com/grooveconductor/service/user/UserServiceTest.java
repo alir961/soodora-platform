@@ -10,8 +10,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 
-import static com.grooveconductor.domain.user.Identifier.IdentifierType.EMAIL;
-import static com.grooveconductor.domain.user.Identifier.IdentifierType.SLUG;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 import static com.grooveconductor.test.TestConstants.USER;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,6 +26,7 @@ class UserServiceTest {
     private UserService userService;
 
     private static final List<UserDTO> USERS = List.of(USER);
+    private static final Identifier IDENTIFIER = createFromSlug(USER.slug());
 
     @BeforeEach
     void setUp() {
@@ -59,12 +60,10 @@ class UserServiceTest {
     @Test
     void retrieveUserBySlug_Success() {
         // GIVEN
-        Identifier identifier = new Identifier(SLUG, USER.slug());
-
-        when(userRepository.find(identifier)).thenReturn(USER);
+        when(userRepository.find(IDENTIFIER)).thenReturn(USER);
 
         // WHEN
-        UserDTO retrievedUser = userService.retrieveUser(identifier);
+        UserDTO retrievedUser = userService.retrieveUser(IDENTIFIER);
 
         // THEN
         assertEquals(USER, retrievedUser);
@@ -73,7 +72,7 @@ class UserServiceTest {
     @Test
     void retrieveUserBySlug_Unknown() {
         // GIVEN
-        Identifier identifier = new Identifier(SLUG, "unknown");
+        Identifier identifier = createFromSlug("unknown");
 
         when(userRepository.find(any())).thenThrow(UnknownIdentifierException.class);
 
@@ -87,7 +86,7 @@ class UserServiceTest {
     @Test
     void retrieveUserByEmail_Success() {
         // GIVEN
-        Identifier identifier = new Identifier(EMAIL, USER.email());
+        Identifier identifier = createFromEmail(USER.email());
 
         when(userRepository.find(identifier)).thenReturn(USER);
 
@@ -101,32 +100,24 @@ class UserServiceTest {
     @Test
     void updateUser_Success() {
         // GIVEN
-        UpdateUserCommand updateCommand = new UpdateUserCommand(
-            "New Name",
-            "Name",
-            "lastName");
-        Identifier identifier = new Identifier(SLUG, USER.slug());
+        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
 
-        when(userRepository.update(updateCommand, identifier)).thenReturn(USER);
+        when(userRepository.update(updateCommand, IDENTIFIER)).thenReturn(USER);
 
         // WHEN
         UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug());
 
         // THEN
         assertEquals(USER, updatedUser);
-        verify(userRepository, times(1)).update(updateCommand, identifier);
+        verify(userRepository).update(updateCommand, IDENTIFIER);
     }
 
     @Test
     void updateUser_UnknownIdentifier() {
         // GIVEN
-        UpdateUserCommand updateCommand = new UpdateUserCommand(
-            "New Name",
-            "Name",
-            "lastName");
-        Identifier identifier = new Identifier(SLUG, USER.slug());
+        UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
 
-        when(userRepository.update(updateCommand, identifier)).thenThrow(new UnknownIdentifierException("Identifier not found"));
+        when(userRepository.update(updateCommand, IDENTIFIER)).thenThrow(new UnknownIdentifierException("Identifier not found"));
 
         // WHEN
         Executable executable = () -> userService.updateUser(updateCommand, USER.slug());
@@ -138,27 +129,23 @@ class UserServiceTest {
     @Test
     void deleteUserBySlug_Success() {
         // GIVEN
-        Identifier identifier = new Identifier(SLUG, USER.slug());
-
-        doNothing().when(userRepository).delete(identifier);
+        doNothing().when(userRepository).delete(IDENTIFIER);
 
         // WHEN
-        Executable executable = () -> userService.deleteUser(identifier);
+        Executable executable = () -> userService.deleteUser(IDENTIFIER);
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(userRepository, times(1)).delete(identifier);
+        verify(userRepository).delete(IDENTIFIER);
     }
 
     @Test
     void deleteUserBySlug_Unknown() {
         // GIVEN
-        Identifier identifier = new Identifier(SLUG, USER.slug());
-
-        doThrow(UnknownIdentifierException.class).when(userRepository).delete(identifier);
+        doThrow(UnknownIdentifierException.class).when(userRepository).delete(IDENTIFIER);
 
         // WHEN
-        Executable executable = () -> userService.deleteUser(identifier);
+        Executable executable = () -> userService.deleteUser(IDENTIFIER);
 
         // THEN
         assertThrows(UnknownUserException.class, executable);
