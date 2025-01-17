@@ -2,8 +2,8 @@ image: maven:3-eclipse-temurin-21-alpine
 
 stages:
   - build
-  - test
-  - coverage
+  - validate
+  - deploy
 
 variables:
   MAVEN_CLI_OPTS: "--batch-mode --update-snapshots"
@@ -24,13 +24,13 @@ build:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     paths:
-      - rest/target/*.jar
+      - api/target/*.jar
       - .m2/repository
     expire_in: 1 week
     when: on_success
 
 test:
-  stage: test
+  stage: validate
   dependencies:
     - build
   script:
@@ -45,7 +45,7 @@ test:
     expire_in: 1 day
 
 coverage:
-  stage: coverage
+  stage: validate
   dependencies:
     - build
   script:
@@ -62,3 +62,57 @@ coverage:
       - coverage/target/site/jacoco-aggregate/
     expire_in: 1 day
   coverage: '/TOTAL COVERAGE = \d+(?:\.\d+)?/'
+
+production:
+  stage: deploy
+  image: debian:bullseye-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keygen -lf ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H $PRODUCTION_IP >> ~/.ssh/known_hosts
+  script:
+    - scp api/target/*.jar debian@$PRODUCTION_IP:/opt/backend/application.jar
+  only:
+    - main
+    - ci
+
+synchronize:
+  stage: deploy
+  image: debian:bullseye-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y git openssh-client
+    - mkdir -p ~/.ssh
+    # Decode & store private key
+    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    # Configure SSH
+    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - echo -e "Host github.com\n  IdentityFile ~/.ssh/id_rsa\n  StrictHostKeyChecking no" > ~/.ssh/config
+    - echo -e "Host gitlab.com\n  IdentityFile ~/.ssh/id_rsa\n  StrictHostKeyChecking no" > ~/.ssh/config
+    - chmod 600 ~/.ssh/config
+    # Load private key
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+  script:
+    - git config --global user.name "Groove Conductor Synchronizer"
+    - git config --global user.email "grooveconductor.eip@example.com"
+    - git clone git@github.com:EpitechPromo2026/G-EIP-700-LYN-7-1-eip-ali.raad.git github-repo
+    - cd github-repo
+    - git remote add backend_repo git@gitlab.com:groove-conductor-eip/api.git
+    - git fetch backend_repo
+    - rm -rf backend
+    - git add .
+    - git commit -m "Delete previous backend version"
+    - git subtree add --prefix=backend backend_repo main
+    - git push origin main
+  only:
+    - main
+    - ci
+
