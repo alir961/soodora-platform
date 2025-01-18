@@ -78,6 +78,7 @@ production:
     - ssh-keyscan -H $PRODUCTION_IP >> ~/.ssh/known_hosts
   script:
     - scp api/target/*.jar debian@$PRODUCTION_IP:/opt/backend/application.jar
+    - ssh debian@$PRODUCTION_IP 'sudo systemctl restart backend && sudo systemctl daemon-reload'
   only:
     - main
     - ci
