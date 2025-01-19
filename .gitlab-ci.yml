@@ -8,8 +8,8 @@ cache:
 
 stages:
   - install
-  - lint
   - build
+  - deploy
 
 install_dependencies:
   stage: install
@@ -23,17 +23,18 @@ install_dependencies:
     - when: always
 
 lint:
-  stage: lint
+  stage: build
   script:
     - npm run lint
   needs:
     - install_dependencies
   rules:
-    - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
+    - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
 
 build:
   stage: build
   script:
+    - export VITE_API_URL="http://$PRODUCTION_IP/api"
     - npm run build
   artifacts:
     paths:
@@ -43,3 +44,58 @@ build:
     - install_dependencies
   rules:
     - when: always
+
+production:
+  stage: deploy
+  image: debian:bullseye-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y openssh-client rsync
+    - mkdir -p ~/.ssh
+    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keygen -lf ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H $PRODUCTION_IP >> ~/.ssh/known_hosts
+  script:
+    - ssh debian@$PRODUCTION_IP 'sudo rm -rf /opt/frontend/ && sudo mkdir -p /opt/frontend/'
+    - rsync --rsync-path="sudo rsync" -avz dist/ debian@$PRODUCTION_IP:/opt/frontend/
+    - ssh debian@$PRODUCTION_IP 'sudo chown -R debian:debian /opt/frontend && sudo chmod -R 755 /opt/frontend'
+  only:
+    - main
+    - ci
+
+synchronize:
+  stage: deploy
+  image: debian:bullseye-slim
+  before_script:
+    - apt-get update
+    - apt-get install -y git openssh-client
+    - mkdir -p ~/.ssh
+    # Decode & store private key
+    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    # Configure SSH
+    - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+    - echo -e "Host github.com\n  IdentityFile ~/.ssh/id_rsa\n  StrictHostKeyChecking no" > ~/.ssh/config
+    - echo -e "Host gitlab.com\n  IdentityFile ~/.ssh/id_rsa\n  StrictHostKeyChecking no" > ~/.ssh/config
+    # Load private key
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+  script:
+    - git config --global user.name "Groove Conductor Synchronizer"
+    - git config --global user.email "grooveconductor.eip@example.com"
+    - git clone git@github.com:EpitechPromo2026/G-EIP-700-LYN-7-1-eip-ali.raad.git github-repo
+    - cd github-repo
+    - git remote add frontend_repo git@gitlab.com:groove-conductor-eip/application.git
+    - git fetch frontend_repo
+    - rm -rf frontend
+    - git add .
+    - git diff --staged --quiet || git commit -m "Delete previous frontend version"
+    - git subtree add --prefix=frontend frontend_repo main
+    - git push origin main
+  only:
+    - main
+    - ci
+
