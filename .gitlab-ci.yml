@@ -1,28 +1,45 @@
+image: node:23-alpine
+
+cache:
+  key: npm-cache
+  paths:
+    - node_modules/
+  policy: pull-push
+
 stages:
+  - install
   - lint
   - build
 
+install_dependencies:
+  stage: install
+  script:
+    - npm ci
+  artifacts:
+    paths:
+      - node_modules/
+    expire_in: 1h
+  rules:
+    - when: always
+
 lint:
   stage: lint
-  image: node:23-alpine
-  before_script:
-    - npm ci
   script:
     - npm run lint
+  needs:
+    - install_dependencies
   rules:
-    - if: $CI_MERGE_REQUEST_ID
+    - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
 
 build:
   stage: build
-  image: node:23-alpine
-  before_script:
-    - npm ci
   script:
     - npm run build
   artifacts:
     paths:
       - dist
+    expire_in: 7d
+  needs:
+    - install_dependencies
   rules:
     - when: always
-  needs:
-    - lint
