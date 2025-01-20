@@ -4,11 +4,24 @@ import { User } from '@/entity/User';
 
 const BEARER_TOKEN_KEY: string = 'BearerToken';
 const USER_DATA_KEY: string = 'UserData';
+const USER_STATUS_KEY: string = 'UserStatus';
+
+function initializeUserStatus(): void {
+  Preferences.set({
+    key: USER_STATUS_KEY,
+    value: 'UnAuthenticated',
+  }).catch(reject);
+}
 
 async function saveBearerToken(token: string): Promise<void> {
-  return Preferences.set({
+  await Preferences.set({
     key: BEARER_TOKEN_KEY,
     value: token,
+  });
+
+  await Preferences.set({
+    key: USER_STATUS_KEY,
+    value: 'Authenticated',
   });
 }
 
@@ -22,7 +35,17 @@ async function loadBearerToken(): Promise<string> {
 }
 
 async function deleteBearerToken(): Promise<void> {
-  return Preferences.remove({ key: BEARER_TOKEN_KEY });
+  await Preferences.remove({ key: BEARER_TOKEN_KEY });
+  await Preferences.remove({ key: USER_STATUS_KEY });
+}
+
+async function loadUserStatus(): Promise<string> {
+  return Preferences.get({ key: USER_STATUS_KEY })
+    .then((storeEntry) => {
+      if (!storeEntry.value) return reject('Unable to retrieve user status');
+      return storeEntry.value;
+    })
+    .catch(reject);
 }
 
 async function saveUserData(userData: User): Promise<void> {
@@ -45,4 +68,13 @@ async function deleteUserData(): Promise<void> {
   return Preferences.remove({ key: USER_DATA_KEY });
 }
 
-export { saveBearerToken, deleteBearerToken, loadBearerToken, saveUserData, loadUserData, deleteUserData };
+export {
+  saveBearerToken,
+  deleteBearerToken,
+  loadBearerToken,
+  saveUserData,
+  loadUserData,
+  deleteUserData,
+  loadUserStatus,
+  initializeUserStatus,
+};

@@ -19,6 +19,7 @@ import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { uploadMp3 } from '@/client/exploreMP3Client';
 import AudioCard from '@/component/explore/AudioCard.vue';
+import { loadUserStatus } from '@/store/localStorage';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);
@@ -33,6 +34,9 @@ const newMp3 = reactive({
 });
 
 const fetchUserData = async () => {
+  const status = await loadUserStatus();
+  if (status.includes('UnAuthenticated')) return;
+
   try {
     userData.value = await retrieveAuthenticatedProfile();
   } catch (error) {
@@ -107,7 +111,7 @@ const sendMp3ToServer = async (newMp3Data: { title: string; genre: string; file:
 </script>
 
 <template>
-  <ApplicationViewport title="Explore" authenticated>
+  <ApplicationViewport title="Explore">
     <template #toolbar>
       <div id="toolbar-button">
         <ion-button v-if="showButton()" size="small" @click="showModal = true" :inert="showModal">

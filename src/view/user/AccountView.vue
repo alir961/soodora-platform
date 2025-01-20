@@ -6,7 +6,7 @@ import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
 import { redirectLogin } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
-import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
+import { OAuthProvider, retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import { logOutOutline } from 'ionicons/icons';
@@ -20,7 +20,6 @@ const providers: OAuthProvider[] = ['google', 'spotify', 'soundcloud'];
 const fetchUserData = async () => {
   try {
     userData.value = await retrieveAuthenticatedProfile();
-    linkedProviders.value = await retrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
   }
