@@ -19,14 +19,24 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
         in = HEADER
 )
 @OpenAPIDefinition(
-    info = @Info(
-        title = "GrooveConductor API",
-        description = "Epitech 2026 EIP Project"
-    ),
-    servers = @Server(
-        url ="http://localhost:8080",
-        description = "Localhost development server"
-    )
+        info = @Info(
+                title = "GrooveConductor API",
+                description = "Epitech 2026 EIP Project"
+        ),
+        servers = {
+                @Server(
+                        url = "http://localhost:8080",
+                        description = "Localhost Development Server"
+                ),
+                @Server(
+                        url = "http://57.128.38.28/api",
+                        description = "Staging Server"
+                ),
+                @Server(
+                        url = "http://57.128.38.203/api",
+                        description = "Production Server"
+                )
+        }
 )
 public class OpenApiConfiguration {
 }
