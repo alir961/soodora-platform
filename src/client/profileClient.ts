@@ -17,7 +17,7 @@ async function retrieveAuthenticatedProfile(): Promise<User> {
 
 async function retrieveLinkedOAuthProviders(): Promise<OAuthProvider[]> {
   return axios
-    .get('/auth/providers', { headers: await getAuthorizedHeader() })
+    .get('/oauth/providers', { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200 && response.data)
         return response.data.map((provider: OAuthProvider) => provider.toLowerCase()) as OAuthProvider[];
