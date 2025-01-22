@@ -75,7 +75,7 @@ const clickButton = async () => {
     await alert.present();
   } else {
     loadBearerToken()
-      .then((token) => redirectToUrl(`http://localhost:8080/auth/${provider.provider}?token=${token}`))
+      .then((token) => redirectToUrl(`${process.env.VITE_API_URL}/auth/${provider.provider}?token=${token}`))
       .catch(() => redirectLogin(router));
   }
 };

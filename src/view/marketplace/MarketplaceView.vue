@@ -17,11 +17,11 @@ import {
 import { add } from 'ionicons/icons';
 import { createProduct, CreateProductRequest, retrieveProducts } from '@/client/productClient';
 import { Product } from '@/entity/Product';
-import { getAuthenticatedUser } from '@/utils';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
+import { loadUserStatus } from '@/store/localStorage';
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -54,11 +54,13 @@ const submitProduct = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  await getAuthenticatedUser();
   await loadProducts();
 });
 
 const fetchUserData = async () => {
+  const status = await loadUserStatus();
+  if (status.includes('UnAuthenticated')) return;
+
   try {
     userData.value = await retrieveAuthenticatedProfile();
   } catch (error) {
@@ -74,7 +76,7 @@ const showButton = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Marketplace" authenticated>
+  <ApplicationViewport title="Marketplace">
     <template #toolbar>
       <div id="toolbar-button">
         <ion-button v-if="showButton()" size="small" @click="showModal = true" :inert="showModal">
