@@ -23,6 +23,7 @@ const login = async () => {
     await saveBearerToken(token);
     await router.push('/explore');
     isLogged.value = true;
+    location.reload();
   } catch (error) {
     console.error('Login failed:', error);
   }

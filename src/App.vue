@@ -2,19 +2,31 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, planetOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
+import { loadUserStatus } from '@/store/localStorage';
+import { computed, onMounted, ref } from 'vue';
 
 interface TabEntry {
   name: string;
   icon: string;
+  requiresAuth: boolean;
 }
 
 const tabs: TabEntry[] = [
-  { name: 'explore', icon: planetOutline },
-  { name: 'marketplace', icon: cartOutline },
-  { name: 'playlist', icon: musicalNotesOutline },
-  { name: 'account', icon: personOutline },
+  { name: 'explore', icon: planetOutline, requiresAuth: false },
+  { name: 'marketplace', icon: cartOutline, requiresAuth: false },
+  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: true },
+  { name: 'account', icon: personOutline, requiresAuth: false },
 ];
 
+const userStatus = ref<string>('');
+
+onMounted(async () => {
+  userStatus.value = await loadUserStatus();
+});
+
+const filteredTabs = computed(() => {
+  return tabs.filter((tab) => !tab.requiresAuth || userStatus.value === 'Authenticated');
+});
 const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 </script>
 
@@ -24,7 +36,7 @@ const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
       <ion-router-outlet />
 
       <ion-tab-bar v-if="!fullscreenRoutes.includes($route.path)" slot="bottom">
-        <ion-tab-button v-for="tab in tabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
+        <ion-tab-button v-for="tab in filteredTabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
           <ion-icon :icon="tab.icon" />
           <ion-label>{{ capitalize(tab.name) }}</ion-label>
         </ion-tab-button>
