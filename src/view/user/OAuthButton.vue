@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
 import { alertController, IonButton, IonIcon, toastController } from '@ionic/vue';
-import { logoSoundcloud, logoYoutube } from 'ionicons/icons';
+import { logoYoutube } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
 import { loadBearerToken } from '@/store/localStorage';
@@ -27,11 +27,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['unlink']);
 
-const providers: ProviderData[] = [
-  { provider: 'google', icon: logoYoutube, name: 'YouTube' },
-  { provider: 'spotify', icon: 'logo-spotify', name: 'Spotify' },
-  { provider: 'soundcloud', icon: logoSoundcloud, name: 'Soundcloud' },
-];
+const providers: ProviderData[] = [{ provider: 'google', icon: logoYoutube, name: 'YouTube' }];
 const provider: ProviderData = providers.find((provider) => provider.provider === props.provider) || providers[0];
 
 const notifyUnlink = async () => {
@@ -100,27 +96,6 @@ ion-button {
 
   border-radius: 20px;
   margin: 0 20px 20px 20px;
-
-  &.google {
-    --background: #ff0808;
-    --background-hover: #d42617;
-    --background-activated: #9f1c11é;
-    --background-focused: #b92114;
-  }
-
-  &.spotify {
-    --background: #25d865;
-    --background-hover: #d42617;
-    --background-activated: #9f1c11é;
-    --background-focused: #b92114;
-  }
-
-  &.soundcloud {
-    --background: #ff5a08;
-    --background-hover: #d42617;
-    --background-activated: #9f1c11é;
-    --background-focused: #b92114;
-  }
 
   & .wrapper {
     min-width: 80%;
