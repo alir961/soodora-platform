@@ -2,7 +2,7 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, planetOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
-import { loadUserStatus } from '@/store/localStorage';
+import { AUTHENTICATED, loadUserStatus } from '@/store/localStorage';
 import { computed, onMounted, ref } from 'vue';
 
 interface TabEntry {
@@ -25,7 +25,7 @@ onMounted(async () => {
 });
 
 const filteredTabs = computed(() => {
-  return tabs.filter((tab) => !tab.requiresAuth || userStatus.value === 'Authenticated');
+  return tabs.filter((tab) => !tab.requiresAuth || userStatus.value === AUTHENTICATED);
 });
 const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 </script>

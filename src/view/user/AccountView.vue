@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
-import { deleteBearerToken, deleteUserData, loadUserStatus } from '@/store/localStorage';
+import { deleteBearerToken, deleteUserData, loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
@@ -35,7 +35,7 @@ const logout = async () => {
 onIonViewWillEnter(async () => {
   const userStatus = await loadUserStatus();
 
-  if (userStatus === 'UnAuthenticated') {
+  if (userStatus === UNAUTHENTICATED) {
     await redirectLogin(router);
   } else {
     if (route.query.error === 'oauth') {

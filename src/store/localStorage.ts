@@ -5,6 +5,8 @@ import { User } from '@/entity/User';
 const BEARER_TOKEN_KEY: string = 'BearerToken';
 const USER_DATA_KEY: string = 'UserData';
 const USER_STATUS_KEY: string = 'UserStatus';
+const UNAUTHENTICATED: string = 'Unauthenticated';
+const AUTHENTICATED: string = 'Authenticated';
 
 async function initializeUserStatus(): Promise<void> {
   const { value } = await Preferences.get({ key: USER_STATUS_KEY });
@@ -12,7 +14,7 @@ async function initializeUserStatus(): Promise<void> {
   if (!value) {
     Preferences.set({
       key: USER_STATUS_KEY,
-      value: 'UnAuthenticated',
+      value: UNAUTHENTICATED,
     }).catch(reject);
   }
 }
@@ -84,4 +86,6 @@ export {
   loadUserStatus,
   initializeUserStatus,
   saveUserStatus,
+  UNAUTHENTICATED,
+  AUTHENTICATED,
 };
