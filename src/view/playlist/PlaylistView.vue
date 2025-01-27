@@ -14,6 +14,7 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
+  toastController,
   onIonViewWillEnter,
 } from '@ionic/vue';
 import { add, logoYoutube } from 'ionicons/icons';
@@ -64,7 +65,13 @@ const FetchYoutubePlaylist = async () => {
     await Promise.all(playlists.map((playlist) => createPlaylist(playlist)));
     await loadPlaylists();
   } catch (error) {
-    console.error('Failed to create playlists from Youtube playlists:', error);
+    const toast = await toastController.create({
+      message: 'Failed to create playlists from Youtube playlists',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
   }
 };
 

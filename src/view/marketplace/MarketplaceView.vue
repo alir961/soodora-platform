@@ -21,7 +21,7 @@ import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
-import { loadUserStatus } from '@/store/localStorage';
+import { loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -59,7 +59,7 @@ onIonViewWillEnter(async () => {
 
 const fetchUserData = async () => {
   const status = await loadUserStatus();
-  if (status.includes('UnAuthenticated')) return;
+  if (status.includes(UNAUTHENTICATED)) return;
 
   try {
     userData.value = await retrieveAuthenticatedProfile();

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { loadBearerToken } from '@/store/localStorage';
+import { loadBearerToken, saveUserStatus } from '@/store/localStorage';
 import { reject } from '@/utils';
 
 interface LoginRequest {
@@ -36,7 +36,10 @@ async function callLogin(credentials: LoginRequest): Promise<string> {
   return axios
     .post('/auth/login', credentials)
     .then((response) => {
-      if (response.status === 200 && response.data?.token) return response.data.token;
+      if (response.status === 200 && response.data?.token) {
+        saveUserStatus();
+        return response.data.token;
+      }
       return reject('Invalid credentials');
     })
     .catch(reject);

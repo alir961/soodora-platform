@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
-import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
+import { deleteBearerToken, deleteUserData, loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
@@ -15,7 +15,7 @@ const route = useRoute();
 const router: Router = useRouter();
 const userData: Ref<User | null> = ref(null);
 const linkedProviders: Ref<OAuthProvider[]> = ref([]);
-const providers: OAuthProvider[] = ['google', 'spotify', 'soundcloud'];
+const providers: OAuthProvider[] = ['google'];
 
 const fetchUserData = async () => {
   try {
@@ -33,17 +33,21 @@ const logout = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  if (route.query.error === 'oauth') {
-    const toast = await toastController.create({
-      message: 'Unable to connect to OAuth provider!',
-      duration: 1500,
-      position: 'top',
-    });
+  const userStatus = await loadUserStatus();
 
-    await toast.present();
+  if (userStatus === UNAUTHENTICATED) {
+    await redirectLogin(router);
+  } else {
+    if (route.query.error === 'oauth') {
+      const toast = await toastController.create({
+        message: 'Unable to connect to OAuth provider!',
+        duration: 1500,
+        position: 'top',
+      });
+      await toast.present();
+    }
+    await fetchUserData();
   }
-
-  await fetchUserData();
 });
 </script>
 

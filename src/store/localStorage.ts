@@ -5,12 +5,18 @@ import { User } from '@/entity/User';
 const BEARER_TOKEN_KEY: string = 'BearerToken';
 const USER_DATA_KEY: string = 'UserData';
 const USER_STATUS_KEY: string = 'UserStatus';
+const UNAUTHENTICATED: string = 'Unauthenticated';
+const AUTHENTICATED: string = 'Authenticated';
 
-function initializeUserStatus(): void {
-  Preferences.set({
-    key: USER_STATUS_KEY,
-    value: 'UnAuthenticated',
-  }).catch(reject);
+async function initializeUserStatus(): Promise<void> {
+  const { value } = await Preferences.get({ key: USER_STATUS_KEY });
+
+  if (!value) {
+    Preferences.set({
+      key: USER_STATUS_KEY,
+      value: UNAUTHENTICATED,
+    }).catch(reject);
+  }
 }
 
 async function saveBearerToken(token: string): Promise<void> {
@@ -18,7 +24,9 @@ async function saveBearerToken(token: string): Promise<void> {
     key: BEARER_TOKEN_KEY,
     value: token,
   });
+}
 
+async function saveUserStatus(): Promise<void> {
   await Preferences.set({
     key: USER_STATUS_KEY,
     value: 'Authenticated',
@@ -77,4 +85,7 @@ export {
   deleteUserData,
   loadUserStatus,
   initializeUserStatus,
+  saveUserStatus,
+  UNAUTHENTICATED,
+  AUTHENTICATED,
 };

@@ -32,5 +32,5 @@ async function handleError(response: AxiosResponse): Promise<void> {
     await deleteBearerToken();
     await deleteUserData();
     redirectToUrl('/auth' + retrieveCallbackURL());
-  } else if (response.status === 403) redirectToUrl('/auth' + retrieveCallbackURL());
+  }
 }
