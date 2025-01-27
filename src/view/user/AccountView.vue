@@ -15,7 +15,7 @@ const route = useRoute();
 const router: Router = useRouter();
 const userData: Ref<User | null> = ref(null);
 const linkedProviders: Ref<OAuthProvider[]> = ref([]);
-const providers: OAuthProvider[] = ['google', 'spotify', 'soundcloud'];
+const providers: OAuthProvider[] = ['google'];
 
 const fetchUserData = async () => {
   try {
