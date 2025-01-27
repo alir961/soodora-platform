@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonButton, IonInput, IonItem, onIonViewWillEnter } from '@ionic/vue';
+import { IonButton, IonInput, IonItem, toastController, onIonViewWillEnter } from '@ionic/vue';
 import { loadBearerToken, saveBearerToken } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
@@ -25,7 +25,13 @@ const login = async () => {
     isLogged.value = true;
     location.reload();
   } catch (error) {
-    console.error('Login failed:', error);
+    const toast = await toastController.create({
+      message: 'Login Failed!',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
   }
 };
 
@@ -41,7 +47,13 @@ const signup = async () => {
 
     await callRegister(request);
   } catch (error) {
-    console.error('Register failed:', error);
+    const toast = await toastController.create({
+      message: 'Registering Failed!',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
   }
 };
 
