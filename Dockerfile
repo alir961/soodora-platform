@@ -5,9 +5,10 @@ WORKDIR /app
 COPY pom.xml ./
 COPY infrastructure/pom.xml infrastructure/
 COPY domain/pom.xml domain/
-COPY rest/pom.xml rest/
-COPY application/pom.xml application/
+COPY api/pom.xml api/
+COPY service/pom.xml service/
 COPY test/pom.xml test/
+COPY coverage/pom.xml coverage/
 
 RUN mvn dependency:go-offline -B
 
