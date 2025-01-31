@@ -116,6 +116,7 @@
                     <execution>
                         <goals>
                             <goal>apply</goal>
+                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -125,12 +126,11 @@
                             <include>src/main/java/**/*.java</include>
                             <include>src/test/java/**/*.java</include>
                         </includes>
-                        <googleJavaFormat>
-                            <version>1.17.0</version>
-                            <style>AOSP</style> <!-- Options: AOSP, GOOGLE -->
-                        </googleJavaFormat>
+                        <eclipse>
+                            <file>eclipse-formatter.xml</file>
+                        </eclipse>
                         <importOrder>
-                            <order>com.grooveconductor,java,javax,org,com,io</order>
+                            <order>com.grooveconductor,java,javax,org,com,io,,static com.grooveconductor,static</order>
                         </importOrder>
                         <removeUnusedImports/>
                         <endWithNewline/>
