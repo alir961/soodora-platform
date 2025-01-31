@@ -23,7 +23,8 @@ public class RoleRepositoryImpl implements RoleRepository {
     public RoleDTO findByName(String name) {
         RoleEntity role = roleRepository.findByName(name);
 
-        if (role == null) return null;
+        if (role == null)
+            return null;
         return role.toDTO();
     }
 }

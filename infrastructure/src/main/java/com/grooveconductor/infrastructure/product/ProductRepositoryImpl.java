@@ -31,14 +31,14 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
         return repository.findProductsByUserSlug(slug)
-            .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 
     @Override
     public ProductDTO save(CreateProductCommand command, UserDTO user) {
         ProductEntity entity = new ProductEntity();
         UserEntity userEntity = userRepository.findBySlug(user.slug())
-            .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
 
         entity.setName(command.name());
         entity.setPrice(command.price());
@@ -55,13 +55,17 @@ public class ProductRepositoryImpl implements ProductRepository {
     public ProductDTO update(UpdateProductCommand command, String slug) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
-        if (command.getName() != null && !command.getName().isBlank() && !command.getName().equals(existingProduct.getName()))
+        if (command.getName() != null && !command.getName().isBlank()
+                && !command.getName().equals(existingProduct.getName()))
             existingProduct.setName(command.getName());
-        if (command.getDescription() != null && !command.getDescription().isBlank() && !command.getDescription().equals(existingProduct.getDescription()))
+        if (command.getDescription() != null && !command.getDescription().isBlank()
+                && !command.getDescription().equals(existingProduct.getDescription()))
             existingProduct.setDescription(command.getDescription());
-        if (command.getCategory() != null && !command.getCategory().isBlank() && !command.getCategory().equals(existingProduct.getCategory()))
+        if (command.getCategory() != null && !command.getCategory().isBlank()
+                && !command.getCategory().equals(existingProduct.getCategory()))
             existingProduct.setCategory(command.getCategory());
-        if (command.getImageUrl() != null && !command.getImageUrl().isBlank() && !command.getImageUrl().equals(existingProduct.getImageUrl()))
+        if (command.getImageUrl() != null && !command.getImageUrl().isBlank()
+                && !command.getImageUrl().equals(existingProduct.getImageUrl()))
             existingProduct.setImageUrl(command.getImageUrl());
         if (command.getPrice() != 0 && command.getPrice() != existingProduct.getPrice())
             existingProduct.setPrice(command.getPrice());

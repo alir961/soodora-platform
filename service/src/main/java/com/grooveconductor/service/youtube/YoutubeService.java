@@ -32,7 +32,8 @@ public class YoutubeService {
         }
     }
 
-    public List<YoutubePlaylistItemDTO> getPlaylistItems(UserDTO user, String playlistId) throws ExternalServiceException {
+    public List<YoutubePlaylistItemDTO> getPlaylistItems(UserDTO user, String playlistId)
+            throws ExternalServiceException {
         try {
             String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
 

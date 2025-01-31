@@ -72,29 +72,23 @@ public class UserEntity implements DomainEntity<UserDTO> {
     private List<PlaylistEntity> playlists;
 
     @ManyToMany(fetch = EAGER)
-    @JoinTable(
-        name = "users_roles",
-        joinColumns = @JoinColumn(
-            name = "user_id", referencedColumnName = "id"),
-        inverseJoinColumns = @JoinColumn(
-            name = "role_id", referencedColumnName = "id"))
+    @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<RoleEntity> roles;
 
     @Override
     public UserDTO toDTO() {
         Set<String> rolesNames = roles.stream()
-            .map(RoleEntity::getName)
-            .map(name -> name.replaceFirst("ROLE_", ""))
-            .collect(toSet());
+                .map(RoleEntity::getName)
+                .map(name -> name.replaceFirst("ROLE_", ""))
+                .collect(toSet());
 
         return new UserDTO(
-            slug,
-            username,
-            email,
-            firstname,
-            lastname,
-            rolesNames
-        );
+                slug,
+                username,
+                email,
+                firstname,
+                lastname,
+                rolesNames);
     }
 
 }

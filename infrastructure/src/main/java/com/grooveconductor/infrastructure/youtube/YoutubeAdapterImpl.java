@@ -21,31 +21,31 @@ import static com.grooveconductor.domain.playlist.PlaylistPrivacy.*;
 public class YoutubeAdapterImpl implements YoutubeAdapter {
 
     private final YouTube youtube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), null)
-        .setApplicationName("GrooveConductor")
-        .build();
+            .setApplicationName("GrooveConductor")
+            .build();
 
     @Override
     public List<YoutubePlaylistDTO> fetchUserPlaylists(String accessToken) throws YoutubeServiceException, IOException {
         YouTube.Playlists.List request = youtube.playlists()
-            .list("snippet,contentDetails,status")
-            .setMine(true)
-            .setOauthToken(accessToken);
+                .list("snippet,contentDetails,status")
+                .setMine(true)
+                .setOauthToken(accessToken);
 
         return request.execute().getItems().stream()
-            .map(this::parsePlaylists)
-            .toList();
+                .map(this::parsePlaylists)
+                .toList();
     }
 
     @Override
     public List<YoutubePlaylistItemDTO> fetchPlaylistItems(String accessToken, String playlistId) throws IOException {
         YouTube.PlaylistItems.List request = youtube.playlistItems()
-            .list("snippet,contentDetails,status")
-            .setPlaylistId(playlistId)
-            .setOauthToken(accessToken);
+                .list("snippet,contentDetails,status")
+                .setPlaylistId(playlistId)
+                .setOauthToken(accessToken);
 
         return request.execute().getItems().stream()
-            .map(this::parsePlaylistItem)
-            .toList();
+                .map(this::parsePlaylistItem)
+                .toList();
     }
 
     private YoutubePlaylistDTO parsePlaylists(Playlist playlist) throws YoutubeServiceException {
@@ -53,36 +53,34 @@ public class YoutubeAdapterImpl implements YoutubeAdapter {
         YoutubeChannelDTO channel = new YoutubeChannelDTO(snippet.getChannelId(), snippet.getChannelTitle());
 
         return new YoutubePlaylistDTO(
-            playlist.getId(),
-            snippet.getTitle(),
-            snippet.getDescription(),
-            new Date(snippet.getPublishedAt().getValue()),
-            snippet.getThumbnails().getStandard().getUrl(),
-            parsePrivacy(playlist.getStatus().getPrivacyStatus()),
-            channel,
-            playlist.getContentDetails().getItemCount()
-        );
+                playlist.getId(),
+                snippet.getTitle(),
+                snippet.getDescription(),
+                new Date(snippet.getPublishedAt().getValue()),
+                snippet.getThumbnails().getStandard().getUrl(),
+                parsePrivacy(playlist.getStatus().getPrivacyStatus()),
+                channel,
+                playlist.getContentDetails().getItemCount());
     }
 
     private YoutubePlaylistItemDTO parsePlaylistItem(PlaylistItem item) {
         PlaylistItemSnippet snippet = item.getSnippet();
 
         return new YoutubePlaylistItemDTO(
-            item.getId(),
-            snippet.getTitle(),
-            snippet.getDescription(),
-            new Date(snippet.getPublishedAt().getValue()),
-            snippet.getThumbnails().getStandard().getUrl(),
-            parsePrivacy(item.getStatus().getPrivacyStatus()),
-            parseChannel(snippet),
-            snippet.getPosition()
-        );
+                item.getId(),
+                snippet.getTitle(),
+                snippet.getDescription(),
+                new Date(snippet.getPublishedAt().getValue()),
+                snippet.getThumbnails().getStandard().getUrl(),
+                parsePrivacy(item.getStatus().getPrivacyStatus()),
+                parseChannel(snippet),
+                snippet.getPosition());
     }
 
     private YoutubeChannelDTO parseChannel(PlaylistItemSnippet snippet) {
         String channelId = snippet.get("videoOwnerChannelId").toString();
         String channelTitle = snippet.get("videoOwnerChannelTitle").toString()
-            .replace(" - Topic", "");
+                .replace(" - Topic", "");
 
         return new YoutubeChannelDTO(channelId, channelTitle);
     }

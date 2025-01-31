@@ -35,8 +35,7 @@ public class ProfileController {
     @PutMapping
     public ResponseEntity<JsonResponse> updateProfile(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody UpdateUserRequest request
-    ) {
+            @RequestBody UpdateUserRequest request) {
         try {
             UpdateUserCommand command = request.toCommand();
 

@@ -11,21 +11,20 @@ public class UpdateProductCommand {
     private final long price;
     private final long quantity;
 
-  public UpdateProductCommand(
-      String name,
-      String description,
-      String imageUrl,
-      String category,
-      Long price,
-      Long quantity
-  ) {
+    public UpdateProductCommand(
+            String name,
+            String description,
+            String imageUrl,
+            String category,
+            Long price,
+            Long quantity) {
 
-    this.name = name;
-    this.description = description;
-    this.imageUrl = imageUrl;
-    this.category = category;
-    this.price = price;
-    this.quantity = quantity;
-  }
+        this.name = name;
+        this.description = description;
+        this.imageUrl = imageUrl;
+        this.category = category;
+        this.price = price;
+        this.quantity = quantity;
+    }
 
 }

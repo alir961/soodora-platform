@@ -34,14 +34,14 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     @Override
     public boolean hasAuthorization(OAuthProvider provider, UserDTO user) {
         return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
-            .isPresent();
+                .isPresent();
     }
 
     @Override
     public List<OAuthProvider> retrieveProviders(UserDTO user) {
         return repository.findByUserId(userFromDTO(user).getId()).stream()
-            .map(OAuthTokenEntity::getProvider)
-            .toList();
+                .map(OAuthTokenEntity::getProvider)
+                .toList();
     }
 
     @Override
@@ -49,22 +49,22 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
         String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
 
         return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
-            .map(OAuthTokenEntity::getRefreshToken)
-            .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
+                .map(OAuthTokenEntity::getRefreshToken)
+                .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
     }
 
     @Override
     public void deleteAuthorization(OAuthProvider provider, UserDTO user) {
         String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
         OAuthTokenEntity entity = repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
-            .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
+                .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
 
         repository.delete(entity);
     }
 
     private UserEntity userFromDTO(UserDTO user) throws UnknownSlugException {
         return userRepository.findBySlug(user.slug())
-            .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
     }
 
 }

@@ -9,11 +9,10 @@ public class OAuthTokenEntityFactory {
 
     public static OAuthTokenEntity buildDefaultOAuthTokenEntity(UserEntity user) {
         return new OAuthTokenEntity(
-            randomUUID(),
-            GOOGLE,
-            "refresh-token",
-            user
-        );
+                randomUUID(),
+                GOOGLE,
+                "refresh-token",
+                user);
     }
 
 }

@@ -1,7 +1,7 @@
 package com.grooveconductor.domain.user;
 
-import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.artist.ArtistDTO;
+import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 

@@ -50,7 +50,6 @@ class ArtistControllerIT {
     @MockBean
     private ArtistService artistService;
 
-
     @Test
     void givenValidRequest_whenMigrateUser_thenOk() throws Exception {
         // GIVEN

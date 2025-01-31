@@ -1,7 +1,7 @@
 package com.grooveconductor.infrastructure.playlist;
 
-import com.grooveconductor.domain.playlist.PlaylistPrivacy;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.playlist.PlaylistPrivacy;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import jakarta.persistence.*;
@@ -61,14 +61,13 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
     @Override
     public PlaylistDTO toDTO() {
         return new PlaylistDTO(
-            slug,
-            name,
-            description,
-            numberOfTracks,
-            privacy,
-            imageUrl,
-            user.toDTO()
-        );
+                slug,
+                name,
+                description,
+                numberOfTracks,
+                privacy,
+                imageUrl,
+                user.toDTO());
     }
 
 }

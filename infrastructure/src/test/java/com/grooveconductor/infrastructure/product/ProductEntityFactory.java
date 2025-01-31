@@ -21,8 +21,7 @@ public class ProductEntityFactory extends ProductFactory {
                 10,
                 user,
                 new Date(),
-                new Date()
-        );
+                new Date());
     }
 
 }

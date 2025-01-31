@@ -21,8 +21,7 @@ public class PlaylistEntityFactory extends PlaylistFactory {
                 0,
                 user,
                 new Date(),
-                new Date()
-        );
+                new Date());
     }
 
 }

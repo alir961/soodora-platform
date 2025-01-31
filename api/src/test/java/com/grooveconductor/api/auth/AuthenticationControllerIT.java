@@ -39,8 +39,7 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe"
-        );
+                "Doe");
 
         when(authenticationService.registerUser(any())).thenReturn(USER);
 
@@ -59,8 +58,7 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe"
-        );
+                "Doe");
 
         when(authenticationService.registerUser(any())).thenThrow(UserUnityException.class);
 
@@ -76,8 +74,7 @@ class AuthenticationControllerIT {
         // GIVEN
         LoginRequest request = new LoginRequest(
                 "user@example.com",
-                "password"
-        );
+                "password");
 
         when(authenticationService.loginUser(any())).thenReturn("token");
 
@@ -94,8 +91,7 @@ class AuthenticationControllerIT {
         // GIVEN
         LoginRequest request = new LoginRequest(
                 "user@example.com",
-                "password"
-        );
+                "password");
 
         when(authenticationService.loginUser(any())).thenThrow(UnknownUserException.class);
 

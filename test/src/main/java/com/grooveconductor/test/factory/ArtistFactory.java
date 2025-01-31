@@ -13,8 +13,7 @@ public class ArtistFactory {
                 "slug" + id,
                 "name" + id,
                 "description",
-                "imageUrl"
-        );
+                "imageUrl");
     }
 
 }

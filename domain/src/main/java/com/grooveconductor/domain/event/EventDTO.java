@@ -14,8 +14,6 @@ public record EventDTO(
         String thumbnailUrl,
         String address,
         LocalDateTime dateTime,
-        List<ArtistDTO> artists
-) {
-
+        List<ArtistDTO> artists) {
 
 }

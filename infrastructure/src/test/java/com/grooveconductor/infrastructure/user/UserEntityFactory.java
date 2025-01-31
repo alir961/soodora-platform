@@ -12,20 +12,19 @@ public class UserEntityFactory extends UserFactory {
 
     public static UserEntity buildDefaultUserEntity() {
         return new UserEntity(
-            randomUUID(),
-            "slug",
-            "username",
-            "user@example.com",
-            "password",
-            "John",
-            "Doe",
-            new Date(),
-            new Date(),
-            null,
-            emptyList(),
-            emptyList(),
-            emptySet()
-        );
+                randomUUID(),
+                "slug",
+                "username",
+                "user@example.com",
+                "password",
+                "John",
+                "Doe",
+                new Date(),
+                new Date(),
+                null,
+                emptyList(),
+                emptyList(),
+                emptySet());
     }
 
 }

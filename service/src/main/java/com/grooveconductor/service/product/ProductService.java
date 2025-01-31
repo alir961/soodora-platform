@@ -32,7 +32,8 @@ public class ProductService {
     public List<ProductDTO> retrieveProducts(ProductFilter filter) {
         if (filter.userSlug().isPresent())
             return userRepository.retrieveProducts(createFromSlug(filter.userSlug().get()));
-        else return retrieveAllProducts();
+        else
+            return retrieveAllProducts();
     }
 
     public ProductDTO retrieveProduct(String slug) {

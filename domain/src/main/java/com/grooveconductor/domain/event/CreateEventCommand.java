@@ -9,7 +9,6 @@ public record CreateEventCommand(
         String url,
         String thumbnailUrl,
         String address,
-        LocalDateTime dateTime
-) {
+        LocalDateTime dateTime) {
 
 }

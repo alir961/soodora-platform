@@ -25,13 +25,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     protected PlaylistEntity findPlaylistBySlugOrThrow(String slug) {
         return repository.findBySlug(slug)
-            .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
     }
 
     @Override
     public PlaylistDTO save(CreatePlaylistCommand command, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
-            .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + user.slug()));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + user.slug()));
         PlaylistEntity entity = new PlaylistEntity();
 
         entity.setName(command.name());
@@ -48,11 +48,14 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
-        if (command.getName() != null && !command.getName().isBlank() && !command.getName().equals(existingPlaylist.getName()))
+        if (command.getName() != null && !command.getName().isBlank()
+                && !command.getName().equals(existingPlaylist.getName()))
             existingPlaylist.setName(command.getName());
-        if (command.getDescription() != null && !command.getDescription().isBlank() && !command.getDescription().equals(existingPlaylist.getDescription()))
+        if (command.getDescription() != null && !command.getDescription().isBlank()
+                && !command.getDescription().equals(existingPlaylist.getDescription()))
             existingPlaylist.setDescription(command.getDescription());
-        if (command.getImageUrl() != null && !command.getImageUrl().isBlank() && !command.getImageUrl().equals(existingPlaylist.getImageUrl()))
+        if (command.getImageUrl() != null && !command.getImageUrl().isBlank()
+                && !command.getImageUrl().equals(existingPlaylist.getImageUrl()))
             existingPlaylist.setImageUrl(command.getImageUrl());
         if (command.getPrivacyState() != null && !command.getPrivacyState().equals(existingPlaylist.getPrivacy()))
             existingPlaylist.setPrivacy(command.getPrivacyState());
@@ -70,13 +73,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     public List<PlaylistDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
-            .toList();
+                .toList();
     }
 
     @Override
     public void deletePlaylistBySlug(String slug) {
         PlaylistEntity playlist = repository.findBySlug(slug)
-            .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
 
         repository.deleteById(playlist.getId());
     }
@@ -84,10 +87,11 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     @Override
     public boolean isPlaylistNameUsedByUser(String name, String userSlug) {
         UserEntity user = userRepository.findBySlug(userSlug)
-            .orElseThrow(() -> new UnknownSlugException("Unable to find playlist of a user with slug: #" + userSlug));
+                .orElseThrow(
+                        () -> new UnknownSlugException("Unable to find playlist of a user with slug: #" + userSlug));
 
         return user.getPlaylists().stream()
-            .anyMatch(playlist -> playlist.getName().equalsIgnoreCase(name));
+                .anyMatch(playlist -> playlist.getName().equalsIgnoreCase(name));
     }
 
     private String generateUniqueSlug() {

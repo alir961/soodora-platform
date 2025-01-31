@@ -29,8 +29,7 @@ public class EventController implements EventResource {
     @PostMapping
     public ResponseEntity<?> createEvent(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreateEventRequest request
-    ) {
+            @RequestBody CreateEventRequest request) {
         try {
             EventDTO event = eventService.createEvent(request.toCommand(), user);
 
@@ -45,8 +44,7 @@ public class EventController implements EventResource {
     @Override
     @GetMapping
     public ResponseEntity<?> getEvents(
-            @RequestParam String artistSlug
-    ) {
+            @RequestParam String artistSlug) {
         try {
             List<EventDTO> events = eventService.getArtistEvents(artistSlug);
 
@@ -61,8 +59,7 @@ public class EventController implements EventResource {
     @Override
     @GetMapping(":me")
     public ResponseEntity<?> getAuthenticatedArtistEvents(
-            @AuthenticationPrincipal UserDTO user
-    ) {
+            @AuthenticationPrincipal UserDTO user) {
         try {
             List<EventDTO> events = eventService.getArtistEvents(user);
 

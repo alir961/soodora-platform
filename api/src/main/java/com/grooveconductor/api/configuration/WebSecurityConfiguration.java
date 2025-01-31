@@ -49,13 +49,11 @@ public class WebSecurityConfiguration {
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
                                 "/swagger-resources",
-                                "/swagger-resources/**"
-                                )
+                                "/swagger-resources/**")
                         .permitAll()
                         .requestMatchers(GET, "/products").permitAll()
                         .requestMatchers("/auth/google").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .logout(AbstractHttpConfigurer::disable)

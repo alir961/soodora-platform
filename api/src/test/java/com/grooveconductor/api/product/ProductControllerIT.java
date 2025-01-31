@@ -50,8 +50,7 @@ class ProductControllerIT {
                 "image-url",
                 "category",
                 100,
-                10
-        );
+                10);
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doNothing().when(productService).createProduct(any(), eq(USER));
@@ -64,7 +63,6 @@ class ProductControllerIT {
                 .andExpect(status().isCreated());
     }
 
-
     @Test
     void createProduct_InvalidRequest() throws Exception {
         // GIVEN
@@ -74,8 +72,7 @@ class ProductControllerIT {
                 "image-url",
                 "category",
                 0,
-                0
-        );
+                0);
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(InvalidRequestException.class).when(productService)
@@ -139,8 +136,7 @@ class ProductControllerIT {
                 "",
                 "",
                 0L,
-                0L
-        );
+                0L);
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))

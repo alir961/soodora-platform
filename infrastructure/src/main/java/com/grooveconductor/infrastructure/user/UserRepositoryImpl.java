@@ -40,16 +40,18 @@ public class UserRepositoryImpl implements UserRepository {
     public UserDTO update(UpdateUserCommand command, Identifier identifier) {
         UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
 
-        if (command.getUsername() != null && !command.getUsername().isBlank() && !command.getUsername().equals(existingUser.getUsername()))
+        if (command.getUsername() != null && !command.getUsername().isBlank()
+                && !command.getUsername().equals(existingUser.getUsername()))
             existingUser.setUsername(command.getUsername());
-        if (command.getFirstname() != null && !command.getFirstname().isBlank() && !command.getFirstname().equals(existingUser.getFirstname()))
+        if (command.getFirstname() != null && !command.getFirstname().isBlank()
+                && !command.getFirstname().equals(existingUser.getFirstname()))
             existingUser.setFirstname(command.getFirstname());
-        if (command.getLastname() != null && !command.getLastname().isBlank() && !command.getLastname().equals(existingUser.getLastname()))
+        if (command.getLastname() != null && !command.getLastname().isBlank()
+                && !command.getLastname().equals(existingUser.getLastname()))
             existingUser.setLastname(command.getLastname());
 
         return userRepository.save(existingUser).toDTO();
     }
-
 
     @Override
     public UserDTO find(Identifier identifier) {
@@ -60,7 +62,7 @@ public class UserRepositoryImpl implements UserRepository {
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
                 .map(DomainEntity::toDTO)
-            .toList();
+                .toList();
     }
 
     @Override
@@ -83,27 +85,27 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public String retrieveEncodedPassword(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier)
-            .getPassword();
+                .getPassword();
     }
 
     @Override
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
         return ofNullable(findUserByIdentifierOrThrows(identifier).getArtist())
-            .map(DomainEntity::toDTO);
+                .map(DomainEntity::toDTO);
     }
 
     @Override
     public List<ProductDTO> retrieveProducts(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getProducts().stream()
-            .map(DomainEntity::toDTO)
-            .toList();
+                .map(DomainEntity::toDTO)
+                .toList();
     }
 
     @Override
     public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
-            .map(DomainEntity::toDTO)
-            .toList();
+                .map(DomainEntity::toDTO)
+                .toList();
     }
 
     private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {

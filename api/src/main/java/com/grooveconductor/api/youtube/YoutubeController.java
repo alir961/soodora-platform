@@ -32,8 +32,7 @@ public class YoutubeController {
     @GetMapping("/playlists/{id}")
     public List<YoutubePlaylistItemDTO> getYoutubePlaylistItems(
             @AuthenticationPrincipal UserDTO user,
-            @PathVariable String id
-    ) {
+            @PathVariable String id) {
         return youtubeService.getPlaylistItems(user, id);
     }
 

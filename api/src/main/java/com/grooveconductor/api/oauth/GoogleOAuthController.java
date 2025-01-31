@@ -42,7 +42,8 @@ public class GoogleOAuthController {
 
     @ResponseStatus(FOUND)
     @GetMapping("/callback")
-    public HttpHeaders googleOAuthCallback(@RequestParam String code, @RequestParam String state) throws URISyntaxException {
+    public HttpHeaders googleOAuthCallback(@RequestParam String code, @RequestParam String state)
+            throws URISyntaxException {
         HttpHeaders headers = new HttpHeaders();
         String url = frontUrl + "/account";
         UserDTO user = null;

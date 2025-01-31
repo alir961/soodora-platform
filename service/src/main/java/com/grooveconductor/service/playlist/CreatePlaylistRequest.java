@@ -11,25 +11,24 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.joining;
 
 public record CreatePlaylistRequest(
-    String name,
-    String description,
-    int numberOfTracks,
-    @Schema(description =
-        "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED",
-        example = "PUBLIC")
-    String privacy,
-    String imageUrl
-) implements Request<CreatePlaylistCommand> {
+        String name,
+        String description,
+        int numberOfTracks,
+        @Schema(description = "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED", example = "PUBLIC") String privacy,
+        String imageUrl) implements Request<CreatePlaylistCommand> {
 
     static String privacyValues = Stream.of(PlaylistPrivacy.values())
-        .map(Enum::toString)
-        .collect(joining(", "));
+            .map(Enum::toString)
+            .collect(joining(", "));
 
     @Override
     public CreatePlaylistCommand toCommand() {
-        if (name == null) throw new InvalidRequestException("Name is not valid");
-        if (description == null) throw new InvalidRequestException("Description is not valid");
-        if (privacy == null || !isValidPrivacyState(privacy)) throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
+        if (name == null)
+            throw new InvalidRequestException("Name is not valid");
+        if (description == null)
+            throw new InvalidRequestException("Description is not valid");
+        if (privacy == null || !isValidPrivacyState(privacy))
+            throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
         PlaylistPrivacy privacyState = PlaylistPrivacy.valueOf(privacy.toUpperCase());
 
         return new CreatePlaylistCommand(name, description, numberOfTracks, privacyState, imageUrl);

@@ -33,20 +33,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
         String authorization = request.getHeader("Authorization");
 
         if (authorization != null && authorization.startsWith("Bearer "))
             authenticateBearerToken(authorization.substring(7));
-        else handleAuthenticatedUser();
+        else
+            handleAuthenticatedUser();
         filterChain.doFilter(request, response);
     }
 
     private void handleAuthenticatedUser() {
         Authentication authentication = getContext().getAuthentication();
 
-        if (authentication == null) return;
+        if (authentication == null)
+            return;
         if (authentication instanceof UsernamePasswordAuthenticationToken emailAuthentication) {
             UserPrincipal principal = (UserPrincipal) emailAuthentication.getPrincipal();
 
@@ -59,7 +60,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         UserDTO user = userRepository.find(createFromEmail(email));
         boolean isAuthenticated = getContext().getAuthentication() != null;
 
-        if (email == null || user == null || isAuthenticated) return;
+        if (email == null || user == null || isAuthenticated)
+            return;
         setContextAuthentication(user);
     }
 

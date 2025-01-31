@@ -10,18 +10,17 @@ public class UpdatePlaylistCommand {
     private final String imageUrl;
     private final PlaylistPrivacy privacyState;
 
-  public UpdatePlaylistCommand(
-      String name,
-      String description,
-      String imageUrl,
-      int numberOfTracks,
-      PlaylistPrivacy privacyState
-  ) {
+    public UpdatePlaylistCommand(
+            String name,
+            String description,
+            String imageUrl,
+            int numberOfTracks,
+            PlaylistPrivacy privacyState) {
 
-    this.name = name;
-    this.description = description;
-    this.numberOfTracks = numberOfTracks;
-    this.imageUrl = imageUrl;
-    this.privacyState = privacyState;
-  }
+        this.name = name;
+        this.description = description;
+        this.numberOfTracks = numberOfTracks;
+        this.imageUrl = imageUrl;
+        this.privacyState = privacyState;
+    }
 }

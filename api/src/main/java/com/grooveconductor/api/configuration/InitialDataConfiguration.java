@@ -19,7 +19,8 @@ public class InitialDataConfiguration implements ApplicationListener<ContextRefr
     @Override
     @Transactional
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (alreadySetup) return;
+        if (alreadySetup)
+            return;
         createRoleIfNotFound("ROLE_PREMIUM");
         createRoleIfNotFound("ROLE_ARTIST");
         createRoleIfNotFound("ROLE_ADMIN");
@@ -29,7 +30,8 @@ public class InitialDataConfiguration implements ApplicationListener<ContextRefr
     @Transactional
     void createRoleIfNotFound(String name) {
         RoleDTO role = roleRepository.findByName(name);
-        if (role == null) roleRepository.createRole(name);
+        if (role == null)
+            roleRepository.createRole(name);
     }
 
 }

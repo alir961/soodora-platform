@@ -31,8 +31,7 @@ public class ArtistController {
     @PostMapping(":migrate")
     public ResponseEntity<Void> migrateUser(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreateArtistRequest request
-    ) {
+            @RequestBody CreateArtistRequest request) {
         if (artistService.isArtist(user.identifier()))
             return new ResponseEntity<>(ACCEPTED);
         artistService.createArtist(request.toCommand(), user);

@@ -32,8 +32,7 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<JsonResponse> createProduct(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreateProductRequest createProductRequest
-    ) {
+            @RequestBody CreateProductRequest createProductRequest) {
         try {
             service.createProduct(createProductRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
@@ -57,7 +56,8 @@ public class ProductController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updateProduct(@PathVariable String slug, @RequestBody UpdateProductRequest request) {
+    public ResponseEntity<JsonResponse> updateProduct(@PathVariable String slug,
+                                                      @RequestBody UpdateProductRequest request) {
         try {
             UpdateProductCommand command = request.toCommand();
 

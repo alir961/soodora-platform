@@ -45,8 +45,7 @@ class AuthenticationServiceTest {
                 getInstance(),
                 userRepository,
                 tokenRepository,
-                oauthTokenRepository
-        );
+                oauthTokenRepository);
     }
 
     @Test

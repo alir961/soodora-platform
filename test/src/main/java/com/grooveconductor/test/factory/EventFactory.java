@@ -21,8 +21,7 @@ public class EventFactory {
                 "thumbnailUrl",
                 "",
                 now(),
-                emptyList()
-        );
+                emptyList());
     }
 
 }

@@ -40,8 +40,7 @@ class OAuthTokenServiceTest {
                 oauthTokenRepository,
                 tokenRepository,
                 userRepository,
-                googleFacade
-        );
+                googleFacade);
     }
 
     @Test

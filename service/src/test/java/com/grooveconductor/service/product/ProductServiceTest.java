@@ -36,8 +36,8 @@ class ProductServiceTest {
     private static final String SLUG_1 = "slug1";
     private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
-        PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(), PRODUCT_1.quantity()
-    );
+            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(),
+            PRODUCT_1.quantity());
 
     @BeforeEach
     void setUp() {
@@ -99,12 +99,12 @@ class ProductServiceTest {
     @Test
     void updateProduct_Success() {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
-            "Updated Name",
-           "Updated Description",
-            "newImageUrl",
-           "newCategory",
-            150L,
-            5L);
+                "Updated Name",
+                "Updated Description",
+                "newImageUrl",
+                "newCategory",
+                150L,
+                5L);
 
         when(productRepository.update(updateCommand, SLUG_1)).thenReturn(PRODUCT_1);
 
@@ -117,12 +117,12 @@ class ProductServiceTest {
     @Test
     void updateProduct_UnknownSlug() {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
-            "Updated Name",
-            "Updated Description",
-            "newImageUrl",
-            "newCategory",
-            150L,
-            5L);
+                "Updated Name",
+                "Updated Description",
+                "newImageUrl",
+                "newCategory",
+                150L,
+                5L);
 
         when(productRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));
 

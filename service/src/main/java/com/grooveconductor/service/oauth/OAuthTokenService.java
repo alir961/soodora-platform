@@ -58,7 +58,8 @@ public class OAuthTokenService {
     }
 
     public UserDTO retrieveUserOrThrows(String token) throws AuthenticationException {
-        if (token == null || token.isEmpty()) throw new AuthenticationException("Token is null or empty");
+        if (token == null || token.isEmpty())
+            throw new AuthenticationException("Token is null or empty");
         String email = tokenRepository.getEmailFromToken(token);
         UserDTO user = userRepository.find(createFromEmail(email));
 

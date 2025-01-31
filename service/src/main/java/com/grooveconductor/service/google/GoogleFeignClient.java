@@ -29,8 +29,7 @@ public class GoogleFeignClient {
                         .body(encodeFormData(body))
                         .retrieve()
                         .body(Map.class),
-                body.getOrDefault(REFRESH_TOKEN, null)
-        );
+                body.getOrDefault(REFRESH_TOKEN, null));
     }
 
     private RefreshableAuthorization parseResponse(Map response, String refreshToken) throws OAuthFlowException {
@@ -40,8 +39,7 @@ public class GoogleFeignClient {
             return new RefreshableAuthorization(
                     body.get(ACCESS_TOKEN).toString(),
                     body.getOrDefault(REFRESH_TOKEN, refreshToken).toString(),
-                    (Integer) body.get("expires_in")
-            );
+                    (Integer) body.get("expires_in"));
         } catch (HttpClientErrorException e) {
             throw new OAuthFlowException(e.getResponseBodyAsString());
         } catch (Exception e) {

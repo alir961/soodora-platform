@@ -16,7 +16,8 @@ public class TestConstants {
 
     public static final String ACCESS_TOKEN = "access-token";
     public static final String REFRESH_TOKEN = "refresh-token";
-    public static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(ACCESS_TOKEN, REFRESH_TOKEN, 60);
+    public static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(ACCESS_TOKEN,
+            REFRESH_TOKEN, 60);
     public static final UserDTO USER = buildDefaultUser();
     public static final ArtistDTO ARTIST = buildArtistDTO("");
     public static final EventDTO EVENT = buildEventDTO("");

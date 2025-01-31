@@ -117,7 +117,8 @@ class UserServiceTest {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName");
 
-        when(userRepository.update(updateCommand, IDENTIFIER)).thenThrow(new UnknownIdentifierException("Identifier not found"));
+        when(userRepository.update(updateCommand, IDENTIFIER))
+                .thenThrow(new UnknownIdentifierException("Identifier not found"));
 
         // WHEN
         Executable executable = () -> userService.updateUser(updateCommand, USER.slug());

@@ -39,8 +39,7 @@ class EventControllerIT {
             "url",
             "thumbnailUrl",
             "Address",
-            now()
-    );
+            now());
 
     @Inject
     private MockMvc mockMvc;
@@ -73,8 +72,7 @@ class EventControllerIT {
                 "url",
                 "thumbnailUrl",
                 "Address",
-                now()
-        );
+                now());
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")
@@ -97,8 +95,7 @@ class EventControllerIT {
                 "url",
                 "thumbnailUrl",
                 "Address",
-                now()
-        );
+                now());
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")

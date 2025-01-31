@@ -12,14 +12,13 @@ public class PlaylistFactory {
 
     public static PlaylistDTO buildDefaultPlaylist(String slug, String name) {
         return new PlaylistDTO(
-            slug,
-            name,
-            "Description",
-            0,
-            PUBLIC,
-            "imageUrl",
-            buildDefaultUser()
-        );
+                slug,
+                name,
+                "Description",
+                0,
+                PUBLIC,
+                "imageUrl",
+                buildDefaultUser());
     }
 
 }

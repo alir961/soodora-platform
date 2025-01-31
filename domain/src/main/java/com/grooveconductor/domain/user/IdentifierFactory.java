@@ -5,7 +5,8 @@ import static com.grooveconductor.domain.user.Identifier.IdentifierType.SLUG;
 
 public class IdentifierFactory {
 
-    private IdentifierFactory() {}
+    private IdentifierFactory() {
+    }
 
     public static Identifier createFromEmail(String email) {
         return new Identifier(EMAIL, email);

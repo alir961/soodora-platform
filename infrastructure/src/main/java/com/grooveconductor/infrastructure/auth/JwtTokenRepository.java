@@ -55,10 +55,10 @@ public class JwtTokenRepository implements TokenRepository {
 
     private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
-            .verifyWith(getSigningKey())
-            .build()
-            .parseSignedClaims(token)
-            .getPayload();
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     private Boolean isTokenExpired(String token) {
@@ -72,14 +72,14 @@ public class JwtTokenRepository implements TokenRepository {
         long currentTimeMillis = System.currentTimeMillis();
 
         return builder()
-            .claims()
-            .add(claims)
-            .add(SUBJECT, subject)
-            .add(ISSUED_AT, currentTimeMillis)
-            .add(EXPIRATION, currentTimeMillis + hourInMillis)
-            .and()
-            .signWith(getSigningKey())
-            .compact();
+                .claims()
+                .add(claims)
+                .add(SUBJECT, subject)
+                .add(ISSUED_AT, currentTimeMillis)
+                .add(EXPIRATION, currentTimeMillis + hourInMillis)
+                .and()
+                .signWith(getSigningKey())
+                .compact();
     }
 
     private SecretKey getSigningKey() {
@@ -87,6 +87,5 @@ public class JwtTokenRepository implements TokenRepository {
 
         return hmacShaKeyFor(keyBytes);
     }
-
 
 }

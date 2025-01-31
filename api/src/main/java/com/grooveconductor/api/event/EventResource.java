@@ -17,52 +17,29 @@ import org.springframework.http.ResponseEntity;
 @SecurityRequirement(name = "bearerAuth")
 public interface EventResource {
 
-    @Operation(summary = "Create event for logged artist",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Event created"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request"),
-                    @ApiResponse(responseCode = "403", description = "User must be artist")
-            }
-    )
+    @Operation(summary = "Create event for logged artist", responses = {
+            @ApiResponse(responseCode = "201", description = "Event created"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "403", description = "User must be artist")
+    })
     ResponseEntity<?> createEvent(
             UserDTO user,
-            @RequestBody(required = true) CreateEventRequest request
-    );
+            @RequestBody(required = true) CreateEventRequest request);
 
-    @Operation(summary = "Retrieve filtered events",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Events retrieved",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = EventDTO.class))
-                            )
-                    ),
-                    @ApiResponse(responseCode = "204", description = "No events retrieved"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request"),
-                    @ApiResponse(responseCode = "403", description = "Forbidden request")
-            }
-    )
+    @Operation(summary = "Retrieve filtered events", responses = {
+            @ApiResponse(responseCode = "200", description = "Events retrieved", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventDTO.class)))),
+            @ApiResponse(responseCode = "204", description = "No events retrieved"),
+            @ApiResponse(responseCode = "400", description = "Invalid request"),
+            @ApiResponse(responseCode = "403", description = "Forbidden request")
+    })
     ResponseEntity<?> getEvents(
-            String artistSlug
-    );
+            String artistSlug);
 
-    @Operation(summary = "Retrieve logged artist events",
-            responses = {
-                    @ApiResponse(
-                            responseCode = "200",
-                            description = "Events retrieved",
-                            content = @Content(
-                                    mediaType = "application/json",
-                                    array = @ArraySchema(schema = @Schema(implementation = EventDTO.class))
-                            )
-                    ),
-                    @ApiResponse(responseCode = "403", description = "User must be artist")
-            }
-    )
+    @Operation(summary = "Retrieve logged artist events", responses = {
+            @ApiResponse(responseCode = "200", description = "Events retrieved", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventDTO.class)))),
+            @ApiResponse(responseCode = "403", description = "User must be artist")
+    })
     ResponseEntity<?> getAuthenticatedArtistEvents(
-            UserDTO user
-    );
+            UserDTO user);
 
 }

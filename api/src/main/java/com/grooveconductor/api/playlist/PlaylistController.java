@@ -32,8 +32,7 @@ public class PlaylistController {
     @PostMapping
     public ResponseEntity<JsonResponse> createPlaylist(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreatePlaylistRequest createPlaylistRequest
-    ) {
+            @RequestBody CreatePlaylistRequest createPlaylistRequest) {
         try {
             playlistService.createPlaylist(createPlaylistRequest.toCommand(), user);
             return new ResponseEntity<>(CREATED);
@@ -55,7 +54,8 @@ public class PlaylistController {
     }
 
     @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updatePlaylist(@PathVariable String slug, @RequestBody UpdatePlaylistRequest request) {
+    public ResponseEntity<JsonResponse> updatePlaylist(@PathVariable String slug,
+                                                       @RequestBody UpdatePlaylistRequest request) {
         try {
             UpdatePlaylistCommand command = request.toCommand();
 

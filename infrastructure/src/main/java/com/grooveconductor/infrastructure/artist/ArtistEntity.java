@@ -52,21 +52,16 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
     private UserEntity user;
 
     @ManyToMany
-    @JoinTable(
-            name = "artists_events",
-            joinColumns = @JoinColumn(name = "artist_id"),
-            inverseJoinColumns = @JoinColumn(name = "event_id")
-    )
+    @JoinTable(name = "artists_events", joinColumns = @JoinColumn(name = "artist_id"), inverseJoinColumns = @JoinColumn(name = "event_id"))
     private List<EventEntity> events;
 
     @Override
     public ArtistDTO toDTO() {
         return new ArtistDTO(
-            slug,
-            name,
-            description,
-            imageUrl
-        );
+                slug,
+                name,
+                description,
+                imageUrl);
     }
 
 }

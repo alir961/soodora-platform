@@ -16,35 +16,32 @@ public class YoutubeFactory {
 
     public static YoutubePlaylistDTO buildDefaultYoutubePlaylist() {
         return new YoutubePlaylistDTO(
-            "id",
-            "Title",
-            "Description",
-            PUBLISH_DATE,
-            "http://youtube.com/thumbnail.jpg",
-            PUBLIC,
-            buildDefaultYoutubeChannel(),
-            10
-        );
+                "id",
+                "Title",
+                "Description",
+                PUBLISH_DATE,
+                "http://youtube.com/thumbnail.jpg",
+                PUBLIC,
+                buildDefaultYoutubeChannel(),
+                10);
     }
 
     public static YoutubePlaylistDTO buildDefaultYoutubePlaylist(String id) {
         return new YoutubePlaylistDTO(
-            id,
-            "Title #" + id,
-            "Description",
-            PUBLISH_DATE,
-            "http://youtube.com/thumbnail.jpg",
-            PUBLIC,
-            buildDefaultYoutubeChannel(),
-            10
-        );
+                id,
+                "Title #" + id,
+                "Description",
+                PUBLISH_DATE,
+                "http://youtube.com/thumbnail.jpg",
+                PUBLIC,
+                buildDefaultYoutubeChannel(),
+                10);
     }
 
     public static YoutubeChannelDTO buildDefaultYoutubeChannel() {
         return new YoutubeChannelDTO(
-            "id",
-            "Title"
-        );
+                "id",
+                "Title");
     }
 
 }

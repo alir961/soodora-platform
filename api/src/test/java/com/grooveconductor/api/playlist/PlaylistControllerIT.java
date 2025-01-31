@@ -57,8 +57,7 @@ class PlaylistControllerIT {
                 "Description",
                 0,
                 "PUBLIC",
-                ""
-        );
+                "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
@@ -78,11 +77,11 @@ class PlaylistControllerIT {
                 "Description",
                 0,
                 "",
-                ""
-        );
+                "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doThrow(new InvalidRequestException("Invalid request")).when(playlistService).createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
+        doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
+                .createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists")
@@ -100,8 +99,7 @@ class PlaylistControllerIT {
                 "Description",
                 0,
                 "PUBLIC",
-                ""
-        );
+                "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new PlaylistUnityException("Name is already used"))
@@ -124,8 +122,7 @@ class PlaylistControllerIT {
                 "Updated Description",
                 0,
                 "PUBLIC",
-                ""
-        );
+                "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
@@ -145,8 +142,7 @@ class PlaylistControllerIT {
                 "",
                 0,
                 "PUBLIC",
-                ""
-        );
+                "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))

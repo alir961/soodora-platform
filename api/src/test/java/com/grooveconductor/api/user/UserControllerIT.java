@@ -125,8 +125,7 @@ class UserControllerIT {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(
                 "newUsername",
                 "firstname",
-                "lastname"
-        );
+                "lastname");
 
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
@@ -144,7 +143,8 @@ class UserControllerIT {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "");
 
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
-        doThrow(new InvalidRequestException("Invalid Request")).when(userService).updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()));
+        doThrow(new InvalidRequestException("Invalid Request")).when(userService)
+                .updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()));
 
         // WHEN & THEN
         mockMvc.perform(put("/users/" + USER_1.slug())

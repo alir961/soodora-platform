@@ -68,7 +68,6 @@ public class EventEntity implements DomainEntity<EventDTO> {
                 dateTime,
                 artists.stream()
                         .map(DomainEntity::toDTO)
-                        .toList()
-        );
+                        .toList());
     }
 }

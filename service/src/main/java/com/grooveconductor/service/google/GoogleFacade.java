@@ -33,12 +33,12 @@ public class GoogleFacade implements OAuthFacade {
     @Override
     public URI getOAuthAuthorizationFlowURI(String state) {
         String uriBuilder = AUTH_URL + "?client_id=" + clientId +
-            "&redirect_uri=" + redirectUri +
-            "&response_type=code" +
-            "&access_type=offline" +
-            "&prompt=consent" +
-            "&scope=" + SCOPE +
-            "&state=" + state;
+                "&redirect_uri=" + redirectUri +
+                "&response_type=code" +
+                "&access_type=offline" +
+                "&prompt=consent" +
+                "&scope=" + SCOPE +
+                "&state=" + state;
 
         return URI.create(uriBuilder);
     }

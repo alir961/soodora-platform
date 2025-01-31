@@ -4,7 +4,10 @@ import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -60,15 +63,14 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     @Override
     public ProductDTO toDTO() {
         return new ProductDTO(
-            slug,
-            name,
-            description,
-            imageUrl,
-            category,
-            price,
-            quantity,
-            user.toDTO()
-        );
+                slug,
+                name,
+                description,
+                imageUrl,
+                category,
+                price,
+                quantity,
+                user.toDTO());
     }
 
 }
