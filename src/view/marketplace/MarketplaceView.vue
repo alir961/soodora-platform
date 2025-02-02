@@ -59,7 +59,7 @@ onIonViewWillEnter(async () => {
 
 const fetchUserData = async () => {
   const status = await loadUserStatus();
-  if (status.includes(UNAUTHENTICATED)) return;
+  if (status === UNAUTHENTICATED) return;
 
   try {
     userData.value = await retrieveAuthenticatedProfile();

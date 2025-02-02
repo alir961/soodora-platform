@@ -48,7 +48,7 @@ const signup = async () => {
     await callRegister(request);
   } catch (error) {
     const toast = await toastController.create({
-      message: 'Registering Failed!',
+      message: 'Sign up Failed!',
       duration: 1500,
       position: 'top',
     });

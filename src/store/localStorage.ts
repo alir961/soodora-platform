@@ -44,7 +44,7 @@ async function loadBearerToken(): Promise<string> {
 
 async function deleteBearerToken(): Promise<void> {
   await Preferences.remove({ key: BEARER_TOKEN_KEY });
-  await Preferences.remove({ key: USER_STATUS_KEY });
+  await Preferences.set({ key: USER_STATUS_KEY, value: UNAUTHENTICATED });
 }
 
 async function loadUserStatus(): Promise<string> {

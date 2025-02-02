@@ -4,7 +4,7 @@ import { deleteBearerToken, deleteUserData, loadUserStatus, UNAUTHENTICATED } fr
 import { Ref, ref } from 'vue';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
-import { redirectLogin } from '@/utils';
+import { redirectExplore, redirectLogin } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
@@ -29,7 +29,7 @@ const fetchUserData = async () => {
 const logout = async () => {
   await deleteBearerToken();
   await deleteUserData();
-  await redirectLogin(router);
+  await redirectExplore(router);
 };
 
 onIonViewWillEnter(async () => {
@@ -44,6 +44,7 @@ onIonViewWillEnter(async () => {
         duration: 1500,
         position: 'top',
       });
+
       await toast.present();
     }
     await fetchUserData();

@@ -35,7 +35,7 @@ const newMp3 = reactive({
 
 const fetchUserData = async () => {
   const status = await loadUserStatus();
-  if (status.includes(UNAUTHENTICATED)) return;
+  if (status === UNAUTHENTICATED) return;
 
   try {
     userData.value = await retrieveAuthenticatedProfile();

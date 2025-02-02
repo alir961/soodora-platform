@@ -14,8 +14,9 @@ interface TabEntry {
 const tabs: TabEntry[] = [
   { name: 'explore', icon: planetOutline, requiresAuth: false },
   { name: 'marketplace', icon: cartOutline, requiresAuth: false },
-  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: true },
-  { name: 'account', icon: personOutline, requiresAuth: false },
+  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: false },
+  { name: 'authentication', icon: personOutline, requiresAuth: false },
+  { name: 'account', icon: personOutline, requiresAuth: true },
 ];
 
 const userStatus = ref<string>('');
@@ -25,7 +26,10 @@ onMounted(async () => {
 });
 
 const filteredTabs = computed(() => {
-  return tabs.filter((tab) => !tab.requiresAuth || userStatus.value === AUTHENTICATED);
+  return tabs.filter((tab) => {
+    if (tab.name === 'authentication' && userStatus.value === AUTHENTICATED) return false;
+    return !tab.requiresAuth || userStatus.value === AUTHENTICATED;
+  });
 });
 const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 </script>

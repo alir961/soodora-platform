@@ -25,9 +25,10 @@ import {
   retrieveYoutubePlaylists,
 } from '@/client/playlistClient';
 import { Playlist } from '@/entity/Playlist';
-import { getAuthenticatedUser } from '@/utils';
+import { getAuthenticatedUser, reject } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { AUTHENTICATED, loadUserStatus } from '@/store/localStorage';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -45,7 +46,7 @@ const loadPlaylists = async () => {
 
     playlists.value = await retrieveUserPlaylists(userData.slug);
   } catch (error) {
-    console.error('Failed to load playlists:', error);
+    await reject(error as Error);
   }
 };
 
@@ -55,13 +56,20 @@ const handleCreatePlaylist = async () => {
     await loadPlaylists();
     showModal.value = false;
   } catch (error) {
-    console.error('Failed to create playlist:', error);
+    const toast = await toastController.create({
+      message: 'Failed to create playlists, please check your account connection',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
   }
 };
 
 const FetchYoutubePlaylist = async () => {
   try {
     const playlists: PlaylistCreateRequest[] = await retrieveYoutubePlaylists();
+
     await Promise.all(playlists.map((playlist) => createPlaylist(playlist)));
     await loadPlaylists();
   } catch (error) {
@@ -76,12 +84,14 @@ const FetchYoutubePlaylist = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  await loadPlaylists();
+  const status = await loadUserStatus();
+
+  if (status === AUTHENTICATED) await loadPlaylists();
 });
 </script>
 
 <template>
-  <ApplicationViewport title="Playlist" authenticated>
+  <ApplicationViewport title="Playlist">
     <template #toolbar>
       <div id="toolbar-button">
         <ion-button :inert="showModal" size="small" @click="showModal = true">
