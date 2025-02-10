@@ -19,7 +19,6 @@ import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { uploadMp3 } from '@/client/exploreMP3Client';
 import AudioCard from '@/component/explore/AudioCard.vue';
-import { loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);
@@ -34,9 +33,6 @@ const newMp3 = reactive({
 });
 
 const fetchUserData = async () => {
-  const status = await loadUserStatus();
-  if (status === UNAUTHENTICATED) return;
-
   try {
     userData.value = await retrieveAuthenticatedProfile();
   } catch (error) {

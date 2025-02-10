@@ -15,7 +15,6 @@ async function redirectLogin(router: Router) {
 
 async function redirectExplore(router: Router) {
   await router.push('/explore' + retrieveCallbackURL());
-  location.reload();
 }
 
 function capitalize(value: string): string {

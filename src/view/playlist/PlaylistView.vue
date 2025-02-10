@@ -28,7 +28,6 @@ import { Playlist } from '@/entity/Playlist';
 import { getAuthenticatedUser, reject } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { AUTHENTICATED, loadUserStatus } from '@/store/localStorage';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -84,9 +83,7 @@ const FetchYoutubePlaylist = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  const status = await loadUserStatus();
-
-  if (status === AUTHENTICATED) await loadPlaylists();
+  await loadPlaylists();
 });
 </script>
 

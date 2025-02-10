@@ -23,7 +23,6 @@ const login = async () => {
     await saveBearerToken(token);
     await router.push('/explore');
     isLogged.value = true;
-    location.reload();
   } catch (error) {
     const toast = await toastController.create({
       message: 'Login Failed!',

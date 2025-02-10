@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
-import { deleteBearerToken, deleteUserData, loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
+import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
-import { redirectExplore, redirectLogin } from '@/utils';
+import { redirectExplore } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
@@ -33,22 +33,16 @@ const logout = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  const userStatus = await loadUserStatus();
+  if (route.query.error === 'oauth') {
+    const toast = await toastController.create({
+      message: 'Unable to connect to OAuth provider!',
+      duration: 1500,
+      position: 'top',
+    });
 
-  if (userStatus === UNAUTHENTICATED) {
-    await redirectLogin(router);
-  } else {
-    if (route.query.error === 'oauth') {
-      const toast = await toastController.create({
-        message: 'Unable to connect to OAuth provider!',
-        duration: 1500,
-        position: 'top',
-      });
-
-      await toast.present();
-    }
-    await fetchUserData();
+    await toast.present();
   }
+  await fetchUserData();
 });
 </script>
 
