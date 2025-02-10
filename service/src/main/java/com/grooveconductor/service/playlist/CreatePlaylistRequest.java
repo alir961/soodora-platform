@@ -4,9 +4,10 @@ import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistPrivacy;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.stream.Stream;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static java.util.stream.Collectors.joining;
 

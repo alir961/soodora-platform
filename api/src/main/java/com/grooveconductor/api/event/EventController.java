@@ -7,12 +7,14 @@ import com.grooveconductor.service.artist.UnknownArtistException;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.event.CreateEventRequest;
 import com.grooveconductor.service.event.EventService;
-import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.FORBIDDEN;

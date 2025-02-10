@@ -1,6 +1,9 @@
 package com.grooveconductor.service.user;
 
 import com.grooveconductor.domain.user.*;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,15 +11,14 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
-import static com.grooveconductor.test.TestConstants.USER;
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {

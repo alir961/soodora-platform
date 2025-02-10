@@ -8,14 +8,17 @@ import com.grooveconductor.domain.playlist.UpdatePlaylistCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.playlist.*;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import lombok.RequiredArgsConstructor;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
@@ -55,7 +58,7 @@ public class PlaylistController {
 
     @PutMapping("/{slug}")
     public ResponseEntity<JsonResponse> updatePlaylist(@PathVariable String slug,
-                                                       @RequestBody UpdatePlaylistRequest request) {
+            @RequestBody UpdatePlaylistRequest request) {
         try {
             UpdatePlaylistCommand command = request.toCommand();
 

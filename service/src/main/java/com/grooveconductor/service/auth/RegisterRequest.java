@@ -3,6 +3,7 @@ package com.grooveconductor.service.auth;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record RegisterRequest(
@@ -12,7 +13,7 @@ public record RegisterRequest(
         @Schema(description = "Firstname of the account", example = "John", defaultValue = "John") String firstname,
         @Schema(description = "Lastname of account", example = "Doe", defaultValue = "Doe") String lastname)
         implements
-        Request<RegisterCommand> {
+            Request<RegisterCommand> {
 
     @Override
     public RegisterCommand toCommand() throws InvalidRequestException {

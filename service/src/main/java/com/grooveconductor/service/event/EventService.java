@@ -8,10 +8,12 @@ import com.grooveconductor.domain.event.EventRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.artist.UnknownArtistException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

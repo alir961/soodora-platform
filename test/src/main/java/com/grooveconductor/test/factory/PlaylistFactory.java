@@ -1,11 +1,13 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+
 import lombok.NoArgsConstructor;
+
+import static lombok.AccessLevel.PROTECTED;
 
 import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
-import static lombok.AccessLevel.PROTECTED;
 
 @NoArgsConstructor(access = PROTECTED)
 public class PlaylistFactory {

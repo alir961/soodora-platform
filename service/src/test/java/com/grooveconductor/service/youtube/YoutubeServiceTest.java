@@ -4,6 +4,9 @@ import com.grooveconductor.domain.youtube.YoutubeAdapter;
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
 import com.grooveconductor.service.oauth.OAuthFlowException;
 import com.grooveconductor.service.oauth.OAuthTokenService;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,15 +14,14 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.test.TestConstants.ACCESS_TOKEN;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class YoutubeServiceTest {

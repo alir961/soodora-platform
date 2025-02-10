@@ -5,7 +5,7 @@ import com.grooveconductor.service.artist.UnknownArtistException;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.event.CreateEventRequest;
 import com.grooveconductor.service.event.EventService;
-import jakarta.inject.Inject;
+
 import org.hamcrest.core.StringStartsWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,8 +13,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.grooveconductor.api.JsonStringify.asJsonString;
-import static com.grooveconductor.test.TestConstants.*;
+import jakarta.inject.Inject;
+
 import static java.time.LocalDateTime.now;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -27,6 +27,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.test.TestConstants.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -54,9 +57,9 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(VALID_REQUEST))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isCreated());
         verify(eventService)
                 .createEvent(any(), eq(USER));
@@ -76,9 +79,9 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(invalidRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(invalidRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string(new StringStartsWith("Event type must be one of")));
         verify(eventService, never())
@@ -99,9 +102,9 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(invalidRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(invalidRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$").value("Title cannot be null or blank"));
         verify(eventService, never())
@@ -112,8 +115,8 @@ class EventControllerIT {
     void givenUnauthorizedRequest_whenCreateEvent_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(post("/artists/events")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(VALID_REQUEST)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST)))
                 .andExpect(status().isForbidden());
     }
 
@@ -124,8 +127,8 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events")
-                        .queryParam("artistSlug", ARTIST.slug())
-                        .with(user(new UserPrincipal(USER))))
+                .queryParam("artistSlug", ARTIST.slug())
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].slug").value(EVENT.slug()));
@@ -138,8 +141,8 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events")
-                        .queryParam("artistSlug", ARTIST.slug())
-                        .with(user(new UserPrincipal(USER))))
+                .queryParam("artistSlug", ARTIST.slug())
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -150,8 +153,8 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events")
-                        .queryParam("artistSlug", "invalidSlug")
-                        .with(user(new UserPrincipal(USER))))
+                .queryParam("artistSlug", "invalidSlug")
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -159,7 +162,7 @@ class EventControllerIT {
     void givenUnauthorizedRequest_whenGetEvents_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/artists/events")
-                        .queryParam("artistSlug", ARTIST.slug()))
+                .queryParam("artistSlug", ARTIST.slug()))
                 .andExpect(status().isForbidden());
     }
 
@@ -170,7 +173,7 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events/:me")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].slug").value(EVENT.slug()));
@@ -183,8 +186,8 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events/:me")
-                        .queryParam("artistSlug", ARTIST.slug())
-                        .with(user(new UserPrincipal(USER))))
+                .queryParam("artistSlug", ARTIST.slug())
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -195,7 +198,7 @@ class EventControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/events/:me")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 
@@ -203,7 +206,7 @@ class EventControllerIT {
     void givenUnauthorizedRequest_whenGetAuthenticatedArtistEvents_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/artists/events/:me")
-                        .queryParam("artistSlug", ARTIST.slug()))
+                .queryParam("artistSlug", ARTIST.slug()))
                 .andExpect(status().isForbidden());
     }
 

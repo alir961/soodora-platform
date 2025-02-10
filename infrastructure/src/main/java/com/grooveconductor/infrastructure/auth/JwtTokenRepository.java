@@ -3,17 +3,20 @@ package com.grooveconductor.infrastructure.auth;
 import com.grooveconductor.domain.auth.AuthenticationTokenException;
 import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Repository;
 
-import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+
+import javax.crypto.SecretKey;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Repository;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 
 import static io.jsonwebtoken.Claims.*;
 import static io.jsonwebtoken.Jwts.builder;

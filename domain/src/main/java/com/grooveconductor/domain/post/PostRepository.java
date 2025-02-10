@@ -6,9 +6,9 @@ import java.util.List;
 
 public interface PostRepository {
 
-  PostDTO save(CreatePostCommand command, UserDTO user);
-  PostDTO find(String slug);
-  List<PostDTO> findAll();
-  void delete(String slug);
+    PostDTO save(CreatePostCommand command, UserDTO user);
+    PostDTO find(String slug);
+    List<PostDTO> findAll();
+    void delete(String slug);
 
 }

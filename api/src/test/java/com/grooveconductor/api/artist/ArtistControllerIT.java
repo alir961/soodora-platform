@@ -7,6 +7,9 @@ import com.grooveconductor.service.artist.CreateArtistRequest;
 import com.grooveconductor.service.artist.UnknownArtistException;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,11 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static com.grooveconductor.api.JsonStringify.asJsonString;
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.ArtistFactory.buildArtistDTO;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,6 +29,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.ArtistFactory.buildArtistDTO;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,9 +59,9 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(VALID_REQUEST))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
@@ -72,9 +74,9 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(INVALID_REQUEST))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(INVALID_REQUEST))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -85,9 +87,9 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(VALID_REQUEST))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -98,8 +100,8 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(VALID_REQUEST)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST)))
                 .andExpect(status().isForbidden());
     }
 
@@ -110,7 +112,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -121,7 +123,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)));
     }
@@ -140,7 +142,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/" + ARTIST_A.slug())
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").value(ARTIST_A.name()));
     }
@@ -152,7 +154,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/invalid")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -170,7 +172,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/:me")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("name").value(ARTIST_A.name()));
     }
@@ -182,7 +184,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/:me")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 

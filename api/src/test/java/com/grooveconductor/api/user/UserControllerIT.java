@@ -9,6 +9,7 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -16,11 +17,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.grooveconductor.api.JsonStringify.asJsonString;
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
@@ -29,6 +25,12 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -55,7 +57,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].slug").value("slug1"))
@@ -71,7 +73,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNoContent());
     }
 
@@ -92,7 +94,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users/slug1")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("slug1"))
                 .andExpect(jsonPath("$.username").value("username1"))
@@ -108,7 +110,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/users/unknown")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -131,9 +133,9 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(put("/users/" + USER_1.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(updateUserRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -148,9 +150,9 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(put("/users/" + USER_1.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(updateUserRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid Request"));
     }
@@ -165,7 +167,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/slug1")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(userService).deleteUser(identifier);
     }
@@ -178,7 +180,7 @@ class UserControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/users/unknown")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
 

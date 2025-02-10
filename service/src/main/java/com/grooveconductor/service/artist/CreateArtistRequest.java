@@ -3,6 +3,7 @@ package com.grooveconductor.service.artist;
 import com.grooveconductor.domain.artist.CreateArtistCommand;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public record CreateArtistRequest(
@@ -10,7 +11,7 @@ public record CreateArtistRequest(
         @Schema(description = "Description of the artist", example = "Welcome to my musical world!") String description,
         @Schema(description = "Image URL of the artist", example = "https://artist.com/image.jpg") String imageUrl)
         implements
-        Request<CreateArtistCommand> {
+            Request<CreateArtistCommand> {
 
     @Override
     public CreateArtistCommand toCommand() throws InvalidRequestException {

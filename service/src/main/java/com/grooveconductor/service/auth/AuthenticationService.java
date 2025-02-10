@@ -10,11 +10,13 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UserUnityException;
-import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 

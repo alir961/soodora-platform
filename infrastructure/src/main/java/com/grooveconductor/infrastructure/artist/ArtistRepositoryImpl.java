@@ -11,10 +11,12 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 

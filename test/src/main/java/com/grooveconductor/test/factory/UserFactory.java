@@ -1,6 +1,7 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.user.UserDTO;
+
 import lombok.NoArgsConstructor;
 
 import static java.util.Collections.emptySet;

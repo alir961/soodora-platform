@@ -8,10 +8,12 @@ import com.grooveconductor.domain.user.UnknownIdentifierException;
 import com.grooveconductor.infrastructure.artist.ArtistEntity;
 import com.grooveconductor.infrastructure.artist.ArtistJpaRepository;
 import com.grooveconductor.infrastructure.common.DomainEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 

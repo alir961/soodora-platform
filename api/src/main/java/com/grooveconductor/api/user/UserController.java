@@ -8,16 +8,20 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import lombok.RequiredArgsConstructor;
+
 import static org.springframework.http.HttpStatus.*;
+
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 
 @RestController
 @RequestMapping("/users")

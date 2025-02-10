@@ -1,6 +1,7 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.artist.ArtistDTO;
+
 import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PRIVATE;

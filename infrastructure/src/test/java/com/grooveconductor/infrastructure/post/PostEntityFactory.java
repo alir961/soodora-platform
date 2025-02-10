@@ -9,15 +9,15 @@ import static java.util.UUID.randomUUID;
 
 public class PostEntityFactory extends PostFactory {
 
-  public static PostEntity buildDefaultPostEntity(UserEntity user) {
-    return new PostEntity(
-        randomUUID(),
-        "slug",
-        "Post 1",
-        "Content",
-        user,
-        new Date(),
-        new Date());
-  }
+    public static PostEntity buildDefaultPostEntity(UserEntity user) {
+        return new PostEntity(
+                randomUUID(),
+                "slug",
+                "Post 1",
+                "Content",
+                user,
+                new Date(),
+                new Date());
+    }
 
 }

@@ -7,15 +7,18 @@ import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.infrastructure.common.DomainEntity;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
-import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
+import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
+
 import static java.util.Optional.ofNullable;
+
+import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor
@@ -112,8 +115,8 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public List<PostDTO> retrievePosts(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPosts().stream()
-            .map(DomainEntity::toDTO)
-            .toList();
+                .map(DomainEntity::toDTO)
+                .toList();
     }
 
     private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {

@@ -2,12 +2,14 @@ package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.youtube.YoutubeChannelDTO;
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
-import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
+import lombok.NoArgsConstructor;
+
 import static lombok.AccessLevel.PROTECTED;
+
+import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 
 @NoArgsConstructor(access = PROTECTED)
 public class YoutubeFactory {
