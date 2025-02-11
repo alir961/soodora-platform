@@ -1,9 +1,10 @@
 package com.grooveconductor.service.oauth;
 
 import com.grooveconductor.domain.oauth.RefreshableAuthorization;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.URI;
+
+import org.springframework.web.client.HttpClientErrorException;
 
 public interface OAuthFacade {
 

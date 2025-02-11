@@ -7,6 +7,9 @@ import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.google.GoogleFacade;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 import com.grooveconductor.service.user.UserService;
+
+import java.net.URI;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.net.URI;
-
-import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.test.TestConstants.*;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -27,6 +25,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.test.TestConstants.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -65,7 +67,7 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
-                        .param("token", JWT_TOKEN))
+                .param("token", JWT_TOKEN))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", is(REDIRECT_URL)));
     }
@@ -78,7 +80,7 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
-                        .param("token", INVALID_TOKEN))
+                .param("token", INVALID_TOKEN))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -91,9 +93,9 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
-                        .param("code", "code")
-                        .param("state", JWT_TOKEN)
-                        .with(user(new UserPrincipal(USER))))
+                .param("code", "code")
+                .param("state", JWT_TOKEN)
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", not(containsString("error=oauth"))));
         verify(oauthTokenService)
@@ -108,8 +110,8 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
-                        .param("code", "code")
-                        .param("state", INVALID_TOKEN))
+                .param("code", "code")
+                .param("state", INVALID_TOKEN))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", containsString("error=oauth")));
     }
@@ -123,7 +125,7 @@ class GoogleOAuthControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/auth/google")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(oauthTokenService)
                 .deleteUserAuthorization(eq(GOOGLE), eq(USER));

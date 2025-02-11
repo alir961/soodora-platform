@@ -3,6 +3,9 @@ package com.grooveconductor.service.playlist;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.*;
 import com.grooveconductor.domain.user.UserRepository;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,17 +13,16 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.PlaylistFactory.buildDefaultPlaylist;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
+import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.PlaylistFactory.buildDefaultPlaylist;
 
 @ExtendWith(MockitoExtension.class)
 class PlaylistServiceTest {

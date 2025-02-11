@@ -14,16 +14,16 @@ public record CreateProductRequest(
 
     @Override
     public CreateProductCommand toCommand() {
-        if (name == null)
+        if (name == null || name.isEmpty())
             throw new InvalidRequestException("Name is not valid");
-        if (description == null)
+        if (description == null || description.isEmpty())
             throw new InvalidRequestException("Description is not valid");
         if (price == 0)
             throw new InvalidRequestException("Price is not valid");
         if (quantity == 0)
             throw new InvalidRequestException("Quantity is not valid");
 
-        return new CreateProductCommand(name, description, imageUrl, category, price, quantity);
+        return new CreateProductCommand(name.trim(), description.trim(), imageUrl, category, price, quantity);
     }
 
 }

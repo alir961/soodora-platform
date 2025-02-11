@@ -3,6 +3,7 @@ package com.grooveconductor.domain.user;
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 
 import java.util.List;
@@ -20,5 +21,6 @@ public interface UserRepository {
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
     List<ProductDTO> retrieveProducts(Identifier identifier);
     List<PlaylistDTO> retrievePlaylists(Identifier identifier);
+    List<PostDTO> retrievePosts(Identifier identifier);
 
 }

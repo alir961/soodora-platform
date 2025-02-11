@@ -5,8 +5,9 @@ import com.grooveconductor.test.factory.PlaylistFactory;
 
 import java.util.Date;
 
-import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static java.util.UUID.randomUUID;
+
+import static com.grooveconductor.domain.playlist.PlaylistPrivacy.PUBLIC;
 
 public class PlaylistEntityFactory extends PlaylistFactory {
 

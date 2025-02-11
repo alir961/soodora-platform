@@ -4,10 +4,11 @@ import com.grooveconductor.domain.event.CreateEventCommand;
 import com.grooveconductor.domain.event.EventType;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public record CreateEventRequest(
         @Schema(description = "Type of the event", example = "DANCE_MUSIC", defaultValue = "DANCE_MUSIC") String type,
@@ -18,7 +19,7 @@ public record CreateEventRequest(
         @Schema(description = "Address where the event takes place", example = "123 Groove Street", defaultValue = "Unknown Location") String address,
         @Schema(description = "Date and time of the event", example = "2025-01-15T20:00:00", defaultValue = "2025-01-01T00:00:00") LocalDateTime dateTime)
         implements
-        Request<CreateEventCommand> {
+            Request<CreateEventCommand> {
 
     @Override
     public CreateEventCommand toCommand() throws InvalidRequestException {

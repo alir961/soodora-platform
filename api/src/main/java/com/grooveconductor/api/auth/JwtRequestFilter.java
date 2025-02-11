@@ -4,22 +4,25 @@ import com.grooveconductor.domain.auth.TokenRepository;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.UserPrincipal;
+
+import java.io.IOException;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static java.util.Collections.emptyList;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
+
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 
 @Slf4j
 @Component

@@ -2,17 +2,19 @@ package com.grooveconductor.service.google;
 
 import com.grooveconductor.domain.oauth.RefreshableAuthorization;
 import com.grooveconductor.service.oauth.OAuthFlowException;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Map;
 
-import static com.grooveconductor.service.google.GoogleFacade.TOKEN_URL;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+
 import static java.net.URLEncoder.encode;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 import static org.springframework.web.client.RestClient.create;
+
+import static com.grooveconductor.service.google.GoogleFacade.TOKEN_URL;
 
 @Component
 public class GoogleFeignClient {

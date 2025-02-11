@@ -4,12 +4,14 @@ import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.event.EventDTO;
 import com.grooveconductor.domain.oauth.RefreshableAuthorization;
 import com.grooveconductor.domain.user.UserDTO;
+
 import lombok.NoArgsConstructor;
+
+import static lombok.AccessLevel.PRIVATE;
 
 import static com.grooveconductor.test.factory.ArtistFactory.buildArtistDTO;
 import static com.grooveconductor.test.factory.EventFactory.buildEventDTO;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
-import static lombok.AccessLevel.PRIVATE;
 
 @NoArgsConstructor(access = PRIVATE)
 public class TestConstants {

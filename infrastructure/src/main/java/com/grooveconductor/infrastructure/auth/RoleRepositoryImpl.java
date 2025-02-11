@@ -2,8 +2,10 @@ package com.grooveconductor.infrastructure.auth;
 
 import com.grooveconductor.domain.auth.RoleDTO;
 import com.grooveconductor.domain.auth.RoleRepository;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.stereotype.Repository;
+
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor

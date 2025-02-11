@@ -5,10 +5,12 @@ import com.grooveconductor.domain.product.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 

@@ -7,6 +7,7 @@ import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.CreateProductRequest;
 import com.grooveconductor.service.product.ProductService;
 import com.grooveconductor.service.product.UpdateProductRequest;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,9 +15,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static com.grooveconductor.api.JsonStringify.asJsonString;
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.ProductFactory.buildDefaultProduct;
 import static java.util.Collections.singletonList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -25,6 +23,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.ProductFactory.buildDefaultProduct;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -57,9 +59,9 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                        .with(user(new UserPrincipal(USER)))
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(request)))
+                .with(user(new UserPrincipal(USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(request)))
                 .andExpect(status().isCreated());
     }
 
@@ -80,9 +82,9 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                        .with(user(new UserPrincipal(USER)))
-                        .contentType(APPLICATION_JSON)
-                        .content(asJsonString(request)))
+                .with(user(new UserPrincipal(USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(request)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -102,7 +104,7 @@ class ProductControllerIT {
         when(productService.retrieveProduct("product-slug")).thenReturn(A_PRODUCT);
 
         mockMvc.perform(get("/products/product-slug")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
@@ -121,9 +123,9 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(put("/products/productSlug1")
-                        .contentType("application/json")
-                        .content(asJsonString(updateProductRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType("application/json")
+                .content(asJsonString(updateProductRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
@@ -143,9 +145,9 @@ class ProductControllerIT {
                 .when(productService).updateProduct(any(), eq("productSlug1"));
 
         mockMvc.perform(put("/products/productSlug1")
-                        .contentType("application/json")
-                        .content(asJsonString(updateProductRequest))
-                        .with(user(new UserPrincipal(USER))))
+                .contentType("application/json")
+                .content(asJsonString(updateProductRequest))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
@@ -158,7 +160,7 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(delete("/products/product-slug")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(productService).deleteProductBySlug("product-slug");
     }

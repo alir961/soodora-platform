@@ -3,14 +3,16 @@ package com.grooveconductor.service.user;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.service.auth.UserPrincipal;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;

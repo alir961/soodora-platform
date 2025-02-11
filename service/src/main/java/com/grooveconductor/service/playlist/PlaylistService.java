@@ -4,10 +4,12 @@ import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.playlist.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 

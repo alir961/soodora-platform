@@ -4,6 +4,9 @@ import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.*;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
+
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,13 +14,12 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.ProductFactory.buildProduct;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.ProductFactory.buildProduct;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {

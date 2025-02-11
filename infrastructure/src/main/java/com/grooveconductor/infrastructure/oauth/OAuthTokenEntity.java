@@ -2,13 +2,14 @@ package com.grooveconductor.infrastructure.oauth;
 
 import com.grooveconductor.domain.oauth.OAuthProvider;
 import com.grooveconductor.infrastructure.user.UserEntity;
+
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.UUID;
 
 import static java.util.UUID.randomUUID;
 

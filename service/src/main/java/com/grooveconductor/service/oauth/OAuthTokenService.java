@@ -8,12 +8,14 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.AuthenticationException;
 import com.grooveconductor.service.google.GoogleFacade;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 

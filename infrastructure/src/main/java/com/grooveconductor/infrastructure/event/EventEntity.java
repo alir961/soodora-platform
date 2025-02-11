@@ -4,15 +4,16 @@ import com.grooveconductor.domain.event.EventDTO;
 import com.grooveconductor.domain.event.EventType;
 import com.grooveconductor.infrastructure.artist.ArtistEntity;
 import com.grooveconductor.infrastructure.common.DomainEntity;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import static jakarta.persistence.EnumType.STRING;
 import static java.util.UUID.randomUUID;

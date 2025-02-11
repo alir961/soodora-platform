@@ -1,10 +1,12 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.product.ProductDTO;
+
 import lombok.NoArgsConstructor;
 
-import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 import static lombok.AccessLevel.PROTECTED;
+
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class ProductFactory {

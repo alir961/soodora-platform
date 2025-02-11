@@ -8,14 +8,17 @@ import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.*;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import lombok.RequiredArgsConstructor;
 
 import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
@@ -57,7 +60,7 @@ public class ProductController {
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{slug}")
     public ResponseEntity<JsonResponse> updateProduct(@PathVariable String slug,
-                                                      @RequestBody UpdateProductRequest request) {
+            @RequestBody UpdateProductRequest request) {
         try {
             UpdateProductCommand command = request.toCommand();
 

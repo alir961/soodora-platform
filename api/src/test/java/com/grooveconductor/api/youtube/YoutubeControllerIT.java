@@ -4,6 +4,9 @@ import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.domain.youtube.YoutubePlaylistDTO;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.youtube.YoutubeService;
+
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,17 +14,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.List;
-
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
-import static com.grooveconductor.test.TestConstants.USER;
-import static com.grooveconductor.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -49,7 +51,7 @@ class YoutubeControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/youtube/playlists")
-                        .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].id").value("1"))

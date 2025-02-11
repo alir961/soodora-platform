@@ -4,9 +4,10 @@ import com.grooveconductor.domain.playlist.CreatePlaylistCommand;
 import com.grooveconductor.domain.playlist.PlaylistPrivacy;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.stream.Stream;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static java.util.stream.Collectors.joining;
 
@@ -23,15 +24,15 @@ public record CreatePlaylistRequest(
 
     @Override
     public CreatePlaylistCommand toCommand() {
-        if (name == null)
+        if (name == null || name.isEmpty())
             throw new InvalidRequestException("Name is not valid");
-        if (description == null)
+        if (description == null || description.isEmpty())
             throw new InvalidRequestException("Description is not valid");
         if (privacy == null || !isValidPrivacyState(privacy))
             throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
         PlaylistPrivacy privacyState = PlaylistPrivacy.valueOf(privacy.toUpperCase());
 
-        return new CreatePlaylistCommand(name, description, numberOfTracks, privacyState, imageUrl);
+        return new CreatePlaylistCommand(name.trim(), description.trim(), numberOfTracks, privacyState, imageUrl);
     }
 
     private boolean isValidPrivacyState(String state) {

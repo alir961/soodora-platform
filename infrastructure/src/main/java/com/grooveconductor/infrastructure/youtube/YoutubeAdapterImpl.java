@@ -1,5 +1,14 @@
 package com.grooveconductor.infrastructure.youtube;
 
+import com.grooveconductor.domain.playlist.PlaylistPrivacy;
+import com.grooveconductor.domain.youtube.*;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.stereotype.Component;
+
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
@@ -7,13 +16,6 @@ import com.google.api.services.youtube.model.Playlist;
 import com.google.api.services.youtube.model.PlaylistItem;
 import com.google.api.services.youtube.model.PlaylistItemSnippet;
 import com.google.api.services.youtube.model.PlaylistSnippet;
-import com.grooveconductor.domain.playlist.PlaylistPrivacy;
-import com.grooveconductor.domain.youtube.*;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
 
 import static com.grooveconductor.domain.playlist.PlaylistPrivacy.*;
 
