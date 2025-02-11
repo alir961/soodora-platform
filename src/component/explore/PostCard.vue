@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { IonCard, IonButton, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonCardSubtitle, IonImg } from '@ionic/vue';
+import {
+   IonCard,
+   IonButton,
+   IonCardContent,
+   IonCardHeader,
+   IonCardTitle,
+   IonCol,
+   IonCardSubtitle,
+   IonImg,
+} from '@ionic/vue';
 import { PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
 
@@ -9,12 +18,6 @@ defineProps({
     type: Object as PropType<Post>,
   },
 });
-
-const formatDuration = (duration: number): string => {
-  const minutes = Math.floor(duration / 60);
-  const seconds = duration % 60;
-  return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-};
 
 const playAudio = (audio: Post) => {
   const audioElement = document.createElement('audio');
@@ -34,7 +37,7 @@ const focusPost = (post: Post) => {
     <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
       <ion-card-header>
         <div>
-          <ion-card-title class="header-title" >{{ post.owner.username }}</ion-card-title>
+          <ion-card-title class="header-title">{{ post.owner.username }}</ion-card-title>
           <ion-card-subtitle>{{ post.type.replace(/_/g, ' ') }}</ion-card-subtitle>
         </div>
       </ion-card-header>
@@ -54,7 +57,6 @@ const focusPost = (post: Post) => {
 </template>
 
 <style scoped>
-
 .focused {
   border: 0.2em solid #3880ff;
   transform: scale(1.05);
@@ -75,5 +77,4 @@ audio {
   width: 100%;
   margin-top: 10px;
 }
-
 </style>
