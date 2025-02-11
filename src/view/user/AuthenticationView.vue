@@ -6,6 +6,7 @@ import { callLogin, callRegister, RegisterRequest } from '@/client/authenticatio
 import { Router, useRouter } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const email: Ref<string> = ref('');
 const password: Ref<string> = ref('');
@@ -15,6 +16,7 @@ const lastname: Ref<string> = ref('');
 const isLogin: Ref<boolean> = ref(true);
 const isLogged: Ref<boolean> = ref(false);
 const router: Router = useRouter();
+const authStore = useAuthStore();
 
 const login = async () => {
   try {
@@ -22,8 +24,8 @@ const login = async () => {
 
     await saveBearerToken(token);
     await router.push('/explore');
+    authStore.setAuthenticated(true);
     isLogged.value = true;
-    location.reload();
   } catch (error) {
     const toast = await toastController.create({
       message: 'Login Failed!',
