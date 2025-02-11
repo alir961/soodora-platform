@@ -1,5 +1,6 @@
 package com.grooveconductor.infrastructure.post;
 
+import com.grooveconductor.domain.post.PostType;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.test.factory.PostFactory;
 
@@ -15,6 +16,9 @@ public class PostEntityFactory extends PostFactory {
                 "slug",
                 "Post 1",
                 "Content",
+                "imageUrl",
+                "audioUrl",
+                PostType.ANNOUNCE,
                 user,
                 new Date(),
                 new Date());

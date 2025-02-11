@@ -46,7 +46,8 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostDTO> getPlaylists(@RequestParam(value = "userSlug", required = false) String userSlug) {
+    public List<PostDTO> getPosts(
+        @RequestParam(value = "userSlug", required = false) String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug));
 
         return postService.retrievePosts(filter);
@@ -54,7 +55,7 @@ public class PostController {
 
     @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{slug}")
-    public PostDTO getPlaylist(@PathVariable String slug) {
+    public PostDTO getPost(@PathVariable String slug) {
         return postService.retrievePostBySlug(slug);
     }
 

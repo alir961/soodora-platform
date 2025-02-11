@@ -1,10 +1,7 @@
 package com.grooveconductor.service.post;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.post.CreatePostCommand;
-import com.grooveconductor.domain.post.PostDTO;
-import com.grooveconductor.domain.post.PostFilter;
-import com.grooveconductor.domain.post.PostRepository;
+import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserRepository;
 
 import java.util.List;
@@ -50,7 +47,7 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content");
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl", PostType.ANNOUNCE);
 
         when(postRepository.save(any(), eq(USER))).thenReturn(POST_1);
 

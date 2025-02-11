@@ -6,6 +6,9 @@ public record PostDTO(
         String slug,
         String title,
         String content,
+        String imageUrl,
+        String audioUrl,
+        PostType type,
         UserDTO owner) {
 
 }

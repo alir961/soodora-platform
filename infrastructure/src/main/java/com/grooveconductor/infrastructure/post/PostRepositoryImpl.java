@@ -38,6 +38,9 @@ public class PostRepositoryImpl implements PostRepository {
 
         entity.setTitle(command.title());
         entity.setContent(command.content());
+        entity.setImageUrl(command.imageUrl());
+        entity.setAudioUrl(command.audioUrl());
+        entity.setType(command.type());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();

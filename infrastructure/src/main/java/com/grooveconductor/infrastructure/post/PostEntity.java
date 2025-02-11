@@ -1,6 +1,7 @@
 package com.grooveconductor.infrastructure.post;
 
 import com.grooveconductor.domain.post.PostDTO;
+import com.grooveconductor.domain.post.PostType;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 
@@ -38,6 +39,15 @@ public class PostEntity implements DomainEntity<PostDTO> {
     @Column(length = 5000)
     private String content;
 
+    @Column(length = 5000)
+    private String imageUrl;
+
+    @Column(length = 5000)
+    private String audioUrl;
+
+    @Column
+    private PostType type;
+
     @ManyToOne
     @JoinColumn
     private UserEntity user;
@@ -56,6 +66,9 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 slug,
                 title,
                 content,
+                imageUrl,
+                audioUrl,
+                type,
                 user.toDTO());
     }
 
