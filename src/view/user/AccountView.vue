@@ -1,21 +1,23 @@
 <script setup lang="ts">
 import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
-import { deleteBearerToken, deleteUserData, loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
+import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
-import { redirectLogin } from '@/utils';
+import { redirectExplore } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import { logOutOutline } from 'ionicons/icons';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
 const router: Router = useRouter();
 const userData: Ref<User | null> = ref(null);
 const linkedProviders: Ref<OAuthProvider[]> = ref([]);
 const providers: OAuthProvider[] = ['google'];
+const authStore = useAuthStore();
 
 const fetchUserData = async () => {
   try {
@@ -29,25 +31,21 @@ const fetchUserData = async () => {
 const logout = async () => {
   await deleteBearerToken();
   await deleteUserData();
-  await redirectLogin(router);
+  authStore.setAuthenticated(false);
+  await redirectExplore(router);
 };
 
 onIonViewWillEnter(async () => {
-  const userStatus = await loadUserStatus();
+  if (route.query.error === 'oauth') {
+    const toast = await toastController.create({
+      message: 'Unable to connect to OAuth provider!',
+      duration: 1500,
+      position: 'top',
+    });
 
-  if (userStatus === UNAUTHENTICATED) {
-    await redirectLogin(router);
-  } else {
-    if (route.query.error === 'oauth') {
-      const toast = await toastController.create({
-        message: 'Unable to connect to OAuth provider!',
-        duration: 1500,
-        position: 'top',
-      });
-      await toast.present();
-    }
-    await fetchUserData();
+    await toast.present();
   }
+  await fetchUserData();
 });
 </script>
 

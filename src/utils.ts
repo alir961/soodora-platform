@@ -13,6 +13,10 @@ async function redirectLogin(router: Router) {
   await router.push('/auth' + retrieveCallbackURL());
 }
 
+async function redirectExplore(router: Router) {
+  await router.push('/explore' + retrieveCallbackURL());
+}
+
 function capitalize(value: string): string {
   if (value.length < 1) return value;
   return value[0].toUpperCase() + value.slice(1).toLowerCase();
@@ -29,4 +33,4 @@ async function getAuthenticatedUser(): Promise<User> {
   }
 }
 
-export { reject, redirectLogin, capitalize, getAuthenticatedUser };
+export { reject, redirectLogin, capitalize, getAuthenticatedUser, redirectExplore };

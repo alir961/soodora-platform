@@ -2,8 +2,8 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, planetOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
-import { AUTHENTICATED, loadUserStatus } from '@/store/localStorage';
-import { computed, onMounted, ref } from 'vue';
+import { useAuthStore } from '@/store/reactiveStorage';
+import { computed } from 'vue';
 
 interface TabEntry {
   name: string;
@@ -11,23 +11,29 @@ interface TabEntry {
   requiresAuth: boolean;
 }
 
+const authStore = useAuthStore();
+
 const tabs: TabEntry[] = [
   { name: 'explore', icon: planetOutline, requiresAuth: false },
   { name: 'marketplace', icon: cartOutline, requiresAuth: false },
-  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: true },
-  { name: 'account', icon: personOutline, requiresAuth: false },
+  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: false },
+  { name: 'authentication', icon: personOutline, requiresAuth: false },
+  { name: 'account', icon: personOutline, requiresAuth: true },
 ];
 
-const userStatus = ref<string>('');
-
-onMounted(async () => {
-  userStatus.value = await loadUserStatus();
-});
+const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 
 const filteredTabs = computed(() => {
-  return tabs.filter((tab) => !tab.requiresAuth || userStatus.value === AUTHENTICATED);
+  return tabs.filter((tab) => {
+    if (tab.name === 'authentication') {
+      return !authStore.isAuthenticated;
+    }
+    if (tab.requiresAuth) {
+      return authStore.isAuthenticated;
+    }
+    return true;
+  });
 });
-const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 </script>
 
 <template>

@@ -19,12 +19,13 @@ import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { uploadMp3 } from '@/client/exploreMP3Client';
 import AudioCard from '@/component/explore/AudioCard.vue';
-import { loadUserStatus, UNAUTHENTICATED } from '@/store/localStorage';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);
 const uploadedAudios: Ref<{ title: string; genre: string; imageUrl: string; fileUrl: string; duration: number }[]> =
   ref([]);
+const authStore = useAuthStore();
 
 const newMp3 = reactive({
   title: '',
@@ -34,13 +35,12 @@ const newMp3 = reactive({
 });
 
 const fetchUserData = async () => {
-  const status = await loadUserStatus();
-  if (status.includes(UNAUTHENTICATED)) return;
-
-  try {
-    userData.value = await retrieveAuthenticatedProfile();
-  } catch (error) {
-    console.error('Failed to fetch user data:', error);
+  if (authStore.isAuthenticated) {
+    try {
+      userData.value = await retrieveAuthenticatedProfile();
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
   }
 };
 
