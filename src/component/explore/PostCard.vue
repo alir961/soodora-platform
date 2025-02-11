@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import {
-   IonCard,
-   IonButton,
-   IonCardContent,
-   IonCardHeader,
-   IonCardTitle,
-   IonCol,
-   IonCardSubtitle,
-   IonImg,
+  IonCard,
+  IonButton,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonCol,
+  IonCardSubtitle,
+  IonImg,
 } from '@ionic/vue';
 import { PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
