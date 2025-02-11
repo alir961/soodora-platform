@@ -4,6 +4,8 @@ import { deleteUserData } from '@/store/localStorage';
 import { checkStatus } from '@/client/authenticationClient';
 import { getAuthenticatedUser } from '@/utils';
 import { onMounted } from 'vue';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const props = defineProps({
   title: {
@@ -14,6 +16,7 @@ const props = defineProps({
   offline: Boolean,
   fullscreen: Boolean,
 });
+const authStore = useAuthStore();
 
 onMounted(async () => {
   try {
@@ -22,6 +25,11 @@ onMounted(async () => {
       await deleteUserData();
       await getAuthenticatedUser();
     }
+    await retrieveAuthenticatedProfile()
+      .then(() => {
+        authStore.authenticated = true;
+      })
+      .catch(() => console.log('Unauthenticated!'));
   } catch (error) {
     console.error(error);
   }
