@@ -54,6 +54,7 @@ public class WebSecurityConfiguration {
                                 "/swagger-resources/**")
                         .permitAll()
                         .requestMatchers(GET, "/products").permitAll()
+                        .requestMatchers(GET, "/posts").permitAll()
                         .requestMatchers("/auth/google").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)

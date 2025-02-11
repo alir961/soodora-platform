@@ -27,12 +27,12 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/posts")
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Post Controller")
 public class PostController {
 
     private final PostService postService;
 
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<JsonResponse> createPost(
             @AuthenticationPrincipal UserDTO user,
@@ -52,11 +52,13 @@ public class PostController {
         return postService.retrievePosts(filter);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/{slug}")
     public PostDTO getPlaylist(@PathVariable String slug) {
         return postService.retrievePostBySlug(slug);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
         postService.deletePostBySlug(slug);
