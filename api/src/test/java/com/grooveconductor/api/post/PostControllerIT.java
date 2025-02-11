@@ -55,10 +55,10 @@ public class PostControllerIT {
         // GIVEN
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "Post 1",
-            "Content",
-            "imageUrl",
-            "audioUrl",
-            "announce");
+                "Content",
+                "imageUrl",
+                "audioUrl",
+                "announce");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
@@ -75,10 +75,10 @@ public class PostControllerIT {
         // GIVEN
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "",
-            "Description",
-            "imageUrl",
-            "audioUrl",
-            "announce");
+                "Description",
+                "imageUrl",
+                "audioUrl",
+                "announce");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)

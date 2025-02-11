@@ -1,8 +1,8 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.post.PostDTO;
-
 import com.grooveconductor.domain.post.PostType;
+
 import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;

@@ -4,9 +4,10 @@ import com.grooveconductor.domain.post.CreatePostCommand;
 import com.grooveconductor.domain.post.PostType;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.common.Request;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.stream.Stream;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import static java.util.stream.Collectors.joining;
 
@@ -15,12 +16,13 @@ public record CreatePostRequest(
         String content,
         String imageUrl,
         String audioUrl,
-        @Schema(description = "Post Type in the following format: ANNOUNCE, MERCH_DROP, NEW_EVENT", example = "ANNOUNCE") String type
-        ) implements Request<CreatePostCommand> {
+        @Schema(description = "Post Type in the following format: ANNOUNCE, MERCH_DROP, NEW_EVENT", example = "ANNOUNCE") String type)
+        implements
+            Request<CreatePostCommand> {
 
     static String typeValues = Stream.of(PostType.values())
-        .map(Enum::toString)
-        .collect(joining(", "));
+            .map(Enum::toString)
+            .collect(joining(", "));
 
     @Override
     public CreatePostCommand toCommand() {

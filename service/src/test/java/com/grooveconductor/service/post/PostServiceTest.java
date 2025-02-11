@@ -47,7 +47,8 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl", PostType.ANNOUNCE);
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl",
+                PostType.ANNOUNCE);
 
         when(postRepository.save(any(), eq(USER))).thenReturn(POST_1);
 

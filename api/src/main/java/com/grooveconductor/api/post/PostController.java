@@ -47,7 +47,7 @@ public class PostController {
 
     @GetMapping
     public List<PostDTO> getPosts(
-        @RequestParam(value = "userSlug", required = false) String userSlug) {
+            @RequestParam(value = "userSlug", required = false) String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug));
 
         return postService.retrievePosts(filter);
