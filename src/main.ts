@@ -34,8 +34,10 @@ import '@ionic/vue/css/palettes/dark.system.css';
 import './theme/variables.css';
 import { configureAxios } from '@/axiosConfiguration';
 import { addIcons } from 'ionicons';
+import { createPinia } from 'pinia';
 
 const app = createApp(App).use(IonicVue).use(router);
+const pinia = createPinia();
 
 addIcons({
   'logo-spotify': 'icons/spotify.svg',
@@ -43,5 +45,6 @@ addIcons({
 configureAxios();
 
 router.isReady().then(() => {
+  app.use(pinia);
   app.mount('#app');
 });

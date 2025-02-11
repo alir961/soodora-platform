@@ -2,12 +2,16 @@
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
 import { cartOutline, planetOutline, musicalNotesOutline, personOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
+import { useAuthStore } from '@/store/reactiveStorage';
+import { computed } from 'vue';
 
 interface TabEntry {
   name: string;
   icon: string;
   requiresAuth: boolean;
 }
+
+const authStore = useAuthStore();
 
 const tabs: TabEntry[] = [
   { name: 'explore', icon: planetOutline, requiresAuth: false },
@@ -18,6 +22,18 @@ const tabs: TabEntry[] = [
 ];
 
 const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
+
+const filteredTabs = computed(() => {
+  return tabs.filter((tab) => {
+    if (tab.name === 'authentication') {
+      return !authStore.isAuthenticated;
+    }
+    if (tab.requiresAuth) {
+      return authStore.isAuthenticated;
+    }
+    return true;
+  });
+});
 </script>
 
 <template>
@@ -26,7 +42,7 @@ const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
       <ion-router-outlet />
 
       <ion-tab-bar v-if="!fullscreenRoutes.includes($route.path)" slot="bottom">
-        <ion-tab-button v-for="tab in tabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
+        <ion-tab-button v-for="tab in filteredTabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
           <ion-icon :icon="tab.icon" />
           <ion-label>{{ capitalize(tab.name) }}</ion-label>
         </ion-tab-button>

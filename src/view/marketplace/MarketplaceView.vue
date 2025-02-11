@@ -21,6 +21,7 @@ import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -33,6 +34,7 @@ const newProduct: Reactive<CreateProductRequest> = reactive({
   price: 0,
   quantity: 1,
 });
+const authStore = useAuthStore();
 
 const loadProducts = async () => {
   try {
@@ -57,10 +59,12 @@ onIonViewWillEnter(async () => {
 });
 
 const fetchUserData = async () => {
-  try {
-    userData.value = await retrieveAuthenticatedProfile();
-  } catch (error) {
-    console.error('Failed to fetch user data:', error);
+  if (authStore.isAuthenticated) {
+    try {
+      userData.value = await retrieveAuthenticatedProfile();
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+    }
   }
 };
 

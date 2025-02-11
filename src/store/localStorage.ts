@@ -45,11 +45,4 @@ async function deleteUserData(): Promise<void> {
   return Preferences.remove({ key: USER_DATA_KEY });
 }
 
-export {
-  saveBearerToken,
-  deleteBearerToken,
-  loadBearerToken,
-  saveUserData,
-  loadUserData,
-  deleteUserData,
-};
+export { saveBearerToken, deleteBearerToken, loadBearerToken, saveUserData, loadUserData, deleteUserData };

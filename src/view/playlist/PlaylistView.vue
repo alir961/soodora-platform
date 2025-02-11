@@ -28,6 +28,7 @@ import { Playlist } from '@/entity/Playlist';
 import { getAuthenticatedUser, reject } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -38,6 +39,7 @@ const newPlaylist: Ref<PlaylistCreateRequest> = ref({
   numberOfTracks: 0,
   privacy: 'PUBLIC',
 });
+const authStore = useAuthStore();
 
 const loadPlaylists = async () => {
   try {
@@ -83,7 +85,7 @@ const FetchYoutubePlaylist = async () => {
 };
 
 onIonViewWillEnter(async () => {
-  await loadPlaylists();
+  if (authStore.isAuthenticated) await loadPlaylists();
 });
 </script>
 

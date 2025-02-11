@@ -10,12 +10,14 @@ import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProvide
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import { logOutOutline } from 'ionicons/icons';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
 const router: Router = useRouter();
 const userData: Ref<User | null> = ref(null);
 const linkedProviders: Ref<OAuthProvider[]> = ref([]);
 const providers: OAuthProvider[] = ['google'];
+const authStore = useAuthStore();
 
 const fetchUserData = async () => {
   try {
@@ -29,6 +31,7 @@ const fetchUserData = async () => {
 const logout = async () => {
   await deleteBearerToken();
   await deleteUserData();
+  authStore.setAuthenticated(false);
   await redirectExplore(router);
 };
 
