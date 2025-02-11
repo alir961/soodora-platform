@@ -26,15 +26,15 @@ public record CreatePostRequest(
 
     @Override
     public CreatePostCommand toCommand() {
-        if (title == null)
+        if (title == null || title.isEmpty())
             throw new InvalidRequestException("Title is not valid");
-        if (content == null)
+        if (content == null || content.isEmpty())
             throw new InvalidRequestException("Content is not valid");
         if (type == null || !isValidPostType(type))
             throw new InvalidRequestException("Post type is not valid (values: " + typeValues + ")");
         PostType typeState = PostType.valueOf(type.toUpperCase());
 
-        return new CreatePostCommand(title, content, imageUrl, audioUrl, typeState);
+        return new CreatePostCommand(title.trim(), content.trim(), imageUrl, audioUrl, typeState);
     }
 
     private boolean isValidPostType(String type) {
