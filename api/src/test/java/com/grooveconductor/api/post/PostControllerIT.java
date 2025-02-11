@@ -105,7 +105,7 @@ public class PostControllerIT {
     }
 
     @Test
-    void retrievePlaylists_Empty() throws Exception {
+    void retrievePosts_Empty() throws Exception {
         // GIVEN
         when(postService.retrieveAllPosts()).thenReturn(emptyList());
         when(userRepository.find(USER.identifier())).thenReturn(USER);
@@ -117,14 +117,7 @@ public class PostControllerIT {
     }
 
     @Test
-    void retrievePlaylists_Forbidden() throws Exception {
-        // WHEN & THEN
-        mockMvc.perform(get("/posts"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void retrievePlaylist_Success() throws Exception {
+    void retrievePostBySlug_Success() throws Exception {
         // GIVEN
         when(postService.retrievePostBySlug("postSlug1")).thenReturn(POST_1);
         when(userRepository.find(USER.identifier())).thenReturn(USER);
@@ -138,7 +131,7 @@ public class PostControllerIT {
     }
 
     @Test
-    void retrievePlaylist_Unknown() throws Exception {
+    void retrievePost_Unknown() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(postService).retrievePostBySlug(anyString());
@@ -150,14 +143,14 @@ public class PostControllerIT {
     }
 
     @Test
-    void retrievePlaylist_Forbidden() throws Exception {
+    void retrievePost_Forbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void deletePlaylist_Success() throws Exception {
+    void deletePost_Success() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doNothing().when(postService).deletePostBySlug("postSlug1");
@@ -170,7 +163,7 @@ public class PostControllerIT {
     }
 
     @Test
-    void deletePlaylist_Unknown() throws Exception {
+    void deletePost_Unknown() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(postService).deletePostBySlug(anyString());
@@ -182,7 +175,7 @@ public class PostControllerIT {
     }
 
     @Test
-    void deletePlaylist_Forbidden() throws Exception {
+    void deletePost_Forbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1"))
                 .andExpect(status().isForbidden());
