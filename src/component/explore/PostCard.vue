@@ -38,25 +38,29 @@ const focusPost = (post: Post) => {
       <ion-card-header>
         <div>
           <ion-card-title class="header-title">{{ post.owner.username }}</ion-card-title>
-          <ion-card-subtitle>{{ post.type.replace(/_/g, ' ') }}</ion-card-subtitle>
+          <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
       </ion-card-header>
       <ion-card-content>{{ post.content }}</ion-card-content>
-      <ion-card-content>
-        <div class="rounded-image">
+      <ion-card-content class="image-content">
+        <div class="image">
           <IonImg :src="post.imageUrl" :alt="`Post ${post.title}`" />
         </div>
         <ion-card-title>{{ post.title }}</ion-card-title>
       </ion-card-content>
-      <ion-card-content v-if="post.audioUrl">
-        <ion-button v-if="focusedPost === post" expand="block" @click.stop="playAudio(post)">Play Audio</ion-button>
-        <audio v-if="focusedPost === post" :src="post.audioUrl" controls></audio>
+      <ion-card-content class="audio-content">
+        <div v-if="post.audioUrl">
+          <ion-button v-if="focusedPost === post" expand="block" @click.stop="playAudio(post)">Play Audio</ion-button>
+          <audio v-if="focusedPost === post" :src="post.audioUrl" controls></audio>
+        </div>
       </ion-card-content>
     </ion-card>
   </ion-col>
 </template>
 
 <style scoped>
+
+
 .focused {
   border: 0.2em solid #3880ff;
   transform: scale(1.05);
@@ -67,10 +71,18 @@ const focusPost = (post: Post) => {
   margin-bottom: 0.2em;
 }
 
-.rounded-image {
+.image-content {
+  padding-top: 0;
+}
+
+.image {
   border-radius: 20px;
   overflow: hidden;
-  margin-bottom: 2.5em;
+  margin-bottom: 1.5em;
+}
+
+.audio-content {
+  padding-top: 0;
 }
 
 audio {

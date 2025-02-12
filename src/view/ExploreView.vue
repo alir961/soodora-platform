@@ -35,7 +35,7 @@ const newPost: Reactive<CreatePostRequest> = reactive({
   content: '',
   imageUrl: '',
   audioUrl: '',
-  type: '' as 'ANNOUNCE' | 'MERCH_DROP' | 'NEW_EVENT',
+  type: '' as Post['type'],
 });
 const authStore = useAuthStore();
 
