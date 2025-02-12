@@ -3,14 +3,14 @@ http://ionicframework.com/docs/theming/ */
 
 :root {
   /* Primary and Accent Colors */
-  --ion-color-primary: #b19cd9; /* Gold */
-  --ion-color-primary-rgb: 212, 175, 55;
-  --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #9a84be;
-  --ion-color-primary-tint: #c2b0e0;
+  --ion-color-primary: #5B88F6; /* Blue */
+  --ion-color-primary-rgb: 91, 136, 246;
+  --ion-color-primary-contrast: #000000;
+  --ion-color-primary-contrast-rgb: 0, 0, 0;
+  --ion-color-primary-shade: #5179dc;
+  --ion-color-primary-tint: #7099f7;
 
-  --ion-color-secondary: #cba135é; /* Light Purple */
+  --ion-color-secondary: #cba135; /* Light Purple */
   --ion-color-secondary-rgb: 177, 156, 217;
   --ion-color-secondary-contrast: #ffffff;
   --ion-color-secondary-contrast-rgb: 255, 255, 255;

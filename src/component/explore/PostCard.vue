@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonCol, IonCardSubtitle } from '@ionic/vue';
+import {
+  IonCard,
+  IonButton,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
+  IonCol,
+  IonCardSubtitle,
+  IonImg,
+} from '@ionic/vue';
 import { PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
 
@@ -9,6 +18,12 @@ defineProps({
     type: Object as PropType<Post>,
   },
 });
+
+const playAudio = (audio: Post) => {
+  const audioElement = document.createElement('audio');
+  audioElement.src = audio.audioUrl;
+  audioElement.play();
+};
 
 const focusedPost: Ref<Post | null> = ref(null);
 
@@ -21,10 +36,24 @@ const focusPost = (post: Post) => {
   <ion-col size="12" size-md="6" size-lg="4">
     <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
       <ion-card-header>
-        <ion-card-title>{{ post.owner.username }}</ion-card-title>
-        <ion-card-subtitle>{{ post.title }}</ion-card-subtitle>
+        <div>
+          <ion-card-title class="header-title">{{ post.owner.username }}</ion-card-title>
+          <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
+        </div>
       </ion-card-header>
       <ion-card-content>{{ post.content }}</ion-card-content>
+      <ion-card-content class="image-content">
+        <div class="image">
+          <IonImg :src="post.imageUrl" :alt="`Post ${post.title}`" />
+        </div>
+        <ion-card-title>{{ post.title }}</ion-card-title>
+      </ion-card-content>
+      <ion-card-content class="audio-content">
+        <div v-if="post.audioUrl">
+          <ion-button v-if="focusedPost === post" expand="block" @click.stop="playAudio(post)">Play Audio</ion-button>
+          <audio v-if="focusedPost === post" :src="post.audioUrl" controls></audio>
+        </div>
+      </ion-card-content>
     </ion-card>
   </ion-col>
 </template>
@@ -33,5 +62,29 @@ const focusPost = (post: Post) => {
 .focused {
   border: 0.2em solid #3880ff;
   transform: scale(1.05);
+}
+
+.header-title {
+  font-size: 2em;
+  margin-bottom: 0.2em;
+}
+
+.image-content {
+  padding-top: 0;
+}
+
+.image {
+  border-radius: 20px;
+  overflow: hidden;
+  margin-bottom: 1.5em;
+}
+
+.audio-content {
+  padding-top: 0;
+}
+
+audio {
+  width: 100%;
+  margin-top: 10px;
 }
 </style>
