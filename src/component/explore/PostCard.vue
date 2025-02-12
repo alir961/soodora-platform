@@ -59,8 +59,6 @@ const focusPost = (post: Post) => {
 </template>
 
 <style scoped>
-
-
 .focused {
   border: 0.2em solid #3880ff;
   transform: scale(1.05);
