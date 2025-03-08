@@ -31,7 +31,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Utilisateur Standard  
 - **Fonctionnalité testée :** Algorithme de recommandation  
 - **Objectif :** Vérifier que l’utilisateur reçoit des recommandations pertinentes en fonction de son activité et de ses abonnements.  
-- **Preconditions :** L’utilisateur a un compte actif et est connecté. 
+- **Conditions préalables :** L’utilisateur a un compte actif et est connecté. 
 - **Étapes du test :** 
   1. Créer un compte et parcourir la section Explore  
   2. Interagir avec plusieurs posts et produits du marketplace
@@ -43,7 +43,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Utilisateur Standard 
 - **Fonctionnalité testée :** Système d’abonnement aux artistes  
 - **Objectif :** Vérifier que les abonnements sont bien pris en compte et que le contenu des artistes suivis apparaît en priorité.  
-- **Preconditions :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
+- **Conditions préalables :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
 - **Étapes du test :** 
   1. S’abonner à plusieurs artistes depuis la section Explore  
   2. Accéder à la section Explore et Marketplace pour voir si le contenu des artistes suivis est mis en avant  
@@ -54,7 +54,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Artiste 
 - **Fonctionnalité testée :** Création de posts  
 - **Objectif :** Vérifier que les artistes peuvent créer des publications.  
-- **Preconditions :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
+- **Conditions préalables :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication  
   2. Ajouter du contenu (texte, image, lien musical, produit)  
@@ -65,7 +65,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Artiste Prenium
 - **Fonctionnalité testée :** Exportation de posts  
 - **Objectif :** Vérifier que les artistes peuvent exporter efficacement sur leurs réseaux sociaux.  
-- **Preconditions :** L’artiste Prenium est connecté à son compte. L’outil de création de publication est accessible. L’artiste a déjà publié au moins un post.
+- **Conditions préalables :** L’artiste Prenium est connecté à son compte. L’outil de création de publication est accessible. L’artiste a déjà publié au moins un post.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication
   2. Ajouter du contenu (texte, image, lien musical, produit)
