@@ -10,13 +10,13 @@ La version bêta de Soodora doit démontrer sa valeur essentielle tout en garant
 | Abonnement aux artistes et personnalisation du contenu                     | Dans la page Explore en deux espaces : une section d’exploration pour découvrir de nouveaux artistes et tendances, et une page personnalisée dédiée aux abonnements. Les utilisateurs peuvent s’abonner à leurs artistes préférés et accéder facilement à leurs publications mises en avant dans cet espace exclusif. | Haute                               |
 | Création et exportation de contenus pour les artistes                      | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté, personnalisé sous un format adapté aux réseaux sociaux.             | Haute                               |
 
-### Changement depuis la Tech3
+### Changement Depuis la Tech3
 Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours concrets des différents besoins du marché et une remise en question au sein de l'équipe. Ce repositionnement s’est accompagné d’un rebranding complet, avec une nouvelle identité visuelle. Soodora est une plateforme pensée pour permettre aux artistes de se faire connaître et évoluer, tout en offrant aux passionnés de musique un moyen simple de découvrir de nouveaux talents. Avec une page d’exploration interactive, un outil puissant d’exportation de posts et une marketplace intégrée, Soodora crée un lien direct entre les artistes et leur public.
 
 ---
 
 ## 2. Scénarios de Test Bêta
-### 2.1 Rôles des utilsiateurs
+### 2.1 Rôles des Utilsiateurs
 
 | **Rôles**            | **Description**                                                                                                                                                                                                                                                                                                                                  |
 |----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -27,7 +27,7 @@ Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours c
 ### 2.2 Scénarios de Test
 Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionnalités et d’assurer une expérience fluide pour les utilisateurs.
 
-#### Scénario 1 : Recommandations personnalisées
+#### Scénario 1 : Recommandations Personnalisées
 - **Rôle utilisateur :** Utilisateur Standard  
 - **Fonctionnalité testée :** Algorithme de recommandation  
 - **Objectif :** Vérifier que l’utilisateur reçoit des recommandations pertinentes en fonction de son activité et de ses abonnements.  
@@ -39,7 +39,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   4. S’assurer que les recommandations sont pertinentes et diversifiées  
 - **Résultat attendue :** L’utilisateur reçoit des recommandations adaptées à ses préférences et interactions. La diversité du contenu recommandé est respectée. Les recommandations évoluent dynamiquement en fonction des nouvelles interactions.
 
-#### Scénario 2 : Abonnement et personnalisation du contenu
+#### Scénario 2 : Abonnement et Personnalisation du Contenu
 - **Rôle utilisateur :** Utilisateur Standard 
 - **Fonctionnalité testée :** Système d’abonnement aux artistes  
 - **Objectif :** Vérifier que les abonnements sont bien pris en compte et que le contenu des artistes suivis apparaît en priorité.  
@@ -50,7 +50,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   3. Vérifier la gestion des abonnements (désabonnement, mise à jour des flux)  
 - **Résultat attendue :** Le contenu des artistes suivis apparaît en priorité dans l’Explore et le Marketplace. L’utilisateur peut facilement se désabonner et voir les mises à jour en temps réel. L’algorithme ajuste la mise en avant du contenu en fonction des abonnements de l’utilisateur.
 
-#### Scénario 3 : Création de publications
+#### Scénario 3 : Création de Publications
 - **Rôle utilisateur :** Artiste 
 - **Fonctionnalité testée :** Création de posts  
 - **Objectif :** Vérifier que les artistes peuvent créer des publications.  
@@ -61,17 +61,19 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   3. Publier et vérifier l’affichage dans l’application
 - **Résultat attendue :** L’artiste peut ajouter différents types de contenu sans erreurs. Le post s’affiche correctement dans l’application, avec les éléments bien formatés. Les utilisateurs peuvent voir et interagir avec la publication.
 
-#### Scénario 4 : Exportation de publications
+#### Scénario 4 : Exportation de Publications et Personnalisation
 - **Rôle utilisateur :** Artiste Prenium
-- **Fonctionnalité testée :** Exportation de posts  
-- **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts personnalisés sur leurs réseaux sociaux.  
-- **Preconditions :** L’artiste Prenium est connecté à son compte. L’outil de création de publication est accessible. L’artiste a déjà publié au moins un post.
+- **Fonctionnalité testée :** Exportation de posts et personnalisation
+- **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts et les personnalisés via l'outil d'exportation sur leurs réseaux sociaux.  
+- **Preconditions :** L’artiste Prenium est connecté à son compte. L’outil d'exportation est accessible. L’artiste a déjà publié au moins un post.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication
   2. Ajouter du contenu (texte, image, lien musical, produit)
   3. Publier et vérifier l’affichage dans l’application
-  4. Personnaliser et exporter le post sur un réseau social et vérifier la mise en page sur celui-ci
-- **Résultat attendue :** La personnalisation et l'exportation du post se fait sans erreurs technique. La mise en page est conservée sur le format exporté.
+  4. Accéder à l'outil d'exportation
+  5. Personnaliser le post
+  6. Exporter puis publier le design sur un réseau social et vérifier la mise en page sur celui-ci
+- **Résultat attendue :** La personnalisation et l'exportation du post se fait sans erreurs technique. La mise en page est conservée sur le design exporté ainsi que sur le réseau social.
 
 ---
 

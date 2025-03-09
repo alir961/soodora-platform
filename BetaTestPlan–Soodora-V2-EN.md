@@ -27,7 +27,7 @@ Soodora shifted direction between Tech3 and Tech4 based on concrete market feedb
 ### 2.2 Test Scenarios
 We have developed several test scenarios to validate these features and ensure a smooth user experience.
 
-#### Scenario 1: Personalized Recommendations
+#### Scenario 1 : Personalized Recommendations
 - **User Role:** Standard User
 - **Feature Tested:** Recommendation algorithm
 - **Objective:** Verify that the user receives relevant recommendations based on their activity and subscriptions.
@@ -39,7 +39,7 @@ We have developed several test scenarios to validate these features and ensure a
   4. Ensure recommendations are relevant and diverse
 - **Expected Result:** The user receives recommendations tailored to their preferences and interactions. The diversity of recommended content is respected. Recommendations evolve dynamically based on new interactions.
 
-#### Scenario 2: Subscriptions and Content Personalization
+#### Scenario 2 : Subscriptions and Content Personalization
 - **User Role:** Standard User
 - **Feature Tested:** Artist subscription system
 - **Objective:** Verify that subscriptions are properly accounted for and that content from followed artists is prioritized.
@@ -50,7 +50,7 @@ We have developed several test scenarios to validate these features and ensure a
   3. Verify subscription management (unsubscribing, feed updates)
 - **Expected Result:** Content from followed artists is prioritized in the Explore and Marketplace sections. The user can easily unsubscribe and see updates in real-time. The algorithm adjusts content prioritization based on the user’s subscriptions.
 
-#### Scenario 3: Post Creation
+#### Scenario 3 : Post Creation
 - **User Role:** Artist
 - **Feature Tested:** Post creation
 - **Objective:** Verify that artists can create posts.
@@ -61,17 +61,19 @@ We have developed several test scenarios to validate these features and ensure a
   3. Publish and verify the display in the app
 - **Expected Result:** The artist can add different types of content without errors. The post displays correctly in the app, with well-formatted elements. Users can view and interact with the post.
 
-#### Scenario 4: Post Export
+#### Scenario 4 : Post Export and Personalization
 - **User Role:** Premium Artist
-- **Feature Tested:** Post export
-- **Objective:** Verify that artists can effectively export personalized posts to their social media.
-- **Preconditions:** The Premium Artist is logged into their account. The post creation tool is accessible. The artist has already published at least one post.
+- **Feature Tested:** Post export and personalization
+- **Objective:** Verify that artists can effectively export posts and personalized them into the export tool to their social media.
+- **Preconditions:** The Premium Artist is logged into their account. The exportation tool is accessible. The artist has already published at least one post.
 - **Test Steps:**
   1. Access the post creation tool
   2. Add content (text, image, music link, product)
   3. Publish and verify the display in the app
-  4. Personalize and export the post to a format publishable on a social media platform and verify the layout
-- **Expected Result:** The post can be personalized and exported without technical errors. The layout is preserved on the exported format.
+  4. Access to the export tool
+  5. Personalize the post
+  6. Export and publish the design on a social media platform and verify the layout
+- **Expected Result:** The post can be personalized and exported without technical errors. The layout is preserved on the exported design and on the social media.
 
 ---
 
