@@ -4,11 +4,11 @@
 
 The beta version of Soodora must demonstrate its core value while ensuring a stable and consistent experience for early testers. After analysis, we have identified three key features to include:
 
-| **Feature**                                                           | **Description**                                                                                                                                                                                                                                                                                                       | **Priority (High/Medium/Low)** |
-|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
-| Recommendation algorithm for discovering artists and content           | Designed to highlight the most engaging content for a user and help users discover emerging artists.                                                                                                                                                                                                                  | Medium                             |
-| Artist subscriptions and content personalization                       | The Explore page is divided into two sections: an exploration section to discover new artists and trends, and a personalized page dedicated to subscriptions. Users can subscribe to their favorite artists and easily access their highlighted posts in this exclusive space.                                           | High                               |
-| Content creation and export for artists                                | Artists can publish attractive posts in various formats: announcements, music releases, events, merch drops, etc. Each post will have an optimized visual rendering to capture attention and can be exported in a format suitable for social media.                                                                   | High                               |
+| **Feature**                                                           | **Description**                                                                                                                                                                                                                                                                | **Priority (High/Medium/Low)** |
+|------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| Recommendation algorithm for discovering artists and content           | Designed to highlight the most engaging content for a user and help users discover emerging artists.                                                                                                                                                                           | Medium                             |
+| Artist subscriptions and content personalization                       | The Explore page is divided into two sections: an exploration section to discover new artists and trends, and a personalized page dedicated to subscriptions. Users can subscribe to their favorite artists and easily access their highlighted posts in this exclusive space. | High                               |
+| Content creation and export for artists                                | Artists can publish attractive posts in various formats: announcements, music releases, events, merch drops, etc. Each post will have an optimized visual rendering to capture attention and can be exported, personalized in a format suitable for social media.              | High                               |
 
 ### Changes Since Tech3
 Soodora shifted direction between Tech3 and Tech4 based on concrete market feedback and internal team reflection. This repositioning was accompanied by a complete rebranding, with a new visual identity. Soodora is a platform designed to help artists gain visibility and grow, while offering music enthusiasts a simple way to discover new talents. With an interactive exploration page, a powerful post export tool, and an integrated marketplace, Soodora creates a direct link between artists and their audience.
@@ -18,11 +18,11 @@ Soodora shifted direction between Tech3 and Tech4 based on concrete market feedb
 ## 2. Beta Test Scenarios
 ### 2.1 User Roles
 
-| **Roles**            | **Description**                                                                                                                                                                                                                                                                                                                                  |
-|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Standard User        | This role is for music enthusiasts looking to discover new talents. Standard users have full access to Soodora to explore new artists via the "Explore" page, subscribe to artists, interact with posted content, and benefit from a personalized recommendation algorithm.                                                                       |
-| Standard Artist      | This role is for artists who want to gain visibility and engage their audience. Standard artists can create and publish various content formats (announcements, music releases, events, etc.), access the marketplace, and grow their community through the platform.                                                                                                                                                                                                                                                                                                                             |
-| Premium Artist       | Premium artists benefit from increased visibility, powerful export tools, and higher profitability opportunities, such as lower commissions on their merchandise. This status allows them to showcase and share their musical universe optimally.                                                                                                                                                                                                                                                                                                                              |
+| **Roles**            | **Description**                                                                                                                                                                                                                                                               |
+|----------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Standard User        | This role is for music enthusiasts looking to discover new talents. Standard users have full access to Soodora to explore new artists via the "Explore" page, subscribe to artists, interact with posted content, and benefit from a personalized recommendation algorithm.   |
+| Standard Artist      | This role is for artists who want to gain visibility and engage their audience. Standard artists can create, publish and export various content formats (announcements, music releases, events, etc.), access the marketplace, and grow their community through the platform. |
+| Premium Artist       | Premium artists benefit from increased visibility, powerful export tools without watermark, and higher profitability opportunities, such as lower commissions on their merchandise. This status allows them to showcase and share their musical universe optimally.           |
 
 ### 2.2 Test Scenarios
 We have developed several test scenarios to validate these features and ensure a smooth user experience.
@@ -64,14 +64,14 @@ We have developed several test scenarios to validate these features and ensure a
 #### Scenario 4: Post Export
 - **User Role:** Premium Artist
 - **Feature Tested:** Post export
-- **Objective:** Verify that artists can effectively export posts to their social media.
+- **Objective:** Verify that artists can effectively export personalized posts to their social media.
 - **Preconditions:** The Premium Artist is logged into their account. The post creation tool is accessible. The artist has already published at least one post.
 - **Test Steps:**
   1. Access the post creation tool
   2. Add content (text, image, music link, product)
   3. Publish and verify the display in the app
-  4. Export the post to a social media platform and verify the layout
-- **Expected Result:** The post is exported without technical errors. The layout is preserved on the social media platform.
+  4. Personalize and export the post to a format publishable on a social media platform and verify the layout
+- **Expected Result:** The post can be personalized and exported without technical errors. The layout is preserved on the exported format.
 
 ---
 
@@ -81,7 +81,7 @@ The test scenarios are designed to reflect real user interactions. The key journ
 
 - **Discovering new artists and products via the recommendation algorithm**
 - **Following artists and personalizing displayed content**
-- **Artists interacting with their audience through posts and exports to other platforms**
+- **Artists interacting fluently with their audience through posts and personalized exports to other platforms**
 
 ---
 
@@ -93,7 +93,7 @@ To validate the success of the beta, we use the following criteria:
 - **Performance:** Page and recommendation loading times must be optimized to ensure smooth and responsive navigation.
 - **Relevance of Recommendations:** The recommendation algorithm must suggest content aligned with user preferences. The system’s effectiveness will be measured by engagement rates on these recommendations, particularly through interactions generated around them.
 - **Efficiency of the Subscription System:** Users subscribed to artists should see their posts clearly and accessibly highlighted in their personalized space. This criterion ensures that subscriptions offer real added value by facilitating access to users’ favorite content.
-- **Quality of Post Exports:** When a post is exported to other platforms, it must retain its original appearance and be adapted to the specifics of each distribution channel. Optimized exports ensure a polished presentation and increased visibility of artists’ content.
+- **Quality of Post Exports:** When a post is exported, it must retain its original appearance and be adapted to the specifics of each target distribution channel . Optimized exports ensure a polished presentation and increased visibility of artists’ content.
 
 ---
 

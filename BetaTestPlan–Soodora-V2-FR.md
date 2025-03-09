@@ -8,7 +8,7 @@ La version bêta de Soodora doit démontrer sa valeur essentielle tout en garant
 |------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
 | Algorithme de recommandation pour la découverte d’artistes et de contenus  | Conçu pour mettre en avant les contenus les plus attrayants pour un utilisateur et aider les utilisateurs à découvrir des artistes émergents                                                                                                                                                                          | Moyenne                             |
 | Abonnement aux artistes et personnalisation du contenu                     | Dans la page Explore en deux espaces : une section d’exploration pour découvrir de nouveaux artistes et tendances, et une page personnalisée dédiée aux abonnements. Les utilisateurs peuvent s’abonner à leurs artistes préférés et accéder facilement à leurs publications mises en avant dans cet espace exclusif. | Haute                               |
-| Création et exportation de contenus pour les artistes                      | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté sous un format adapté aux réseaux sociaux.                           | Haute                               |
+| Création et exportation de contenus pour les artistes                      | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté, personnalisé sous un format adapté aux réseaux sociaux.             | Haute                               |
 
 ### Changement depuis la Tech3
 Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours concrets des différents besoins du marché et une remise en question au sein de l'équipe. Ce repositionnement s’est accompagné d’un rebranding complet, avec une nouvelle identité visuelle. Soodora est une plateforme pensée pour permettre aux artistes de se faire connaître et évoluer, tout en offrant aux passionnés de musique un moyen simple de découvrir de nouveaux talents. Avec une page d’exploration interactive, un outil puissant d’exportation de posts et une marketplace intégrée, Soodora crée un lien direct entre les artistes et leur public.
@@ -16,13 +16,13 @@ Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours c
 ---
 
 ## 2. Scénarios de Test Bêta
-### 2.1 Rôles des utilisateurs
+### 2.1 Rôles des utilsiateurs
 
 | **Rôles**            | **Description**                                                                                                                                                                                                                                                                                                                                  |
 |----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Utilisateur Standard | Ce rôle est destiné aux passionnés de musique souhaitant découvrir de nouveaux talents. Les utilisateurs standard bénéficient d’un accès complet à Soodora pour découvrir de nouveaux artistes via la page "exploration", s’abonner aux artistes, interagir avec les contenus postés et profiter d’un algorithme de recommandation personnalisé. |
-| Artiste Standard     | Ce rôle s’adresse aux artistes qui souhaitent se faire connaître et engager leur public. Les artistes standard peuvent créer et publier divers formats de contenus (annonces, sorties musicales, événements, etc.), bénéficier d'un accès au marketplace et développer leur communauté via la plateforme.                                                                                                                                                                                                                                                                                                                             |
-| Artiste Prenium      | Les artistes Prenium profitent d’une visibilité accrue, d’outils d’exportation performants et d’opportunités de rentabilité accrue via des commissions moindres sur leur merchandising, par exemple. Ce statut permet de valoriser et diffuser leur univers musical de manière optimale.                                                                                                                                                                                                                                                                                                                              |
+| Artiste Standard     | Ce rôle s’adresse aux artistes qui souhaitent se faire connaître et engager leur public. Les artistes standard peuvent créer, publier et exporter divers formats de contenus (annonces, sorties musicales, événements, etc.), bénéficier d'un accès au marketplace et développer leur communauté via la plateforme.                              |
+| Artiste Prenium      | Les artistes Prenium profitent d’une visibilité accrue, d’outils d’exportation performants sans watermark et d’opportunités de rentabilité accrue via des commissions moindres sur leur merchandising, par exemple. Ce statut permet de valoriser et diffuser leur univers musical de manière optimale.                                          |
 
 ### 2.2 Scénarios de Test
 Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionnalités et d’assurer une expérience fluide pour les utilisateurs.
@@ -31,7 +31,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Utilisateur Standard  
 - **Fonctionnalité testée :** Algorithme de recommandation  
 - **Objectif :** Vérifier que l’utilisateur reçoit des recommandations pertinentes en fonction de son activité et de ses abonnements.  
-- **Conditions préalables :** L’utilisateur a un compte actif et est connecté. 
+- **Preconditions :** L’utilisateur a un compte actif et est connecté. 
 - **Étapes du test :** 
   1. Créer un compte et parcourir la section Explore  
   2. Interagir avec plusieurs posts et produits du marketplace
@@ -43,7 +43,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Utilisateur Standard 
 - **Fonctionnalité testée :** Système d’abonnement aux artistes  
 - **Objectif :** Vérifier que les abonnements sont bien pris en compte et que le contenu des artistes suivis apparaît en priorité.  
-- **Conditions préalables :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
+- **Preconditions :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
 - **Étapes du test :** 
   1. S’abonner à plusieurs artistes depuis la section Explore  
   2. Accéder à la section Explore et Marketplace pour voir si le contenu des artistes suivis est mis en avant  
@@ -54,7 +54,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 - **Rôle utilisateur :** Artiste 
 - **Fonctionnalité testée :** Création de posts  
 - **Objectif :** Vérifier que les artistes peuvent créer des publications.  
-- **Conditions préalables :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
+- **Preconditions :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication  
   2. Ajouter du contenu (texte, image, lien musical, produit)  
@@ -64,14 +64,14 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
 #### Scénario 4 : Exportation de publications
 - **Rôle utilisateur :** Artiste Prenium
 - **Fonctionnalité testée :** Exportation de posts  
-- **Objectif :** Vérifier que les artistes peuvent exporter efficacement sur leurs réseaux sociaux.  
-- **Conditions préalables :** L’artiste Prenium est connecté à son compte. L’outil de création de publication est accessible. L’artiste a déjà publié au moins un post.
+- **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts personnalisés sur leurs réseaux sociaux.  
+- **Preconditions :** L’artiste Prenium est connecté à son compte. L’outil de création de publication est accessible. L’artiste a déjà publié au moins un post.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication
   2. Ajouter du contenu (texte, image, lien musical, produit)
   3. Publier et vérifier l’affichage dans l’application
-  4. Exporter le post sur un réseau social et vérifier la mise en page sur celle-ci
-- **Résultat attendue :** L’exportation du post se fait sans erreurs technique. La mise en page est conservée sur le réseau social.
+  4. Personnaliser et exporter le post sur un réseau social et vérifier la mise en page sur celui-ci
+- **Résultat attendue :** La personnalisation et l'exportation du post se fait sans erreurs technique. La mise en page est conservée sur le format exporté.
 
 ---
 
@@ -81,7 +81,7 @@ Les scénarios de test ont été conçus pour refléter les usages réels des ut
 
 - **Découverte de nouveaux artistes et produits via l’algorithme de recommandation**  
 - **Suivi des artistes et personnalisation du contenu affiché**  
-- **Interaction des artistes avec leur audience à travers des publications et des exports vers d’autres plateformes**  
+- **Interaction fluide des artistes avec leur audience à travers des publications et des exports personnalisés vers d’autres plateformes**  
 
 ---
 
@@ -93,7 +93,7 @@ Pour valider la réussite de la bêta, nous utilisons les critères suivants :
 - **Performance** : Le temps de chargement des pages et des recommandations doit être optimisé afin d’offrir une navigation fluide et réactive.
 - **Pertinence des recommandations** : L’algorithme de suggestion doit proposer du contenu aligné avec les préférences des utilisateurs. L’efficacité du système sera mesurée par le taux d’engagement sur ces recommandations notamment à travers les interactions générées autour de celles-ci.
 - **Efficacité du système d’abonnement** : Les utilisateurs abonnés à des artistes doivent voir leurs publications mises en avant de manière claire et accessible dans leur espace personnalisé. Ce critère garantit que l’abonnement offre une réelle valeur ajoutée en facilitant l’accès aux contenus préférés des utilisateurs.
-- **Qualité de l’export des publications** : Lorsqu’un post est exporté vers d’autres plateformes, il doit conserver son apparence initiale et être adapté aux spécificités de chaque canal de diffusion. L’optimisation de l’export garantit une présentation soignée et une visibilité accrue du contenu des artistes.
+- **Qualité de l’export des publications** : Lorsqu’un post est exporté, il doit conserver son apparence initiale et être adapté aux spécificités de chaque canal de diffusion cible. L’optimisation de l’export garantit une présentation soignée et une visibilité accrue du contenu des artistes.
 
 ---
 
