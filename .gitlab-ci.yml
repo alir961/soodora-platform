@@ -90,7 +90,7 @@ production:
     - apt-get update
     - apt-get install -y openssh-client rsync
     - mkdir -p ~/.ssh
-    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - echo "$PRODUCTION_SSH" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keygen -lf ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
@@ -111,7 +111,7 @@ synchronize:
     - apt-get install -y git openssh-client
     - mkdir -p ~/.ssh
     # Decode & store private key
-    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - echo "$PRODUCTION_SSH" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     # Configure SSH
     - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
