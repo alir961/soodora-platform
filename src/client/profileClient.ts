@@ -26,5 +26,14 @@ async function retrieveLinkedOAuthProviders(): Promise<OAuthProvider[]> {
     .catch(reject);
 }
 
+async function deleteUserAccount(slug: string): Promise<void> {
+  return axios
+    .delete('/users/' + slug, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { OAuthProvider };
-export { retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders };
+export { retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders, deleteUserAccount };

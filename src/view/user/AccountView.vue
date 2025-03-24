@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import { IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
+import { alertController, IonButton, IonCard, IonIcon, onIonViewWillEnter, toastController } from '@ionic/vue';
 import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
-import { Ref, ref } from 'vue';
-import { Router, useRoute, useRouter } from 'vue-router';
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
 import { redirectExplore } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
-import { OAuthProvider, retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders } from '@/client/profileClient';
+import {
+  deleteUserAccount,
+  OAuthProvider,
+  retrieveAuthenticatedProfile,
+  retrieveLinkedOAuthProviders,
+} from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
-import { logOutOutline } from 'ionicons/icons';
+import { logOutOutline, trashOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
-const router: Router = useRouter();
-const userData: Ref<User | null> = ref(null);
-const linkedProviders: Ref<OAuthProvider[]> = ref([]);
+const router = useRouter();
+const userData = ref<User | null>(null);
+const linkedProviders = ref<OAuthProvider[]>([]);
 const providers: OAuthProvider[] = ['google'];
 const authStore = useAuthStore();
 
@@ -35,6 +40,49 @@ const logout = async () => {
   await redirectExplore(router);
 };
 
+const deleteAccount = async () => {
+  const userSlug = userData.value?.slug;
+
+  if (!userSlug) {
+    const toast = await toastController.create({
+      message: 'User identifier not found.',
+      duration: 1500,
+      position: 'top',
+    });
+    await toast.present();
+    return;
+  }
+
+  const alert = await alertController.create({
+    header: 'Confirm Account Deletion',
+    message: 'Are you sure you want to delete your account?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Delete',
+        handler: async () => {
+          try {
+            await deleteUserAccount(userSlug);
+            await logout();
+          } catch (error) {
+            const toast = await toastController.create({
+              message: 'Failed to delete account.',
+              duration: 1500,
+              position: 'top',
+            });
+            await toast.present();
+          }
+        },
+      },
+    ],
+  });
+
+  await alert.present();
+};
+
 onIonViewWillEnter(async () => {
   if (route.query.error === 'oauth') {
     const toast = await toastController.create({
@@ -42,7 +90,6 @@ onIonViewWillEnter(async () => {
       duration: 1500,
       position: 'top',
     });
-
     await toast.present();
   }
   await fetchUserData();
@@ -70,6 +117,11 @@ onIonViewWillEnter(async () => {
       <ion-icon :icon="logOutOutline" />
       Logout
     </ion-button>
+
+    <ion-button expand="block" @click="deleteAccount" id="delete-account-button">
+      <ion-icon :icon="trashOutline" />
+      Delete Account
+    </ion-button>
   </ApplicationViewport>
 </template>
 
@@ -89,12 +141,18 @@ ion-card {
 #logout-button {
   --background: #cc2222;
   --color: white;
-
   border-radius: 20px;
   margin: 0 20px 20px 20px;
+}
 
-  & ion-icon {
-    margin-right: 10px;
-  }
+#delete-account-button {
+  --background: #ff3b30;
+  --color: white;
+  border-radius: 20px;
+  margin: 0 20px 20px 20px;
+}
+
+ion-icon {
+  margin-right: 10px;
 }
 </style>
