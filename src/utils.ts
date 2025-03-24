@@ -3,6 +3,7 @@ import { Router } from 'vue-router';
 import { User } from '@/entity/User';
 import { loadUserData, saveUserData } from '@/store/localStorage';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { toastController } from '@ionic/vue';
 
 function reject(reason: string | Error) {
   if (reason instanceof Error) return Promise.reject(reason);
@@ -22,6 +23,14 @@ function capitalize(value: string): string {
   return value[0].toUpperCase() + value.slice(1).toLowerCase();
 }
 
+async function userIdentifierNotFoundToast() {
+  return await toastController.create({
+    message: 'User identifier not found.',
+    duration: 1500,
+    position: 'top',
+  });
+}
+
 async function getAuthenticatedUser(): Promise<User> {
   try {
     return await loadUserData();
@@ -33,4 +42,4 @@ async function getAuthenticatedUser(): Promise<User> {
   }
 }
 
-export { reject, redirectLogin, capitalize, getAuthenticatedUser, redirectExplore };
+export { reject, redirectLogin, capitalize, getAuthenticatedUser, redirectExplore, userIdentifierNotFoundToast };
