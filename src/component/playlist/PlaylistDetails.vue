@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { createOutline } from 'ionicons/icons';
+import { createOutline, trashOutline } from 'ionicons/icons';
 import {
   IonButton,
   IonCard,
@@ -15,10 +15,12 @@ import {
   IonSelectOption,
   IonTitle,
   IonToolbar,
+  toastController,
 } from '@ionic/vue';
 import { Playlist } from '@/entity/Playlist';
 import { PropType, Reactive, reactive, Ref, ref } from 'vue';
-import { updatePlaylist } from '@/client/playlistClient';
+import { deletePlaylist, updatePlaylist } from '@/client/playlistClient';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   playlist: {
@@ -31,6 +33,7 @@ const emit = defineEmits(['update']);
 const showEditPlaylistInfoModal: Ref<boolean> = ref(false);
 const showAddSongModal: Ref<boolean> = ref(false);
 let editablePlaylist: Reactive<Playlist> = reactive(props.playlist);
+const router = useRouter();
 
 const openEditPlaylistInfoModal = () => {
   editablePlaylist = props.playlist;
@@ -50,6 +53,20 @@ const handleUpdatePlaylist = async () => {
     emit('update');
   } catch (error) {
     console.error('Failed to update playlist:', error);
+  }
+};
+
+const deleteCurrentPlaylist = async (slug: string) => {
+  try {
+    await deletePlaylist(slug);
+    router.back();
+  } catch (error) {
+    const toast = await toastController.create({
+      message: 'Failed to delete playlist.',
+      duration: 1500,
+      position: 'top',
+    });
+    await toast.present();
   }
 };
 </script>
@@ -79,6 +96,10 @@ const handleUpdatePlaylist = async () => {
               size="default"
               @click="openAddSongModal">
               Add to this playlist
+            </ion-button>
+            <ion-button expand="block" @click="deleteCurrentPlaylist(playlist.slug)" id="delete-playlist-button">
+              <ion-icon class="icon" :icon="trashOutline" />
+              Delete Playlist
             </ion-button>
           </div>
         </div>
@@ -199,5 +220,16 @@ const handleUpdatePlaylist = async () => {
 
 .modal-content {
   height: 100%;
+}
+
+#delete-playlist-button {
+  --background: #ff3b30;
+  --color: white;
+  border-radius: 20px;
+  margin: 20px 20px 0 20px;
+}
+
+.icon {
+  margin-right: 10px;
 }
 </style>
