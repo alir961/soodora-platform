@@ -16,5 +16,14 @@ async function retrievePosts(): Promise<Post[]> {
   });
 }
 
+async function deletePost(slug: string): Promise<void> {
+  return axios
+    .delete(`/posts/${slug}`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { CreatePostRequest };
-export { createPost, retrievePosts };
+export { createPost, retrievePosts, deletePost };

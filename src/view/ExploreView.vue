@@ -115,48 +115,46 @@ const showButton = () => {
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <form @submit.prevent="publishPost">
-            <ion-item>
-              <ion-input
-                label="Title"
-                label-placement="floating"
-                placeholder="Enter title"
-                v-model="newPost.title"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Content"
-                label-placement="floating"
-                placeholder="Enter content"
-                v-model="newPost.content"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Image URL"
-                label-placement="floating"
-                placeholder="Enter link to image"
-                v-model="newPost.imageUrl"
-                clearInput></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Audio URL"
-                label-placement="floating"
-                placeholder="Enter link to audio"
-                v-model="newPost.audioUrl"
-                clearInput></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Type</ion-label>
-              <ion-select v-model="newPost.type" placeholder="Select type">
-                <ion-select-option value="ANNOUNCE">Announce</ion-select-option>
-                <ion-select-option value="MERCH_DROP">Merch Drop</ion-select-option>
-                <ion-select-option value="NEW_EVENT">New Event</ion-select-option>
-              </ion-select>
-            </ion-item>
+          <ion-item>
+            <ion-input
+              label="Title"
+              label-placement="floating"
+              placeholder="Enter title"
+              v-model="newPost.title"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Content"
+              label-placement="floating"
+              placeholder="Enter content"
+              v-model="newPost.content"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Image URL"
+              label-placement="floating"
+              placeholder="Enter link to image"
+              v-model="newPost.imageUrl"
+              clearInput></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Audio URL"
+              label-placement="floating"
+              placeholder="Enter link to audio"
+              v-model="newPost.audioUrl"
+              clearInput></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-label>Type</ion-label>
+            <ion-select v-model="newPost.type" placeholder="Select type">
+              <ion-select-option value="ANNOUNCE">Announce</ion-select-option>
+              <ion-select-option value="MERCH_DROP">Merch Drop</ion-select-option>
+              <ion-select-option value="NEW_EVENT">New Event</ion-select-option>
+            </ion-select>
+          </ion-item>
 
-            <ion-button expand="block" type="submit"> Post </ion-button>
-          </form>
+          <ion-button expand="block" @click="publishPost"> Post </ion-button>
         </ion-content>
       </div>
     </ion-modal>
