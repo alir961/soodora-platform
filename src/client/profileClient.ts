@@ -27,15 +27,6 @@ async function retrieveLinkedOAuthProviders(): Promise<OAuthProvider[]> {
     .catch(reject);
 }
 
-async function deleteUserAccount(slug: string): Promise<void> {
-  return axios
-    .delete(`/users/${slug}`, { headers: await getAuthorizedHeader() })
-    .then((response) => {
-      if (!response || response.status !== 200) return reject('Unable to call API');
-    })
-    .catch(reject);
-}
-
 async function updateUserAccount(slug: string, payload: UserUpdatePayload): Promise<void> {
   return axios
     .put(`/users/${slug}`, payload, { headers: await getAuthorizedHeader() })
@@ -45,5 +36,14 @@ async function updateUserAccount(slug: string, payload: UserUpdatePayload): Prom
     .catch(reject);
 }
 
+async function deleteUserAccount(slug: string): Promise<void> {
+  return axios
+    .delete(`/users/${slug}`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { OAuthProvider };
-export { retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders, deleteUserAccount, updateUserAccount };
+export { retrieveAuthenticatedProfile, retrieveLinkedOAuthProviders, updateUserAccount, deleteUserAccount };

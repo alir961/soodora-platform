@@ -12,10 +12,11 @@ import {
   alertController,
   toastController,
 } from '@ionic/vue';
-import { PropType, Ref, ref } from 'vue';
+import { onMounted, PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
 import { trashOutline } from 'ionicons/icons';
 import { deletePost } from '@/client/postClient';
+import { getAuthenticatedUser } from '@/utils';
 
 defineProps({
   post: {
@@ -64,12 +65,18 @@ const deleteCurrentPost = async (slug: string) => {
   });
   await alert.present();
 };
+
+const userSlug = ref<string>();
+
+onMounted(async () => {
+  userSlug.value = (await getAuthenticatedUser()).slug;
+});
 </script>
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
     <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
-      <div v-if="focusedPost === post" class="delete-button-container">
+      <div v-if="focusedPost === post && post.owner.slug === userSlug" class="delete-button-container">
         <ion-button fill="clear" size="small" @click.stop="deleteCurrentPost(post.slug)">
           <ion-icon :icon="trashOutline" />
         </ion-button>
