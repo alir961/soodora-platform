@@ -117,38 +117,38 @@ onIonViewWillEnter(async () => {
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <form @submit.prevent="handleCreatePlaylist">
-            <ion-item>
-              <ion-input
-                label="Name"
-                label-placement="floating"
-                placeholder="Enter name"
-                v-model="newPlaylist.name"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Description"
-                label-placement="floating"
-                placeholder="Enter description"
-                v-model="newPlaylist.description"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Image URL"
-                label-placement="floating"
-                placeholder="Enter link to image"
-                v-model="newPlaylist.imageUrl"
-                clearInput></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-select v-model="newPlaylist.privacy" placeholder="Privacy">
-                <ion-select-option value="PUBLIC">Public</ion-select-option>
-                <ion-select-option value="PRIVATE">Private</ion-select-option>
-                <ion-select-option value="UNLISTED">Unlisted</ion-select-option>
-              </ion-select>
-            </ion-item>
-            <ion-button expand="block" type="submit" :disabled="!newPlaylist.name">Create Playlist</ion-button>
-          </form>
+          <ion-item>
+            <ion-input
+              label="Name"
+              label-placement="floating"
+              placeholder="Enter name"
+              v-model="newPlaylist.name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Description"
+              label-placement="floating"
+              placeholder="Enter description"
+              v-model="newPlaylist.description"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Image URL"
+              label-placement="floating"
+              placeholder="Enter link to image"
+              v-model="newPlaylist.imageUrl"
+              clearInput></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-select v-model="newPlaylist.privacy" placeholder="Privacy">
+              <ion-select-option value="PUBLIC">Public</ion-select-option>
+              <ion-select-option value="PRIVATE">Private</ion-select-option>
+              <ion-select-option value="UNLISTED">Unlisted</ion-select-option>
+            </ion-select>
+          </ion-item>
+          <ion-button expand="block" :disabled="!newPlaylist.name" @click="handleCreatePlaylist">
+            Create Playlist
+          </ion-button>
         </ion-content>
       </div>
     </ion-modal>

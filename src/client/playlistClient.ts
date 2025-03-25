@@ -45,5 +45,21 @@ async function retrieveYoutubePlaylists(): Promise<PlaylistCreateRequest[]> {
   return reject('Unable to call API');
 }
 
+async function deletePlaylist(slug: string): Promise<void> {
+  return axios
+    .delete(`/playlists/${slug}`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { PlaylistCreateRequest };
-export { createPlaylist, retrieveUserPlaylists, retrievePlaylistBySlug, updatePlaylist, retrieveYoutubePlaylists };
+export {
+  createPlaylist,
+  retrieveUserPlaylists,
+  retrievePlaylistBySlug,
+  updatePlaylist,
+  retrieveYoutubePlaylists,
+  deletePlaylist,
+};
