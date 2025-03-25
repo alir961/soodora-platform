@@ -102,7 +102,7 @@ const showButton = () => {
 
     <ion-grid>
       <ion-row>
-        <PostCard v-for="post in posts" :key="post.slug" :post="post" />
+        <PostCard v-for="post in posts" :key="post.slug" :post="post" @post-deleted="loadPosts" />
       </ion-row>
     </ion-grid>
 

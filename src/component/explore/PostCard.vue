@@ -24,6 +24,8 @@ defineProps({
   },
 });
 
+const emit = defineEmits(['post-deleted']);
+
 const playAudio = (audio: Post) => {
   const audioElement = document.createElement('audio');
   audioElement.src = audio.audioUrl;
@@ -47,6 +49,7 @@ const deleteCurrentPost = async (slug: string) => {
         handler: async () => {
           try {
             await deletePost(slug);
+            emit('post-deleted', slug);
           } catch (error) {
             const toast = await toastController.create({
               message: 'Failed to delete post.',

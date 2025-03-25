@@ -6,7 +6,12 @@ import { Post } from '@/entity/Post';
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
 
 async function createPost(post: CreatePostRequest): Promise<void> {
-  return axios.post('/posts', post, { headers: await getAuthorizedHeader() });
+  return axios
+    .post('/posts', post, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 201) return reject('Unable to call API');
+    })
+    .catch(reject);
 }
 
 async function retrievePosts(): Promise<Post[]> {
