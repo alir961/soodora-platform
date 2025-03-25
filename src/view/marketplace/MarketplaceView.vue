@@ -100,54 +100,52 @@ const showButton = () => {
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <form @submit.prevent="submitProduct">
-            <ion-item>
-              <ion-input
-                label="Name"
-                label-placement="floating"
-                placeholder="Enter name"
-                v-model="newProduct.name"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Description"
-                label-placement="floating"
-                placeholder="Enter description"
-                v-model="newProduct.description"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Image URL"
-                label-placement="floating"
-                placeholder="Enter link to image"
-                v-model="newProduct.imageUrl"
-                clearInput></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Category"
-                label-placement="floating"
-                placeholder="Enter commas spaced categories"
-                v-model="newProduct.category"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Price"
-                label-placement="floating"
-                placeholder="Enter price (€)"
-                type="number"
-                v-model="newProduct.price"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                label="Stock Number"
-                label-placement="floating"
-                placeholder="Enter stock number"
-                type="number"
-                v-model="newProduct.quantity"></ion-input>
-            </ion-item>
-            <ion-button expand="block" type="submit">Create Product</ion-button>
-          </form>
+          <ion-item>
+            <ion-input
+              label="Name"
+              label-placement="floating"
+              placeholder="Enter name"
+              v-model="newProduct.name"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Description"
+              label-placement="floating"
+              placeholder="Enter description"
+              v-model="newProduct.description"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Image URL"
+              label-placement="floating"
+              placeholder="Enter link to image"
+              v-model="newProduct.imageUrl"
+              clearInput></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Category"
+              label-placement="floating"
+              placeholder="Enter commas spaced categories"
+              v-model="newProduct.category"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Price"
+              label-placement="floating"
+              placeholder="Enter price (€)"
+              type="number"
+              v-model="newProduct.price"></ion-input>
+          </ion-item>
+          <ion-item>
+            <ion-input
+              label="Stock Number"
+              label-placement="floating"
+              placeholder="Enter stock number"
+              type="number"
+              v-model="newProduct.quantity"></ion-input>
+          </ion-item>
+          <ion-button expand="block" @click="submitProduct">Create Product</ion-button>
         </ion-content>
       </div>
     </ion-modal>

@@ -10,6 +10,7 @@
     "test:e2e": "cypress run",
     "test:unit": "vitest",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier ."
   },
   "dependencies": {

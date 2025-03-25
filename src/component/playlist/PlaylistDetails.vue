@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createOutline, trashOutline } from 'ionicons/icons';
 import {
+  alertController,
   IonButton,
   IonCard,
   IonCardContent,
@@ -57,17 +58,30 @@ const handleUpdatePlaylist = async () => {
 };
 
 const deleteCurrentPlaylist = async (slug: string) => {
-  try {
-    await deletePlaylist(slug);
-    router.back();
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to delete playlist.',
-      duration: 1500,
-      position: 'top',
-    });
-    await toast.present();
-  }
+  const alert = await alertController.create({
+    header: 'Confirm Playlist Deletion',
+    message: 'Are you sure you want to delete this playlist?',
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Delete',
+        handler: async () => {
+          try {
+            await deletePlaylist(slug);
+            router.back();
+          } catch (error) {
+            const toast = await toastController.create({
+              message: 'Failed to delete playlist.',
+              duration: 1500,
+              position: 'top',
+            });
+            await toast.present();
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
 };
 </script>
 
