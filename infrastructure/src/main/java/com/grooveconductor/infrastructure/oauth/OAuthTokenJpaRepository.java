@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface OAuthTokenJpaRepository extends JpaRepository<OAuthTokenEntity, UUID> {
 
     Optional<OAuthTokenEntity> findByProviderAndUserId(OAuthProvider provider, UUID userId);
+
+    Optional<OAuthTokenEntity> findByProviderAndExternalId(OAuthProvider provider, String externalId);
     List<OAuthTokenEntity> findByUserId(UUID userId);
 
 }

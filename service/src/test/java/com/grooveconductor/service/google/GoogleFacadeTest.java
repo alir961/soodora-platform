@@ -12,6 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static java.net.URLEncoder.encode;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.when;
@@ -45,7 +47,7 @@ class GoogleFacadeTest {
 
         // THEN
         assertNotNull(uri);
-        assertEquals(AUTH_URL + QUERY_PARAMS + "&scope=" + SCOPE + "&state=" + state, uri.toString());
+        assertEquals(AUTH_URL + QUERY_PARAMS + "&scope=" + encode(SCOPE, UTF_8) + "&state=" + state, uri.toString());
     }
 
     @Test

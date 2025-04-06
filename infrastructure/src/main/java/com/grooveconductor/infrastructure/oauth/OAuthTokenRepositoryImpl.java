@@ -22,13 +22,14 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     private final UserJpaRepository userRepository;
 
     @Override
-    public void createAuthorization(OAuthProvider provider, UserDTO user, String refreshToken) {
+    public void createAuthorization(OAuthProvider provider, UserDTO user, String externalId, String refreshToken) {
         if (hasAuthorization(provider, user))
             throw new OAuthAuthorizationException("User has already an authorization set for this provider");
         OAuthTokenEntity entity = new OAuthTokenEntity();
 
         entity.setUser(userFromDTO(user));
         entity.setProvider(provider);
+        entity.setExternalId(externalId);
         entity.setRefreshToken(refreshToken);
         repository.save(entity);
     }
@@ -47,11 +48,21 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     }
 
     @Override
-    public String retrieveAuthorization(OAuthProvider provider, UserDTO user) {
+    public String retrieveRefreshToken(OAuthProvider provider, UserDTO user) {
         String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
 
         return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
                 .map(OAuthTokenEntity::getRefreshToken)
+                .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
+    }
+
+    @Override
+    public UserDTO retrieveUser(OAuthProvider provider, String externalId) {
+        String exceptionMessage = "Unable to find " + provider + " authorization for external id #" + externalId;
+
+        return repository.findByProviderAndExternalId(provider, externalId)
+                .map(OAuthTokenEntity::getUser)
+                .map(UserEntity::toDTO)
                 .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
     }
 

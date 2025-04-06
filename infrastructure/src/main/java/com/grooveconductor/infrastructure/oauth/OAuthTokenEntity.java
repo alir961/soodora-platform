@@ -26,6 +26,8 @@ public class OAuthTokenEntity {
 
     private OAuthProvider provider;
 
+    private String externalId;
+
     private String refreshToken;
 
     @JoinColumn

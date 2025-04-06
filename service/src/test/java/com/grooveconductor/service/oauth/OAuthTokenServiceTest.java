@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.test.TestConstants.*;
@@ -46,36 +46,10 @@ class OAuthTokenServiceTest {
     }
 
     @Test
-    void updateUserAuthorization_SuccessCreate() {
-        // GIVEN
-        when(oauthTokenRepository.hasAuthorization(GOOGLE, USER)).thenReturn(false);
-
-        // WHEN
-        oauthTokenService.updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
-
-        // THEN
-        verify(oauthTokenRepository, never()).deleteAuthorization(GOOGLE, USER);
-        verify(oauthTokenRepository).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
-    }
-
-    @Test
-    void updateUserAuthorization_SuccessUpdate() {
-        // GIVEN
-        when(oauthTokenRepository.hasAuthorization(GOOGLE, USER)).thenReturn(true);
-
-        // WHEN
-        oauthTokenService.updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
-
-        // THEN
-        verify(oauthTokenRepository).deleteAuthorization(GOOGLE, USER);
-        verify(oauthTokenRepository).createAuthorization(GOOGLE, USER, REFRESH_TOKEN);
-    }
-
-    @Test
     void retrieveUserRefreshToken_Success() {
         // GIVEN
         when(oauthTokenRepository.hasAuthorization(GOOGLE, USER)).thenReturn(true);
-        when(oauthTokenRepository.retrieveAuthorization(GOOGLE, USER)).thenReturn(REFRESH_TOKEN);
+        when(oauthTokenRepository.retrieveRefreshToken(GOOGLE, USER)).thenReturn(REFRESH_TOKEN);
 
         // WHEN
         String refreshToken = oauthTokenService.retrieveUserRefreshToken(GOOGLE, USER);
@@ -100,7 +74,7 @@ class OAuthTokenServiceTest {
     void retrieveUserAccessToken_Success() {
         // GIVEN
         when(oauthTokenRepository.hasAuthorization(GOOGLE, USER)).thenReturn(true);
-        when(oauthTokenRepository.retrieveAuthorization(GOOGLE, USER)).thenReturn(REFRESH_TOKEN);
+        when(oauthTokenRepository.retrieveRefreshToken(GOOGLE, USER)).thenReturn(REFRESH_TOKEN);
         when(googleFacade.refreshOAuthToken(REFRESH_TOKEN)).thenReturn(AUTHORIZATION);
 
         // WHEN

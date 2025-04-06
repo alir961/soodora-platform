@@ -87,13 +87,13 @@ class AuthenticationServiceTest {
 
         when(userRepository.find(identifier)).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
-        when(tokenRepository.generateToken(USER)).thenReturn("token");
+        when(tokenRepository.generateToken(USER)).thenReturn("externalToken");
 
         // WHEN
         String token = authenticationService.loginUser(command);
 
         // THEN
-        assertEquals("token", token);
+        assertEquals("externalToken", token);
     }
 
     @Test
