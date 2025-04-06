@@ -63,14 +63,39 @@ coverage:
     expire_in: 1 day
   coverage: '/TOTAL COVERAGE = \d+(?:\.\d+)?/'
 
+staging:
+  stage: deploy
+  image: debian:bullseye-slim
+  environment:
+    name: Staging
+    url: http://57.128.38.28/api
+  dependencies:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$STAGING_SSH" | base64 -d > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keygen -lf ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - ssh-add ~/.ssh/id_rsa
+    - ssh-keyscan -H $STAGING_IP >> ~/.ssh/known_hosts
+  script:
+    - scp api/target/*.jar debian@$STAGING_IP:/opt/backend/application.jar
+    - ssh debian@$STAGING_IP 'sudo systemctl restart backend && sudo systemctl daemon-reload'
+  when: "manual"
+
 production:
   stage: deploy
   image: debian:bullseye-slim
+  environment:
+    name: Production
+    url: http://57.128.38.203/api
   before_script:
     - apt-get update
     - apt-get install -y openssh-client
     - mkdir -p ~/.ssh
-    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - echo "$PRODUCTION_SSH" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     - ssh-keygen -lf ~/.ssh/id_rsa
     - eval $(ssh-agent -s)
@@ -81,7 +106,6 @@ production:
     - ssh debian@$PRODUCTION_IP 'sudo systemctl restart backend && sudo systemctl daemon-reload'
   only:
     - main
-    - ci
 
 synchronize:
   stage: deploy
@@ -91,7 +115,7 @@ synchronize:
     - apt-get install -y git openssh-client
     - mkdir -p ~/.ssh
     # Decode & store private key
-    - echo "$SSH_KEY" | base64 -d > ~/.ssh/id_rsa
+    - echo "$PRODUCTION_SSH" | base64 -d > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
     # Configure SSH
     - ssh-keyscan -H github.com >> ~/.ssh/known_hosts
@@ -102,11 +126,11 @@ synchronize:
     - eval $(ssh-agent -s)
     - ssh-add ~/.ssh/id_rsa
   script:
-    - git config --global user.name "Groove Conductor Synchronizer"
-    - git config --global user.email "grooveconductor.eip@example.com"
+    - git config --global user.name "Soodora Synchronizer"
+    - git config --global user.email "contact@example.com"
     - git clone git@github.com:EpitechPromo2026/G-EIP-700-LYN-7-1-eip-ali.raad.git github-repo
     - cd github-repo
-    - git remote add backend_repo git@gitlab.com:groove-conductor-eip/api.git
+    - git remote add backend_repo git@gitlab.com:soodora/api.git
     - git fetch backend_repo
     - rm -rf backend
     - git add .
@@ -115,5 +139,3 @@ synchronize:
     - git push origin main
   only:
     - main
-    - ci
-
