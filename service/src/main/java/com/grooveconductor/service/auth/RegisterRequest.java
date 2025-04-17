@@ -11,7 +11,8 @@ public record RegisterRequest(
         @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com") String email,
         @Schema(description = "Password of the account", example = "passwordPassword#!", defaultValue = "passwordPassword#!") String password,
         @Schema(description = "Firstname of the account", example = "John", defaultValue = "John") String firstname,
-        @Schema(description = "Lastname of account", example = "Doe", defaultValue = "Doe") String lastname)
+        @Schema(description = "Lastname of account", example = "Doe", defaultValue = "Doe") String lastname,
+        @Schema(description = "External OAuth 2.0 token") String external)
         implements
             Request<RegisterCommand> {
 
@@ -29,7 +30,8 @@ public record RegisterRequest(
                 email.trim(),
                 password,
                 firstname,
-                lastname);
+                lastname,
+                external);
     }
 
 }

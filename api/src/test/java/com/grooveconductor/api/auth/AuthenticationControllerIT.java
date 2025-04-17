@@ -41,7 +41,8 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe");
+                "Doe",
+                "external");
 
         when(authenticationService.registerUser(any())).thenReturn(USER);
 
@@ -60,7 +61,8 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe");
+                "Doe",
+                "external");
 
         when(authenticationService.registerUser(any())).thenThrow(UserUnityException.class);
 

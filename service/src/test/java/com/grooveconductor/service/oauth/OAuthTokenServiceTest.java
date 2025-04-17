@@ -1,6 +1,7 @@
 package com.grooveconductor.service.oauth;
 
 import com.grooveconductor.domain.auth.TokenRepository;
+import com.grooveconductor.domain.oauth.AuthorizationMapper;
 import com.grooveconductor.domain.oauth.OAuthTokenRepository;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.google.GoogleFacade;
@@ -36,12 +37,15 @@ class OAuthTokenServiceTest {
 
     private OAuthTokenService oauthTokenService;
 
+    private AuthorizationMapper authorizationMapper;
+
     @BeforeEach
     void setUp() {
         oauthTokenService = new OAuthTokenService(
                 oauthTokenRepository,
                 tokenRepository,
                 userRepository,
+                authorizationMapper,
                 googleFacade);
     }
 

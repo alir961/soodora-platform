@@ -2,10 +2,7 @@ package com.grooveconductor.service.oauth;
 
 import com.grooveconductor.domain.auth.AuthenticationTokenException;
 import com.grooveconductor.domain.auth.TokenRepository;
-import com.grooveconductor.domain.oauth.OAuthAuthorizationException;
-import com.grooveconductor.domain.oauth.OAuthProvider;
-import com.grooveconductor.domain.oauth.OAuthTokenRepository;
-import com.grooveconductor.domain.oauth.RefreshableAuthorization;
+import com.grooveconductor.domain.oauth.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.AuthenticationException;
@@ -36,6 +33,8 @@ public class OAuthTokenService {
     private final TokenRepository tokenRepository;
     private final UserRepository userRepository;
 
+    private final AuthorizationMapper authorizationMapper;
+
     private final GoogleFacade googleFacade;
 
     private final List<String> loginStates = new ArrayList<>();
@@ -50,6 +49,12 @@ public class OAuthTokenService {
         if (user != null)
             return baseUrl + "?token=" + tokenRepository.generateToken(user);
         try {
+            if (loginStates.contains(state)) {
+                String key = authorizationMapper.registerAuthorization(authorization);
+
+                loginStates.remove(state);
+                return baseUrl + "?external=" + key;
+            }
             user = retrieveUserOrThrows(state);
 
             try {
