@@ -4,14 +4,15 @@
 
 La version bêta de Soodora doit démontrer sa valeur essentielle tout en garantissant une expérience stable et cohérente pour les premiers testeurs. Après analyse, nous avons identifié trois fonctionnalités clés à inclure :
 
-| **Feature**                                                           | **Description**                                                                                                                                                                                                                                                                                                       | **Priorité (Haute/Moyenne/Basse)** |
-|------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
-| Algorithme de recommandation pour la découverte d’artistes et de contenus  | Conçu pour mettre en avant les contenus les plus attrayants pour un utilisateur et aider les utilisateurs à découvrir des artistes émergents                                                                                                                                                                          | Moyenne                             |
-| Abonnement aux artistes et personnalisation du contenu                     | Dans la page Explore en deux espaces : une section d’exploration pour découvrir de nouveaux artistes et tendances, et une page personnalisée dédiée aux abonnements. Les utilisateurs peuvent s’abonner à leurs artistes préférés et accéder facilement à leurs publications mises en avant dans cet espace exclusif. | Moyenne                               |
-| Création et exportation de contenus pour les artistes                      | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté, personnalisé sous un format adapté aux réseaux sociaux.             | Haute                               |
+| **Feature**                                                               | **Description**                                                                                                                                                                                                                                                                                                       | **Priorité (Haute/Moyenne/Basse)** |
+|---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
+| Algorithme de recommandation pour la découverte d’artistes et de contenus | Conçu pour mettre en avant les contenus les plus attrayants pour un utilisateur et aider les utilisateurs à découvrir des artistes émergents                                                                                                                                                                          | Moyenne                             |
+| Abonnement aux artistes et personnalisation du contenu                    | Dans la page Explore en deux espaces : une section d’exploration pour découvrir de nouveaux artistes et tendances, et une page personnalisée dédiée aux abonnements. Les utilisateurs peuvent s’abonner à leurs artistes préférés et accéder facilement à leurs publications mises en avant dans cet espace exclusif. | Moyenne                             |
+| Outil de création de page de liens                                        | Permet aux artistes de créer une page de liens personnalisable regroupant leurs plateformes de streaming, réseaux sociaux ou autres, stylée selon la charte Soodora, responsive sur tous les appareils, avec suivi et analytics de clics intégrés.                                                                    | Moyenne                             |
+| Création et exportation de contenus pour les artistes                     | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté, personnalisé sous un format adapté aux réseaux sociaux.             | Haute                               |
 
 ### Changement Depuis la Tech3
-Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours concrets des différents besoins du marché et une remise en question au sein de l'équipe. Ce repositionnement s’est accompagné d’un rebranding complet, avec une nouvelle identité visuelle. Soodora est une plateforme pensée pour permettre aux artistes de se faire connaître et évoluer, tout en offrant aux passionnés de musique un moyen simple de découvrir de nouveaux talents. Avec une page d’exploration interactive, un outil puissant d’exportation de posts et une marketplace intégrée, Soodora crée un lien direct entre les artistes et leur public.
+Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours concrets des différents besoins du marché et une remise en question au sein de l'équipe. Ce repositionnement s’est accompagné d’un rebranding complet, avec une nouvelle identité visuelle. Soodora est une plateforme pensée pour permettre aux artistes de se faire connaître et évoluer, tout en offrant aux passionnés de musique un moyen simple de découvrir de nouveaux talents. Avec une page d’exploration interactive, un outil puissant d’exportation de posts ainsi qu'un outil de création de page de liens et une marketplace intégrée, Soodora crée un lien direct entre les artistes et leur public.
 
 ---
 
@@ -50,7 +51,19 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   3. Vérifier la gestion des abonnements (désabonnement, mise à jour des flux)  
 - **Résultat attendue :** Le contenu des artistes suivis apparaît en priorité dans l’Explore et le Marketplace. L’utilisateur peut facilement se désabonner et voir les mises à jour en temps réel. L’algorithme ajuste la mise en avant du contenu en fonction des abonnements de l’utilisateur.
 
-#### Scénario 3 : Création de Publications
+#### Scénario 3 : Création de la page de liens et analyse de données
+- **Rôle utilisateur :** Artiste
+- **Fonctionnalité testée :** Système de création de la page de liens et son suivi
+- **Objectif :** Vérifier que l'affichage de la page est en accord avec la charte graphique Soodora, vérifier que la page soit accessible via un navigateur externe et que tous les liens soient cliquables. Vérifier que le nombre de clics est enregistrer puis traiter.
+- **Preconditions :** L’artiste est connecté à son compte. L'outil de création de page de liens est accessible.
+- **Étapes du test :**
+  1. Accéder à l’outil de création de page de liens
+  2. Ajouter ces liens et spécifier la plateforme pour afficher le logo correspondant
+  3. Vérifier que le lien vers la page de liens est accessible par un navigateur externe pour tous (artiste, utilisateur, utilisateur non authentifié)
+  4. Vérifier que l'artiste puisse avoir un accés sur les données relatives à cette page (nombre de clics, lien le plus visité)
+- **Résultat attendue :**  La page de liens est générée avec succès. La mise en page respecte la charte graphique de Soodora. Chaque lien ajouté est affiché avec le logo de la plateforme correspondante. Tous les liens sont cliquables et redirigent correctement vers les plateformes spécifiées. L’URL de la page de liens est publique et accessible depuis un navigateur externe, que l’on soit connecté ou non. Aucun bug d’affichage ou de redirection n’est présent. l'artiste dispose d'un accès en temps réel aux données relatives à sa page de liens.
+
+#### Scénario 4 : Création de Publications
 - **Rôle utilisateur :** Artiste 
 - **Fonctionnalité testée :** Création de posts  
 - **Objectif :** Vérifier que les artistes peuvent créer des publications.  
@@ -61,7 +74,7 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   3. Publier et vérifier l’affichage dans l’application
 - **Résultat attendue :** L’artiste peut ajouter différents types de contenu sans erreurs. Le post s’affiche correctement dans l’application, avec les éléments bien formatés. Les utilisateurs peuvent voir et interagir avec la publication.
 
-#### Scénario 4 : Exportation de Publications et Personnalisation
+#### Scénario 5 : Exportation de Publications et Personnalisation
 - **Rôle utilisateur :** Artiste Prenium
 - **Fonctionnalité testée :** Exportation de posts et personnalisation
 - **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts et les personnalisés via l'outil d'exportation sur leurs réseaux sociaux.  
@@ -83,7 +96,7 @@ Les scénarios de test ont été conçus pour refléter les usages réels des ut
 
 - **Découverte de nouveaux artistes et produits via l’algorithme de recommandation**  
 - **Suivi des artistes et personnalisation du contenu affiché**  
-- **Interaction fluide des artistes avec leur audience à travers des publications et des exports personnalisés vers d’autres plateformes**  
+- **Interaction fluide des artistes avec leur audience à travers des publications, une page de liens et des exports personnalisés vers d’autres plateformes**  
 
 ---
 
@@ -95,15 +108,30 @@ Pour valider la réussite de la bêta, nous utilisons les critères suivants :
 - **Performance** : Le temps de chargement des pages et des recommandations doit être optimisé afin d’offrir une navigation fluide et réactive.
 - **Pertinence des recommandations** : L’algorithme de suggestion doit proposer du contenu aligné avec les préférences des utilisateurs. L’efficacité du système sera mesurée par le taux d’engagement sur ces recommandations notamment à travers les interactions générées autour de celles-ci.
 - **Efficacité du système d’abonnement** : Les utilisateurs abonnés à des artistes doivent voir leurs publications mises en avant de manière claire et accessible dans leur espace personnalisé. Ce critère garantit que l’abonnement offre une réelle valeur ajoutée en facilitant l’accès aux contenus préférés des utilisateurs.
-- **Qualité de l’export des publications** : Lorsqu’un post est exporté, il doit conserver son apparence initiale et être adapté aux spécificités de chaque canal de diffusion cible. L’optimisation de l’export garantit une présentation soignée et une visibilité accrue du contenu des artistes.
+- **Création et personnalisation de la page de liens**
+  1. **Workflow intuitif**
+    - Ajout, réorganisation et stylisation des liens en quelques clics, via une interface guidée.
+  2. **Personnalisation avancée**
+    - Choix de thèmes et de palettes de couleurs conformes à la charte Soodora.
+    - Possibilité de définir l’ordre des liens et d’ajouter une image de couverture.
+  3. **Affichage responsive**
+    - Rendu sans erreur et optimal sur mobile et desktop.
+    - Tableau de bord intégré pour le suivi du nombre de clics par lien.
+- **Qualité de l’export des publications**
+  1. **Fidélité du rendu**
+    - Conservation exacte de la mise en page, des visuels et des typographies d’origine.
+  2. **Flux d’export simplifié**
+    - Aperçu en temps réel avant publication.
+    - Export en un clic vers plusieurs canaux simultanément.
 
 ---
 
 ## 5. Bug Connues et Limitations
 
-| **Bug** | **Description** | **Impact** | **Correction Prévu? (Oui/Non)** |
-|---------|-----------------|------------|---------------------------------|
-| x       | x               | x          | Non                             |
+| **Limitation**          | **Description**                                                                                                                                                            | **Impact** | **Correction Prévu? (Oui/Non)**           |
+|-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------------------------------------------|
+| Communauté dispersée    | Difficulté à attirer simultanément artistes et fans sur une nouvelle plateforme.                                                                                           | Élevé     | Oui (campagne marketing solide)           |
+| Base utilisateur active | Necessité d'avoir une base utilisateur actives pour pouvoir proposer des recommendations pertinentes mais aussi pour garantir une visibilité accrue aux artistes émergents. | Élevé     | Oui (accent sur la proposition de valeur) |
 
 ---
 
