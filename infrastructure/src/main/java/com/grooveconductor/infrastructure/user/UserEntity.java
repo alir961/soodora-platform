@@ -4,6 +4,7 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.artist.ArtistEntity;
 import com.grooveconductor.infrastructure.auth.RoleEntity;
 import com.grooveconductor.infrastructure.common.DomainEntity;
+import com.grooveconductor.infrastructure.linkpage.LinkPageEntity;
 import com.grooveconductor.infrastructure.playlist.PlaylistEntity;
 import com.grooveconductor.infrastructure.post.PostEntity;
 import com.grooveconductor.infrastructure.product.ProductEntity;
@@ -76,6 +77,9 @@ public class UserEntity implements DomainEntity<UserDTO> {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PostEntity> posts;
+
+    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    private LinkPageEntity linkPage;
 
     @ManyToMany(fetch = EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))

@@ -2,6 +2,7 @@ package com.grooveconductor.domain.user;
 
 import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.auth.RegisterCommand;
+import com.grooveconductor.domain.linkpage.LinkPageDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.product.ProductDTO;
@@ -22,5 +23,6 @@ public interface UserRepository {
     List<ProductDTO> retrieveProducts(Identifier identifier);
     List<PlaylistDTO> retrievePlaylists(Identifier identifier);
     List<PostDTO> retrievePosts(Identifier identifier);
+    LinkPageDTO retrieveLinkPage(Identifier identifier);
 
 }
