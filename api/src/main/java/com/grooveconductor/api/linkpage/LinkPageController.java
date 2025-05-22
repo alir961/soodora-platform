@@ -30,7 +30,7 @@ import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/linkpage")
+@RequestMapping("/linkpages")
 @Tag(name = "Link Page Controller")
 public class LinkPageController {
 
@@ -121,9 +121,11 @@ public class LinkPageController {
         return linkService.retrieveAllLinks();
     }
 
-    @GetMapping("/links/{slug}")
-    public LinkDTO getLinkBySlug(@PathVariable String slug) {
-        return linkService.retrieveLinkBySlug(slug);
+    @GetMapping("/{pageSlug}/links/{linkSlug}")
+    public LinkDTO getLinkBySlug(
+            @PathVariable String pageSlug,
+            @PathVariable String linkSlug) {
+        return linkService.retrieveLinkBySlug(linkSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
