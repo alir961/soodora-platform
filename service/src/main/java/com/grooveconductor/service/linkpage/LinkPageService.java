@@ -53,6 +53,7 @@ public class LinkPageService {
             throw new LinkUnityException(exception.getMessage());
         }
     }
+
     public void deleteLinkPageBySlug(String slug) throws UnknownLinkPageException {
         try {
             linkPageRepository.deleteBySlug(slug);
