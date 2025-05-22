@@ -47,10 +47,10 @@ build:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
-        VITE_API_URL: "http://57.128.38.203/api"
+        VITE_API_URL: "https://soodora.com/api"
     - if: '$CI_COMMIT_BRANCH != "staging"'
       variables:
-        VITE_API_URL: "http://57.128.38.28/api"
+        VITE_API_URL: "https://staging.soodora.com/api"
     - when: always
     - when: always
 
@@ -59,7 +59,7 @@ staging:
   image: debian:bullseye-slim
   environment:
     name: Staging
-    url: http://57.128.38.28/
+    url: https://staging.soodora.com/
   dependencies:
     - build
   before_script:
@@ -83,7 +83,7 @@ production:
   image: debian:bullseye-slim
   environment:
     name: Production
-    url: http://57.128.38.203/
+    url: https://soodora.com/
   dependencies:
     - build
   before_script:
