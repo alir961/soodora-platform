@@ -68,7 +68,7 @@ staging:
   image: debian:bullseye-slim
   environment:
     name: Staging
-    url: http://57.128.38.28/api
+    url: https://staging.soodora.com/api
   dependencies:
     - build
   before_script:
@@ -90,7 +90,7 @@ production:
   image: debian:bullseye-slim
   environment:
     name: Production
-    url: http://57.128.38.203/api
+    url: https://soodora.com/api
   before_script:
     - apt-get update
     - apt-get install -y openssh-client

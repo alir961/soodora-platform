@@ -87,9 +87,9 @@ public class WebSecurityConfiguration {
 
         config.setAllowCredentials(true);
         config.addAllowedOrigin(frontURL);
-        config.addAllowedOrigin("http//localhost");
-        config.addAllowedOrigin("http//57.128.38.28");
-        config.addAllowedOrigin("http//57.128.38.203");
+        config.addAllowedOrigin("http://localhost");
+        config.addAllowedOrigin("https://staging.soodora.com");
+        config.addAllowedOrigin("https://soodora.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
