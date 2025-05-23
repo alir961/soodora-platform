@@ -7,7 +7,6 @@ import com.grooveconductor.domain.linkpage.LinkPageRepository;
 import com.grooveconductor.domain.linkpage.UpdateLinkPageCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
-import com.grooveconductor.infrastructure.link.LinkJpaRepository;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
@@ -25,7 +24,6 @@ import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSl
 public class LinkPageRepositoryImpl implements LinkPageRepository {
 
     private final LinkPageJpaRepository repository;
-    private final LinkJpaRepository linkRepository;
     private final UserJpaRepository userRepository;
 
     protected LinkPageEntity findLinkPageBySlugOrThrow(String slug) {
@@ -82,9 +80,8 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
         LinkPageEntity linkPage = repository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
 
-        linkRepository.deleteAll(linkPage.getLinks());
-
-        repository.deleteById(linkPage.getId());
+        linkPage.getUser().setLinkPage(null);
+        repository.delete(linkPage);
     }
 
     private String generateUniqueSlug() {
