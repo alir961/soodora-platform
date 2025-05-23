@@ -20,12 +20,12 @@ import {
 } from '@ionic/vue';
 import { add } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { useAuthStore } from '@/store/reactiveStorage';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { createPost, CreatePostRequest, retrievePosts } from '@/client/postClient';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);

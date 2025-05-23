@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons } from '@ionic/vue';
-import { deleteUserData } from '@/store/localStorage';
 import { checkStatus } from '@/client/authenticationClient';
 import { getAuthenticatedUser } from '@/utils';
 import { onMounted } from 'vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { useAuthStore } from '@/store/reactiveStorage';
+import { deleteUserData } from '@/store/localStorage';
 
 const props = defineProps({
   title: {

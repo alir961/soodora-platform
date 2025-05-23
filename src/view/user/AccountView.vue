@@ -15,7 +15,7 @@ import {
   onIonViewWillEnter,
   toastController,
 } from '@ionic/vue';
-import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
+import { deleteBearerToken, saveUserData, deleteUserData } from '@/store/localStorage';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
@@ -56,7 +56,9 @@ watch(showModal, (newVal) => {
 
 const fetchUserData = async () => {
   try {
-    userData.value = await retrieveAuthenticatedProfile();
+    const user = await retrieveAuthenticatedProfile();
+    userData.value = user;
+    await saveUserData(user);
     linkedProviders.value = await retrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
@@ -66,7 +68,7 @@ const fetchUserData = async () => {
 const logout = async () => {
   await deleteBearerToken();
   await deleteUserData();
-  authStore.setAuthenticated(false);
+  authStore.authenticated = false;
   await redirectExplore(router);
 };
 
