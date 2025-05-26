@@ -7,7 +7,7 @@ cache:
   policy: pull-push
 
 variables:
-  VITE_API_URL: ""
+  VITE_API_URL: 'https://staging.soodora.com/api'
 
 stages:
   - install
@@ -47,11 +47,7 @@ build:
   rules:
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
-        VITE_API_URL: "https://soodora.com/api"
-    - if: '$CI_COMMIT_BRANCH != "staging"'
-      variables:
-        VITE_API_URL: "https://staging.soodora.com/api"
-    - when: always
+        VITE_API_URL: 'https://soodora.com/api'
     - when: always
 
 staging:
@@ -76,7 +72,7 @@ staging:
     - ssh debian@$STAGING_IP 'sudo rm -rf /opt/frontend/ && sudo mkdir -p /opt/frontend/'
     - rsync --rsync-path="sudo rsync" -avz dist/ debian@$STAGING_IP:/opt/frontend/
     - ssh debian@$STAGING_IP 'sudo chown -R debian:debian /opt/frontend && sudo chmod -R 755 /opt/frontend'
-  when: "manual"
+  when: 'manual'
 
 production:
   stage: deploy
@@ -122,7 +118,7 @@ synchronize:
     - ssh-add ~/.ssh/id_rsa
   script:
     - git config --global user.name "Soodora Synchronizer"
-    - git config --global user.email "contact@example.com"
+    - git config --global user.email "team@example.com"
     - git clone git@github.com:EpitechPromo2026/G-EIP-700-LYN-7-1-eip-ali.raad.git github-repo
     - cd github-repo
     - git remote add frontend_repo git@gitlab.com:soodora/application.git

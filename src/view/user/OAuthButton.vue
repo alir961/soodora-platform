@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
 import { alertController, IonButton, IonIcon, toastController } from '@ionic/vue';
-import { logoYoutube } from 'ionicons/icons';
+import { logoGoogle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
 import { loadBearerToken } from '@/store/localStorage';
@@ -27,7 +27,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['unlink']);
 
-const providers: ProviderData[] = [{ provider: 'google', icon: logoYoutube, name: 'YouTube' }];
+const providers: ProviderData[] = [{ provider: 'google', icon: logoGoogle, name: 'Google' }];
 const provider: ProviderData = providers.find((provider) => provider.provider === props.provider) || providers[0];
 
 const notifyUnlink = async () => {

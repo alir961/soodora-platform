@@ -13,6 +13,7 @@ interface RegisterRequest {
   lastname: string;
   email: string;
   password: string;
+  external?: string;
 }
 
 async function getAuthorizedHeader(): Promise<object> {
