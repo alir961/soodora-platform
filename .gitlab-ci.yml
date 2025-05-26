@@ -49,6 +49,7 @@ coverage:
   dependencies:
     - build
   script:
+    - mvn spotless:apply
     - mvn $MAVEN_CLI_OPTS verify jacoco:report-aggregate
     - bash coverage/extract_coverage.sh coverage/target/site/jacoco-aggregate/index.html
   artifacts:
