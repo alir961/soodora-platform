@@ -34,8 +34,8 @@ import { logOutOutline, trashOutline, settingsOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 
-const route = useRoute();
 const router = useRouter();
+const route = useRoute();
 const userData = ref<User | null>(null);
 const linkedProviders = ref<OAuthProvider[]>([]);
 const providers: OAuthProvider[] = ['google'];
