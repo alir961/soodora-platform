@@ -59,7 +59,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private void authenticateBearerToken(String token) {
-        String email = tokenRepository.getEmailFromToken(token);
+        String email = tokenRepository.getSubjectFromToken(token);
         UserDTO user = userRepository.find(createFromEmail(email));
         boolean isAuthenticated = getContext().getAuthentication() != null;
 

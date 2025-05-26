@@ -3,6 +3,7 @@ package com.grooveconductor.service.auth;
 import com.grooveconductor.domain.auth.LoginCommand;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.auth.TokenRepository;
+import com.grooveconductor.domain.oauth.AuthorizationMapper;
 import com.grooveconductor.domain.oauth.OAuthTokenRepository;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UnknownIdentifierException;
@@ -39,6 +40,9 @@ class AuthenticationServiceTest {
     @Mock
     private OAuthTokenRepository oauthTokenRepository;
 
+    @Mock
+    private AuthorizationMapper authorizationMapper;
+
     private AuthenticationService authenticationService;
 
     @BeforeEach
@@ -47,13 +51,15 @@ class AuthenticationServiceTest {
                 getInstance(),
                 userRepository,
                 tokenRepository,
-                oauthTokenRepository);
+                oauthTokenRepository,
+                authorizationMapper);
     }
 
     @Test
     void registerUser_Success() {
         // GIVEN
-        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe");
+        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe",
+                "external");
 
         when(userRepository.isUsed(any())).thenReturn(false);
         when(userRepository.save(any())).thenReturn(USER);
@@ -68,7 +74,8 @@ class AuthenticationServiceTest {
     @Test
     void registerUser_NotUnique() {
         // GIVEN
-        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe");
+        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe",
+                "external");
 
         when(userRepository.isUsed(any())).thenReturn(true);
 
@@ -87,13 +94,13 @@ class AuthenticationServiceTest {
 
         when(userRepository.find(identifier)).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
-        when(tokenRepository.generateToken(USER)).thenReturn("token");
+        when(tokenRepository.generateToken(USER)).thenReturn("externalToken");
 
         // WHEN
         String token = authenticationService.loginUser(command);
 
         // THEN
-        assertEquals("token", token);
+        assertEquals("externalToken", token);
     }
 
     @Test

@@ -12,7 +12,8 @@ public class OAuthTokenEntityFactory {
         return new OAuthTokenEntity(
                 randomUUID(),
                 GOOGLE,
-                "refresh-token",
+                "external-id",
+                "refresh-externalToken",
                 user);
     }
 

@@ -26,7 +26,8 @@ class UserRepositoryImplTest {
             "user@example.com",
             "password",
             "firstname",
-            "lastname");
+            "lastname",
+            "external");
 
     private UserJpaRepository userJpaRepository;
     private UserRepositoryImpl userRepository;

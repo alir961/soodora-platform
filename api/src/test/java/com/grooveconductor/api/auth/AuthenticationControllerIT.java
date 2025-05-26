@@ -41,7 +41,8 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe");
+                "Doe",
+                "external");
 
         when(authenticationService.registerUser(any())).thenReturn(USER);
 
@@ -60,7 +61,8 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password",
                 "John",
-                "Doe");
+                "Doe",
+                "external");
 
         when(authenticationService.registerUser(any())).thenThrow(UserUnityException.class);
 
@@ -78,14 +80,14 @@ class AuthenticationControllerIT {
                 "user@example.com",
                 "password");
 
-        when(authenticationService.loginUser(any())).thenReturn("token");
+        when(authenticationService.loginUser(any())).thenReturn("externalToken");
 
         // WHEN & THEN
         mockMvc.perform(post("/auth/login")
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("token"));
+                .andExpect(jsonPath("$.token").value("externalToken"));
     }
 
     @Test

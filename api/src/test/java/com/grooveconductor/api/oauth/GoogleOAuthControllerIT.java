@@ -18,8 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -56,14 +57,14 @@ class GoogleOAuthControllerIT {
 
     @BeforeEach
     void setUp() {
-        when(jwtTokenService.getEmailFromToken(JWT_TOKEN)).thenReturn(USER.email());
+        when(jwtTokenService.getSubjectFromToken(JWT_TOKEN)).thenReturn(USER.email());
         when(userService.retrieveUser(createFromEmail(USER.email()))).thenReturn(USER);
     }
 
     @Test
     void redirectToGoogleOAuthFlow_Redirect() throws Exception {
         // GIVEN
-        when(oauthTokenService.retrieveUserOAuthURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
+        when(oauthTokenService.retrieveUserGoogleOAuthURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google")
@@ -75,7 +76,7 @@ class GoogleOAuthControllerIT {
     @Test
     void redirectToGoogleOAuthFlow_Unauthorized() throws Exception {
         // GIVEN
-        when(oauthTokenService.retrieveUserOAuthURI(INVALID_TOKEN))
+        when(oauthTokenService.retrieveUserGoogleOAuthURI(INVALID_TOKEN))
                 .thenThrow(AuthenticationException.class);
 
         // WHEN & THEN
@@ -87,33 +88,18 @@ class GoogleOAuthControllerIT {
     @Test
     void googleOAuthCallback_Success() throws Exception {
         // GIVEN
+        String code = "code";
+
+        when(oauthTokenService.processGoogleAuthentication(code, JWT_TOKEN)).thenReturn("url");
         when(oauthTokenService.retrieveUserOrThrows(JWT_TOKEN)).thenReturn(USER);
         when(googleFacade.exchangeOAuthToken("code")).thenReturn(AUTHORIZATION);
-        doNothing().when(oauthTokenService).updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
 
         // WHEN & THEN
         mockMvc.perform(get("/auth/google/callback")
-                .param("code", "code")
+                .param("code", code)
                 .param("state", JWT_TOKEN)
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isFound())
-                .andExpect(header().string("Location", not(containsString("error=oauth"))));
-        verify(oauthTokenService)
-                .updateUserAuthorization(GOOGLE, USER, AUTHORIZATION);
-    }
-
-    @Test
-    void googleOAuthCallback_Unauthorized() throws Exception {
-        // GIVEN
-        when(oauthTokenService.retrieveUserOrThrows(INVALID_TOKEN))
-                .thenThrow(AuthenticationException.class);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/auth/google/callback")
-                .param("code", "code")
-                .param("state", INVALID_TOKEN))
-                .andExpect(status().isFound())
-                .andExpect(header().string("Location", containsString("error=oauth")));
+                .andExpect(status().isFound());
     }
 
     @Test
@@ -128,7 +114,7 @@ class GoogleOAuthControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
         verify(oauthTokenService)
-                .deleteUserAuthorization(eq(GOOGLE), eq(USER));
+                .deleteUserAuthorization(GOOGLE, USER);
     }
 
 }

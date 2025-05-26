@@ -19,8 +19,10 @@ import static com.grooveconductor.service.google.GoogleFacade.TOKEN_URL;
 @Component
 public class GoogleFeignClient {
 
+    private static final String ID_TOKEN = "id_token";
     private static final String ACCESS_TOKEN = "access_token";
     private static final String REFRESH_TOKEN = "refresh_token";
+    private static final String EXPIRES_IN = "expires_in";
 
     public RefreshableAuthorization callTokenAPI(Map<String, String> body) {
         return parseResponse(
@@ -39,9 +41,10 @@ public class GoogleFeignClient {
             Map<String, Object> body = throwIfInvalidResponse(response, refreshToken);
 
             return new RefreshableAuthorization(
+                    body.get(ID_TOKEN).toString(),
                     body.get(ACCESS_TOKEN).toString(),
                     body.getOrDefault(REFRESH_TOKEN, refreshToken).toString(),
-                    (Integer) body.get("expires_in"));
+                    (Integer) body.get(EXPIRES_IN));
         } catch (HttpClientErrorException e) {
             throw new OAuthFlowException(e.getResponseBodyAsString());
         } catch (Exception e) {
@@ -52,10 +55,10 @@ public class GoogleFeignClient {
     private static Map<String, Object> throwIfInvalidResponse(Map<String, Object> body, String refreshToken) {
         if (body == null)
             throw new OAuthFlowException("Invalid Google server response");
-        if (!body.containsKey(ACCESS_TOKEN))
-            throw new OAuthFlowException("Missing access token");
+        if (!body.containsKey(ID_TOKEN))
+            throw new OAuthFlowException("Missing access externalToken");
         if (body.getOrDefault(REFRESH_TOKEN, refreshToken) == null)
-            throw new OAuthFlowException("Missing refresh token");
+            throw new OAuthFlowException("Missing refresh externalToken");
         return body;
     }
 

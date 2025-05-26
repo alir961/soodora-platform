@@ -1,8 +1,8 @@
 package com.grooveconductor.api.oauth;
 
+import com.grooveconductor.domain.auth.AuthenticationTokenException;
+import com.grooveconductor.domain.oauth.OAuthAuthorizationException;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.service.auth.AuthenticationException;
-import com.grooveconductor.service.google.GoogleFacade;
 import com.grooveconductor.service.oauth.OAuthTokenService;
 
 import java.net.URI;
@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -30,17 +29,18 @@ public class GoogleOAuthController {
 
     private final OAuthTokenService oauthTokenService;
 
-    private final GoogleFacade googleFacade;
-
     @Value("${frontURL:localhost}")
     private String frontUrl;
 
     @GetMapping
     @ResponseStatus(FOUND)
-    public HttpHeaders redirectToGoogleOAuthFlow(@RequestParam String token) {
+    public HttpHeaders redirectToGoogleOAuthFlow(@RequestParam(required = false) String token) {
         HttpHeaders headers = new HttpHeaders();
 
-        headers.setLocation(oauthTokenService.retrieveUserOAuthURI(token));
+        if (token == null)
+            headers.setLocation(oauthTokenService.retrieveGogoleUnauthorizedOAuthURI());
+        else
+            headers.setLocation(oauthTokenService.retrieveUserGoogleOAuthURI(token));
         return headers;
     }
 
@@ -49,18 +49,14 @@ public class GoogleOAuthController {
     public HttpHeaders googleOAuthCallback(@RequestParam String code, @RequestParam String state)
             throws URISyntaxException {
         HttpHeaders headers = new HttpHeaders();
-        String url = frontUrl + "/account";
-        UserDTO user = null;
 
         try {
-            user = oauthTokenService.retrieveUserOrThrows(state);
-            oauthTokenService.updateUserAuthorization(GOOGLE, user, googleFacade.exchangeOAuthToken(code));
-        } catch (AuthenticationException | HttpClientErrorException ignored) {
-            if (user != null)
-                oauthTokenService.deleteUserAuthorization(GOOGLE, user);
-            url += "?error=oauth";
+            String url = oauthTokenService.processGoogleAuthentication(code, state);
+
+            headers.setLocation(new URI(url));
+        } catch (AuthenticationTokenException | OAuthAuthorizationException ignored) {
+            headers.setLocation(new URI(frontUrl + "/account?error=oauth"));
         }
-        headers.setLocation(new URI(url));
         return headers;
     }
 

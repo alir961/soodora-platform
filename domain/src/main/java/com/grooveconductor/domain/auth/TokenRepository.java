@@ -2,13 +2,11 @@ package com.grooveconductor.domain.auth;
 
 import com.grooveconductor.domain.user.UserDTO;
 
-import java.util.Date;
-
 public interface TokenRepository {
 
-    String getEmailFromToken(String token);
+    String getSubjectFromToken(String token);
 
-    Date getExpirationDateFromToken(String token);
+    String getSubjectFromGoogleToken(String token);
 
     String generateToken(UserDTO user);
 
