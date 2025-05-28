@@ -8,11 +8,15 @@ import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.link.CreateLinkRequest;
-import com.grooveconductor.service.link.UpdateLinkRequest;
 import com.grooveconductor.service.link.LinkService;
+import com.grooveconductor.service.link.UpdateLinkRequest;
 import com.grooveconductor.service.linkpage.CreateLinkPageRequest;
 import com.grooveconductor.service.linkpage.LinkPageService;
 import com.grooveconductor.service.linkpage.UpdateLinkPageRequest;
+
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -20,17 +24,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.Arrays;
-import java.util.List;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.LinkFactory.buildDefaultLink;
 import static com.grooveconductor.test.factory.LinkPageFactory.buildDefaultLinkPage;
-import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -61,23 +63,24 @@ class LinkPageControllerIT {
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         mockMvc.perform(post("/linkpages")
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isCreated());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isCreated());
     }
 
     @Test
     void createLinkPage_shouldReturnBadRequestOnInvalidRequest() throws Exception {
-        when(linkPageService.createLinkPage(any(), any(UserDTO.class))).thenThrow(new InvalidRequestException("Invalid data"));
+        when(linkPageService.createLinkPage(any(), any(UserDTO.class)))
+                .thenThrow(new InvalidRequestException("Invalid data"));
 
         CreateLinkPageRequest request = new CreateLinkPageRequest(LINKPAGE.title(), LINKPAGE.description());
 
         mockMvc.perform(post("/linkpages")
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isBadRequest());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -87,23 +90,24 @@ class LinkPageControllerIT {
         UpdateLinkPageRequest request = new UpdateLinkPageRequest(LINKPAGE.title(), LINKPAGE.description());
 
         mockMvc.perform(put("/linkpages/{slug}", LINKPAGE.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isAccepted());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isAccepted());
     }
 
     @Test
     void updateLinkPage_shouldReturnBadRequestOnInvalid() throws Exception {
-        doThrow(new InvalidRequestException("Invalid update")).when(linkPageService).updateLinkPage(any(), eq(LINKPAGE.slug()));
+        doThrow(new InvalidRequestException("Invalid update")).when(linkPageService).updateLinkPage(any(),
+                eq(LINKPAGE.slug()));
 
         UpdateLinkPageRequest request = new UpdateLinkPageRequest(LINKPAGE.title(), LINKPAGE.description());
 
         mockMvc.perform(put("/linkpages/{slug}", LINKPAGE.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isBadRequest());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -111,7 +115,7 @@ class LinkPageControllerIT {
         when(linkPageService.retrieveLinkPage(any(LinkPageFilter.class))).thenReturn(LINKPAGE);
 
         mockMvc.perform(get("/linkpages")
-                        .param("userSlug", USER.slug()))
+                .param("userSlug", USER.slug()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value(LINKPAGE.slug()))
                 .andExpect(jsonPath("$.links.length()").value(LINK_LIST.size()));
@@ -141,34 +145,36 @@ class LinkPageControllerIT {
         doNothing().when(linkPageService).deleteLinkPageBySlug(LINKPAGE.slug());
 
         mockMvc.perform(delete("/linkpages/{slug}", LINKPAGE.slug())
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isOk());
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
     }
 
     @Test
     void addLink_shouldReturnCreated() throws Exception {
         when(linkService.createLink(any(), eq(USER.slug()))).thenReturn(LINK_1.slug());
 
-        CreateLinkRequest request = new CreateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(), LINK_1.iconUrl());
+        CreateLinkRequest request = new CreateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(),
+                LINK_1.iconUrl());
 
         mockMvc.perform(post("/linkpages/{pageSlug}/links", LINKPAGE.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isCreated());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isCreated());
     }
 
     @Test
     void updateLink_shouldReturnAccepted() throws Exception {
         doReturn(LINK_1).when(linkService).updateLink(any(), eq(LINK_1.slug()));
 
-        UpdateLinkRequest request = new UpdateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(), LINK_1.iconUrl());
+        UpdateLinkRequest request = new UpdateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(),
+                LINK_1.iconUrl());
 
         mockMvc.perform(put("/linkpages/{pageSlug}/links/{linkSlug}", LINKPAGE.slug(), LINK_1.slug())
-                        .contentType("application/json")
-                        .content(asJsonString(request))
-                        .with(user(new UserPrincipal(USER))))
-                        .andExpect(status().isAccepted());
+                .contentType("application/json")
+                .content(asJsonString(request))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isAccepted());
     }
 
     @Test

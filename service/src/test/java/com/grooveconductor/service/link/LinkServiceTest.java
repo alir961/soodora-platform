@@ -6,14 +6,14 @@ import com.grooveconductor.domain.link.LinkDTO;
 import com.grooveconductor.domain.link.LinkRepository;
 import com.grooveconductor.domain.link.UpdateLinkCommand;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;

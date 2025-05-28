@@ -7,6 +7,9 @@ import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.link.LinkUnityException;
 import com.grooveconductor.service.user.UnknownUserException;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,16 +17,13 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-
-import static com.grooveconductor.test.factory.LinkFactory.buildDefaultLink;
-import static com.grooveconductor.test.factory.LinkPageFactory.buildDefaultLinkPage;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.LinkFactory.buildDefaultLink;
+import static com.grooveconductor.test.factory.LinkPageFactory.buildDefaultLinkPage;
 
 @ExtendWith(MockitoExtension.class)
 class LinkPageServiceTest {
@@ -35,7 +35,6 @@ class LinkPageServiceTest {
     private LinkPageRepository linkPageRepository;
 
     private LinkPageService linkPageService;
-
 
     private static final LinkDTO LINK_1 = buildDefaultLink("slug1", "Title 1");
     private static final LinkDTO LINK_2 = buildDefaultLink("slug2", "Title 2");
