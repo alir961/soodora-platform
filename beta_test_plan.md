@@ -1,84 +1,83 @@
 # Plan de Test Bêta – Soodora
 
-## 1. Sélection Des Fonctionnalités Principales
+## 1. Sélection des fonctionnalités principales
 
-La version bêta de Soodora doit démontrer sa valeur essentielle tout en garantissant une expérience stable et cohérente pour les premiers testeurs. Après analyse, nous avons identifié trois fonctionnalités clés à inclure :
+La version bêta de Soodora doit démontrer sa valeur essentielle tout en garantissant une expérience stable et cohérente pour les premiers testeurs. Après analyse, nous avons identifié quatre fonctionnalités clés à inclure :
 
-| **Feature**                                                               | **Description**                                                                                                                                                                                                                                                                                                       | **Priorité (Haute/Moyenne/Basse)** |
+| **Fonctionnalité**                                                        | **Description**                                                                                                                                                                                                                                                                                                       | **Priorité (Haute/Moyenne/Basse)** |
 |---------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------|
 | Algorithme de recommandation pour la découverte d’artistes et de contenus | Conçu pour mettre en avant les contenus les plus attrayants pour un utilisateur et aider les utilisateurs à découvrir des artistes émergents                                                                                                                                                                          | Moyenne                             |
 | Abonnement aux artistes et personnalisation du contenu                    | Dans la page Explore en deux espaces : une section d’exploration pour découvrir de nouveaux artistes et tendances, et une page personnalisée dédiée aux abonnements. Les utilisateurs peuvent s’abonner à leurs artistes préférés et accéder facilement à leurs publications mises en avant dans cet espace exclusif. | Moyenne                             |
-| Outil de création de page de liens                                        | Permet aux artistes de créer une page de liens personnalisable regroupant leurs plateformes de streaming, réseaux sociaux ou autres, stylée selon la charte Soodora, responsive sur tous les appareils, avec suivi et analytics de clics intégrés.                                                                    | Moyenne                             |
+| Outil de création de page de liens                                        | Permet aux artistes de créer une page de liens personnalisable regroupant leurs plateformes de streaming, réseaux sociaux ou autres, stylée selon la charte Soodora, responsive sur tous les appareils.                                                                                                               | Moyenne                             |
 | Création et exportation de contenus pour les artistes                     | Les artistes pourront publier des posts attractifs sous différents formats : annonces, sorties musicales, événements, drops de merch, etc. Chaque post bénéficiera d’un rendu visuel optimisé pour capter l’attention et qui pourra être exporté, personnalisé sous un format adapté aux réseaux sociaux.             | Haute                               |
 
-### Changement Depuis la Tech3
+### Changement depuis la Tech3
 Soodora a changé de direction entre la Tech3 et la Tech4 suite à des retours concrets des différents besoins du marché et une remise en question au sein de l'équipe. Ce repositionnement s’est accompagné d’un rebranding complet, avec une nouvelle identité visuelle. Soodora est une plateforme pensée pour permettre aux artistes de se faire connaître et évoluer, tout en offrant aux passionnés de musique un moyen simple de découvrir de nouveaux talents. Avec une page d’exploration interactive, un outil puissant d’exportation de posts ainsi qu'un outil de création de page de liens et une marketplace intégrée, Soodora crée un lien direct entre les artistes et leur public.
 
 ---
 
 ## 2. Scénarios de Test Bêta
-### 2.1 Rôles des Utilsiateurs
+### 2.1 Rôles des utilisateurs
 
-| **Rôles**            | **Description**                                                                                                                                                                                                                                                                                                                                  |
-|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Utilisateur Standard | Ce rôle est destiné aux passionnés de musique souhaitant découvrir de nouveaux talents. Les utilisateurs standard bénéficient d’un accès complet à Soodora pour découvrir de nouveaux artistes via la page "exploration", s’abonner aux artistes, interagir avec les contenus postés et profiter d’un algorithme de recommandation personnalisé. |
-| Artiste Standard     | Ce rôle s’adresse aux artistes qui souhaitent se faire connaître et engager leur public. Les artistes standard peuvent créer, publier et exporter divers formats de contenus (annonces, sorties musicales, événements, etc.), bénéficier d'un accès au marketplace et développer leur communauté via la plateforme.                              |
-| Artiste Prenium      | Les artistes Prenium profitent d’une visibilité accrue, d’outils d’exportation performants sans watermark et d’opportunités de rentabilité accrue via des commissions moindres sur leur merchandising, par exemple. Ce statut permet de valoriser et diffuser leur univers musical de manière optimale.                                          |
+| **Rôle**            | **Description**                                                                                                                                                                                                                                                                                                                                  |
+|---------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Utilisateur Standard | Ce rôle est destiné aux passionnés de musique souhaitant découvrir de nouveaux talents. Les utilisateurs Standard bénéficient d’un accès complet à Soodora pour découvrir de nouveaux artistes via la page "exploration", s’abonner aux artistes, interagir avec les contenus postés et profiter d’un algorithme de recommandation personnalisé. |
+| Artiste Standard    | Ce rôle s’adresse aux artistes qui souhaitent se faire connaître et engager leur public. Les artistes Standard peuvent créer, publier et exporter divers formats de contenus (annonces, sorties musicales, événements, etc.), bénéficier d'un accès au marketplace et développer leur communauté via la plateforme.                              |
+| Artiste Premium     | Les artistes Premium profitent d'une meilleure visibilité, d’outils d’exportation performants sans watermark et d’opportunités de rentabilité accrue via des commissions moindres sur leur merchandising, par exemple. Ce statut permet de valoriser et diffuser leur univers musical de manière optimale.                                       |
 
 ### 2.2 Scénarios de Test
 Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionnalités et d’assurer une expérience fluide pour les utilisateurs.
 
-#### Scénario 1 : Recommandations Personnalisées
+#### Scénario 1 : Recommandations personnalisées
 - **Rôle utilisateur :** Utilisateur Standard  
 - **Fonctionnalité testée :** Algorithme de recommandation  
 - **Objectif :** Vérifier que l’utilisateur reçoit des recommandations pertinentes en fonction de son activité et de ses abonnements.  
-- **Preconditions :** L’utilisateur a un compte actif et est connecté. 
+- **Pré-requis :** L’utilisateur a un compte actif et est connecté. 
 - **Étapes du test :** 
   1. Créer un compte et parcourir la section Explore  
   2. Interagir avec plusieurs posts et produits du marketplace
   3. Vérifier si les recommandations évoluent en fonction des interactions  
   4. S’assurer que les recommandations sont pertinentes et diversifiées  
-- **Résultat attendue :** L’utilisateur reçoit des recommandations adaptées à ses préférences et interactions. La diversité du contenu recommandé est respectée. Les recommandations évoluent dynamiquement en fonction des nouvelles interactions.
+- **Résultat attendu :** L’utilisateur reçoit des recommandations adaptées à ses préférences et interactions. La diversité du contenu recommandé est respectée. Les recommandations évoluent dynamiquement en fonction des nouvelles interactions.
 
-#### Scénario 2 : Abonnement et Personnalisation du Contenu
+#### Scénario 2 : Abonnement et personnalisation du contenu
 - **Rôle utilisateur :** Utilisateur Standard 
 - **Fonctionnalité testée :** Système d’abonnement aux artistes  
 - **Objectif :** Vérifier que les abonnements sont bien pris en compte et que le contenu des artistes suivis apparaît en priorité.  
-- **Preconditions :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
+- **Pré-requis :** L’utilisateur a un compte actif et est connecté. Des artistes sont disponibles dans la section Explore.
 - **Étapes du test :** 
   1. S’abonner à plusieurs artistes depuis la section Explore  
   2. Accéder à la section Explore et Marketplace pour voir si le contenu des artistes suivis est mis en avant  
   3. Vérifier la gestion des abonnements (désabonnement, mise à jour des flux)  
-- **Résultat attendue :** Le contenu des artistes suivis apparaît en priorité dans l’Explore et le Marketplace. L’utilisateur peut facilement se désabonner et voir les mises à jour en temps réel. L’algorithme ajuste la mise en avant du contenu en fonction des abonnements de l’utilisateur.
+- **Résultat attendu :** Le contenu des artistes suivis apparaît en priorité dans l’Explore et le Marketplace. L’utilisateur peut facilement se désabonner et voir les mises à jour en temps réel. L’algorithme ajuste la mise en avant du contenu en fonction des abonnements de l’utilisateur.
 
-#### Scénario 3 : Création de la page de liens et analyse de données
+#### Scénario 3 : Création de la page de liens
 - **Rôle utilisateur :** Artiste
-- **Fonctionnalité testée :** Système de création de la page de liens et son suivi
-- **Objectif :** Vérifier que l'affichage de la page est en accord avec la charte graphique Soodora, vérifier que la page soit accessible via un navigateur externe et que tous les liens soient cliquables. Vérifier que le nombre de clics est enregistrer puis traiter.
-- **Preconditions :** L’artiste est connecté à son compte. L'outil de création de page de liens est accessible.
+- **Fonctionnalité testée :** Système de création de la page de liens
+- **Objectif :** Vérifier que l'affichage de la page est en accord avec la charte graphique Soodora, vérifier que la page soit accessible via un navigateur externe et que tous les liens soient cliquables.
+- **Pré-requis :** L’artiste est connecté à son compte. L'outil de création de page de liens est accessible.
 - **Étapes du test :**
   1. Accéder à l’outil de création de page de liens
   2. Ajouter ces liens et spécifier la plateforme pour afficher le logo correspondant
   3. Vérifier que le lien vers la page de liens est accessible par un navigateur externe pour tous (artiste, utilisateur, utilisateur non authentifié)
-  4. Vérifier que l'artiste puisse avoir un accés sur les données relatives à cette page (nombre de clics, lien le plus visité)
-- **Résultat attendue :**  La page de liens est générée avec succès. La mise en page respecte la charte graphique de Soodora. Chaque lien ajouté est affiché avec le logo de la plateforme correspondante. Tous les liens sont cliquables et redirigent correctement vers les plateformes spécifiées. L’URL de la page de liens est publique et accessible depuis un navigateur externe, que l’on soit connecté ou non. Aucun bug d’affichage ou de redirection n’est présent. l'artiste dispose d'un accès en temps réel aux données relatives à sa page de liens.
+- **Résultat attendu :**  La page de liens est générée avec succès. La mise en page respecte la charte graphique de Soodora. Chaque lien ajouté est affiché avec le logo de la plateforme correspondante. Tous les liens sont cliquables et redirigent correctement vers les plateformes spécifiées. L’URL de la page de liens est publique et accessible depuis un navigateur externe, que l’on soit connecté ou non. Aucun bug d’affichage ou de redirection n’est présent.
 
-#### Scénario 4 : Création de Publications
+#### Scénario 4 : Création de publications
 - **Rôle utilisateur :** Artiste 
 - **Fonctionnalité testée :** Création de posts  
 - **Objectif :** Vérifier que les artistes peuvent créer des publications.  
-- **Preconditions :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
+- **Pré-requis :** L’artiste est connecté à son compte. L’outil de création de publication est accessible.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication  
   2. Ajouter du contenu (texte, image, lien musical, produit)  
   3. Publier et vérifier l’affichage dans l’application
-- **Résultat attendue :** L’artiste peut ajouter différents types de contenu sans erreurs. Le post s’affiche correctement dans l’application, avec les éléments bien formatés. Les utilisateurs peuvent voir et interagir avec la publication.
+- **Résultat attendu :** L’artiste peut ajouter différents types de contenu sans erreurs. Le post s’affiche correctement dans l’application, avec les éléments bien formatés. Les utilisateurs peuvent voir et interagir avec la publication.
 
-#### Scénario 5 : Exportation de Publications et Personnalisation
-- **Rôle utilisateur :** Artiste Prenium
+#### Scénario 5 : Exportation de publications et personnalisation
+- **Rôle utilisateur :** Artiste Premium
 - **Fonctionnalité testée :** Exportation de posts et personnalisation
-- **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts et les personnalisés via l'outil d'exportation sur leurs réseaux sociaux.  
-- **Preconditions :** L’artiste Prenium est connecté à son compte. L’outil d'exportation est accessible. L’artiste a déjà publié au moins un post.
+- **Objectif :** Vérifier que les artistes peuvent exporter efficacement des posts et les personnaliser via l'outil d'exportation sur leurs réseaux sociaux.  
+- **Pré-requis :** L’artiste Premium est connecté à son compte. L’outil d'exportation est accessible. L’artiste a déjà publié au moins un post.
 - **Étapes du test :** 
   1. Accéder à l’outil de création de publication
   2. Ajouter du contenu (texte, image, lien musical, produit)
@@ -86,11 +85,11 @@ Nous avons élaboré plusieurs scénarios de test afin de valider ces fonctionna
   4. Accéder à l'outil d'exportation
   5. Personnaliser le post
   6. Exporter puis publier le design sur un réseau social et vérifier la mise en page sur celui-ci
-- **Résultat attendue :** La personnalisation et l'exportation du post se fait sans erreurs technique. La mise en page est conservée sur le design exporté ainsi que sur le réseau social.
+- **Résultat attendu :** La personnalisation et l'exportation du post se fait sans erreurs techniques. La mise en page est conservée sur le design exporté ainsi que sur le réseau social.
 
 ---
 
-## 3. Couverture des Parcours Utilisateur Clés
+## 3. Couverture des parcours utilisateurs clés
 
 Les scénarios de test ont été conçus pour refléter les usages réels des utilisateurs. Les parcours clés validés dans cette phase sont :
 
@@ -100,7 +99,7 @@ Les scénarios de test ont été conçus pour refléter les usages réels des ut
 
 ---
 
-## 4. Critères de Réussite
+## 4. Critères de réussite
 
 Pour valider la réussite de la bêta, nous utilisons les critères suivants :
 
@@ -116,22 +115,21 @@ Pour valider la réussite de la bêta, nous utilisons les critères suivants :
     - Possibilité de définir l’ordre des liens et d’ajouter une image de couverture.
   3. **Affichage responsive**
     - Rendu sans erreur et optimal sur mobile et desktop.
-    - Tableau de bord intégré pour le suivi du nombre de clics par lien.
 - **Qualité de l’export des publications**
   1. **Fidélité du rendu**
     - Conservation exacte de la mise en page, des visuels et des typographies d’origine.
   2. **Flux d’export simplifié**
     - Aperçu en temps réel avant publication.
-    - Export en un clic vers plusieurs canaux simultanément.
+    - Export en un clic vers plusieurs canaux.
 
 ---
 
-## 5. Bug Connues et Limitations
+## 5. Bug connus et limitations
 
 | **Limitation**          | **Description**                                                                                                                                                            | **Impact** | **Correction Prévu? (Oui/Non)**           |
 |-------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------|-------------------------------------------|
 | Communauté dispersée    | Difficulté à attirer simultanément artistes et fans sur une nouvelle plateforme.                                                                                           | Élevé     | Oui (campagne marketing solide)           |
-| Base utilisateur active | Necessité d'avoir une base utilisateur actives pour pouvoir proposer des recommendations pertinentes mais aussi pour garantir une visibilité accrue aux artistes émergents. | Élevé     | Oui (accent sur la proposition de valeur) |
+| Base utilisateur active | Nécessité d'avoir une base utilisateur active pour pouvoir proposer des recommendations pertinentes mais aussi pour garantir une visibilité accrue aux artistes émergents. | Élevé     | Oui (accent sur la proposition de valeur) |
 
 ---
 
@@ -139,7 +137,7 @@ Pour valider la réussite de la bêta, nous utilisons les critères suivants :
 
 Ce plan de test n'est pas seulement une feuille de route technique : il incarne l'engagement de Soodora à révolutionner la manière dont les artistes et leurs publics interagissent. En évaluant rigoureusement la version bêta, nous visons à confirmer la stabilité, la performance et la pertinence de chaque fonctionnalité.
 
-Ce plan représente un levier essentiel pour recueillir des retours constructifs qui orienteront les prochaines phases de développement. Les tests couvrent des scénarios allant de la personnalisation des recommandations à l'interaction des artistes via la création et l'exportation de contenus. Ceci offrent une vision d'ensemble de l'utilisation réelle de Soodora. Les enseignements tirés permettront non seulement de corriger les éventuelles "bug" mais aussi de renforcer la proposition de valeur de Soodora.
+Ce plan représente un levier essentiel pour recueillir des retours constructifs qui orienteront les prochaines phases de développement. Les tests couvrent des scénarios allant de la personnalisation des recommandations à l'interaction des artistes via la création et l'exportation de contenus. Ceci offrent une vision d'ensemble de l'utilisation réelle de Soodora. Les enseignements tirés permettront non seulement de corriger les éventuels "bug" mais aussi de renforcer la proposition de valeur de Soodora.
 
-Pour conclure, cette démarche vise à transformer Soodora en une plateforme incontournable dans l'univers musical, garantissant une transition harmonieuse vers une version stable et complète. Ce plan de test est le point de lancement vers la concrétisation de la vision de Soodora: établir un lien direct, innovant et durable entre les artistes et leur public.
+Pour conclure, cette démarche vise à transformer Soodora en une plateforme incontournable dans l'univers musical, garantissant une transition harmonieuse vers une version stable et complète. Ce plan de test est le point de lancement vers la concrétisation de la vision de Soodora: établir un lien direct, innovant et durable entre les artistes et leurs publics.
 **_Soodora, là où la musique trouve son public._**

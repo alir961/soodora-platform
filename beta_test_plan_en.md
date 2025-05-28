@@ -2,13 +2,13 @@
 
 ## 1. Selection of Key Features
 
-The beta version of Soodora must demonstrate its core value while ensuring a stable and coherent experience for early testers. After analysis, we have identified three key features to include:
+The beta version of Soodora must demonstrate its core value while ensuring a stable and coherent experience for early testers. After analysis, we have identified four key features to include:
 
 | **Feature**                                                               | **Description**                                                                                                                                                                                                                                                            | **Priority (High/Medium/Low)** |
 |---------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------|
 | Recommendation algorithm for discovering artists and content             | Designed to highlight the most engaging content for a user and help users discover emerging artists                                                                                                                                                                        | Medium                        |
 | Artist subscription and personalized content                             | On the Explore page, two sections: one for discovering new artists and trends, and a personalized page dedicated to subscriptions. Users can subscribe to their favorite artists and easily access their featured posts in this exclusive space.                           | Medium                        |
-| Link page creation tool                                                  | Allows artists to create a customizable link page that gathers their streaming platforms, social media or other links, styled according to Soodora’s brand identity, responsive on all devices, with integrated click tracking and analytics.                              | Medium                        |
+| Link page creation tool                                                  | Allows artists to create a customizable link page that gathers their streaming platforms, social media or other links, styled according to Soodora’s brand identity, responsive on all devices.                                                                            | Medium                        |
 | Content creation and export for artists                                  | Artists will be able to publish engaging posts in various formats: announcements, music releases, events, merch drops, etc. Each post will have an optimized visual rendering to capture attention and can be exported and customized in a format suited for social media. | High                          |
 
 ### Change Since Tech3
@@ -52,17 +52,16 @@ We have developed several test scenarios to validate these features and ensure a
   3. Verify subscription management (unsubscribe, feed updates)
 - **Expected Outcome:** Followed artists’ content appears first in Explore and the Marketplace. The user can easily unsubscribe and see real-time feed updates. The algorithm adjusts content prominence based on subscriptions.
 
-#### Scenario 3: Link Page Creation and Data Analytics
+#### Scenario 3: Link Page Creation
 - **User Role:** Artist
-- **Feature Tested:** Link page creation system and analytics
-- **Objective:** Ensure that the link page layout matches the Soodora brand guidelines, is accessible via external browsers, and that all links are clickable. Verify that click counts are recorded and processed.
+- **Feature Tested:** Link page creation system
+- **Objective:** Ensure that the link page layout matches the Soodora brand guidelines, is accessible via external browsers, and that all links are clickable.
 - **Preconditions:** The artist is logged into their account. The link page creation tool is available.
 - **Test Steps:**
   1. Open the link page creation tool
   2. Add links and specify the platform to display the corresponding logo
   3. Verify the link page is accessible externally (artist, authenticated user, unauthenticated user)
-  4. Verify the artist can access data related to this page (click counts, top link)
-- **Expected Outcome:** The link page is successfully generated. The layout follows Soodora branding. Each link displays the correct platform logo. All links are clickable and redirect correctly. The page URL is public and accessible by anyone. No display or redirection bugs. The artist has real-time access to page analytics.
+- **Expected Outcome:** The link page is successfully generated. The layout follows Soodora branding. Each link displays the correct platform logo. All links are clickable and redirect correctly. The page URL is public and accessible by anyone. No display or redirection bugs.
 
 #### Scenario 4: Post Creation
 - **User Role:** Artist
@@ -112,7 +111,7 @@ To validate the success of the beta, we use the following criteria:
 - **Link Page Creation and Personalization**:
   1. **Workflow**: Intuitive process for adding, rearranging, and styling links in a guided interface.
   2. **Personalization**: Theme and color palette selection compliant with Soodora branding, link ordering, and cover image addition.
-  3. **Responsive Display**: Error-free, optimal rendering on mobile and desktop, with a dashboard for click tracking.
+  3. **Responsive Display**: Error-free, optimal rendering on mobile and desktop.
 - **Publication Export Quality**:
   1. **Render Fidelity**: Exact preservation of layout, visuals, and typography.
   2. **Export Workflow**: Real-time preview before publishing and one-click export to multiple channels.
