@@ -4,7 +4,6 @@ import { cartOutline, linkOutline, musicalNotesOutline, personOutline, planetOut
 import { capitalize } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { ref, computed, watchEffect, onMounted } from 'vue';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 interface TabEntry {
   name: string;
@@ -28,8 +27,10 @@ const tabs: TabEntry[] = [
 
 const loadUser = async () => {
   if (authStore.isAuthenticated) {
+    const user = authStore.getAuthenticatedUser;
+
+    if (user === null) return;
     try {
-      const user = await retrieveAuthenticatedProfile();
       isAdminOrArtist.value = user.roles.includes('ADMIN') || user.roles.includes('ARTIST');
     } catch (error) {
       console.error('Unable to load user data:', error);

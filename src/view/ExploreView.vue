@@ -25,7 +25,6 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { createPost, CreatePostRequest, retrievePosts } from '@/client/postClient';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const userData: Ref<User | null> = ref(null);
 const showModal: Ref<boolean> = ref(false);
@@ -39,16 +38,6 @@ const newPost: Reactive<CreatePostRequest> = reactive({
   createdAt: new Date(),
 });
 const authStore = useAuthStore();
-
-const fetchUserData = async () => {
-  if (authStore.isAuthenticated) {
-    try {
-      userData.value = await retrieveAuthenticatedProfile();
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
-    }
-  }
-};
 
 const loadPosts = async () => {
   try {
@@ -84,7 +73,9 @@ onIonViewWillEnter(async () => {
   await loadPosts();
 });
 
-onMounted(fetchUserData);
+onMounted(() => {
+  if (authStore.isAuthenticated) userData.value = authStore.getAuthenticatedUser;
+});
 
 const showButton = () => {
   return userData.value?.roles.includes('ADMIN') || userData.value?.roles.includes('ARTIST');

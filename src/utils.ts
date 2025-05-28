@@ -1,9 +1,6 @@
 import { retrieveCallbackURL } from '@/axiosConfiguration';
 import { Router } from 'vue-router';
-import { User } from '@/entity/User';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { toastController } from '@ionic/vue';
-import { saveUserData } from '@/store/localStorage';
 
 function reject(reason: string | Error) {
   if (reason instanceof Error) return Promise.reject(reason);
@@ -31,16 +28,4 @@ async function userIdentifierNotFoundToast() {
   });
 }
 
-async function getAuthenticatedUser(): Promise<User> {
-  try {
-    if (!(await retrieveAuthenticatedProfile())) {
-      throw new Error('User not found');
-    }
-    return retrieveAuthenticatedProfile();
-  } catch (error) {
-    await saveUserData(await retrieveAuthenticatedProfile());
-    return retrieveAuthenticatedProfile();
-  }
-}
-
-export { reject, redirectLogin, capitalize, getAuthenticatedUser, redirectExplore, userIdentifierNotFoundToast };
+export { reject, redirectLogin, capitalize, redirectExplore, userIdentifierNotFoundToast };

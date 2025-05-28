@@ -15,12 +15,13 @@ import {
   CreateLinkRequest,
 } from '@/client/linkPageClient';
 import { Link } from '@/entity/Link';
-import { getAuthenticatedUser } from '@/utils';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
 const router = useRouter();
+
+const authStore = useAuthStore();
 
 const pageSlug = computed(() => route.params.slug as string | undefined);
 const isCreateMode = computed(() => !pageSlug.value);
@@ -62,11 +63,8 @@ async function submitCreate() {
     };
     const created = await createLinkPage(pageCommand);
 
-    for (const link of links.value) {
-      await createLink(created.slug, link);
-    }
-
-    router.push(`/linkpages/${created.slug}`);
+    for (const link of links.value) await createLink(created.slug, link);
+    await router.push(`/linkpages/${created.slug}`);
   } catch (error) {
     alert('Unable to create Link Page : ' + error);
   }
@@ -86,8 +84,7 @@ async function loadPage() {
       iconUrl: link.iconUrl,
     }));
 
-    const currentUser = await retrieveAuthenticatedProfile();
-    isOwner.value = currentUser?.slug === page.owner.slug;
+    isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
   } catch (error) {
     alert('Unable to load the Link Page : ' + error);
   }
@@ -141,13 +138,17 @@ async function submitLinkDeletion(linkSlug?: string) {
 }
 
 async function checkIfUserHasLinkPage() {
-  const user = await getAuthenticatedUser();
+  const userSlug: string | null = authStore.getAuthenticatedUserSlug;
 
+  if (!userSlug) {
+    resetData();
+    router.back();
+    return;
+  }
   try {
-    const page = await getUserLinkPage(user.slug);
-    if (page?.slug) {
-      router.push(`/linkpages/${page.slug}`);
-    }
+    const page = await getUserLinkPage(userSlug);
+
+    if (page?.slug) await router.push(`/linkpages/${page.slug}`);
   } catch (error) {
     resetData();
     alert(`You don't have Link Page yet`);

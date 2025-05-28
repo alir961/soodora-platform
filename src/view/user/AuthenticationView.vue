@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonButton, onIonViewWillEnter, IonIcon, toastController } from '@ionic/vue';
-import { saveBearerToken, loadBearerToken } from '@/store/localStorage';
+import { saveBearerToken, loadBearerToken, deleteBearerToken } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRouter, useRoute } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
@@ -45,8 +45,8 @@ onIonViewWillEnter(async () => {
     await retrieveAuthenticatedProfile();
 
     await router.push('/explore');
-  } catch (e) {
-    // User is not logged
+  } catch (error) {
+    await deleteBearerToken().catch(() => console.warn('Unable to delete bearer token', error));
   }
 });
 
