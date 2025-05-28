@@ -19,9 +19,9 @@ import { createProduct, CreateProductRequest, retrieveProducts } from '@/client/
 import { Product } from '@/entity/Product';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { useAuthStore } from '@/store/reactiveStorage';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -79,7 +79,7 @@ const showButton = () => {
   <ApplicationViewport title="Marketplace">
     <template #toolbar>
       <div id="toolbar-button">
-        <ion-button v-if="showButton()" size="small" @click="showModal = true" :inert="showModal">
+        <ion-button v-if="showButton" size="small" @click="showModal = true" :inert="showModal">
           <ion-icon :icon="add"></ion-icon>
         </ion-button>
       </div>

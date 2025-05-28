@@ -8,6 +8,7 @@ import PlaylistView from '@/view/playlist/PlaylistView.vue';
 import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
+import LinkPageView from '@/view/LinkPageView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -18,6 +19,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/explore',
     name: 'Explore',
     component: HomeView,
+  },
+  {
+    path: '/linkpages',
+    name: 'LinkPageCreate',
+    component: LinkPageView,
+  },
+  {
+    path: '/linkpages/:slug',
+    name: 'LinkPageDetail',
+    component: LinkPageView,
   },
   {
     path: '/authentication',
