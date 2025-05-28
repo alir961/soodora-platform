@@ -6,6 +6,8 @@ import com.grooveconductor.service.common.Request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import static java.lang.Character.*;
+
 public record RegisterRequest(
         @Schema(description = "Username of the account", example = "Username", defaultValue = "Username") String username,
         @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com") String email,
@@ -18,20 +20,44 @@ public record RegisterRequest(
 
     @Override
     public RegisterCommand toCommand() throws InvalidRequestException {
-        if (username == null || username.trim().length() <= 5)
+        if (username == null || username.isBlank())
             throw new InvalidRequestException("Username is not valid");
         if (email == null || !email.contains("@"))
             throw new InvalidRequestException("Email is not valid");
-        if (password == null || password.length() <= 5)
+        if (password == null || !isValidPassword(password))
             throw new InvalidRequestException("Password is not valid");
 
         return new RegisterCommand(
                 username.trim(),
                 email.trim(),
                 password,
-                firstname,
-                lastname,
+                firstname.trim(),
+                lastname.trim(),
                 external);
+    }
+
+    private boolean isValidPassword(String password) {
+        boolean hasLowerCase = false;
+        boolean hasUpperCase = false;
+        boolean hasDigit = false;
+        boolean hasSpecial = false;
+
+        if (password.length() < 6)
+            return false;
+        for (char character : password.toCharArray()) {
+            if (isLowerCase(character))
+                hasLowerCase = true;
+            else if (isUpperCase(character))
+                hasUpperCase = true;
+            else if (isDigit(character))
+                hasDigit = true;
+            else
+                hasSpecial = true;
+
+            if (hasLowerCase && hasUpperCase && hasDigit && hasSpecial)
+                return true;
+        }
+        return false;
     }
 
 }

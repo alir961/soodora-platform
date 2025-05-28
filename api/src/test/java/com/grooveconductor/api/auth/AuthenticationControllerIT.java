@@ -39,7 +39,7 @@ class AuthenticationControllerIT {
         RegisterRequest request = new RegisterRequest(
                 "username",
                 "user@example.com",
-                "password",
+                "Password1234!",
                 "John",
                 "Doe",
                 "external");
