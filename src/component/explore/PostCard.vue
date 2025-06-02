@@ -28,12 +28,6 @@ defineProps({
 
 const emit = defineEmits(['post-deleted']);
 
-const playAudio = (audio: Post) => {
-  const audioElement = document.createElement('audio');
-  audioElement.src = audio.audioUrl;
-  audioElement.play();
-};
-
 const focusedPost: Ref<Post | null> = ref(null);
 
 const focusPost = (post: Post) => {
@@ -83,10 +77,9 @@ const authStore = useAuthStore();
       <ion-card-content>
         <ion-card-title>{{ post.title }}</ion-card-title>
         <p>{{ post.content }}</p>
-        <ion-img :src="post.imageUrl" :alt="`Post ${post.title}`" />
+        <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
         <div v-if="post.audioUrl" class="audio-content">
-          <ion-button v-if="focusedPost === post" expand="block" @click.stop="playAudio(post)"> Play Audio</ion-button>
-          <audio v-if="focusedPost === post" :src="post.audioUrl" controls></audio>
+          <audio :src="post.audioUrl" controls></audio>
         </div>
         <div
           v-if="focusedPost === post && post.owner.slug === authStore.getAuthenticatedUserSlug"
@@ -102,8 +95,12 @@ const authStore = useAuthStore();
 </template>
 
 <style scoped>
-ion-card.focused {
-  outline: 0.2em solid #3880ff;
+ion-card {
+  margin: 0 0.4em 1em 0.4em;
+
+  &.focused {
+    outline: 0.2em solid #3880ff;
+  }
 }
 
 ion-card-header > div {
