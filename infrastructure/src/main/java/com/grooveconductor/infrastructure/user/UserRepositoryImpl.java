@@ -4,6 +4,8 @@ import com.grooveconductor.domain.artist.ArtistDTO;
 import com.grooveconductor.domain.auth.RegisterCommand;
 import com.grooveconductor.domain.linkpage.LinkPageDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
+import com.grooveconductor.domain.post.CommentDTO;
+import com.grooveconductor.domain.post.LikeDTO;
 import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.*;
@@ -123,6 +125,24 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public LinkPageDTO retrieveLinkPage(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getLinkPage().toDTO();
+    }
+
+    @Override
+    public List<LikeDTO> retrieveLikes(Identifier identifier) {
+        return findUserByIdentifierOrThrows(identifier)
+                .getLikes()
+                .stream()
+                .map(DomainEntity::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<CommentDTO> retrievePostComments(Identifier identifier) {
+        return findUserByIdentifierOrThrows(identifier)
+                .getComments()
+                .stream()
+                .map(DomainEntity::toDTO)
+                .toList();
     }
 
     private UserEntity findUserByIdentifierOrThrows(Identifier identifier) throws UnknownIdentifierException {

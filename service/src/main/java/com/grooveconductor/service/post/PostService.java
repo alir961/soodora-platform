@@ -1,10 +1,7 @@
 package com.grooveconductor.service.post;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
-import com.grooveconductor.domain.post.CreatePostCommand;
-import com.grooveconductor.domain.post.PostDTO;
-import com.grooveconductor.domain.post.PostFilter;
-import com.grooveconductor.domain.post.PostRepository;
+import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 
@@ -27,6 +24,78 @@ public class PostService {
         postRepository.save(command, user);
     }
 
+    public void likePost(String postSlug, UserDTO user) throws UnknownPostException {
+        try {
+            postRepository.likePost(postSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
+    public void delikePost(String postSlug, UserDTO user) throws UnknownPostException {
+        try {
+            postRepository.delikePost(postSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
+    public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user) throws UnknownPostException {
+        try {
+            return postRepository.commentPost(postSlug, command, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
+    public void likeComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+        try {
+            postRepository.likeComment(postSlug, commentSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostCommentException(exception.getMessage());
+        }
+    }
+
+    public List<LikeDTO> retrieveCommentLikes(String postSlug, String commentSlug) throws UnknownPostException {
+        try {
+            return postRepository.retrieveCommentLikes(postSlug, commentSlug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostCommentException(exception.getMessage());
+        }
+    }
+
+    public void delikeComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+        try {
+            postRepository.delikeComment(postSlug, commentSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostCommentException(exception.getMessage());
+        }
+    }
+
+    public void deleteComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+        try {
+            postRepository.deleteComment(postSlug, commentSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostCommentException(exception.getMessage());
+        }
+    }
+
+    public List<LikeDTO> retrieveLikes(String postSlug) throws UnknownPostException {
+        try {
+            return postRepository.retrieveLikes(postSlug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
+    public List<CommentDTO> retrieveComments(String postSlug) throws UnknownPostException {
+        try {
+            return postRepository.retrieveComments(postSlug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
     public List<PostDTO> retrieveAllPosts() {
         return postRepository.findAll();
     }
@@ -37,8 +106,24 @@ public class PostService {
         return retrieveAllPosts();
     }
 
+    public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {
+        if (filter.userSlug().isPresent())
+            return userRepository.retrieveLikes(createFromSlug(filter.userSlug().get()));
+        throw new MissingUserSlugException();
+    }
+
+    public List<CommentDTO> retrieveUserComments(PostFilter filter) throws MissingUserSlugException {
+        if (filter.userSlug().isPresent())
+            return userRepository.retrievePostComments(createFromSlug(filter.userSlug().get()));
+        throw new MissingUserSlugException();
+    }
+
     public PostDTO retrievePostBySlug(String slug) {
-        return postRepository.find(slug);
+        try {
+            return postRepository.find(slug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
     }
 
     public void deletePostBySlug(String slug) throws UnknownPostException {

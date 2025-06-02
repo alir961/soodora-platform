@@ -9,6 +9,8 @@ public record PostDTO(
         String imageUrl,
         String audioUrl,
         PostType type,
-        UserDTO owner) {
+        UserDTO owner,
+        int likeCount,
+        int commentCount) {
 
 }
