@@ -10,14 +10,15 @@ public interface PostRepository {
     PostDTO find(String slug);
     List<PostDTO> findAll();
     void likePost(String postSlug, UserDTO user);
-    void delikePost(String postSlug, UserDTO user);
+    void unlikePost(String postSlug, UserDTO user);
     CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user);
-    void delikeComment(String postSlug, String commentSlug, UserDTO user);
-    void likeComment(String postSlug, String commentSlug, UserDTO user);
-    void deleteComment(String postSlug, String commentSlug, UserDTO user);
+    void unlikeComment(String commentSlug, UserDTO user);
+    void likeComment(String commentSlug, UserDTO user);
+    void deleteComment(String commentSlug);
     List<LikeDTO> retrieveLikes(String postSlug);
     List<CommentDTO> retrieveComments(String postSlug);
     PostCounterDTO getPostCounters(String postSlug);
-    List<LikeDTO> retrieveCommentLikes(String postSlug, String commentSlug);
+    CommentCounterDTO getCommentCounters(String commentSlug);
+    List<LikeDTO> retrieveCommentLikes(String commentSlug);
     void delete(String slug);
 }

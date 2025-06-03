@@ -32,9 +32,9 @@ public class PostService {
         }
     }
 
-    public void delikePost(String postSlug, UserDTO user) throws UnknownPostException {
+    public void unlikePost(String postSlug, UserDTO user) throws UnknownPostException {
         try {
-            postRepository.delikePost(postSlug, user);
+            postRepository.unlikePost(postSlug, user);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
@@ -49,33 +49,41 @@ public class PostService {
         }
     }
 
-    public void likeComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+    public void likeComment(String commentSlug, UserDTO user) throws UnknownPostCommentException {
         try {
-            postRepository.likeComment(postSlug, commentSlug, user);
+            postRepository.likeComment(commentSlug, user);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostCommentException(exception.getMessage());
         }
     }
 
-    public List<LikeDTO> retrieveCommentLikes(String postSlug, String commentSlug) throws UnknownPostException {
+    public List<LikeDTO> retrieveCommentLikes(String commentSlug) throws UnknownPostException {
         try {
-            return postRepository.retrieveCommentLikes(postSlug, commentSlug);
+            return postRepository.retrieveCommentLikes(commentSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostCommentException(exception.getMessage());
         }
     }
 
-    public void delikeComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+    public CommentCounterDTO retrieveCommentCounters(String commentSlug) throws UnknownPostException {
         try {
-            postRepository.delikeComment(postSlug, commentSlug, user);
+            return postRepository.getCommentCounters(commentSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostCommentException(exception.getMessage());
         }
     }
 
-    public void deleteComment(String postSlug, String commentSlug, UserDTO user) throws UnknownPostCommentException {
+    public void unlikeComment(String commentSlug, UserDTO user) throws UnknownPostCommentException {
         try {
-            postRepository.deleteComment(postSlug, commentSlug, user);
+            postRepository.unlikeComment(commentSlug, user);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostCommentException(exception.getMessage());
+        }
+    }
+
+    public void deleteComment(String commentSlug) throws UnknownPostCommentException {
+        try {
+            postRepository.deleteComment(commentSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostCommentException(exception.getMessage());
         }

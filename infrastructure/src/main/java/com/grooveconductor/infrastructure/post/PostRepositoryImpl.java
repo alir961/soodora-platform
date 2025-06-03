@@ -23,6 +23,7 @@ import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSl
 public class PostRepositoryImpl implements PostRepository {
 
     private final PostJpaRepository repository;
+    private final CommentJpaRepository commentRepository;
     private final UserJpaRepository userRepository;
 
     protected PostEntity findPostBySlugOrThrow(String slug) {
@@ -81,7 +82,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public void delikePost(String postSlug, UserDTO user) {
+    public void unlikePost(String postSlug, UserDTO user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
@@ -113,14 +114,11 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public void likeComment(String postSlug, String commentSlug, UserDTO user) {
-        PostEntity post = findPostBySlugOrThrow(postSlug);
+    public void likeComment(String commentSlug, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
 
-        CommentEntity comment = post.getComments().stream()
-                .filter(c -> c.getSlug().equals(commentSlug))
-                .findFirst()
+        CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
         boolean alreadyLiked = comment.getLikes().stream()
@@ -134,36 +132,32 @@ public class PostRepositoryImpl implements PostRepository {
             comment.getLikes().add(like);
             comment.setLikeCount(comment.getLikeCount() + 1);
 
-            repository.save(post);
+            commentRepository.save(comment);
         }
     }
 
     @Override
-    public void delikeComment(String postSlug, String commentSlug, UserDTO user) {
-        PostEntity post = findPostBySlugOrThrow(postSlug);
+    public void unlikeComment(String commentSlug, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
 
-        CommentEntity comment = post.getComments().stream()
-                .filter(c -> c.getSlug().equals(commentSlug))
-                .findFirst()
+        CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
         comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
         comment.setLikeCount(max(0, comment.getLikeCount() - 1));
 
-        repository.save(post);
+        commentRepository.save(comment);
     }
 
     @Override
-    public void deleteComment(String postSlug, String commentSlug, UserDTO user) {
-        PostEntity post = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = userRepository.findBySlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
+    public void deleteComment(String commentSlug) {
+        CommentEntity comment = commentRepository.findBySlug(commentSlug)
+                .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
-        post.getComments().removeIf(comment -> comment.getSlug().equals(commentSlug)
-                && comment.getUser().getId().equals(userEntity.getId()));
-        post.setCommentCount(max(0, post.getCommentCount() - 1));
+        PostEntity post = comment.getPost();
+        post.getComments().remove(comment);
+        post.setCommentCount(Math.max(0, post.getCommentCount() - 1));
 
         repository.save(post);
     }
@@ -191,12 +185,16 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public List<LikeDTO> retrieveCommentLikes(String postSlug, String commentSlug) {
-        PostEntity post = findPostBySlugOrThrow(postSlug);
+    public CommentCounterDTO getCommentCounters(String commentSlug) {
+        CommentEntity comment = commentRepository.findBySlug(commentSlug)
+                .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
-        CommentEntity comment = post.getComments().stream()
-                .filter(c -> c.getSlug().equals(commentSlug))
-                .findFirst()
+        return new CommentCounterDTO(comment.getLikeCount());
+    }
+
+    @Override
+    public List<LikeDTO> retrieveCommentLikes(String commentSlug) {
+        CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
         return comment.getLikes().stream()

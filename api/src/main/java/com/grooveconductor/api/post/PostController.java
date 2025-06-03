@@ -96,8 +96,8 @@ public class PostController {
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}/likes")
-    public void delikePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
-        postService.delikePost(slug, user);
+    public void unlikePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
+        postService.unlikePost(slug, user);
     }
 
     @SecurityRequirement(name = "bearerAuth")
@@ -119,28 +119,32 @@ public class PostController {
 
     @GetMapping("/{postSlug}/comments/{commentSlug}/likes")
     public List<LikeDTO> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentLikes(postSlug, commentSlug);
+        return postService.retrieveCommentLikes(commentSlug);
+    }
+
+    @GetMapping("/{postSlug}/comments/{commentSlug}/counters")
+    public CommentCounterDTO getCommentCounters(@PathVariable String postSlug, @PathVariable String commentSlug) {
+        return postService.retrieveCommentCounters(commentSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{postSlug}/comments/{commentSlug}/likes")
     public void likeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
             @AuthenticationPrincipal UserDTO user) {
-        postService.likeComment(postSlug, commentSlug, user);
+        postService.likeComment(commentSlug, user);
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{postSlug}/comments/{commentSlug}/likes")
-    public void delikeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
+    public void unlikeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
             @AuthenticationPrincipal UserDTO user) {
-        postService.delikeComment(postSlug, commentSlug, user);
+        postService.unlikeComment(commentSlug, user);
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{postSlug}/comments/{commentSlug}")
-    public void deleteComment(@PathVariable String postSlug, @PathVariable String commentSlug,
-            @AuthenticationPrincipal UserDTO user) {
-        postService.deleteComment(postSlug, commentSlug, user);
+    public void deleteComment(@PathVariable String postSlug, @PathVariable String commentSlug) {
+        postService.deleteComment(commentSlug);
     }
 
 }

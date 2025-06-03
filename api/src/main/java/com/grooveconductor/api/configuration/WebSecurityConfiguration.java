@@ -59,6 +59,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/posts/*/likes").permitAll()
                         .requestMatchers(GET, "/posts/*/comments").permitAll()
                         .requestMatchers(GET, "/posts/*/comments/*/likes").permitAll()
+                        .requestMatchers(GET, "/posts/*/comments/*/counters").permitAll()
                         .requestMatchers(GET, "/posts/*").permitAll()
                         .requestMatchers(GET, "/linkpages").permitAll()
                         .requestMatchers(GET, "/linkpages/**").permitAll()
