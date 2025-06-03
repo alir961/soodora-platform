@@ -4,13 +4,14 @@ import com.grooveconductor.domain.post.CommentDTO;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 import static java.util.UUID.randomUUID;
 
@@ -42,6 +43,9 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LikeEntity> likes;
 
+    @Column(nullable = false)
+    private int likeCount = 0;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;
@@ -53,8 +57,7 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
                 post.getSlug(),
                 content,
                 user.toDTO(),
-                likes.size(),
-                createdAt
-        );
+                likeCount,
+                createdAt);
     }
 }

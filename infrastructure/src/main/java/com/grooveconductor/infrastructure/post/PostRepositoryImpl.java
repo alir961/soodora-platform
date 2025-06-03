@@ -9,11 +9,12 @@ import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
 
 import lombok.RequiredArgsConstructor;
+
+import static java.lang.Math.max;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -42,8 +43,7 @@ public class PostRepositoryImpl implements PostRepository {
         entity.setType(command.type());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
-        entity.setLikes(new ArrayList<>());
-        entity.setComments(new ArrayList<>());
+
         return repository.save(entity).toDTO();
     }
 
@@ -74,6 +74,8 @@ public class PostRepositoryImpl implements PostRepository {
             like.setUser(userEntity);
             like.setPost(post);
             post.getLikes().add(like);
+            post.setLikeCount(post.getLikeCount() + 1);
+
             repository.save(post);
         }
     }
@@ -85,6 +87,8 @@ public class PostRepositoryImpl implements PostRepository {
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
 
         post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+        post.setLikeCount(max(0, post.getLikeCount() - 1));
+
         repository.save(post);
     }
 
@@ -102,6 +106,7 @@ public class PostRepositoryImpl implements PostRepository {
         comment.setLikes(new ArrayList<>());
 
         post.getComments().add(comment);
+        post.setCommentCount(post.getCommentCount() + 1);
         repository.save(post);
 
         return comment.toDTO();
@@ -127,6 +132,7 @@ public class PostRepositoryImpl implements PostRepository {
             like.setUser(userEntity);
             like.setComment(comment);
             comment.getLikes().add(like);
+            comment.setLikeCount(comment.getLikeCount() + 1);
 
             repository.save(post);
         }
@@ -144,10 +150,10 @@ public class PostRepositoryImpl implements PostRepository {
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
         comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+        comment.setLikeCount(max(0, comment.getLikeCount() - 1));
 
         repository.save(post);
     }
-
 
     @Override
     public void deleteComment(String postSlug, String commentSlug, UserDTO user) {
@@ -155,7 +161,10 @@ public class PostRepositoryImpl implements PostRepository {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
 
-        post.getComments().removeIf(comment -> comment.getSlug().equals(commentSlug) && comment.getUser().getId().equals(userEntity.getId()));
+        post.getComments().removeIf(comment -> comment.getSlug().equals(commentSlug)
+                && comment.getUser().getId().equals(userEntity.getId()));
+        post.setCommentCount(max(0, post.getCommentCount() - 1));
+
         repository.save(post);
     }
 
@@ -176,6 +185,12 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    public PostCounterDTO getPostCounters(String postSlug) {
+        PostEntity post = findPostBySlugOrThrow(postSlug);
+        return new PostCounterDTO(post.getLikeCount(), post.getCommentCount());
+    }
+
+    @Override
     public List<LikeDTO> retrieveCommentLikes(String postSlug, String commentSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
@@ -189,12 +204,12 @@ public class PostRepositoryImpl implements PostRepository {
                 .toList();
     }
 
-
     @Override
     public void delete(String slug) {
-        Optional<PostEntity> product = repository.findBySlug(slug);
+        PostEntity post = repository.findBySlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find post with slug: #" + slug));
 
-        repository.deleteById(product.orElseThrow().getId());
+        repository.deleteById(post.getId());
     }
 
     private String generateUniqueSlug() {

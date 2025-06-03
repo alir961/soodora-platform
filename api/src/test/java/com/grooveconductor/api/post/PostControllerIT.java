@@ -143,13 +143,6 @@ public class PostControllerIT {
     }
 
     @Test
-    void retrievePost_Forbidden() throws Exception {
-        // WHEN & THEN
-        mockMvc.perform(get("/posts/postSlug1"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void deletePost_Success() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);

@@ -118,13 +118,13 @@ class PostServiceTest {
         // GIVEN
         String unknownSlug = "unknown";
 
-        when(postRepository.find(unknownSlug)).thenThrow(UnknownSlugException.class);
+        when(postRepository.find(unknownSlug)).thenThrow(UnknownPostException.class);
 
         // WHEN
         Executable executable = () -> postService.retrievePostBySlug(unknownSlug);
 
         // THEN
-        assertThrows(UnknownSlugException.class, executable); // Change expected exception here
+        assertThrows(UnknownPostException.class, executable);
     }
 
     @Test

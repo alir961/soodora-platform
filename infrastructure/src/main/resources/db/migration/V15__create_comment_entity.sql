@@ -1,11 +1,12 @@
 CREATE TABLE comments
 (
-    id         UUID         NOT NULL,
-    slug       VARCHAR(255) NOT NULL,
+    id         UUID          NOT NULL,
+    slug       VARCHAR(255)  NOT NULL,
     content    VARCHAR(2000) NOT NULL,
-    post_id    UUID         NOT NULL,
-    user_id    UUID         NOT NULL,
-    created_at TIMESTAMP    NULL,
+    like_count INT           NOT NULL,
+    post_id    UUID          NOT NULL,
+    user_id    UUID          NOT NULL,
+    created_at TIMESTAMP     NULL,
     CONSTRAINT pk_comments PRIMARY KEY (id)
 );
 

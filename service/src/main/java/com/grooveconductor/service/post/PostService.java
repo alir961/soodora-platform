@@ -40,7 +40,8 @@ public class PostService {
         }
     }
 
-    public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user) throws UnknownPostException {
+    public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user)
+            throws UnknownPostException {
         try {
             return postRepository.commentPost(postSlug, command, user);
         } catch (UnknownSlugException exception) {
@@ -91,6 +92,14 @@ public class PostService {
     public List<CommentDTO> retrieveComments(String postSlug) throws UnknownPostException {
         try {
             return postRepository.retrieveComments(postSlug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPostException(exception.getMessage());
+        }
+    }
+
+    public PostCounterDTO retrievePostCounters(String postSlug) throws UnknownPostException {
+        try {
+            return postRepository.getPostCounters(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
