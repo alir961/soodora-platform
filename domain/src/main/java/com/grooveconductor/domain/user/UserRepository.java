@@ -19,6 +19,7 @@ public interface UserRepository {
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
     void delete(Identifier identifier);
+    void deleteAvatar(Identifier identifier);
     boolean isUsed(Identifier identifier);
     String retrieveEncodedPassword(Identifier identifier);
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);

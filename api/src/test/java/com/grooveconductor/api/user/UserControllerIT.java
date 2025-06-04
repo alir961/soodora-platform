@@ -127,7 +127,8 @@ class UserControllerIT {
         UpdateUserRequest updateUserRequest = new UpdateUserRequest(
                 "newUsername",
                 "firstname",
-                "lastname");
+                "lastname",
+                "https//soodora.com/assets/avatar.png");
 
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
 
@@ -142,7 +143,7 @@ class UserControllerIT {
     @Test
     void updateUser_InvalidRequest() throws Exception {
         // GIVEN
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
 
         when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid Request")).when(userService)

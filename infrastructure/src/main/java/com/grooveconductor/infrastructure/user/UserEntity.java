@@ -11,10 +11,7 @@ import com.grooveconductor.infrastructure.post.LikeEntity;
 import com.grooveconductor.infrastructure.post.PostEntity;
 import com.grooveconductor.infrastructure.product.ProductEntity;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -67,6 +64,9 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @Column
     private Date updatedAt;
 
+    @Column
+    private String avatarUrl;
+
     @JoinColumn(unique = true)
     @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private ArtistEntity artist;
@@ -106,7 +106,8 @@ public class UserEntity implements DomainEntity<UserDTO> {
                 email,
                 firstname,
                 lastname,
-                rolesNames);
+                rolesNames,
+                avatarUrl);
     }
 
 }
