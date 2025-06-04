@@ -20,7 +20,9 @@ public class PostFactory {
                 "imageUrl",
                 "audioUrl",
                 PostType.ANNOUNCE,
-                buildDefaultUser());
+                buildDefaultUser(),
+                0,
+                0);
     }
 
 }

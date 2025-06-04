@@ -5,7 +5,9 @@ import com.grooveconductor.domain.post.PostType;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -52,6 +54,18 @@ public class PostEntity implements DomainEntity<PostDTO> {
     @JoinColumn
     private UserEntity user;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LikeEntity> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CommentEntity> comments = new ArrayList<>();
+
+    @Column(nullable = false)
+    private int likeCount = 0;
+
+    @Column(nullable = false)
+    private int commentCount = 0;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;
@@ -69,7 +83,9 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 imageUrl,
                 audioUrl,
                 type,
-                user.toDTO());
+                user.toDTO(),
+                likeCount,
+                commentCount);
     }
 
 }

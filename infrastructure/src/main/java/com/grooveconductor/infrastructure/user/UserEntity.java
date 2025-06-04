@@ -6,6 +6,8 @@ import com.grooveconductor.infrastructure.auth.RoleEntity;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.linkpage.LinkPageEntity;
 import com.grooveconductor.infrastructure.playlist.PlaylistEntity;
+import com.grooveconductor.infrastructure.post.CommentEntity;
+import com.grooveconductor.infrastructure.post.LikeEntity;
 import com.grooveconductor.infrastructure.post.PostEntity;
 import com.grooveconductor.infrastructure.product.ProductEntity;
 
@@ -77,6 +79,12 @@ public class UserEntity implements DomainEntity<UserDTO> {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PostEntity> posts;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<LikeEntity> likes;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<CommentEntity> comments;
 
     @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private LinkPageEntity linkPage;
