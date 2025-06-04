@@ -2,6 +2,8 @@ package com.grooveconductor.domain.post;
 
 import com.grooveconductor.domain.user.UserDTO;
 
+import java.util.Date;
+
 public record PostDTO(
         String slug,
         String title,
@@ -11,6 +13,7 @@ public record PostDTO(
         PostType type,
         UserDTO owner,
         int likeCount,
-        int commentCount) {
+        int commentCount,
+        Date createdAt) {
 
 }

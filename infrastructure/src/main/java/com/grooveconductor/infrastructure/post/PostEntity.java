@@ -85,7 +85,8 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 type,
                 user.toDTO(),
                 likeCount,
-                commentCount);
+                commentCount,
+                createdAt);
     }
 
 }
