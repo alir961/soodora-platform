@@ -15,20 +15,36 @@ defineProps({
 <template>
   <div id="profile-container">
     <ion-card-header>
-      <ion-card-title>Welcome, {{ $props.profile.username }}</ion-card-title>
+      <ion-card-title>
+        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.username} avatar`" />
+        <img v-else src="/assets/avatar.svg" :alt="`${profile.username} avatar`" />
+        {{ profile.username }}
+      </ion-card-title>
       <ion-card-subtitle>Account information</ion-card-subtitle>
     </ion-card-header>
 
     <ion-card-content>
-      <p>{{ $props.profile.email }}</p>
+      <p>{{ profile.email }}</p>
 
-      <RoleTagComponent v-for="role in $props.profile.roles" :key="role" :role="role" />
+      <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" />
     </ion-card-content>
   </div>
 </template>
 
 <style scoped>
 #profile-container {
+  & ion-card-title {
+    display: flex;
+    align-items: end;
+    margin-top: 0.5em;
+
+    & img {
+      border-radius: 100%;
+      height: 1.5em;
+      margin-right: 0.5em;
+    }
+  }
+
   & strong {
     font-size: 1.5em;
     line-height: 2em;
