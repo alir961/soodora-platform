@@ -1,14 +1,17 @@
 package com.grooveconductor.api.post;
 
-import com.grooveconductor.domain.post.CreatePostCommand;
-import com.grooveconductor.domain.post.PostDTO;
+import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
+import com.grooveconductor.service.post.CommentPostRequest;
 import com.grooveconductor.service.post.CreatePostRequest;
 import com.grooveconductor.service.post.PostService;
 import com.grooveconductor.service.user.UnknownUserException;
+
+import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +29,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.test.TestConstants.USER;
@@ -171,6 +173,173 @@ public class PostControllerIT {
     void deletePost_Forbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void likePost_Success() throws Exception {
+        // GIVEN
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        doNothing().when(postService).likePost("postSlug1", USER);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void likePost_Forbidden() throws Exception {
+        // GIVEN
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/likes"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unlikePost_Success() throws Exception {
+        // GIVEN
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        doNothing().when(postService).unlikePost("postSlug1", USER);
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void unlikePost_Forbidden() throws Exception {
+        // GIVEN
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/likes"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getPostLikes_Success() throws Exception {
+        // GIVEN
+        when(postService.retrieveLikes("postSlug1"))
+                .thenReturn(List.of(
+                        new PostLikeDTO(POST_1.slug(), USER, new Date()),
+                        new PostLikeDTO("postSlug1", USER, new Date())));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/postSlug1/likes"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].user.slug").value(USER.slug()))
+                .andExpect(jsonPath("$[1].user.slug").value(USER.slug()));
+    }
+
+    @Test
+    void addComment_Success() throws Exception {
+        // GIVEN
+        CommentPostRequest commentRequest = new CommentPostRequest("Great post!");
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(postService.commentPost(eq("postSlug1"), any(CommentPostCommand.class), eq(USER)))
+                .thenReturn(new CommentDTO("commentSlug1", "postSlug1", "Great post!", USER, 0, new Date()));
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/comments")
+                .contentType("application/json")
+                .content(asJsonString(commentRequest))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void addComment_Forbidden() throws Exception {
+        // GIVEN
+        CommentPostRequest commentRequest = new CommentPostRequest("Unauthorized comment");
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/comments")
+                .contentType("application/json")
+                .content(asJsonString(commentRequest)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deleteComment_Success() throws Exception {
+        // GIVEN
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        doNothing().when(postService).deleteComment("commentSlug1");
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void deleteComment_Forbidden() throws Exception {
+        // GIVEN
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void getComments_Success() throws Exception {
+        // GIVEN
+        when(postService.retrieveComments("postSlug1"))
+                .thenReturn(List.of(
+                        new CommentDTO("commentSlug1", "postSlug1", "Great post!", USER, 0, new Date()),
+                        new CommentDTO("commentSlug2", "postSlug1", "Thanks for sharing", USER, 0, new Date())));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/postSlug1/comments"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].slug").value("commentSlug1"))
+                .andExpect(jsonPath("$[0].content").value("Great post!"))
+                .andExpect(jsonPath("$[0].user.slug").value(USER.slug()))
+                .andExpect(jsonPath("$[1].slug").value("commentSlug2"))
+                .andExpect(jsonPath("$[1].content").value("Thanks for sharing"))
+                .andExpect(jsonPath("$[1].user.slug").value(USER.slug()));
+    }
+
+    @Test
+    void likeComment_Success() throws Exception {
+        // GIVEN
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        doNothing().when(postService).likeComment("commentSlug1", USER);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/comments/commentSlug1/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void likeComment_Forbidden() throws Exception {
+        // GIVEN
+
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/comments/commentSlug1/likes"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unlikeComment_Success() throws Exception {
+        // GIVEN
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        doNothing().when(postService).unlikeComment("commentSlug1", USER);
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void unlikeComment_Forbidden() throws Exception {
+        // GIVEN
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes"))
                 .andExpect(status().isForbidden());
     }
 

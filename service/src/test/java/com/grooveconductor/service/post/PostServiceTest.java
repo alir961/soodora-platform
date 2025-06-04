@@ -4,6 +4,7 @@ import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserRepository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -150,6 +151,287 @@ class PostServiceTest {
 
         // THEN
         assertThrows(UnknownPostException.class, executable);
+    }
+
+    @Test
+    void likePost_Success() {
+        // GIVEN
+        doNothing().when(postRepository).likePost(POST_1.slug(), USER);
+
+        // WHEN
+        assertDoesNotThrow(() -> postService.likePost(POST_1.slug(), USER));
+
+        // THEN
+        verify(postRepository).likePost(POST_1.slug(), USER);
+    }
+
+    @Test
+    void likePost_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("not found")).when(postRepository).likePost(any(), any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.likePost("invalid-slug", USER));
+    }
+
+    @Test
+    void unlikePost_Success() {
+        // GIVEN
+        doNothing().when(postRepository).unlikePost(POST_1.slug(), USER);
+
+        // WHEN
+        assertDoesNotThrow(() -> postService.unlikePost(POST_1.slug(), USER));
+
+        // THEN
+        verify(postRepository).unlikePost(POST_1.slug(), USER);
+    }
+
+    @Test
+    void unlikePost_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("not found")).when(postRepository).unlikePost(any(), any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.unlikePost("invalid-slug", USER));
+    }
+
+    @Test
+    void commentPost_Success() {
+        // GIVEN
+        CommentPostCommand command = new CommentPostCommand("Nice post");
+        CommentDTO expectedComment = new CommentDTO("slug", "postSlug", "content", USER, 0, new Date());
+        when(postRepository.commentPost(POST_1.slug(), command, USER)).thenReturn(expectedComment);
+
+        // WHEN
+        CommentDTO result = postService.commentPost(POST_1.slug(), command, USER);
+
+        // THEN
+        assertEquals(expectedComment, result);
+        verify(postRepository).commentPost(POST_1.slug(), command, USER);
+    }
+
+    @Test
+    void commentPost_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        CommentPostCommand command = new CommentPostCommand("Invalid");
+        doThrow(new UnknownSlugException("error")).when(postRepository).commentPost(any(), any(), any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.commentPost("invalid", command, USER));
+    }
+
+    @Test
+    void likeComment_Success() {
+        // GIVEN
+        doNothing().when(postRepository).likeComment("comment-slug", USER);
+
+        // WHEN & THEN
+        assertDoesNotThrow(() -> postService.likeComment("comment-slug", USER));
+    }
+
+    @Test
+    void likeComment_UnknownSlugException_ThrowsUnknownPostCommentException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).likeComment(any(), any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostCommentException.class, () -> postService.likeComment("invalid", USER));
+    }
+
+    @Test
+    void unlikeComment_Success() {
+        // GIVEN
+        doNothing().when(postRepository).unlikeComment("comment-slug", USER);
+
+        // WHEN & THEN
+        assertDoesNotThrow(() -> postService.unlikeComment("comment-slug", USER));
+    }
+
+    @Test
+    void unlikeComment_UnknownSlugException_ThrowsUnknownPostCommentException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).unlikeComment(any(), any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostCommentException.class, () -> postService.unlikeComment("invalid", USER));
+    }
+
+    @Test
+    void deleteComment_Success() {
+        // GIVEN
+        doNothing().when(postRepository).deleteComment("comment-slug");
+
+        // WHEN & THEN
+        assertDoesNotThrow(() -> postService.deleteComment("comment-slug"));
+    }
+
+    @Test
+    void deleteComment_UnknownSlugException_ThrowsUnknownPostCommentException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).deleteComment(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostCommentException.class, () -> postService.deleteComment("invalid"));
+    }
+
+    @Test
+    void retrieveCommentLikes_Success() {
+        // GIVEN
+        List<LikeDTO> expectedLikes = List.of(
+                new CommentLikeDTO("comment-slug", USER, new Date()),
+                new CommentLikeDTO("comment-slug", USER, new Date()));
+        when(postRepository.retrieveCommentLikes("comment-slug")).thenReturn(expectedLikes);
+
+        // WHEN
+        List<LikeDTO> result = postService.retrieveCommentLikes("comment-slug");
+
+        // THEN
+        assertEquals(expectedLikes, result);
+    }
+
+    @Test
+    void retrieveCommentLikes_UnknownSlugException_ThrowsUnknownPostCommentException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).retrieveCommentLikes(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostCommentException.class, () -> postService.retrieveCommentLikes("invalid"));
+    }
+
+    @Test
+    void retrieveCommentCounters_Success() {
+        // GIVEN
+        CommentCounterDTO counters = new CommentCounterDTO(5);
+        when(postRepository.getCommentCounters("comment-slug")).thenReturn(counters);
+
+        // WHEN
+        CommentCounterDTO result = postService.retrieveCommentCounters("comment-slug");
+
+        // THEN
+        assertEquals(counters, result);
+    }
+
+    @Test
+    void retrieveCommentCounters_UnknownSlugException_ThrowsUnknownPostCommentException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).getCommentCounters(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostCommentException.class, () -> postService.retrieveCommentCounters("invalid"));
+    }
+
+    @Test
+    void retrieveLikes_Success() {
+        // GIVEN
+        List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.slug(), USER, new Date()));
+        when(postRepository.retrieveLikes(POST_1.slug())).thenReturn(expectedLikes);
+
+        // WHEN
+        List<LikeDTO> result = postService.retrieveLikes(POST_1.slug());
+
+        // THEN
+        assertEquals(expectedLikes, result);
+    }
+
+    @Test
+    void retrieveLikes_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).retrieveLikes(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.retrieveLikes("invalid"));
+    }
+
+    @Test
+    void retrieveComments_Success() {
+        // GIVEN
+        List<CommentDTO> expectedComments = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
+        when(postRepository.retrieveComments(POST_1.slug())).thenReturn(expectedComments);
+
+        // WHEN
+        List<CommentDTO> result = postService.retrieveComments(POST_1.slug());
+
+        // THEN
+        assertEquals(expectedComments, result);
+    }
+
+    @Test
+    void retrieveComments_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).retrieveComments(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.retrieveComments("invalid"));
+    }
+
+    @Test
+    void retrievePostCounters_Success() {
+        // GIVEN
+        PostCounterDTO counters = new PostCounterDTO(10, 5);
+        when(postRepository.getPostCounters(POST_1.slug())).thenReturn(counters);
+
+        // WHEN
+        PostCounterDTO result = postService.retrievePostCounters(POST_1.slug());
+
+        // THEN
+        assertEquals(counters, result);
+    }
+
+    @Test
+    void retrievePostCounters_UnknownSlugException_ThrowsUnknownPostException() {
+        // GIVEN
+        doThrow(new UnknownSlugException("error")).when(postRepository).getPostCounters(any());
+
+        // WHEN & THEN
+        assertThrows(UnknownPostException.class, () -> postService.retrievePostCounters("invalid"));
+    }
+
+    @Test
+    void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
+        // GIVEN
+        PostFilter filter = new PostFilter(of(USER.slug()));
+        List<LikeDTO> expected = List.of(
+                new PostLikeDTO(POST_1.slug(), USER, new Date()),
+                new CommentLikeDTO("comment-slug", USER, new Date()));
+        when(userRepository.retrieveLikes(any())).thenReturn(expected);
+
+        // WHEN
+        List<LikeDTO> result = postService.retrieveUserLikes(filter);
+
+        // THEN
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void retrieveUserLikes_WithoutUserSlug_ThrowsException() {
+        // GIVEN
+        PostFilter filter = new PostFilter(empty());
+
+        // WHEN & THEN
+        assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserLikes(filter));
+    }
+
+    @Test
+    void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
+        // GIVEN
+        PostFilter filter = new PostFilter(of(USER.slug()));
+        List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
+        when(userRepository.retrievePostComments(any())).thenReturn(expected);
+
+        // WHEN
+        List<CommentDTO> result = postService.retrieveUserComments(filter);
+
+        // THEN
+        assertEquals(expected, result);
+    }
+
+    @Test
+    void retrieveUserComments_WithoutUserSlug_ThrowsException() {
+        // GIVEN
+        PostFilter filter = new PostFilter(empty());
+
+        // WHEN & THEN
+        assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserComments(filter));
     }
 
 }
