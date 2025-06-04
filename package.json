@@ -23,6 +23,7 @@
     "@ionic/vue": "^8.0.0",
     "@ionic/vue-router": "^8.0.0",
     "axios": "1.8.2",
+    "fabric": "^6.6.7",
     "ionicons": "^7.0.0",
     "pinia": "^3.0.2",
     "vue": "^3.3.0",

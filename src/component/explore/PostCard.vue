@@ -12,12 +12,14 @@ import {
   IonNote,
   alertController,
   toastController,
+  AlertInput,
 } from '@ionic/vue';
 import { PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
-import { trashOutline } from 'ionicons/icons';
+import { shareOutline, trashOutline } from 'ionicons/icons';
 import { deletePost } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
+import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 
 defineProps({
   post: {
@@ -30,8 +32,53 @@ const emit = defineEmits(['post-deleted']);
 
 const focusedPost: Ref<Post | null> = ref(null);
 
+const exportThemes = [
+  {
+    label: 'Black',
+    type: 'radio',
+    value: 'black',
+  },
+  {
+    label: 'White',
+    type: 'radio',
+    value: 'white',
+  },
+  {
+    label: 'Transparent',
+    type: 'radio',
+    value: 'transparent',
+  },
+] as AlertInput[];
+
 const focusPost = (post: Post) => {
   focusedPost.value = focusedPost.value === post ? null : post;
+};
+
+const exportPost = async (post: Post) => {
+  const alert = await alertController.create({
+    header: 'Select theme for export',
+    inputs: exportThemes,
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Export',
+        handler: async (selectedTheme: string) => {
+          if (!selectedTheme) return;
+          try {
+            const canvas = await createPostCanvas(post, selectedTheme as ExportTheme);
+
+            downloadCanvas(canvas);
+          } catch (err) {
+            console.error('Export failed:', err);
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
 };
 
 const askDeletePost = async (slug: string) => {
@@ -84,6 +131,10 @@ const authStore = useAuthStore();
         <div
           v-if="focusedPost === post && post.owner.slug === authStore.getAuthenticatedUserSlug"
           class="settings-container">
+          <ion-button fill="clear" size="small" @click.stop="exportPost(post)" id="export-button">
+            Export
+            <ion-icon :icon="shareOutline" />
+          </ion-button>
           <ion-button fill="clear" size="small" @click.stop="askDeletePost(post.slug)">
             Delete
             <ion-icon :icon="trashOutline" />
