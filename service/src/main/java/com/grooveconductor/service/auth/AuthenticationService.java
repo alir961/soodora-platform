@@ -22,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 import static com.grooveconductor.domain.oauth.OAuthProvider.GOOGLE;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromUsername;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +41,8 @@ public class AuthenticationService {
 
         if (userRepository.isUsed(createFromEmail(command.email())))
             throw new UserUnityException("Email is already used");
+        if (userRepository.isUsed(createFromUsername(command.username())))
+            throw new UserUnityException("Username is already used");
         UserDTO user = userRepository.save(command.updatePassword(encodedPassword));
 
         if (external != null) {

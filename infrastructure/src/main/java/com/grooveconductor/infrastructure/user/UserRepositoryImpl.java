@@ -150,6 +150,7 @@ public class UserRepositoryImpl implements UserRepository {
         Optional<UserEntity> findEntity = switch (identifier.getType()) {
             case EMAIL -> userRepository.findByEmail(value);
             case SLUG -> userRepository.findBySlug(value);
+            case USERNAME -> userRepository.findByUsername(value);
         };
 
         return findEntity.orElseThrow(() -> new UnknownIdentifierException("Unable to find user '" + value + "'"));
