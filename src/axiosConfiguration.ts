@@ -1,5 +1,6 @@
 import axios, { AxiosResponse } from 'axios';
 import { deleteBearerToken, deleteUserData } from '@/store/localStorage';
+import { reject } from '@/utils';
 
 declare let window: Window;
 
@@ -19,7 +20,10 @@ export function configureAxios(): void {
 
   axios.interceptors.response.use(
     (response) => response,
-    (error) => handleError(error.response)
+    async (error) => {
+      await handleError(error.response);
+      return reject(error);
+    }
   );
 }
 
