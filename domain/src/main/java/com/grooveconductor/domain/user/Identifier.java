@@ -15,7 +15,7 @@ public class Identifier {
     private final String value;
 
     public enum IdentifierType {
-        EMAIL, SLUG
+        EMAIL, SLUG, USERNAME
     }
 
 }

@@ -1,7 +1,6 @@
 package com.grooveconductor.domain.user;
 
-import static com.grooveconductor.domain.user.Identifier.IdentifierType.EMAIL;
-import static com.grooveconductor.domain.user.Identifier.IdentifierType.SLUG;
+import static com.grooveconductor.domain.user.Identifier.IdentifierType.*;
 
 public class IdentifierFactory {
 
@@ -14,6 +13,10 @@ public class IdentifierFactory {
 
     public static Identifier createFromSlug(String slug) {
         return new Identifier(SLUG, slug);
+    }
+
+    public static Identifier createFromUsername(String username) {
+        return new Identifier(USERNAME, username);
     }
 
 }

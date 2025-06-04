@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record LoginRequest(
         @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com") String email,
-        @Schema(description = "Password of the account", example = "passwordPassword#!", defaultValue = "passwordPassword#!") String password)
+        @Schema(description = "Password of the account", example = "passwordPassword#!9", defaultValue = "passwordPassword#!9") String password)
         implements
             Request<LoginCommand> {
 
