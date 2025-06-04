@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonButton, IonInput, IonItem, toastController } from '@ionic/vue';
-import { ref, Ref } from 'vue';
+import { computed, ref, Ref } from 'vue';
 import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
 import { saveBearerToken, saveUserData } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
@@ -56,9 +56,14 @@ const signup = async () => {
     await callRegister(request);
     await router.push({ query: {} });
     emit('toggle');
-  } catch (error) {
+  } catch (error: unknown) {
+    let message: string = 'Sign up Failed!';
+    if (error instanceof Error) message = error.message;
+    console.log(error);
+    console.log(message);
+
     const toast = await toastController.create({
-      message: 'Sign up Failed!',
+      message: message,
       duration: 1500,
       position: 'top',
     });
@@ -66,6 +71,17 @@ const signup = async () => {
     await toast.present();
   }
 };
+
+const passwordCriteria = computed(() => {
+  const pwd = password.value;
+  const hasLowerCase = /[a-z]/.test(pwd);
+  const hasUpperCase = /[A-Z]/.test(pwd);
+  const hasDigit = /\d/.test(pwd);
+  const hasSpecial = /[^a-zA-Z0-9]/.test(pwd);
+  const minLength = pwd.length >= 6;
+
+  return { hasLowerCase, hasUpperCase, hasDigit, hasSpecial, minLength };
+});
 </script>
 
 <template>
@@ -91,6 +107,14 @@ const signup = async () => {
     <ion-item>
       <ion-input placeholder="Password" type="password" v-model="password"></ion-input>
     </ion-item>
+
+    <ul v-if="!isLogin" style="color: red; margin-left: 20px; font-size: 0.9em">
+      <li :style="{ color: passwordCriteria.minLength ? 'gray' : 'red' }">Minimum 6 characters</li>
+      <li :style="{ color: passwordCriteria.hasLowerCase ? 'gray' : 'red' }">At least one lowercase letter</li>
+      <li :style="{ color: passwordCriteria.hasUpperCase ? 'gray' : 'red' }">At least one uppercase letter</li>
+      <li :style="{ color: passwordCriteria.hasDigit ? 'gray' : 'red' }">At least one digit</li>
+      <li :style="{ color: passwordCriteria.hasSpecial ? 'gray' : 'red' }">At least one special character</li>
+    </ul>
 
     <ion-button expand="block" @click="isLogin ? login() : signup()">
       {{ isLogin ? 'Log In' : 'Sign Up' }}

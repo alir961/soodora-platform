@@ -46,7 +46,12 @@ async function callLogin(credentials: LoginRequest): Promise<string> {
 }
 
 async function callRegister(request: RegisterRequest): Promise<void> {
-  return axios.post('/auth/register', request);
+  return axios
+    .post('/auth/register', request)
+    .then(() => {})
+    .catch((error) => {
+      return reject(error.response?.data?.reason);
+    });
 }
 
 export type { LoginRequest, RegisterRequest };
