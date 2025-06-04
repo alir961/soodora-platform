@@ -15,10 +15,21 @@ async function createPost(post: CreatePostRequest): Promise<void> {
 }
 
 async function retrievePosts(): Promise<Post[]> {
-  return axios.get('/posts').then((response) => {
-    if (response && response.status === 200 && response.data) return response.data as Post[];
+  try {
+    const response = await axios.get('/posts');
+    if (response.status === 200 && response.data) {
+      return response.data.map((post: Post) => ({
+        ...post,
+        createdAt: new Date(post.createdAt),
+      }));
+    }
     return reject('Unable to call API');
-  });
+  } catch (error: unknown) {
+    let message: string = 'Post retrieving Failed!';
+    if (error instanceof Error) message = error.message;
+
+    return reject(message);
+  }
 }
 
 async function deletePost(slug: string): Promise<void> {

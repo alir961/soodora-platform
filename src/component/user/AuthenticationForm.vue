@@ -59,8 +59,6 @@ const signup = async () => {
   } catch (error: unknown) {
     let message: string = 'Sign up Failed!';
     if (error instanceof Error) message = error.message;
-    console.log(error);
-    console.log(message);
 
     const toast = await toastController.create({
       message: message,

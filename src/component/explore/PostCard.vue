@@ -9,6 +9,7 @@ import {
   IonCardSubtitle,
   IonImg,
   IonIcon,
+  IonNote,
   alertController,
   toastController,
 } from '@ionic/vue';
@@ -84,6 +85,7 @@ onMounted(async () => {
       <ion-card-header>
         <div>
           <ion-card-title class="header-title">{{ post.owner.username }}</ion-card-title>
+          <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
           <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
       </ion-card-header>

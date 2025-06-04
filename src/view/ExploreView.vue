@@ -36,6 +36,7 @@ const newPost: Reactive<CreatePostRequest> = reactive({
   imageUrl: '',
   audioUrl: '',
   type: '' as Post['type'],
+  createdAt: new Date(),
 });
 const authStore = useAuthStore();
 
