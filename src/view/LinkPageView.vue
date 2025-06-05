@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { IonButton, IonInput, IonTextarea, IonContent, onIonViewDidEnter } from '@ionic/vue';
 import {
@@ -20,7 +20,6 @@ import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
 const router = useRouter();
-
 const authStore = useAuthStore();
 
 const pageSlug = computed(() => route.params.slug as string | undefined);
@@ -63,8 +62,11 @@ async function submitCreate() {
     };
     const created = await createLinkPage(pageCommand);
 
-    for (const link of links.value) await createLink(created.slug, link);
-    await router.push(`/linkpages/${created.slug}`);
+    for (const link of links.value) {
+      await createLink(created.slug, link);
+    }
+
+    router.push(`/linkpages/${created.slug}`);
   } catch (error) {
     alert('Unable to create Link Page : ' + error);
   }
@@ -86,7 +88,7 @@ async function loadPage() {
 
     isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
   } catch (error) {
-    alert('Unable to load the Link Page : ' + error);
+    if (isOwner.value) alert('Unable to load the Link Page : ' + error);
   }
 }
 
@@ -117,7 +119,6 @@ async function deletePage() {
   if (confirm('Confirm Link Page deletion ?')) {
     try {
       await deleteLinkPage(pageSlug.value);
-      resetData();
       await router.push('/linkpages');
     } catch (error) {
       alert('Unable to delete the Link Page : ' + error);
@@ -125,12 +126,15 @@ async function deletePage() {
   }
 }
 
-async function submitLinkDeletion(linkSlug?: string) {
-  if (!pageSlug.value || !linkSlug) return;
+async function submitLinkDeletion(index: number) {
+  const link = links.value[index];
+
   if (confirm('Confirm the link deletion ?')) {
     try {
-      await deleteLink(pageSlug.value, linkSlug);
-      links.value = links.value.filter((l) => l.slug !== linkSlug);
+      if (pageSlug.value && link.slug) {
+        await deleteLink(pageSlug.value, link.slug);
+      }
+      links.value.splice(index, 1);
     } catch (error) {
       alert('Unable to delete the link : ' + error);
     }
@@ -138,20 +142,26 @@ async function submitLinkDeletion(linkSlug?: string) {
 }
 
 async function checkIfUserHasLinkPage() {
-  const userSlug: string | null = authStore.getAuthenticatedUserSlug;
-
-  if (!userSlug) {
-    resetData();
-    router.back();
-    return;
-  }
   try {
-    const page = await getUserLinkPage(userSlug);
+    const currentUser = authStore.getAuthenticatedUser;
+    if (!currentUser) {
+      isOwner.value = false;
+      return;
+    }
 
-    if (page?.slug) await router.push(`/linkpages/${page.slug}`);
+    if (!pageSlug.value) {
+      const userPage = await getUserLinkPage(currentUser.slug);
+      if (userPage) {
+        await router.push(`/linkpages/${userPage.slug}`);
+        return;
+      }
+      isOwner.value = false;
+    } else {
+      const page = await getLinkPage(pageSlug.value);
+      isOwner.value = currentUser.slug === page.owner.slug;
+    }
   } catch (error) {
-    resetData();
-    alert(`You don't have Link Page yet`);
+    isOwner.value = false;
   }
 }
 
@@ -159,6 +169,15 @@ onIonViewDidEnter(async () => {
   await checkIfUserHasLinkPage();
   await loadPage();
 });
+
+watch(
+  () => route.params.slug,
+  (newSlug) => {
+    if (!newSlug) {
+      resetData();
+    }
+  }
+);
 </script>
 
 <template>
@@ -182,21 +201,36 @@ onIonViewDidEnter(async () => {
       </div>
 
       <div v-else>
-        <h2>Édition de la page : {{ pageSlug }}</h2>
+        <h2 v-if="isOwner">Editing page: {{ pageSlug }}</h2>
+        <h2 v-else>Link Page: {{ pageSlug }}</h2>
+
         <IonInput v-model="pageData.title" placeholder="Link Page title" :readonly="!isOwner" />
         <IonTextarea v-model="pageData.description" placeholder="Link Page description" :readonly="!isOwner" />
 
         <div v-for="(link, idx) in links" :key="idx">
           <IonInput v-model="link.title" placeholder="Link title" :readonly="!isOwner" />
           <IonInput v-model="link.description" placeholder="Link description" :readonly="!isOwner" />
-          <IonInput v-model="link.url" placeholder="Link URL" :readonly="!isOwner" />
+          <template v-if="isOwner">
+            <IonInput v-model="link.url" placeholder="Link URL" />
+          </template>
+          <template v-else>
+            <a
+              :href="link.url.startsWith('http') ? link.url : 'https://' + link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="color: var(--ion-color-primary); text-decoration: underline">
+              {{ link.url }}
+            </a>
+          </template>
           <IonInput v-model="link.iconUrl" placeholder="Link icon URL" :readonly="!isOwner" />
-          <IonButton v-if="isOwner" color="danger" @click="submitLinkDeletion(link.slug)">Delete</IonButton>
+          <IonButton v-if="isOwner" color="danger" @click="submitLinkDeletion(idx)">Delete</IonButton>
         </div>
 
-        <IonButton v-if="isOwner" @click="addLink">Add a link</IonButton>
-        <IonButton v-if="isOwner" @click="submitUpdate">Submit Link Page modification</IonButton>
-        <IonButton v-if="isOwner" color="danger" @click="deletePage">Delete the Link Page</IonButton>
+        <div style="margin-bottom: 6rem">
+          <IonButton v-if="isOwner" @click="addLink">Add a link</IonButton>
+          <IonButton v-if="isOwner" @click="submitUpdate">Submit Link Page modification</IonButton>
+          <IonButton v-if="isOwner" color="danger" @click="deletePage">Delete the Link Page</IonButton>
+        </div>
       </div>
     </ion-content>
   </ApplicationViewport>
