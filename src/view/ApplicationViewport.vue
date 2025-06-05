@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons } from '@ionic/vue';
 import { checkStatus } from '@/client/authenticationClient';
-import { getAuthenticatedUser } from '@/utils';
 import { onMounted } from 'vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { deleteUserData } from '@/store/localStorage';
+import { loadBearerToken } from '@/store/localStorage';
 
 const props = defineProps({
   title: {
@@ -19,19 +18,15 @@ const props = defineProps({
 const authStore = useAuthStore();
 
 onMounted(async () => {
+  if (props.offline) return;
+
+  await checkStatus().catch(console.error);
   try {
-    if (!props.offline) await checkStatus();
-    if (props.authenticated) {
-      await deleteUserData();
-      await getAuthenticatedUser();
-    }
-    await retrieveAuthenticatedProfile()
-      .then(() => {
-        authStore.authenticated = true;
-      })
-      .catch(() => console.log('Unauthenticated!'));
+    await loadBearerToken();
+
+    authStore.authenticate(await retrieveAuthenticatedProfile());
   } catch (error) {
-    console.error(error);
+    authStore.logout();
   }
 });
 </script>

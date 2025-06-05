@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, Ref, ref } from 'vue';
+import { Ref, ref } from 'vue';
 import {
   IonButton,
   IonContent,
@@ -29,7 +29,6 @@ import { reject } from '@/utils';
 import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const playlists: Ref<Playlist[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -44,8 +43,9 @@ const authStore = useAuthStore();
 
 const loadPlaylists = async () => {
   try {
-    const user = await retrieveAuthenticatedProfile();
-    playlists.value = await retrieveUserPlaylists(user.slug);
+    const slug: string | null = authStore.getAuthenticatedUserSlug;
+
+    if (slug) playlists.value = await retrieveUserPlaylists(slug);
   } catch (error) {
     await reject(error as Error);
   }
@@ -87,8 +87,6 @@ const FetchYoutubePlaylist = async () => {
 onIonViewWillEnter(async () => {
   if (authStore.isAuthenticated) await loadPlaylists();
 });
-
-onMounted(loadPlaylists);
 </script>
 
 <template>

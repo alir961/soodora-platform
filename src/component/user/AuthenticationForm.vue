@@ -2,7 +2,7 @@
 import { IonButton, IonInput, IonItem, toastController } from '@ionic/vue';
 import { computed, ref, Ref } from 'vue';
 import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
-import { saveBearerToken, saveUserData } from '@/store/localStorage';
+import { saveBearerToken } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
@@ -29,8 +29,7 @@ const login = async () => {
 
     await saveBearerToken(token);
     await router.push('/explore');
-    await saveUserData(await retrieveAuthenticatedProfile());
-    authStore.authenticated = true;
+    authStore.authenticate(await retrieveAuthenticatedProfile());
   } catch (error) {
     const toast = await toastController.create({
       message: 'Login Failed!',

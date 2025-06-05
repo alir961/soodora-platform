@@ -21,7 +21,8 @@ import ProductCard from '@/component/marketplace/ProductCard.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { User } from '@/entity/User';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+
+const authStore = useAuthStore();
 
 const products: Ref<Product[]> = ref([]);
 const showModal: Ref<boolean> = ref(false);
@@ -34,7 +35,14 @@ const newProduct: Reactive<CreateProductRequest> = reactive({
   price: 0,
   quantity: 1,
 });
-const authStore = useAuthStore();
+
+onIonViewWillEnter(async () => {
+  await loadProducts();
+});
+
+onMounted(() => {
+  if (authStore.isAuthenticated) userData.value = authStore.getAuthenticatedUser;
+});
 
 const loadProducts = async () => {
   try {
@@ -53,22 +61,6 @@ const submitProduct = async () => {
     console.error('Failed to create product:', error);
   }
 };
-
-onIonViewWillEnter(async () => {
-  await loadProducts();
-});
-
-const fetchUserData = async () => {
-  if (authStore.isAuthenticated) {
-    try {
-      userData.value = await retrieveAuthenticatedProfile();
-    } catch (error) {
-      console.error('Failed to fetch user data:', error);
-    }
-  }
-};
-
-onMounted(fetchUserData);
 
 const showButton = () => {
   return userData.value?.roles.includes('ADMIN') || userData.value?.roles.includes('ARTIST');

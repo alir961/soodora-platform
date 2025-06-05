@@ -15,7 +15,7 @@ import {
   onIonViewWillEnter,
   toastController,
 } from '@ionic/vue';
-import { deleteBearerToken, saveUserData, deleteUserData } from '@/store/localStorage';
+import { deleteBearerToken } from '@/store/localStorage';
 import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
@@ -56,11 +56,21 @@ watch(showModal, (newVal) => {
   }
 });
 
+onIonViewWillEnter(async () => {
+  if (route.query.error === 'oauth') {
+    const toast = await toastController.create({
+      message: 'Unable to connect to OAuth provider!',
+      duration: 1500,
+      position: 'top',
+    });
+    await toast.present();
+  }
+  await fetchUserData();
+});
+
 const fetchUserData = async () => {
   try {
-    const user = await retrieveAuthenticatedProfile();
-    userData.value = user;
-    await saveUserData(user);
+    userData.value = authStore.getAuthenticatedUser;
     linkedProviders.value = await callRetrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
@@ -69,8 +79,7 @@ const fetchUserData = async () => {
 
 const logout = async () => {
   await deleteBearerToken();
-  await deleteUserData();
-  authStore.authenticated = false;
+  authStore.logout();
   await redirectExplore(router);
 };
 
@@ -123,7 +132,7 @@ const updateAccount = async () => {
     };
 
     await callUpdateUser(slug, payload);
-    await fetchUserData();
+    authStore.authenticate(await retrieveAuthenticatedProfile());
     showModal.value = false;
   } catch (error) {
     const toast = await toastController.create({
@@ -152,24 +161,17 @@ const deleteAvatar = async () => {
   showModal.value = false;
 };
 
-onIonViewWillEnter(async () => {
-  if (route.query.error === 'oauth') {
-    const toast = await toastController.create({
-      message: 'Unable to connect to OAuth provider!',
-      duration: 1500,
-      position: 'top',
-    });
-    await toast.present();
-  }
-  await fetchUserData();
-});
+const openProfileEditionModal = () => {
+  userData.value = authStore.getAuthenticatedUser;
+  showModal.value = true;
+};
 </script>
 
 <template>
   <ApplicationViewport title="Account" authenticated>
     <template #toolbar>
       <div id="toolbar-button">
-        <ion-button size="small" @click="showModal = true">
+        <ion-button size="small" @click="openProfileEditionModal">
           <ion-icon :icon="settingsOutline" />
         </ion-button>
       </div>
@@ -206,12 +208,12 @@ onIonViewWillEnter(async () => {
       </div>
     </ion-modal>
 
-    <div v-if="!userData" class="loading">
+    <div v-if="!authStore.getAuthenticatedUser" class="loading">
       <p>Loading...</p>
     </div>
 
     <ion-card v-else>
-      <ProfileComponent :profile="userData" />
+      <ProfileComponent :profile="authStore.getAuthenticatedUser" />
     </ion-card>
 
     <OAuthButton

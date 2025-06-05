@@ -12,12 +12,14 @@ import {
   IonNote,
   alertController,
   toastController,
+  AlertInput,
 } from '@ionic/vue';
-import { onMounted, PropType, Ref, ref } from 'vue';
+import { PropType, Ref, ref } from 'vue';
 import { Post } from '@/entity/Post';
-import { trashOutline } from 'ionicons/icons';
+import { shareOutline, trashOutline } from 'ionicons/icons';
 import { deletePost } from '@/client/postClient';
-import { getAuthenticatedUser } from '@/utils';
+import { useAuthStore } from '@/store/reactiveStorage';
+import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 
 defineProps({
   post: {
@@ -28,19 +30,58 @@ defineProps({
 
 const emit = defineEmits(['post-deleted']);
 
-const playAudio = (audio: Post) => {
-  const audioElement = document.createElement('audio');
-  audioElement.src = audio.audioUrl;
-  audioElement.play();
-};
-
 const focusedPost: Ref<Post | null> = ref(null);
+
+const exportThemes = [
+  {
+    label: 'Black',
+    type: 'radio',
+    value: 'black',
+  },
+  {
+    label: 'White',
+    type: 'radio',
+    value: 'white',
+  },
+  {
+    label: 'Transparent',
+    type: 'radio',
+    value: 'transparent',
+  },
+] as AlertInput[];
 
 const focusPost = (post: Post) => {
   focusedPost.value = focusedPost.value === post ? null : post;
 };
 
-const deleteCurrentPost = async (slug: string) => {
+const exportPost = async (post: Post) => {
+  const alert = await alertController.create({
+    header: 'Select theme for export',
+    inputs: exportThemes,
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Export',
+        handler: async (selectedTheme: string) => {
+          if (!selectedTheme) return;
+          try {
+            const canvas = await createPostCanvas(post, selectedTheme as ExportTheme);
+
+            downloadCanvas(canvas);
+          } catch (err) {
+            console.error('Export failed:', err);
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
+};
+
+const askDeletePost = async (slug: string) => {
   const alert = await alertController.create({
     header: 'Confirm Post Deletion',
     message: 'Are you sure you want to delete this post?',
@@ -67,39 +108,37 @@ const deleteCurrentPost = async (slug: string) => {
   await alert.present();
 };
 
-const userSlug = ref<string>();
-
-onMounted(async () => {
-  userSlug.value = (await getAuthenticatedUser()).slug;
-});
+const authStore = useAuthStore();
 </script>
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
     <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
-      <div v-if="focusedPost === post && post.owner.slug === userSlug" class="delete-button-container">
-        <ion-button fill="clear" size="small" @click.stop="deleteCurrentPost(post.slug)">
-          <ion-icon :icon="trashOutline" />
-        </ion-button>
-      </div>
       <ion-card-header>
         <div>
-          <ion-card-title class="header-title">{{ post.owner.username }}</ion-card-title>
+          <ion-card-title class="artist-name"><span>@</span>{{ post.owner.username }}</ion-card-title>
           <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
           <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
       </ion-card-header>
-      <ion-card-content>{{ post.content }}</ion-card-content>
-      <ion-card-content class="image-content">
-        <div class="image">
-          <IonImg :src="post.imageUrl" :alt="`Post ${post.title}`" />
-        </div>
+      <ion-card-content>
         <ion-card-title>{{ post.title }}</ion-card-title>
-      </ion-card-content>
-      <ion-card-content class="audio-content">
-        <div v-if="post.audioUrl">
-          <ion-button v-if="focusedPost === post" expand="block" @click.stop="playAudio(post)"> Play Audio </ion-button>
-          <audio v-if="focusedPost === post" :src="post.audioUrl" controls></audio>
+        <p>{{ post.content }}</p>
+        <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
+        <div v-if="post.audioUrl" class="audio-content">
+          <audio :src="post.audioUrl" controls></audio>
+        </div>
+        <div
+          v-if="focusedPost === post && post.owner.slug === authStore.getAuthenticatedUserSlug"
+          class="settings-container">
+          <ion-button fill="clear" size="small" @click.stop="exportPost(post)" id="export-button">
+            Export
+            <ion-icon :icon="shareOutline" />
+          </ion-button>
+          <ion-button fill="clear" size="small" @click.stop="askDeletePost(post.slug)">
+            Delete
+            <ion-icon :icon="trashOutline" />
+          </ion-button>
         </div>
       </ion-card-content>
     </ion-card>
@@ -107,39 +146,67 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.focused {
-  border: 0.2em solid #3880ff;
-  transform: scale(1.05);
+ion-card {
+  margin: 0 0.4em 1em 0.4em;
+
+  &.focused {
+    outline: 0.2em solid #3880ff;
+  }
 }
 
-.header-title {
-  font-size: 2em;
-  margin-bottom: 0.2em;
+ion-card-header > div {
+  display: flex;
+  justify-content: space-between;
+  align-content: center;
+
+  & .artist-name {
+    font-size: 1em;
+    color: #999999;
+
+    & span {
+      color: white;
+    }
+  }
 }
 
-.image-content {
-  padding-top: 0;
-}
+ion-card-content {
+  & ion-card-title {
+    font-size: 1.3rem;
+    margin-bottom: 0.4em;
+  }
 
-.image {
-  border-radius: 20px;
-  overflow: hidden;
-  margin-bottom: 1.5em;
-}
+  & p {
+    text-align: justify;
+  }
 
-.audio-content {
-  padding-top: 0;
-}
+  & ion-img {
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 1em;
+  }
 
-audio {
-  width: 100%;
-  margin-top: 10px;
-}
+  & .audio-content {
+    padding-top: 0;
+  }
 
-.delete-button-container {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  z-index: 10;
+  & audio {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  & .settings-container {
+    margin-top: 0.8em;
+    display: flex;
+    justify-content: flex-end;
+
+    & ion-button {
+      margin: 0;
+      font-weight: bold;
+
+      & ion-icon {
+        margin-left: 0.4em;
+      }
+    }
+  }
 }
 </style>
