@@ -18,8 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
-import static org.springframework.http.HttpStatus.ACCEPTED;
-import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequestMapping("/profile")
@@ -43,7 +42,17 @@ public class ProfileController {
             UpdateUserCommand command = request.toCommand();
 
             userService.updateUser(command, user.slug());
-            return new ResponseEntity<>(ACCEPTED);
+            return new ResponseEntity<>(OK);
+        } catch (InvalidRequestException | UnknownUserException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping(":avatar")
+    public ResponseEntity<JsonResponse> deleteProfileAvatar(@AuthenticationPrincipal UserDTO user) {
+        try {
+            userService.deleteUserAvatar(user.identifier());
+            return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }

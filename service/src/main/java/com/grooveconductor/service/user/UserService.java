@@ -56,6 +56,14 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public void deleteUserAvatar(Identifier identifier) throws UnknownUserException {
+        try {
+            userRepository.deleteAvatar(identifier);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserDTO user = retrieveUser(createFromEmail(username));

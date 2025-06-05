@@ -47,16 +47,14 @@ public class UserRepositoryImpl implements UserRepository {
     public UserDTO update(UpdateUserCommand command, Identifier identifier) {
         UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
 
-        if (command.getUsername() != null && !command.getUsername().isBlank()
-                && !command.getUsername().equals(existingUser.getUsername()))
-            existingUser.setUsername(command.getUsername());
-        if (command.getFirstname() != null && !command.getFirstname().isBlank()
-                && !command.getFirstname().equals(existingUser.getFirstname()))
-            existingUser.setFirstname(command.getFirstname());
-        if (command.getLastname() != null && !command.getLastname().isBlank()
-                && !command.getLastname().equals(existingUser.getLastname()))
-            existingUser.setLastname(command.getLastname());
-
+        if (isNotNullOrBlank(command.username()))
+            existingUser.setUsername(command.username());
+        if (isNotNullOrBlank(command.firstname()))
+            existingUser.setFirstname(command.firstname());
+        if (isNotNullOrBlank(command.lastname()))
+            existingUser.setLastname(command.lastname());
+        if (isNotNullOrBlank(command.avatarUrl()))
+            existingUser.setAvatarUrl(command.avatarUrl());
         return userRepository.save(existingUser).toDTO();
     }
 
@@ -77,6 +75,14 @@ public class UserRepositoryImpl implements UserRepository {
         UserEntity user = findUserByIdentifierOrThrows(identifier);
 
         userRepository.deleteById(user.getId());
+    }
+
+    @Override
+    public void deleteAvatar(Identifier identifier) {
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
+
+        user.setAvatarUrl(null);
+        userRepository.save(user);
     }
 
     @Override
@@ -166,6 +172,10 @@ public class UserRepositoryImpl implements UserRepository {
         while (userRepository.findBySlug(slug).isPresent())
             slug = generateSlug();
         return slug;
+    }
+
+    private boolean isNotNullOrBlank(String input) {
+        return input != null && !input.isBlank();
     }
 
 }

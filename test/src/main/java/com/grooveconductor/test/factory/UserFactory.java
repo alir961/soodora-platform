@@ -17,7 +17,8 @@ public class UserFactory {
                 "user@example.com",
                 "John",
                 "Doe",
-                emptySet());
+                emptySet(),
+                null);
     }
 
     public static UserDTO buildDefaultUser(int id) {
@@ -27,7 +28,8 @@ public class UserFactory {
                 "user" + id + "@example.com",
                 "John",
                 "Doe",
-                emptySet());
+                emptySet(),
+                null);
     }
 
 }

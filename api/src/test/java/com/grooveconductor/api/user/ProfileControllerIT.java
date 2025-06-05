@@ -13,6 +13,7 @@ import jakarta.inject.Inject;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -45,6 +46,24 @@ class ProfileControllerIT {
     void givenUnauthenticatedRequest_whenGetProfile_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/profile"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedRequest_whenDeleteProfileAvatar_thenReturnProfile() throws Exception {
+        // GIVEN
+        when(userService.retrieveUser(USER.identifier())).thenReturn(USER);
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/profile/:avatar")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenDeleteProfileAvatar_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/profile/:avatar"))
                 .andExpect(status().isForbidden());
     }
 
