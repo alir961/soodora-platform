@@ -22,17 +22,17 @@ import { User } from '@/entity/User';
 import { redirectExplore, userIdentifierNotFoundToast } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import {
-  deleteUserAccount,
-  updateUserAccount,
   OAuthProvider,
   retrieveAuthenticatedProfile,
-  retrieveLinkedOAuthProviders,
+  callRetrieveLinkedOAuthProviders,
+  callDeleteUserAvatar,
 } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import { logOutOutline, trashOutline, settingsOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
+import { callDeleteUser, callUpdateUser } from '@/client/userClient';
 
 const router = useRouter();
 const route = useRoute();
@@ -45,12 +45,14 @@ const showModal = ref(false);
 const usernameInput = ref('');
 const firstnameInput = ref('');
 const lastnameInput = ref('');
+const avatarUrlInput = ref('');
 
 watch(showModal, (newVal) => {
   if (newVal && userData.value) {
     usernameInput.value = userData.value.username;
     firstnameInput.value = userData.value.firstname;
     lastnameInput.value = userData.value.lastname;
+    avatarUrlInput.value = userData.value.avatarUrl ?? '';
   }
 });
 
@@ -59,7 +61,7 @@ const fetchUserData = async () => {
     const user = await retrieveAuthenticatedProfile();
     userData.value = user;
     await saveUserData(user);
-    linkedProviders.value = await retrieveLinkedOAuthProviders();
+    linkedProviders.value = await callRetrieveLinkedOAuthProviders();
   } catch (error) {
     console.error('Failed to fetch user data:', error);
   }
@@ -88,7 +90,7 @@ const deleteAccount = async () => {
         text: 'Delete',
         handler: async () => {
           try {
-            await deleteUserAccount(userSlug);
+            await callDeleteUser(userSlug);
             await logout();
           } catch (error) {
             const toast = await toastController.create({
@@ -117,8 +119,10 @@ const updateAccount = async () => {
       username: usernameInput.value,
       firstname: firstnameInput.value,
       lastname: lastnameInput.value,
+      avatarUrl: avatarUrlInput.value,
     };
-    await updateUserAccount(slug, payload);
+
+    await callUpdateUser(slug, payload);
     await fetchUserData();
     showModal.value = false;
   } catch (error) {
@@ -127,8 +131,25 @@ const updateAccount = async () => {
       duration: 1500,
       position: 'top',
     });
+
     await toast.present();
   }
+};
+
+const deleteAvatar = async () => {
+  try {
+    await callDeleteUserAvatar();
+    await fetchUserData();
+  } catch (error) {
+    const toast = await toastController.create({
+      message: 'Failed to delete account avatar.',
+      duration: 1500,
+      position: 'top',
+    });
+
+    await toast.present();
+  }
+  showModal.value = false;
 };
 
 onIonViewWillEnter(async () => {
@@ -175,7 +196,12 @@ onIonViewWillEnter(async () => {
             <ion-label position="stacked">Last Name</ion-label>
             <ion-input v-model="lastnameInput" />
           </ion-item>
-          <ion-button expand="block" @click="updateAccount"> Save </ion-button>
+          <ion-item>
+            <ion-label position="stacked">Avatar URL</ion-label>
+            <ion-input v-model="avatarUrlInput" />
+          </ion-item>
+          <ion-button expand="block" @click="updateAccount">Save</ion-button>
+          <ion-button expand="block" @click="deleteAvatar">Delete Avatar</ion-button>
         </ion-content>
       </div>
     </ion-modal>
