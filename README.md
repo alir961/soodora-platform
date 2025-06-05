@@ -2,8 +2,8 @@
 
 GrooveConductor is a Java-based API for managing musical tracks, users, and playlists, developed with Spring Boot.
 
-[![pipeline status](https://gitlab.com/groove-conductor-eip/api/badges/main/pipeline.svg)](https://gitlab.com/groove-conductor-eip/api/-/commits/main)
-[![coverage report](https://gitlab.com/groove-conductor-eip/api/badges/main/coverage.svg)](https://gitlab.com/groove-conductor-eip/api/-/commits/main) 
+[![pipeline status](https://gitlab.com/soodora/api/badges/main/pipeline.svg)](https://gitlab.com/soodora/api/-/commits/main)
+[![coverage report](https://gitlab.com/soodora/api/badges/main/coverage.svg)](https://gitlab.com/soodora/api/-/commits/main) 
 
 ## Getting Started
 
@@ -20,7 +20,7 @@ Make sure you have the following installed:
 
 #### 1. Clone the repository
 ```bash
-git clone git@gitlab.com:groove-conductor-eip/api.git && cd api
+git clone git@gitlab.com:soodora/api.git && cd api
 ```
 
 #### 2. Install the project dependencies
@@ -65,7 +65,7 @@ docker compose up --build -d
 mvn verify
 ```
 
-JAR can be found at `rest/target/rest-*.jar`
+JAR can be found at `api/target/api-*.jar`
 
 ### API Documentation
 
