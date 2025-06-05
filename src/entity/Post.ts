@@ -8,6 +8,7 @@ interface Post {
   audioUrl: string;
   type: 'ANNOUNCE' | 'MERCH_DROP' | 'NEW_EVENT';
   owner: User;
+  createdAt: Date;
 }
 
 export type { Post };
