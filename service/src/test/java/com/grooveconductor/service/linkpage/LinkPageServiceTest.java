@@ -3,8 +3,11 @@ package com.grooveconductor.service.linkpage;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.link.LinkDTO;
 import com.grooveconductor.domain.linkpage.*;
+import com.grooveconductor.domain.user.IdentifierFactory;
+import com.grooveconductor.domain.user.LinkPageNotFoundException;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.link.LinkUnityException;
+import com.grooveconductor.service.post.MissingUserSlugException;
 import com.grooveconductor.service.user.UnknownUserException;
 
 import java.util.List;
@@ -90,7 +93,7 @@ class LinkPageServiceTest {
     }
 
     @Test
-    void retrieveLinkPage_WithoutUserSlug_ThrowsIllegalArgumentException() {
+    void retrieveLinkPage_WithoutUserSlug_ThrowsMissingUserSlugException() {
         // GIVEN
         LinkPageFilter filter = new LinkPageFilter(Optional.empty());
 
@@ -98,8 +101,22 @@ class LinkPageServiceTest {
         Executable executable = () -> linkPageService.retrieveLinkPage(filter);
 
         // THEN
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, executable);
-        assertEquals("User slug must be provided", exception.getMessage());
+        MissingUserSlugException exception = assertThrows(MissingUserSlugException.class, executable);
+        assertEquals("Missing user slug", exception.getMessage());
+    }
+
+    @Test
+    void retrieveUserLinkPage_whenLinkPageDoesNotExist_throwsUnknownLinkPageException() {
+        // GIVEN
+        LinkPageFilter filter = new LinkPageFilter(Optional.of("slug"));
+        doThrow(LinkPageNotFoundException.class).when(userRepository).retrieveLinkPage(
+                IdentifierFactory.createFromSlug(filter.userSlug().get()));
+
+        // WHEN
+        Executable executable = () -> linkPageService.retrieveLinkPage(filter);
+
+        // THEN
+        assertThrows(UnknownLinkPageException.class, executable);
     }
 
     @Test
