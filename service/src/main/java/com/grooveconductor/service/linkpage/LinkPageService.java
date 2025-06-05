@@ -2,9 +2,11 @@ package com.grooveconductor.service.linkpage;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.linkpage.*;
+import com.grooveconductor.domain.user.LinkPageNotFoundException;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.link.LinkUnityException;
+import com.grooveconductor.service.post.MissingUserSlugException;
 import com.grooveconductor.service.user.UnknownUserException;
 
 import java.util.List;
@@ -30,11 +32,15 @@ public class LinkPageService {
         return linkPageRepository.findAll();
     }
 
-    public LinkPageDTO retrieveLinkPage(LinkPageFilter filter) {
-        if (filter.userSlug().isPresent()) {
+    public LinkPageDTO retrieveLinkPage(LinkPageFilter filter)
+            throws MissingUserSlugException, UnknownLinkPageException {
+        if (filter.userSlug().isEmpty())
+            throw new MissingUserSlugException();
+
+        try {
             return userRepository.retrieveLinkPage(createFromSlug(filter.userSlug().get()));
-        } else {
-            throw new IllegalArgumentException("User slug must be provided");
+        } catch (LinkPageNotFoundException exception) {
+            throw new UnknownLinkPageException("Could not retrieve link page for user: " + filter.userSlug().get());
         }
     }
 
