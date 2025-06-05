@@ -3,6 +3,8 @@ package com.grooveconductor.test.factory;
 import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.post.PostType;
 
+import java.util.Date;
+
 import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -22,7 +24,8 @@ public class PostFactory {
                 PostType.ANNOUNCE,
                 buildDefaultUser(),
                 0,
-                0);
+                0,
+                new Date());
     }
 
 }

@@ -123,8 +123,12 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public LinkPageDTO retrieveLinkPage(Identifier identifier) {
-        return findUserByIdentifierOrThrows(identifier).getLinkPage().toDTO();
+    public LinkPageDTO retrieveLinkPage(Identifier identifier) throws LinkPageNotFoundException {
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
+        if (user.getLinkPage() == null)
+            throw new LinkPageNotFoundException("Link Page not found for user " + identifier);
+
+        return user.getLinkPage().toDTO();
     }
 
     @Override
