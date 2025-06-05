@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import AuthView from '@/view/user/AuthenticationView.vue';
-import HomeView from '@/view/ExploreView.vue';
+import HomeView from '@/view/explore/ExploreView.vue';
 import AccountView from '@/view/user/AccountView.vue';
 import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import PlaylistView from '@/view/playlist/PlaylistView.vue';
@@ -10,6 +10,7 @@ import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
 import LinkPageView from '@/view/LinkPageView.vue';
 import ProfileView from '@/view/user/ProfileView.vue';
+import CommentView from '@/view/explore/CommentView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -20,6 +21,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/explore',
     name: 'Explore',
     component: HomeView,
+  },
+  {
+    path: '/posts/:slug/comments',
+    name: 'CommentView',
+    component: CommentView,
   },
   {
     path: '/linkpages',

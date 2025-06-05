@@ -1,27 +1,31 @@
 <script setup lang="ts">
 import {
-  IonCard,
+  alertController,
+  AlertInput,
   IonButton,
+  IonCard,
   IonCardContent,
   IonCardHeader,
+  IonCardSubtitle,
   IonCardTitle,
   IonCol,
-  IonCardSubtitle,
-  IonImg,
   IonIcon,
+  IonImg,
   IonNote,
-  alertController,
   toastController,
-  AlertInput,
 } from '@ionic/vue';
-import { PropType, Ref, ref } from 'vue';
-import { Post } from '@/entity/Post';
-import { shareOutline, trashOutline } from 'ionicons/icons';
-import { deletePost } from '@/client/postClient';
+import { onMounted, PropType, Ref, ref } from 'vue';
+import { Post, PostCounters } from '@/entity/Post';
+import { chatbubbleOutline, heart, heartOutline, shareOutline, trashOutline } from 'ionicons/icons';
+import { deleteLike, deletePost, getPostCounters, getPostLikes, postLike } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
+import { Router, useRouter } from 'vue-router';
 
-defineProps({
+const router: Router = useRouter();
+const authStore = useAuthStore();
+
+const props = defineProps({
   post: {
     required: true,
     type: Object as PropType<Post>,
@@ -31,6 +35,8 @@ defineProps({
 const emit = defineEmits(['post-deleted']);
 
 const focusedPost: Ref<Post | null> = ref(null);
+const likedPosts: Ref<Set<string>> = ref(new Set());
+const postCounters: Ref<PostCounters> = ref({});
 
 const exportThemes = [
   {
@@ -108,7 +114,53 @@ const askDeletePost = async (slug: string) => {
   await alert.present();
 };
 
-const authStore = useAuthStore();
+const toggleLikePost = async (slug: string) => {
+  const isLiked = likedPosts.value.has(slug);
+
+  try {
+    if (isLiked) {
+      await deleteLike(slug);
+      likedPosts.value.delete(slug);
+    } else {
+      await postLike(slug);
+      likedPosts.value.add(slug);
+    }
+
+    await loadCounters(slug);
+  } catch (error) {
+    console.error('Unable to update like: ', error);
+  }
+};
+
+const loadCounters = async (slug: string) => {
+  try {
+    postCounters.value[slug] = await getPostCounters(slug);
+  } catch (error) {
+    console.error('Unable to load post counters:', error);
+  }
+};
+
+const loadLikes = async (slug: string) => {
+  try {
+    const likes = await getPostLikes(slug);
+    const userSlug = authStore.getAuthenticatedUserSlug;
+
+    if (likes.some((like) => like.user.slug === userSlug)) {
+      likedPosts.value.add(slug);
+    }
+  } catch (error) {
+    console.error('Unable to load likes:', error);
+  }
+};
+
+const goToComments = (slug: string) => {
+  router.push({ name: 'CommentView', params: { slug } });
+};
+
+onMounted(() => {
+  loadCounters(props.post.slug);
+  loadLikes(props.post.slug);
+});
 </script>
 
 <template>
@@ -128,14 +180,30 @@ const authStore = useAuthStore();
         <div v-if="post.audioUrl" class="audio-content">
           <audio :src="post.audioUrl" controls></audio>
         </div>
-        <div
-          v-if="focusedPost === post && post.owner.slug === authStore.getAuthenticatedUserSlug"
-          class="settings-container">
+        <div v-if="focusedPost === post" class="settings-container">
+          <ion-button fill="clear" size="small" @click.stop="toggleLikePost(post.slug)">
+            <ion-icon
+              :icon="likedPosts.has(post.slug) ? heart : heartOutline"
+              :color="likedPosts.has(post.slug) ? 'danger' : ''"
+              slot="start" />
+            <ion-note v-if="postCounters[post.slug]">({{ postCounters[post.slug].likeCount }})</ion-note>
+          </ion-button>
+
+          <ion-button fill="clear" size="small" @click.stop="goToComments(post.slug)">
+            <ion-icon :icon="chatbubbleOutline" slot="start" />
+            <ion-note v-if="postCounters[post.slug]">({{ postCounters[post.slug].commentCount }})</ion-note>
+          </ion-button>
+
           <ion-button fill="clear" size="small" @click.stop="exportPost(post)" id="export-button">
             Export
             <ion-icon :icon="shareOutline" />
           </ion-button>
-          <ion-button fill="clear" size="small" @click.stop="askDeletePost(post.slug)">
+
+          <ion-button
+            v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+            fill="clear"
+            size="small"
+            @click.stop="askDeletePost(post.slug)">
             Delete
             <ion-icon :icon="trashOutline" />
           </ion-button>

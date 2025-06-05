@@ -11,4 +11,28 @@ interface Post {
   createdAt: Date;
 }
 
-export type { Post };
+interface PostLike {
+  postSlug: string;
+  user: User;
+  likedAt: string;
+}
+
+interface PostCounter {
+  likeCount: number;
+  commentCount: number;
+}
+
+interface PostCounters {
+  [slug: string]: PostCounter;
+}
+
+interface Comment {
+  slug: string;
+  postSlug: string;
+  content: string;
+  user: User;
+  likeCount: number;
+  createdAt: string;
+}
+
+export type { Post, PostLike, PostCounter, PostCounters, Comment };
