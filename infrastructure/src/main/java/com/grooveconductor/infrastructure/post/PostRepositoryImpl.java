@@ -87,8 +87,9 @@ public class PostRepositoryImpl implements PostRepository {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
 
-        post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
-        post.setLikeCount(max(0, post.getLikeCount() - 1));
+        boolean removed = post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+        if (removed)
+            post.setLikeCount(max(0, post.getLikeCount() - 1));
 
         repository.save(post);
     }
@@ -144,8 +145,9 @@ public class PostRepositoryImpl implements PostRepository {
         CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
 
-        comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
-        comment.setLikeCount(max(0, comment.getLikeCount() - 1));
+        boolean removed = comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+        if (removed)
+            comment.setLikeCount(max(0, comment.getLikeCount() - 1));
 
         commentRepository.save(comment);
     }
