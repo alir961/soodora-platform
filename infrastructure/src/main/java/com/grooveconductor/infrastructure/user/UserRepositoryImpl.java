@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userRepository;
 
     @Override
+    @Transactional
     public UserDTO save(RegisterCommand command) {
         UserEntity user = new UserEntity();
 
@@ -44,6 +46,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public UserDTO update(UpdateUserCommand command, Identifier identifier) {
         UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
 
@@ -59,11 +62,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public UserDTO find(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).toDTO();
     }
 
     @Override
+    @Transactional
     public List<UserDTO> findAll() {
         return userRepository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -71,6 +76,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public void delete(Identifier identifier) {
         UserEntity user = findUserByIdentifierOrThrows(identifier);
 
@@ -78,6 +84,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public void deleteAvatar(Identifier identifier) {
         UserEntity user = findUserByIdentifierOrThrows(identifier);
 
@@ -86,6 +93,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public boolean isUsed(Identifier identifier) {
         try {
             findUserByIdentifierOrThrows(identifier);
@@ -96,18 +104,21 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public String retrieveEncodedPassword(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier)
                 .getPassword();
     }
 
     @Override
+    @Transactional
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
         return ofNullable(findUserByIdentifierOrThrows(identifier).getArtist())
                 .map(DomainEntity::toDTO);
     }
 
     @Override
+    @Transactional
     public List<ProductDTO> retrieveProducts(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getProducts().stream()
                 .map(DomainEntity::toDTO)
@@ -115,6 +126,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
                 .map(DomainEntity::toDTO)
@@ -122,6 +134,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public List<PostDTO> retrievePosts(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPosts().stream()
                 .map(DomainEntity::toDTO)
@@ -129,6 +142,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public LinkPageDTO retrieveLinkPage(Identifier identifier) throws LinkPageNotFoundException {
         UserEntity user = findUserByIdentifierOrThrows(identifier);
         if (user.getLinkPage() == null)
@@ -138,6 +152,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public List<LikeDTO> retrieveLikes(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier)
                 .getLikes()
@@ -147,6 +162,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    @Transactional
     public List<CommentDTO> retrievePostComments(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier)
                 .getComments()

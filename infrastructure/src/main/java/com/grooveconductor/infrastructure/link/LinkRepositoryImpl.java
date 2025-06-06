@@ -12,6 +12,7 @@ import com.grooveconductor.infrastructure.linkpage.LinkPageJpaRepository;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,6 +31,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     }
 
     @Override
+    @Transactional
     public LinkDTO save(CreateLinkCommand command, String userSlug) {
         LinkPageEntity linkPage = linkPageRepository.findByUserSlug(userSlug)
                 .orElseThrow(() -> new UnknownSlugException("Link page not found for user slug: " + userSlug));
@@ -48,6 +50,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     }
 
     @Override
+    @Transactional
     public LinkDTO update(UpdateLinkCommand command, String slug) {
         LinkEntity existingLink = findLinkBySlugOrThrow(slug);
 
@@ -67,11 +70,13 @@ public class LinkRepositoryImpl implements LinkRepository {
     }
 
     @Override
+    @Transactional
     public LinkDTO findBySlug(String slug) {
         return findLinkBySlugOrThrow(slug).toDTO();
     }
 
     @Override
+    @Transactional
     public List<LinkDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -79,6 +84,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     }
 
     @Override
+    @Transactional
     public void deleteBySlug(String slug) {
         LinkEntity link = repository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find link with slug: #" + slug));

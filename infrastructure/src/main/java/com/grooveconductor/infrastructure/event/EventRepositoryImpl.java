@@ -12,6 +12,7 @@ import com.grooveconductor.infrastructure.common.DomainEntity;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +26,7 @@ public class EventRepositoryImpl implements EventRepository {
     private final ArtistJpaRepository artistRepository;
 
     @Override
+    @Transactional
     public EventDTO save(CreateEventCommand command, String artistSlug) {
         EventEntity event = new EventEntity();
         ArtistEntity artist = artistRepository.findBySlug(artistSlug)
@@ -45,12 +47,14 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    @Transactional
     public EventDTO find(String slug) {
         return findArtistBySlug(slug)
                 .toDTO();
     }
 
     @Override
+    @Transactional
     public List<EventDTO> findAll() {
         return eventRepository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -58,6 +62,7 @@ public class EventRepositoryImpl implements EventRepository {
     }
 
     @Override
+    @Transactional
     public void delete(String slug) {
         eventRepository.findBySlug(slug)
                 .ifPresent(eventRepository::delete);

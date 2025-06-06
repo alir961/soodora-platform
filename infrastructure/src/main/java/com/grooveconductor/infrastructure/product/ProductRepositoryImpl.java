@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,17 +27,8 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final ProductJpaRepository repository;
     private final UserJpaRepository userRepository;
 
-    protected ProductEntity findProductBySlugOrThrow(String slug) {
-        return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find product with slug: #" + slug));
-    }
-
-    protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
-        return repository.findProductsByUserSlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
-    }
-
     @Override
+    @Transactional
     public ProductDTO save(CreateProductCommand command, UserDTO user) {
         ProductEntity entity = new ProductEntity();
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -54,6 +46,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    @Transactional
     public ProductDTO update(UpdateProductCommand command, String slug) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
@@ -78,11 +71,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    @Transactional
     public ProductDTO findBySlug(String slug) {
         return findProductBySlugOrThrow(slug).toDTO();
     }
 
     @Override
+    @Transactional
     public List<ProductDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -90,6 +85,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    @Transactional
     public void deleteProductBySlug(String slug) {
         Optional<ProductEntity> product = repository.findBySlug(slug);
 
@@ -97,11 +93,22 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
+    @Transactional
     public boolean isProductNameUsedByUser(String name, String userSlug) {
         List<ProductEntity> userProducts = findProductsByUserSlugOrThrow(userSlug);
 
         return userProducts.stream()
                 .anyMatch(products -> products.getName().equalsIgnoreCase(name));
+    }
+
+    protected ProductEntity findProductBySlugOrThrow(String slug) {
+        return repository.findBySlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find product with slug: #" + slug));
+    }
+
+    protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
+        return repository.findProductsByUserSlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 
     private String generateUniqueSlug() {

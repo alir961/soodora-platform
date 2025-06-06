@@ -24,7 +24,6 @@ import lombok.Setter;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
-import static java.util.UUID.randomUUID;
 import static java.util.stream.Collectors.toSet;
 
 @Getter
@@ -36,7 +35,7 @@ public class UserEntity implements DomainEntity<UserDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true, nullable = false)
     private String slug;
@@ -80,10 +79,10 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PostEntity> posts;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<LikeEntity> likes;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<CommentEntity> comments;
 
     @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)

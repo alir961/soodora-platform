@@ -14,8 +14,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 import lombok.*;
 
-import static java.util.UUID.randomUUID;
-
 @Getter
 @Setter
 @Entity(name = "likes")
@@ -25,7 +23,7 @@ public class LikeEntity implements DomainEntity<LikeDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true)
     private String slug;

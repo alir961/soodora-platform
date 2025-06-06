@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,12 +27,8 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     private final LinkPageJpaRepository repository;
     private final UserJpaRepository userRepository;
 
-    protected LinkPageEntity findLinkPageBySlugOrThrow(String slug) {
-        return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
-    }
-
     @Override
+    @Transactional
     public LinkPageDTO save(CreateLinkPageCommand command, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find user with slug: #" + user.slug()));
@@ -50,6 +47,7 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     }
 
     @Override
+    @Transactional
     public LinkPageDTO update(UpdateLinkPageCommand command, String slug) {
         LinkPageEntity existingLinkPage = findLinkPageBySlugOrThrow(slug);
 
@@ -64,11 +62,13 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     }
 
     @Override
+    @Transactional
     public LinkPageDTO findBySlug(String slug) {
         return findLinkPageBySlugOrThrow(slug).toDTO();
     }
 
     @Override
+    @Transactional
     public List<LinkPageDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -76,12 +76,18 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     }
 
     @Override
+    @Transactional
     public void deleteBySlug(String slug) {
         LinkPageEntity linkPage = repository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
 
         linkPage.getUser().setLinkPage(null);
         repository.delete(linkPage);
+    }
+
+    protected LinkPageEntity findLinkPageBySlugOrThrow(String slug) {
+        return repository.findBySlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
     }
 
     private String generateUniqueSlug() {

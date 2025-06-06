@@ -13,8 +13,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import jakarta.persistence.*;
 import lombok.*;
 
-import static java.util.UUID.randomUUID;
-
 @Getter
 @Setter
 @Entity(name = "comments")
@@ -24,7 +22,7 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true)
     private String slug;

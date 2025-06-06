@@ -4,6 +4,7 @@ import com.grooveconductor.domain.auth.RoleDTO;
 import com.grooveconductor.domain.auth.RoleRepository;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -14,6 +15,7 @@ public class RoleRepositoryImpl implements RoleRepository {
     private final RoleJpaRepository roleRepository;
 
     @Override
+    @Transactional
     public void createRole(String name) {
         RoleEntity role = new RoleEntity();
 
@@ -22,6 +24,7 @@ public class RoleRepositoryImpl implements RoleRepository {
     }
 
     @Override
+    @Transactional
     public RoleDTO findByName(String name) {
         RoleEntity role = roleRepository.findByName(name);
 

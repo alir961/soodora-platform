@@ -16,8 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static java.util.UUID.randomUUID;
-
 @Getter
 @Setter
 @Entity(name = "products")
@@ -27,7 +25,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true)
     private String slug;

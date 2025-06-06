@@ -17,8 +17,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static java.util.UUID.randomUUID;
-
 @Getter
 @Setter
 @Entity(name = "playlists")
@@ -28,7 +26,7 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true)
     private String slug;

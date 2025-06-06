@@ -15,6 +15,7 @@ import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     private final UserJpaRepository userRepository;
 
     @Override
+    @Transactional
     public ArtistDTO save(CreateArtistCommand command, UserDTO user) {
         ArtistEntity entity = new ArtistEntity();
         UserEntity userEntity = userRepository.findByEmail(user.email())
@@ -43,12 +45,14 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     }
 
     @Override
+    @Transactional
     public ArtistDTO find(String slug) {
         return findArtistBySlug(slug)
                 .toDTO();
     }
 
     @Override
+    @Transactional
     public List<ArtistDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -56,6 +60,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     }
 
     @Override
+    @Transactional
     public void delete(String slug) {
         ArtistEntity entity = findArtistBySlug(slug);
 
@@ -63,6 +68,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     }
 
     @Override
+    @Transactional
     public List<EventDTO> retrieveEvents(String slug) {
         ArtistEntity entity = findArtistBySlug(slug);
 

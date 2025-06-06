@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import static jakarta.persistence.EnumType.STRING;
-import static java.util.UUID.randomUUID;
 
 @Getter
 @Setter
@@ -26,7 +25,7 @@ public class EventEntity implements DomainEntity<EventDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     @Column(unique = true, nullable = false)
     private String slug;

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,6 +33,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public PostDTO save(CreatePostCommand command, UserDTO user) {
         PostEntity entity = new PostEntity();
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -49,11 +51,13 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public PostDTO find(String slug) {
         return findPostBySlugOrThrow(slug).toDTO();
     }
 
     @Override
+    @Transactional
     public List<PostDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -61,6 +65,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void likePost(String postSlug, UserDTO user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -82,6 +87,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void unlikePost(String postSlug, UserDTO user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -95,6 +101,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = userRepository.findBySlug(user.slug())
@@ -115,6 +122,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void likeComment(String commentSlug, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
@@ -138,6 +146,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void unlikeComment(String commentSlug, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("User not found: " + user.slug()));
@@ -153,6 +162,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void deleteComment(String commentSlug) {
         CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
@@ -165,6 +175,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public List<LikeDTO> retrieveLikes(String postSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         return post.getLikes().stream()
@@ -173,6 +184,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public List<CommentDTO> retrieveComments(String postSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         return post.getComments().stream()
@@ -181,12 +193,14 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public PostCounterDTO getPostCounters(String postSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         return new PostCounterDTO(post.getLikeCount(), post.getCommentCount());
     }
 
     @Override
+    @Transactional
     public CommentCounterDTO getCommentCounters(String commentSlug) {
         CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
@@ -195,6 +209,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public List<LikeDTO> retrieveCommentLikes(String commentSlug) {
         CommentEntity comment = commentRepository.findBySlug(commentSlug)
                 .orElseThrow(() -> new UnknownSlugException("Comment not found: " + commentSlug));
@@ -205,6 +220,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public void delete(String slug) {
         PostEntity post = repository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find post with slug: #" + slug));

@@ -11,6 +11,7 @@ import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +23,7 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     private final UserJpaRepository userRepository;
 
     @Override
+    @Transactional
     public void createAuthorization(OAuthProvider provider, UserDTO user, String externalId, String refreshToken) {
         if (hasAuthorization(provider, user))
             throw new OAuthAuthorizationException("User has already an authorization set for this provider");
@@ -35,12 +37,14 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     }
 
     @Override
+    @Transactional
     public boolean hasAuthorization(OAuthProvider provider, UserDTO user) {
         return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
                 .isPresent();
     }
 
     @Override
+    @Transactional
     public List<OAuthProvider> retrieveProviders(UserDTO user) {
         return repository.findByUserId(userFromDTO(user).getId()).stream()
                 .map(OAuthTokenEntity::getProvider)
@@ -48,6 +52,7 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     }
 
     @Override
+    @Transactional
     public String retrieveRefreshToken(OAuthProvider provider, UserDTO user) {
         String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
 
@@ -57,6 +62,7 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     }
 
     @Override
+    @Transactional
     public UserDTO retrieveUser(OAuthProvider provider, String externalId) {
         String exceptionMessage = "Unable to find " + provider + " authorization for external id #" + externalId;
 
@@ -67,6 +73,7 @@ public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
     }
 
     @Override
+    @Transactional
     public void deleteAuthorization(OAuthProvider provider, UserDTO user) {
         String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
         OAuthTokenEntity entity = repository.findByProviderAndUserId(provider, userFromDTO(user).getId())

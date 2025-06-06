@@ -11,8 +11,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import static java.util.UUID.randomUUID;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,7 +20,7 @@ public class OAuthTokenEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id = randomUUID();
+    private UUID id;
 
     private OAuthProvider provider;
 

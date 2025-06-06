@@ -13,6 +13,7 @@ import com.grooveconductor.infrastructure.user.UserJpaRepository;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,6 +32,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    @Transactional
     public PlaylistDTO save(CreatePlaylistCommand command, UserDTO user) {
         UserEntity userEntity = userRepository.findBySlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + user.slug()));
@@ -47,6 +49,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    @Transactional
     public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
@@ -67,11 +70,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    @Transactional
     public PlaylistDTO findBySlug(String slug) {
         return findPlaylistBySlugOrThrow(slug).toDTO();
     }
 
     @Override
+    @Transactional
     public List<PlaylistDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntity::toDTO)
@@ -79,6 +84,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    @Transactional
     public void deletePlaylistBySlug(String slug) {
         PlaylistEntity playlist = repository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find playlist with slug: #" + slug));
@@ -87,6 +93,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Override
+    @Transactional
     public boolean isPlaylistNameUsedByUser(String name, String userSlug) {
         UserEntity user = userRepository.findBySlug(userSlug)
                 .orElseThrow(
