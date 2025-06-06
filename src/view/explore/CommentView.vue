@@ -1,0 +1,125 @@
+<script setup lang="ts">
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import {
+  IonButton,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonTitle,
+  IonToolbar,
+  IonBackButton,
+  IonButtons,
+} from '@ionic/vue';
+import { add, heart, heartOutline, trash } from 'ionicons/icons';
+import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { useAuthStore } from '@/store/reactiveStorage';
+import { createComment, deleteComment, getComments, likeComment, unlikeComment } from '@/client/postClient';
+import { Comment } from '@/entity/Post';
+
+const route = useRoute();
+const authStore = useAuthStore();
+const postSlug = route.params.slug as string;
+
+const comments = ref<Comment[]>([]);
+const likedComments = ref<Set<string>>(new Set());
+const newComment = ref<string>('');
+
+const loadComments = async () => {
+  try {
+    comments.value = await getComments(postSlug);
+    likedComments.value.clear();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const toggleLike = async (commentSlug: string) => {
+  try {
+    if (likedComments.value.has(commentSlug)) {
+      await unlikeComment(postSlug, commentSlug);
+      likedComments.value.delete(commentSlug);
+    } else {
+      await likeComment(postSlug, commentSlug);
+      likedComments.value.add(commentSlug);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleDelete = async (commentSlug: string) => {
+  try {
+    await deleteComment(postSlug, commentSlug);
+    comments.value = comments.value.filter((c) => c.slug !== commentSlug);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const handleCreate = async () => {
+  const content = newComment.value.trim();
+  if (!content) return;
+
+  try {
+    await createComment(postSlug, content);
+    newComment.value = '';
+    await loadComments();
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+onMounted(loadComments);
+</script>
+
+<template>
+  <ApplicationViewport title="Comments Section">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-back-button default-href="/explore" />
+        </ion-buttons>
+        <ion-title>{{ postSlug }}</ion-title>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="ion-padding">
+      <ion-item>
+        <ion-input v-model="newComment" placeholder="Écris un commentaire..." clearInput />
+        <ion-button @click="handleCreate">
+          <ion-icon :icon="add" slot="icon-only" />
+        </ion-button>
+      </ion-item>
+
+      <ion-item v-for="comment in comments" :key="comment.slug" class="ion-padding-vertical">
+        <ion-label class="ion-text-wrap">
+          <h3>{{ comment.user.username }}</h3>
+          <p>{{ comment.content }}</p>
+          <small>{{ new Date(comment.createdAt).toLocaleString() }}</small>
+        </ion-label>
+
+        <ion-button fill="clear" @click="toggleLike(comment.slug)">
+          <ion-icon :icon="likedComments.has(comment.slug) ? heart : heartOutline" slot="icon-only" />
+        </ion-button>
+
+        <ion-button
+          fill="clear"
+          color="danger"
+          @click="handleDelete(comment.slug)"
+          v-if="comment.user.slug === authStore.getAuthenticatedUserSlug">
+          <ion-icon :icon="trash" slot="icon-only" />
+        </ion-button>
+      </ion-item>
+    </ion-content>
+  </ApplicationViewport>
+</template>
+
+<style scoped>
+ion-item {
+  border-bottom: 1px solid #ccc;
+}
+</style>
