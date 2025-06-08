@@ -23,8 +23,8 @@ public class InitialDataConfiguration implements ApplicationListener<ContextRefr
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if (alreadySetup)
             return;
-        createRoleIfNotFound("ROLE_PREMIUM");
         createRoleIfNotFound("ROLE_ARTIST");
+        createRoleIfNotFound("ROLE_PREMIUM");
         createRoleIfNotFound("ROLE_ADMIN");
         alreadySetup = true;
     }

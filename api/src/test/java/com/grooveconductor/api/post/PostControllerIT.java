@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static com.grooveconductor.api.JsonStringify.asJsonString;
+import static com.grooveconductor.test.TestConstants.ARTIST_USER;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.PostFactory.buildDefaultPost;
 
@@ -62,13 +63,13 @@ public class PostControllerIT {
                 "audioUrl",
                 "announce");
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/posts")
                 .contentType("application/json")
                 .content(asJsonString(createPostRequest))
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
 
@@ -82,7 +83,7 @@ public class PostControllerIT {
                 "audioUrl",
                 "announce");
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)
                 .createPost(any(CreatePostCommand.class), any(UserDTO.class));
 
@@ -90,7 +91,7 @@ public class PostControllerIT {
         mockMvc.perform(post("/posts")
                 .contentType("application/json")
                 .content(asJsonString(createPostRequest))
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isBadRequest());
     }
 
