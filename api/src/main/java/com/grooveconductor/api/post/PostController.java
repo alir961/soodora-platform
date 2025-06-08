@@ -12,6 +12,7 @@ import com.grooveconductor.service.post.PostService;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,6 +34,7 @@ public class PostController {
     private final PostService postService;
 
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasRole('ARTIST')")
     @PostMapping
     public ResponseEntity<JsonResponse> createPost(
             @AuthenticationPrincipal UserDTO user,

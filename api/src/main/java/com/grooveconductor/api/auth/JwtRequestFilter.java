@@ -6,9 +6,11 @@ import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.UserPrincipal;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,7 +21,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import static java.util.Collections.emptyList;
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
@@ -69,7 +70,11 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private void setContextAuthentication(UserDTO user) {
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, emptyList());
+        List<SimpleGrantedAuthority> authorities = user.roles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                .toList();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
 
         getContext().setAuthentication(authentication);
     }
