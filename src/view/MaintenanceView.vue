@@ -35,31 +35,77 @@ onIonViewWillEnter(redirectIfOnline);
 </script>
 
 <template>
-  <ApplicationViewport title="GrooveConductor" offline fullscreen>
+  <ApplicationViewport title="Soodora" offline :hideTabBar="true">
     <div class="container">
-      <h1>Maintenance</h1>
-      <h2>Oops! Application under maintenance 😕</h2>
-
-      <ion-button @click="redirectHome" class="button refresh">Refresh Page</ion-button>
-      <p class="refresh">Automatic refresh in {{ counter }} {{ `second${counter > 0 ? 's' : ''}` }}</p>
+      <div class="glow-background"></div>
+      <div class="content">
+        <h1 class="glow">Maintenance</h1>
+        <h2 class="animated-text">We're tuning up the vibe</h2>
+        <ion-button @click="redirectHome" class="button refresh">Refresh Page</ion-button>
+        <p class="refresh">Automatic refresh in {{ counter }} {{ `second${counter > 0 ? 's' : ''}` }}</p>
+      </div>
     </div>
   </ApplicationViewport>
 </template>
 
 <style scoped>
 .container {
-  text-align: center;
-  margin-top: 15%;
-  padding: 0 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #0a0a0a;
+  color: #fff;
+}
 
-  & h1 {
-    font-size: 3rem;
+.glow-background {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 136, 255, 0.6) 0%, rgba(0, 51, 204, 0.4) 40%, rgba(0, 0, 0, 0) 100%);
+  filter: blur(100px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: pulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+.content {
+  text-align: center;
+  z-index: 1;
+
+  & h1.glow {
+    font-size: 3.5rem;
+    color: #ffffff;
+    text-shadow:
+      0 0 15px #0088ff,
+      0 0 25px #0033cc;
+    margin-bottom: 10px;
+    animation: float 4s ease-in-out infinite;
   }
 
-  & h2 {
-    margin: 1em 0 0.5em 0;
-    font-size: 1.5rem;
+  & h2.animated-text {
+    font-size: 1.4rem;
     color: #8c8c8c;
+    opacity: 0;
+    animation: slideIn 1.5s ease forwards;
+    animation-delay: 0.5s;
+    margin-bottom: 1em;
   }
 
   & p {
@@ -81,6 +127,30 @@ onIonViewWillEnter(redirectIfOnline);
 
   & .button {
     margin-top: 1em;
+    --background: #0088ff;
+    --background-hover: #0055cc;
+    --color: #fff;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 </style>

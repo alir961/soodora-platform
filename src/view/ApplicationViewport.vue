@@ -34,7 +34,7 @@ onMounted(async () => {
 <template>
   <ion-page>
     <ion-header v-if="!fullscreen" :translucent="true">
-      <ion-toolbar>
+      <ion-toolbar style="--background: #0d0d0d">
         <ion-title>{{ $props.title }}</ion-title>
       </ion-toolbar>
     </ion-header>
@@ -44,10 +44,10 @@ onMounted(async () => {
         <ion-buttons slot="start">
           <slot name="buttons"></slot>
         </ion-buttons>
-        <ion-toolbar>
-          <div id="toolbar">
-            <div id="toolbar-title">
-              <ion-title size="large">{{ $props.title }}</ion-title>
+        <ion-toolbar style="--background: #0d0d0d">
+          <div id="header">
+            <div id="header-image-container">
+              <img src="/assets/banner-light.png" alt="Soodora banner" />
             </div>
             <slot name="toolbar"></slot>
           </div>
@@ -60,21 +60,31 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-ion-title {
-  align-items: center;
+ion-header {
+  background-color: #0d0d0d !important;
+  --background: #0d0d0d !important;
+  color: white;
 }
 
-#toolbar {
+#header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   margin-top: 4%;
   margin-bottom: 4%;
+  height: 50px;
 }
 
-#toolbar-title {
+#header-image-container {
   padding-left: 3%;
-  padding-top: 2%;
-  padding-bottom: 2%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  width: 50%;
+}
+
+#header-image-container img {
+  width: auto;
+  align-items: center;
 }
 </style>
