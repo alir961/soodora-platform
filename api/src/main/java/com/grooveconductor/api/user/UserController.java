@@ -10,6 +10,7 @@ import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,6 +32,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 public class UserController {
 
     private final UserService service;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<List<UserDTO>> getUsers() {
@@ -63,6 +65,16 @@ public class UserController {
     @DeleteMapping("/{slug}")
     public void deleteUser(@PathVariable("slug") String slug) {
         service.deleteUser(createFromSlug(slug));
+    }
+
+    @GetMapping("/{slug}/followers")
+    public Set<UserDTO> getFollowers(@PathVariable("slug") String slug) {
+        return userService.retrieveFollowers(createFromSlug(slug));
+    }
+
+    @GetMapping("/{slug}/following")
+    public Set<UserDTO> getFollowing(@PathVariable("slug") String slug) {
+        return userService.retrieveFollowing(createFromSlug(slug));
     }
 
 }

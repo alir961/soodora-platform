@@ -5,6 +5,7 @@ import com.grooveconductor.domain.user.*;
 import com.grooveconductor.service.auth.UserPrincipal;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -59,6 +60,38 @@ public class UserService implements UserDetailsService {
     public void deleteUserAvatar(Identifier identifier) throws UnknownUserException {
         try {
             userRepository.deleteAvatar(identifier);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
+    public void follow(Identifier follower, Identifier following) throws UnknownUserException {
+        try {
+            userRepository.follow(follower, following);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
+    public Set<UserDTO> retrieveFollowers(Identifier identifier) throws UnknownUserException {
+        try {
+            return userRepository.retrieveFollowers(identifier);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
+    public Set<UserDTO> retrieveFollowing(Identifier identifier) throws UnknownUserException {
+        try {
+            return userRepository.retrieveFollowing(identifier);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException(exception.getMessage());
+        }
+    }
+
+    public void unfollow(Identifier follower, Identifier following) throws UnknownUserException {
+        try {
+            userRepository.unfollow(follower, following);
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }

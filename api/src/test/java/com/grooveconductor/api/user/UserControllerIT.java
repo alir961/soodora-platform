@@ -10,6 +10,8 @@ import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -189,6 +192,50 @@ class UserControllerIT {
     void deleteUserBySlug_Forbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/users/slug1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenRetrieveFollowers_thenSuccess() throws Exception {
+        // GIVEN
+        Set<UserDTO> followers = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+
+        when(userService.retrieveFollowers(USER_1.identifier())).thenReturn(followers);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/users/" + USER_1.slug() + "/followers")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[*].slug", containsInAnyOrder("slug0", "slug1", "slug2")));
+    }
+
+    @Test
+    void givenUnauthorizedRequest_whenRetrieveFollowers_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(post("/users/slug/followers"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenRetrieveFollowing_thenSuccess() throws Exception {
+        // GIVEN
+        Set<UserDTO> following = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+
+        when(userService.retrieveFollowing(USER_1.identifier())).thenReturn(following);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/users/" + USER_1.slug() + "/following")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[*].slug", containsInAnyOrder("slug0", "slug1", "slug2")));
+    }
+
+    @Test
+    void givenUnauthorizedRequest_whenRetrieveFollowing_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(post("/users/slug/following"))
                 .andExpect(status().isForbidden());
     }
 

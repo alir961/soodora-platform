@@ -92,6 +92,24 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<RoleEntity> roles;
 
+    @ManyToMany
+    @JoinTable(name = "users_followers", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "follower_id", referencedColumnName = "id"))
+    private Set<UserEntity> followers;
+
+    @ManyToMany
+    @JoinTable(name = "users_followers", joinColumns = @JoinColumn(name = "follower_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
+    private Set<UserEntity> following;
+
+    public void follow(UserEntity user) {
+        following.add(user);
+        user.followers.add(this);
+    }
+
+    public void unfollow(UserEntity user) {
+        following.remove(user);
+        user.followers.remove(this);
+    }
+
     @Override
     public UserDTO toDTO() {
         Set<String> rolesNames = roles.stream()
