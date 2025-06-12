@@ -1,26 +1,16 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonInput,
-  IonItem,
-  IonLabel,
-  IonTitle,
-  IonToolbar,
-  IonBackButton,
-  IonButtons,
-} from '@ionic/vue';
+import { useRoute, useRouter } from 'vue-router';
+import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel } from '@ionic/vue';
 import { add, heart, heartOutline, trash } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createComment, deleteComment, getComments, likeComment, unlikeComment } from '@/client/postClient';
 import { Comment } from '@/entity/Post';
+import { User } from '@/entity/User';
 
 const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const postSlug = route.params.slug as string;
 
@@ -73,20 +63,15 @@ const handleCreate = async () => {
   }
 };
 
+const redirectUserProfile = async (user: User) => {
+  await router.push(`/user/${user.slug}`);
+};
+
 onMounted(loadComments);
 </script>
 
 <template>
-  <ApplicationViewport title="Comments Section">
-    <ion-header>
-      <ion-toolbar>
-        <ion-buttons slot="start">
-          <ion-back-button default-href="/explore" />
-        </ion-buttons>
-        <ion-title>{{ postSlug }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
-
+  <ApplicationViewport title="Comments Section" back-button>
     <ion-content class="ion-padding">
       <ion-item>
         <ion-input v-model="newComment" placeholder="Écris un commentaire..." clearInput />
@@ -97,7 +82,7 @@ onMounted(loadComments);
 
       <ion-item v-for="comment in comments" :key="comment.slug" class="ion-padding-vertical">
         <ion-label class="ion-text-wrap">
-          <h3>{{ comment.user.username }}</h3>
+          <h3 @click="redirectUserProfile(comment.user)">{{ comment.user.username }}</h3>
           <p>{{ comment.content }}</p>
           <small>{{ new Date(comment.createdAt).toLocaleString() }}</small>
         </ion-label>

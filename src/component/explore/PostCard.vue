@@ -21,6 +21,7 @@ import { deleteLike, deletePost, getPostCounters, getPostLikes, postLike } from 
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
+import { User } from '@/entity/User';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -153,8 +154,12 @@ const loadLikes = async (slug: string) => {
   }
 };
 
-const goToComments = (slug: string) => {
-  router.push({ name: 'CommentView', params: { slug } });
+const openUserProfile = async (user: User) => {
+  await router.push(`/user/${user.slug}`);
+};
+
+const goToComments = async (slug: string) => {
+  await router.push({ name: 'CommentView', params: { slug } });
 };
 
 onMounted(() => {
@@ -168,7 +173,9 @@ onMounted(() => {
     <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
       <ion-card-header>
         <div>
-          <ion-card-title class="artist-name"><span>@</span>{{ post.owner.username }}</ion-card-title>
+          <ion-card-title class="artist-name" @click="openUserProfile(post.owner)">
+            <span>@</span>{{ post.owner.username }}
+          </ion-card-title>
           <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
           <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
