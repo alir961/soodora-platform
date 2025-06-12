@@ -35,5 +35,31 @@ async function callRetrieveLinkedOAuthProviders(): Promise<OAuthProvider[]> {
     .catch(reject);
 }
 
+async function callFollowUser(slug: string): Promise<void> {
+  return axios
+    .post(`/profile/followers/${slug}`, {}, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response && response.status === 200) return Promise.resolve();
+      return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
+async function callUnfollowUser(slug: string): Promise<void> {
+  return axios
+    .delete(`/profile/followers/${slug}`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response && response.status === 200) return Promise.resolve();
+      return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { OAuthProvider };
-export { retrieveAuthenticatedProfile, callRetrieveLinkedOAuthProviders, callDeleteUserAvatar };
+export {
+  retrieveAuthenticatedProfile,
+  callDeleteUserAvatar,
+  callRetrieveLinkedOAuthProviders,
+  callFollowUser,
+  callUnfollowUser,
+};
