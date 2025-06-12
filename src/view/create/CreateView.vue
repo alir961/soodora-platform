@@ -70,6 +70,7 @@ const newPost = ref<CreatePostRequest>({
   imageUrl: '',
   audioUrl: '',
   type: 'ANNOUNCE',
+  createdAt: new Date().toISOString(),
 });
 
 const publishPost = async () => {

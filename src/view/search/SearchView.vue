@@ -21,7 +21,7 @@ const onSearch = () => {
         placeholder="Search for artists or users"
         v-model="searchTerm"
         @ionInput="onSearch"
-        debounce="300"></ion-searchbar>
+        :debounce="300"></ion-searchbar>
 
       <div v-if="searchTerm.length > 0">
         <h2 class="section-title">Artists</h2>
