@@ -1,7 +1,6 @@
 package com.grooveconductor.test.factory;
 
 import com.grooveconductor.domain.post.PostDTO;
-import com.grooveconductor.domain.post.PostType;
 
 import java.util.Date;
 
@@ -21,7 +20,20 @@ public class PostFactory {
                 "Content",
                 "imageUrl",
                 "audioUrl",
-                PostType.ANNOUNCE,
+                buildDefaultUser(),
+                0,
+                0,
+                0,
+                new Date());
+    }
+
+    public static PostDTO buildDefaultPostWithoutAudio(String slug, String title) {
+        return new PostDTO(
+                slug,
+                title,
+                "Content",
+                "imageUrl",
+                null,
                 buildDefaultUser(),
                 0,
                 0,

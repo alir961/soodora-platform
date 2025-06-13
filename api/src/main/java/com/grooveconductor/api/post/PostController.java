@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
@@ -55,8 +56,12 @@ public class PostController {
 
     @GetMapping
     public List<PostDTO> getPosts(
-            @RequestParam(value = "userSlug", required = false) String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug));
+            @RequestParam(value = "userSlug", required = false) String userSlug,
+            @RequestParam(value = "hasAudio", required = false) Boolean hasAudio) {
+
+        PostFilter filter = new PostFilter(
+                ofNullable(userSlug),
+                ofNullable(hasAudio));
 
         return postService.retrievePosts(filter);
     }
@@ -109,7 +114,7 @@ public class PostController {
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(
             @RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug));
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty());
 
         return postService.retrieveUserLikes(filter);
     }
@@ -117,7 +122,7 @@ public class PostController {
     @GetMapping("/comments")
     public List<CommentDTO> getUserComments(
             @RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug));
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty());
         return postService.retrieveUserComments(filter);
     }
 

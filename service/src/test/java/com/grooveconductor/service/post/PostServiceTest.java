@@ -23,6 +23,7 @@ import static org.mockito.Mockito.*;
 
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.PostFactory.buildDefaultPost;
+import static com.grooveconductor.test.factory.PostFactory.buildDefaultPostWithoutAudio;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -38,6 +39,7 @@ class PostServiceTest {
     private static final PostDTO POST_1 = buildDefaultPost("slug1", "Post 1");
     private static final PostDTO POST_2 = buildDefaultPost("slug2", "Post 2");
     private static final PostDTO POST_3 = buildDefaultPost("slug3", "Post 3");
+    private static final PostDTO POST_4_WITHOUT_AUDIO = buildDefaultPostWithoutAudio("slug4", "Post 4");
     private static final List<PostDTO> POSTS = List.of(POST_1, POST_2, POST_3);
 
     @BeforeEach
@@ -48,8 +50,7 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl",
-                PostType.ANNOUNCE);
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl");
 
         when(postRepository.save(any(), eq(USER))).thenReturn(POST_1);
 
@@ -87,7 +88,7 @@ class PostServiceTest {
     @Test
     void retrievePosts_NoFilter() {
         // GIVEN
-        PostFilter noFilter = new PostFilter(empty());
+        PostFilter noFilter = new PostFilter(empty(), empty());
 
         when(postRepository.findAll()).thenReturn(POSTS);
 
@@ -101,7 +102,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()));
+        PostFilter filter = new PostFilter(of(USER.slug()), empty());
 
         when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3));
 
@@ -112,6 +113,62 @@ class PostServiceTest {
         assertEquals(2, retrievedPost.size());
         assertEquals(POST_1, retrievedPost.get(0));
         assertEquals(POST_3, retrievedPost.get(1));
+    }
+
+    @Test
+    void retrievePost_FilterHasAudioUrl_True() {
+        // GIVEN
+        PostFilter filter = new PostFilter(empty(), of(true));
+
+        when(postRepository.findAll()).thenReturn(List.of(POST_1, POST_2, POST_4_WITHOUT_AUDIO));
+
+        // WHEN
+        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+
+        // THEN
+        assertEquals(List.of(POST_1, POST_2), retrievedPost);
+    }
+
+    @Test
+    void retrievePost_FilterHasAudioUrl_False() {
+        // GIVEN
+        PostFilter filter = new PostFilter(empty(), of(false));
+
+        when(postRepository.findAll()).thenReturn(List.of(POST_1, POST_2, POST_4_WITHOUT_AUDIO));
+
+        // WHEN
+        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+
+        // THEN
+        assertEquals(List.of(POST_4_WITHOUT_AUDIO), retrievedPost);
+    }
+
+    @Test
+    void retrievePost_FilterUserSlug_FilterHasAudioUrl_True() {
+        // GIVEN
+        PostFilter filter = new PostFilter(of(USER.slug()), of(true));
+
+        when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3, POST_4_WITHOUT_AUDIO));
+
+        // WHEN
+        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+
+        // THEN
+        assertEquals(List.of(POST_1, POST_3), retrievedPost);
+    }
+
+    @Test
+    void retrievePost_FilterUserSlug_FilterHasAudioUrl_False() {
+        // GIVEN
+        PostFilter filter = new PostFilter(of(USER.slug()), of(false));
+
+        when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3, POST_4_WITHOUT_AUDIO));
+
+        // WHEN
+        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+
+        // THEN
+        assertEquals(List.of(POST_4_WITHOUT_AUDIO), retrievedPost);
     }
 
     @Test
@@ -345,7 +402,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()));
+        PostFilter filter = new PostFilter(of(USER.slug()), empty());
         List<LikeDTO> expected = List.of(
                 new PostLikeDTO(POST_1.slug(), USER, new Date()),
                 new CommentLikeDTO("comment-slug", USER, new Date()));
@@ -361,7 +418,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty());
+        PostFilter filter = new PostFilter(empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserLikes(filter));
@@ -370,7 +427,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()));
+        PostFilter filter = new PostFilter(of(USER.slug()), empty());
         List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
         when(userRepository.retrievePostComments(any())).thenReturn(expected);
 
@@ -384,7 +441,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty());
+        PostFilter filter = new PostFilter(empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserComments(filter));

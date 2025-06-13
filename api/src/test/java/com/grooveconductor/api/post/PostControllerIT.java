@@ -65,8 +65,7 @@ class PostControllerIT {
                 "Post 1",
                 "Content",
                 "imageUrl",
-                "audioUrl",
-                "announce");
+                "audioUrl");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
 
@@ -85,8 +84,7 @@ class PostControllerIT {
                 "",
                 "Description",
                 "imageUrl",
-                "audioUrl",
-                "announce");
+                "audioUrl");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)

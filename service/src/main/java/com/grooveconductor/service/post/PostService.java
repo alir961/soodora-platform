@@ -8,6 +8,7 @@ import com.grooveconductor.domain.user.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -113,10 +114,21 @@ public class PostService {
 
     public List<PostDTO> retrievePosts(PostFilter filter) {
         Optional<String> userSlug = filter.userSlug();
+        Stream<PostDTO> posts;
 
-        if (userSlug.isPresent())
-            return userRepository.retrievePosts(createFromSlug(userSlug.get()));
-        return retrieveAllPosts();
+        posts = userSlug
+                .map(s -> userRepository.retrievePosts(createFromSlug(s)).stream())
+                .orElseGet(() -> retrieveAllPosts().stream());
+
+        if (filter.hasAudio().isPresent()) {
+            if (filter.hasAudio().get()) {
+                posts = posts.filter(post -> post.audioUrl() != null && !post.audioUrl().isBlank());
+            } else {
+                posts = posts.filter(post -> post.audioUrl() == null || post.audioUrl().isBlank());
+            }
+        }
+
+        return posts.toList();
     }
 
     public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {
