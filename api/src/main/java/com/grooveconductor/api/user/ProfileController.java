@@ -52,6 +52,11 @@ public class ProfileController {
         }
     }
 
+    @DeleteMapping
+    public void deleteUser(@AuthenticationPrincipal UserDTO user) {
+        userService.deleteUser(user.identifier());
+    }
+
     @DeleteMapping(":avatar")
     public ResponseEntity<JsonResponse> deleteProfileAvatar(@AuthenticationPrincipal UserDTO user) {
         try {

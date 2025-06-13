@@ -1,20 +1,22 @@
 package com.grooveconductor.api.user;
 
 import com.grooveconductor.domain.user.Identifier;
+import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.auth.UserPrincipal;
+import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.user.UnknownUserException;
+import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import jakarta.inject.Inject;
 
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
@@ -32,11 +35,11 @@ import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 @AutoConfigureMockMvc
 class ProfileControllerIT {
 
-    @MockBean
-    private UserService userService;
-
-    @Inject
+    @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private UserService userService;
 
     @Test
     void givenAuthenticatedRequest_whenGetProfile_thenReturnProfile() throws Exception {
@@ -54,6 +57,63 @@ class ProfileControllerIT {
     void givenUnauthenticatedRequest_whenGetProfile_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(get("/profile"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedRequest_whenUpdateUser_thenSuccess() throws Exception {
+        // GIVEN
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest(
+                "newUsername",
+                "firstname",
+                "lastname",
+                "https//soodora.com/assets/avatar.png");
+
+        // WHEN & THEN
+        mockMvc.perform(put("/profile")
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidRequest_whenUpdateUser_thenBadRequest() throws Exception {
+        // GIVEN
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
+
+        doThrow(new InvalidRequestException("Invalid Request")).when(userService)
+                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()));
+
+        // WHEN & THEN
+        mockMvc.perform(put("/profile")
+                .contentType("application/json")
+                .content(asJsonString(updateUserRequest))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(jsonPath("$.reason").value("Invalid Request"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenUpdateUser_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(put("/profile"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedRequest_whenDeleteUser_thenSuccess() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/profile")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+        verify(userService).deleteUser(USER.identifier());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenDeleteUserBySlug_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/users/slug1"))
                 .andExpect(status().isForbidden());
     }
 

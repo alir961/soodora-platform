@@ -45,4 +45,15 @@ public class UserFactory {
                 null);
     }
 
+    public static UserDTO buildDefaultAdminUser() {
+        return new UserDTO(
+                "slug",
+                "username",
+                "user@example.com",
+                "John",
+                "Doe",
+                Set.of("ADMIN"),
+                null);
+    }
+
 }

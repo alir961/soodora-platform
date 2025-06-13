@@ -11,8 +11,7 @@ import static lombok.AccessLevel.PRIVATE;
 
 import static com.grooveconductor.test.factory.ArtistFactory.buildArtistDTO;
 import static com.grooveconductor.test.factory.EventFactory.buildEventDTO;
-import static com.grooveconductor.test.factory.UserFactory.buildDefaultArtistUser;
-import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
+import static com.grooveconductor.test.factory.UserFactory.*;
 
 @NoArgsConstructor(access = PRIVATE)
 public class TestConstants {
@@ -24,6 +23,7 @@ public class TestConstants {
     public static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(
             EXTERNAL_TOKEN, ACCESS_TOKEN, REFRESH_TOKEN, 60);
     public static final UserDTO USER = buildDefaultUser();
+    public static final UserDTO ADMIN = buildDefaultAdminUser();
     public static final UserDTO ARTIST_USER = buildDefaultArtistUser();
     public static final ArtistDTO ARTIST = buildArtistDTO("");
     public static final EventDTO EVENT = buildEventDTO("");
