@@ -5,7 +5,13 @@ import { IonButton, IonContent, IonIcon, IonInput, IonItem, IonLabel } from '@io
 import { add, heart, heartOutline, trash } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { createComment, deleteComment, getComments, likeComment, unlikeComment } from '@/client/postClient';
+import {
+  callCreateComment,
+  callDeleteComment,
+  callGetComments,
+  callLikeComment,
+  callUnlikeComment,
+} from '@/client/postClient';
 import { Comment } from '@/entity/Post';
 import { User } from '@/entity/User';
 
@@ -20,7 +26,7 @@ const newComment = ref<string>('');
 
 const loadComments = async () => {
   try {
-    comments.value = await getComments(postSlug);
+    comments.value = await callGetComments(postSlug);
     likedComments.value.clear();
   } catch (error) {
     console.error(error);
@@ -30,10 +36,10 @@ const loadComments = async () => {
 const toggleLike = async (commentSlug: string) => {
   try {
     if (likedComments.value.has(commentSlug)) {
-      await unlikeComment(postSlug, commentSlug);
+      await callUnlikeComment(postSlug, commentSlug);
       likedComments.value.delete(commentSlug);
     } else {
-      await likeComment(postSlug, commentSlug);
+      await callLikeComment(postSlug, commentSlug);
       likedComments.value.add(commentSlug);
     }
   } catch (error) {
@@ -43,7 +49,7 @@ const toggleLike = async (commentSlug: string) => {
 
 const handleDelete = async (commentSlug: string) => {
   try {
-    await deleteComment(postSlug, commentSlug);
+    await callDeleteComment(postSlug, commentSlug);
     comments.value = comments.value.filter((c) => c.slug !== commentSlug);
   } catch (error) {
     console.error(error);
@@ -55,7 +61,7 @@ const handleCreate = async () => {
   if (!content) return;
 
   try {
-    await createComment(postSlug, content);
+    await callCreateComment(postSlug, content);
     newComment.value = '';
     await loadComments();
   } catch (error) {

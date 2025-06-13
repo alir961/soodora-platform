@@ -9,21 +9,15 @@ interface Post {
   type: 'ANNOUNCE' | 'MERCH_DROP' | 'NEW_EVENT';
   owner: User;
   createdAt: Date;
+  likeCount: number;
+  repostCount: number;
+  commentCount: number;
 }
 
 interface PostLike {
   postSlug: string;
   user: User;
   likedAt: string;
-}
-
-interface PostCounter {
-  likeCount: number;
-  commentCount: number;
-}
-
-interface PostCounters {
-  [slug: string]: PostCounter;
 }
 
 interface Comment {
@@ -35,4 +29,4 @@ interface Comment {
   createdAt: string;
 }
 
-export type { Post, PostLike, PostCounter, PostCounters, Comment };
+export type { Post, PostLike, Comment };
