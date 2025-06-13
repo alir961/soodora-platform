@@ -6,7 +6,7 @@ import com.grooveconductor.test.factory.PostFactory;
 
 import java.util.Date;
 
-import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 
 public class PostEntityFactory extends PostFactory {
@@ -21,10 +21,9 @@ public class PostEntityFactory extends PostFactory {
                 "audioUrl",
                 PostType.ANNOUNCE,
                 user,
-                emptyList(),
-                emptyList(),
-                0,
-                0,
+                emptySet(),
+                emptySet(),
+                emptySet(),
                 new Date(),
                 new Date());
     }

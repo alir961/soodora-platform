@@ -5,11 +5,11 @@ import com.grooveconductor.api.common.JsonResponse;
 import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
-import com.grooveconductor.service.post.CommentPostRequest;
 import com.grooveconductor.service.post.CreatePostRequest;
 import com.grooveconductor.service.post.PostService;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -33,9 +34,9 @@ public class PostController {
 
     private final PostService postService;
 
-    @SecurityRequirement(name = "bearerAuth")
-    @PreAuthorize("hasRole('ARTIST')")
     @PostMapping
+    @PreAuthorize("hasRole('ARTIST')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> createPost(
             @AuthenticationPrincipal UserDTO user,
             @RequestBody CreatePostRequest createPostRequest) {
@@ -47,6 +48,11 @@ public class PostController {
         }
     }
 
+    @GetMapping("/{postSlug}")
+    public PostDTO getPost(@PathVariable String postSlug) {
+        return postService.retrievePostBySlug(postSlug);
+    }
+
     @GetMapping
     public List<PostDTO> getPosts(
             @RequestParam(value = "userSlug", required = false) String userSlug) {
@@ -55,10 +61,56 @@ public class PostController {
         return postService.retrievePosts(filter);
     }
 
+    @DeleteMapping("/{postSlug}")
+    @SecurityRequirement(name = "bearerAuth")
+    public void deletePost(@PathVariable("postSlug") String slug) {
+        postService.deletePostBySlug(slug);
+    }
+
+    @PostMapping("/{postSlug}/likes")
+    @SecurityRequirement(name = "bearerAuth")
+    public void likePost(@PathVariable String postSlug, @AuthenticationPrincipal UserDTO user) {
+        postService.likePost(postSlug, user);
+    }
+
+    @GetMapping("/{postSlug}/likes")
+    public Set<String> getLikes(@PathVariable String postSlug) {
+        return postService.retrieveLikes(postSlug).stream()
+                .map(LikeDTO::user)
+                .map(UserDTO::slug)
+                .collect(toSet());
+    }
+
+    @DeleteMapping("/{slug}/likes")
+    @SecurityRequirement(name = "bearerAuth")
+    public void unlikePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
+        postService.unlikePost(slug, user);
+    }
+
+    @PostMapping("/{postSlug}/reposts")
+    @SecurityRequirement(name = "bearerAuth")
+    public void repostPost(@AuthenticationPrincipal UserDTO user, @PathVariable String postSlug) {
+        postService.repostPostBySlug(postSlug, user);
+    }
+
+    @GetMapping("/{postSlug}/reposts")
+    public Set<String> getReposts(@PathVariable String postSlug) {
+        return postService.retrieveReposts(postSlug).stream()
+                .map(UserDTO::slug)
+                .collect(toSet());
+    }
+
+    @DeleteMapping("/{postSlug}/reposts")
+    @SecurityRequirement(name = "bearerAuth")
+    public void unrepostPost(@AuthenticationPrincipal UserDTO user, @PathVariable String postSlug) {
+        postService.unrepostPostBySlug(postSlug, user);
+    }
+
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(
             @RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug));
+
         return postService.retrieveUserLikes(filter);
     }
 
@@ -67,86 +119,6 @@ public class PostController {
             @RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug));
         return postService.retrieveUserComments(filter);
-    }
-
-    @GetMapping("/{slug}")
-    public PostDTO getPost(@PathVariable String slug) {
-        return postService.retrievePostBySlug(slug);
-    }
-
-    @GetMapping("/{slug}/counters")
-    public PostCounterDTO getPostCounters(@PathVariable String slug) {
-        return postService.retrievePostCounters(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/{slug}")
-    public void deletePost(@PathVariable("slug") String slug) {
-        postService.deletePostBySlug(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{slug}/likes")
-    public void likePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
-        postService.likePost(slug, user);
-    }
-
-    @GetMapping("/{slug}/likes")
-    public List<LikeDTO> getLikes(@PathVariable String slug) {
-        return postService.retrieveLikes(slug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/{slug}/likes")
-    public void unlikePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
-        postService.unlikePost(slug, user);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{slug}/comments")
-    public ResponseEntity<JsonResponse> commentPost(@PathVariable String slug,
-            @RequestBody CommentPostRequest commentPostRequest, @AuthenticationPrincipal UserDTO user) {
-        try {
-            postService.commentPost(slug, commentPostRequest.toCommand(), user);
-            return new ResponseEntity<>(CREATED);
-        } catch (InvalidRequestException exception) {
-            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
-        }
-    }
-
-    @GetMapping("/{slug}/comments")
-    public List<CommentDTO> getComments(@PathVariable String slug) {
-        return postService.retrieveComments(slug);
-    }
-
-    @GetMapping("/{postSlug}/comments/{commentSlug}/likes")
-    public List<LikeDTO> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentLikes(commentSlug);
-    }
-
-    @GetMapping("/{postSlug}/comments/{commentSlug}/counters")
-    public CommentCounterDTO getCommentCounters(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentCounters(commentSlug);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @PostMapping("/{postSlug}/comments/{commentSlug}/likes")
-    public void likeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
-            @AuthenticationPrincipal UserDTO user) {
-        postService.likeComment(commentSlug, user);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/{postSlug}/comments/{commentSlug}/likes")
-    public void unlikeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
-            @AuthenticationPrincipal UserDTO user) {
-        postService.unlikeComment(commentSlug, user);
-    }
-
-    @SecurityRequirement(name = "bearerAuth")
-    @DeleteMapping("/{postSlug}/comments/{commentSlug}")
-    public void deleteComment(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        postService.deleteComment(commentSlug);
     }
 
 }

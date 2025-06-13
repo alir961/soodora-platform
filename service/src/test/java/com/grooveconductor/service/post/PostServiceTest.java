@@ -365,28 +365,6 @@ class PostServiceTest {
     }
 
     @Test
-    void retrievePostCounters_Success() {
-        // GIVEN
-        PostCounterDTO counters = new PostCounterDTO(10, 5);
-        when(postRepository.getPostCounters(POST_1.slug())).thenReturn(counters);
-
-        // WHEN
-        PostCounterDTO result = postService.retrievePostCounters(POST_1.slug());
-
-        // THEN
-        assertEquals(counters, result);
-    }
-
-    @Test
-    void retrievePostCounters_UnknownSlugException_ThrowsUnknownPostException() {
-        // GIVEN
-        doThrow(new UnknownSlugException("error")).when(postRepository).getPostCounters(any());
-
-        // WHEN & THEN
-        assertThrows(UnknownPostException.class, () -> postService.retrievePostCounters("invalid"));
-    }
-
-    @Test
     void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.slug()));

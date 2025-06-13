@@ -6,6 +6,8 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 
@@ -97,17 +99,17 @@ public class PostService {
         }
     }
 
-    public List<CommentDTO> retrieveComments(String postSlug) throws UnknownPostException {
+    public Set<UserDTO> retrieveReposts(String postSlug) throws UnknownPostException {
         try {
-            return postRepository.retrieveComments(postSlug);
+            return postRepository.retrieveReposts(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
     }
 
-    public PostCounterDTO retrievePostCounters(String postSlug) throws UnknownPostException {
+    public List<CommentDTO> retrieveComments(String postSlug) throws UnknownPostException {
         try {
-            return postRepository.getPostCounters(postSlug);
+            return postRepository.retrieveComments(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
@@ -118,37 +120,51 @@ public class PostService {
     }
 
     public List<PostDTO> retrievePosts(PostFilter filter) {
-        if (filter.userSlug().isPresent())
-            return userRepository.retrievePosts(createFromSlug(filter.userSlug().get()));
+        Optional<String> userSlug = filter.userSlug();
+
+        if (userSlug.isPresent())
+            return userRepository.retrievePosts(createFromSlug(userSlug.get()));
         return retrieveAllPosts();
     }
 
     public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {
-        if (filter.userSlug().isPresent())
-            return userRepository.retrieveLikes(createFromSlug(filter.userSlug().get()));
+        Optional<String> userSlug = filter.userSlug();
+
+        if (userSlug.isPresent())
+            return userRepository.retrieveLikes(createFromSlug(userSlug.get()));
         throw new MissingUserSlugException();
     }
 
     public List<CommentDTO> retrieveUserComments(PostFilter filter) throws MissingUserSlugException {
-        if (filter.userSlug().isPresent())
-            return userRepository.retrievePostComments(createFromSlug(filter.userSlug().get()));
+        Optional<String> userSlug = filter.userSlug();
+
+        if (userSlug.isPresent())
+            return userRepository.retrievePostComments(createFromSlug(userSlug.get()));
         throw new MissingUserSlugException();
     }
 
-    public PostDTO retrievePostBySlug(String slug) {
+    public PostDTO retrievePostBySlug(String postSlug) {
         try {
-            return postRepository.find(slug);
+            return postRepository.find(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
     }
 
-    public void deletePostBySlug(String slug) throws UnknownPostException {
+    public void deletePostBySlug(String postSlug) throws UnknownPostException {
         try {
-            postRepository.delete(slug);
+            postRepository.delete(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
+    }
+
+    public void repostPostBySlug(String postSlug, UserDTO user) {
+        postRepository.repost(postSlug, user);
+    }
+
+    public void unrepostPostBySlug(String postSlug, UserDTO user) {
+        postRepository.unrepost(postSlug, user);
     }
 
 }
