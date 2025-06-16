@@ -2,15 +2,15 @@ import { createRouter, createWebHistory } from '@ionic/vue-router';
 import { RouteRecordRaw } from 'vue-router';
 import AuthView from '@/view/user/AuthenticationView.vue';
 import HomeView from '@/view/explore/ExploreView.vue';
-import AccountView from '@/view/user/AccountView.vue';
+import ProfileView from '@/view/user/ProfileView.vue';
+import UserProfileView from '@/view/user/UserProfileView.vue';
 import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
-import PlaylistView from '@/view/playlist/PlaylistView.vue';
-import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
-import LinkPageView from '@/view/LinkPageView.vue';
-import ProfileView from '@/view/user/ProfileView.vue';
 import CommentView from '@/view/explore/CommentView.vue';
+import CreateView from '@/view/create/CreateView.vue';
+import LinkPageView from '@/view/create/LinkPageView.vue';
+import SearchView from '@/view/search/SearchView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -28,6 +28,11 @@ const routes: Array<RouteRecordRaw> = [
     component: CommentView,
   },
   {
+    path: '/create',
+    name: 'Create',
+    component: CreateView,
+  },
+  {
     path: '/linkpages',
     name: 'LinkPageCreate',
     component: LinkPageView,
@@ -38,34 +43,29 @@ const routes: Array<RouteRecordRaw> = [
     component: LinkPageView,
   },
   {
+    path: '/search',
+    name: 'Search',
+    component: SearchView,
+  },
+  {
     path: '/authentication',
     name: 'Authentication',
     component: AuthView,
   },
   {
-    path: '/account',
-    name: 'Account',
-    component: AccountView,
+    path: '/profile',
+    name: 'Profile',
+    component: ProfileView,
   },
   {
     path: '/user/:slug',
     name: 'User',
-    component: ProfileView,
+    component: UserProfileView,
   },
   {
     path: '/marketplace',
     name: 'Marketplace',
     component: MarketPlaceView,
-  },
-  {
-    path: '/playlist',
-    name: 'Playlist',
-    component: PlaylistView,
-  },
-  {
-    path: '/playlists/:slug',
-    name: 'PlaylistDetails',
-    component: PlaylistDetailsView,
   },
   {
     path: '/maintenance',

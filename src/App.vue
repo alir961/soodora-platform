@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
-import { cartOutline, linkOutline, musicalNotesOutline, personOutline, planetOutline } from 'ionicons/icons';
+import { cartOutline, addCircleOutline, searchOutline, personOutline, planetOutline } from 'ionicons/icons';
 import { capitalize } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { ref, computed, watchEffect, onMounted } from 'vue';
@@ -14,15 +14,15 @@ interface TabEntry {
 
 const authStore = useAuthStore();
 const isAdminOrArtist = ref(false);
-const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
+const fullscreenRoutes: string[] = ['/auth'];
 
 const tabs: TabEntry[] = [
   { name: 'explore', icon: planetOutline, requiresAuth: false },
-  { name: 'linkpages', icon: linkOutline, requiresAdminOrUser: true },
   { name: 'marketplace', icon: cartOutline, requiresAuth: false },
-  { name: 'playlist', icon: musicalNotesOutline, requiresAuth: false },
+  { name: 'create', icon: addCircleOutline, requiresAdminOrUser: true },
+  { name: 'search', icon: searchOutline, requiresAuth: false },
   { name: 'authentication', icon: personOutline, requiresAuth: false },
-  { name: 'account', icon: personOutline, requiresAuth: true },
+  { name: 'profile', icon: personOutline, requiresAuth: true },
 ];
 
 const loadUser = async () => {
