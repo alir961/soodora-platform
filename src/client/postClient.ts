@@ -116,6 +116,15 @@ async function callLikeComment(postSlug: string, commentSlug: string): Promise<v
   if (response.status !== 200) return reject('Failed to like comment.');
 }
 
+async function callGetCommentLikes(postSlug: string, commentSlug: string): Promise<string[]> {
+  const response = await axios.get(`/posts/${postSlug}/comments/${commentSlug}/likes`, {
+    headers: await getAuthorizedHeader(),
+  });
+
+  if (response.status === 200 && response.data) return response.data;
+  return reject('Failed to retrieve comment likes.');
+}
+
 async function callUnlikeComment(postSlug: string, commentSlug: string): Promise<void> {
   const response = await axios.delete(`/posts/${postSlug}/comments/${commentSlug}/likes`, {
     headers: await getAuthorizedHeader(),
@@ -144,6 +153,7 @@ export {
   callGetPostLikes,
   callGetPostReposts,
   callCreateComment,
+  callGetCommentLikes,
   callDeleteComment,
   callLikeComment,
   callUnlikeComment,
