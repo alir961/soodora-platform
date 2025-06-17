@@ -41,9 +41,6 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LikeEntity> likes;
 
-    @Column(nullable = false)
-    private int likeCount = 0;
-
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;
@@ -55,7 +52,7 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
                 post.getSlug(),
                 content,
                 user.toDTO(),
-                likeCount,
+                likes.size(),
                 createdAt);
     }
 }

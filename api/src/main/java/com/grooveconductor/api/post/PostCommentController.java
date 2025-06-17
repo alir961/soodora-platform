@@ -2,7 +2,6 @@ package com.grooveconductor.api.post;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
-import com.grooveconductor.domain.post.CommentCounterDTO;
 import com.grooveconductor.domain.post.CommentDTO;
 import com.grooveconductor.domain.post.LikeDTO;
 import com.grooveconductor.domain.user.UserDTO;
@@ -11,6 +10,7 @@ import com.grooveconductor.service.post.CommentPostRequest;
 import com.grooveconductor.service.post.PostService;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -51,13 +52,11 @@ public class PostCommentController {
     }
 
     @GetMapping("/{commentSlug}/likes")
-    public List<LikeDTO> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentLikes(commentSlug);
-    }
-
-    @GetMapping("/{commentSlug}/counters")
-    public CommentCounterDTO getCommentCounters(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentCounters(commentSlug);
+    public Set<String> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
+        return postService.retrieveCommentLikes(commentSlug).stream()
+                .map(LikeDTO::user)
+                .map(UserDTO::slug)
+                .collect(toSet());
     }
 
     @SecurityRequirement(name = "bearerAuth")

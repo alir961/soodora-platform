@@ -67,14 +67,6 @@ public class PostService {
         }
     }
 
-    public CommentCounterDTO retrieveCommentCounters(String commentSlug) throws UnknownPostException {
-        try {
-            return postRepository.getCommentCounters(commentSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostCommentException(exception.getMessage());
-        }
-    }
-
     public void unlikeComment(String commentSlug, UserDTO user) throws UnknownPostCommentException {
         try {
             postRepository.unlikeComment(commentSlug, user);

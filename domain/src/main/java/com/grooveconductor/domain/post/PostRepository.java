@@ -19,7 +19,6 @@ public interface PostRepository {
     List<LikeDTO> retrieveLikes(String postSlug);
     Set<UserDTO> retrieveReposts(String postSlug);
     List<CommentDTO> retrieveComments(String postSlug);
-    CommentCounterDTO getCommentCounters(String commentSlug);
     List<LikeDTO> retrieveCommentLikes(String commentSlug);
     void delete(String postSlug);
     void repost(String postSlug, UserDTO user);

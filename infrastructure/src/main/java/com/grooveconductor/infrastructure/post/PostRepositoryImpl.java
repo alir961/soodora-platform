@@ -17,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import static java.lang.Math.max;
-
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -122,7 +120,6 @@ public class PostRepositoryImpl implements PostRepository {
             likeEntity.setComment(commentEntity);
 
             commentEntity.getLikes().add(likeEntity);
-            commentEntity.setLikeCount(commentEntity.getLikeCount() + 1);
             commentRepository.save(commentEntity);
         }
     }
@@ -132,10 +129,8 @@ public class PostRepositoryImpl implements PostRepository {
     public void unlikeComment(String commentSlug, UserDTO user) {
         UserEntity userEntity = findUserBySlugOrThrow(user.slug());
         CommentEntity comment = findCommentBySlugOrThrow(commentSlug);
-        boolean removed = comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
 
-        if (removed)
-            comment.setLikeCount(max(0, comment.getLikeCount() - 1));
+        comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
         commentRepository.save(comment);
     }
 
@@ -177,14 +172,6 @@ public class PostRepositoryImpl implements PostRepository {
         return postEntity.getComments().stream()
                 .map(CommentEntity::toDTO)
                 .toList();
-    }
-
-    @Override
-    @Transactional
-    public CommentCounterDTO getCommentCounters(String commentSlug) {
-        CommentEntity commentEntity = findCommentBySlugOrThrow(commentSlug);
-
-        return new CommentCounterDTO(commentEntity.getLikeCount());
     }
 
     @Override

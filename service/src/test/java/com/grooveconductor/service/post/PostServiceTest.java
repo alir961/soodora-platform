@@ -299,28 +299,6 @@ class PostServiceTest {
     }
 
     @Test
-    void retrieveCommentCounters_Success() {
-        // GIVEN
-        CommentCounterDTO counters = new CommentCounterDTO(5);
-        when(postRepository.getCommentCounters("comment-slug")).thenReturn(counters);
-
-        // WHEN
-        CommentCounterDTO result = postService.retrieveCommentCounters("comment-slug");
-
-        // THEN
-        assertEquals(counters, result);
-    }
-
-    @Test
-    void retrieveCommentCounters_UnknownSlugException_ThrowsUnknownPostCommentException() {
-        // GIVEN
-        doThrow(new UnknownSlugException("error")).when(postRepository).getCommentCounters(any());
-
-        // WHEN & THEN
-        assertThrows(UnknownPostCommentException.class, () -> postService.retrieveCommentCounters("invalid"));
-    }
-
-    @Test
     void retrieveLikes_Success() {
         // GIVEN
         List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.slug(), USER, new Date()));
