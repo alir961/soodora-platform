@@ -26,13 +26,14 @@ import {
   retrieveAuthenticatedProfile,
   callRetrieveLinkedOAuthProviders,
   callDeleteUserAvatar,
+  callDeleteProfile,
+  callUpdateProfile,
 } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/view/user/OAuthButton.vue';
 import { logOutOutline, trashOutline, settingsOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
-import { callDeleteUser, callUpdateUser } from '@/client/userClient';
 
 const router = useRouter();
 const route = useRoute();
@@ -99,7 +100,7 @@ const deleteAccount = async () => {
         text: 'Delete',
         handler: async () => {
           try {
-            await callDeleteUser(userSlug);
+            await callDeleteProfile();
             await logout();
           } catch (error) {
             const toast = await toastController.create({
@@ -107,6 +108,7 @@ const deleteAccount = async () => {
               duration: 1500,
               position: 'top',
             });
+
             await toast.present();
           }
         },
@@ -131,7 +133,7 @@ const updateAccount = async () => {
       avatarUrl: avatarUrlInput.value,
     };
 
-    await callUpdateUser(slug, payload);
+    await callUpdateProfile(payload);
     authStore.authenticate(await retrieveAuthenticatedProfile());
     showModal.value = false;
   } catch (error) {

@@ -16,7 +16,7 @@ import {
 } from '@ionic/vue';
 
 import { createOutline, bagAddOutline, linkOutline } from 'ionicons/icons';
-import { createPost, CreatePostRequest } from '@/client/postClient';
+import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct, CreateProductRequest } from '@/client/productClient';
 import { ref, onMounted } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
@@ -49,18 +49,20 @@ onMounted(() => {
 
 const goToLinkPages = async () => {
   const currentUser = authStore.getAuthenticatedUser;
+
   if (currentUser) {
     try {
       const userPage = await getUserLinkPage(currentUser.slug);
+
       if (userPage) {
-        router.push(`/linkpages/${userPage.slug}`);
+        await router.push(`/linkpages/${userPage.slug}`);
         return;
       }
     } catch (error) {
       // error ignored, fallback to /linkpages
     }
   }
-  router.push('/linkpages');
+  await router.push('/linkpages');
 };
 
 const showModal = ref(false);
@@ -71,13 +73,16 @@ const newPost = ref<CreatePostRequest>({
   audioUrl: '',
   type: 'ANNOUNCE',
   createdAt: new Date(),
+  likeCount: 0,
+  repostCount: 0,
+  commentCount: 0,
 });
 
 const publishPost = async () => {
   try {
-    await createPost(newPost.value);
+    await callCreatePost(newPost.value);
     showModal.value = false;
-    router.push('/explore');
+    await router.push('/explore');
   } catch (error) {
     const toast = await toastController.create({
       message: 'Error creating post',
@@ -103,7 +108,7 @@ const publishProduct = async () => {
   try {
     await createProduct(newProduct.value);
     showProductModal.value = false;
-    router.push('/marketplace');
+    await router.push('/marketplace');
   } catch (error) {
     const toast = await toastController.create({
       message: 'Error creating product',
@@ -185,7 +190,7 @@ const publishProduct = async () => {
                 <ion-select-option value="NEW_EVENT">New Event</ion-select-option>
               </ion-select>
             </ion-item>
-            <ion-button expand="block" @click="publishPost" class="post-button"> Create Post </ion-button>
+            <ion-button expand="block" @click="publishPost" class="post-button"> Create Post</ion-button>
           </div>
         </ion-content>
       </ion-modal>
@@ -243,7 +248,7 @@ const publishProduct = async () => {
                 placeholder="Enter quantity"
                 v-model.number="newProduct.quantity"></ion-input>
             </ion-item>
-            <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product </ion-button>
+            <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product</ion-button>
           </div>
         </ion-content>
       </ion-modal>

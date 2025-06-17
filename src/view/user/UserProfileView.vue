@@ -22,7 +22,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="User Profile">
+  <ApplicationViewport title="User Profile" back-button>
     <ProfileComponent v-if="user" :profile="user" />
     <div v-else class="loading">
       <p>Loading...</p>
