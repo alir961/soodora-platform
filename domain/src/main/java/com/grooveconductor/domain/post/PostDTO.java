@@ -13,6 +13,7 @@ public record PostDTO(
         PostType type,
         UserDTO owner,
         int likeCount,
+        int repostCount,
         int commentCount,
         Date createdAt) {
 

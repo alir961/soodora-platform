@@ -2,6 +2,7 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
@@ -10,8 +11,10 @@ import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,39 +33,59 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 @Tag(name = "User Controller")
 public class UserController {
 
-    private final UserService service;
+    private final UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<UserDTO>> getUsers() {
-        List<UserDTO> users = service.retrieveAllUsers();
-
-        if (users.isEmpty())
-            return new ResponseEntity<>(NO_CONTENT);
-        return new ResponseEntity<>(users, OK);
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<UserDTO> getUsers() {
+        return userService.retrieveAllUsers();
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable String slug) {
-        UserDTO user = service.retrieveUser(createFromSlug(slug));
+    public UserDTO getUser(@PathVariable String slug) {
+        Identifier identifier = createFromSlug(slug);
 
-        return new ResponseEntity<>(user, OK);
+        return userService.retrieveUser(identifier);
     }
 
     @PutMapping("/{slug}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
         try {
             UpdateUserCommand command = request.toCommand();
 
-            service.updateUser(command, slug);
-            return new ResponseEntity<>(ACCEPTED);
+            userService.updateUser(command, slug);
+            return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
     }
 
     @DeleteMapping("/{slug}")
-    public void deleteUser(@PathVariable("slug") String slug) {
-        service.deleteUser(createFromSlug(slug));
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteUser(@PathVariable("slug") String slug) {
+        try {
+            Identifier identifier = createFromSlug(slug);
+
+            userService.deleteUser(identifier);
+            return new ResponseEntity<>(OK);
+        } catch (UnknownUserException exception) {
+            return new ResponseEntity<>(NO_CONTENT);
+        }
+    }
+
+    @GetMapping("/{slug}/followers")
+    public Set<UserDTO> getFollowers(@PathVariable("slug") String slug) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveFollowers(identifier);
+    }
+
+    @GetMapping("/{slug}/following")
+    public Set<UserDTO> getFollowing(@PathVariable("slug") String slug) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveFollowing(identifier);
     }
 
 }

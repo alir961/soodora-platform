@@ -5,10 +5,7 @@ import com.grooveconductor.domain.post.PostType;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -53,16 +50,14 @@ public class PostEntity implements DomainEntity<PostDTO> {
     private UserEntity user;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<LikeEntity> likes = new ArrayList<>();
+    private Set<LikeEntity> likes;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CommentEntity> comments = new ArrayList<>();
+    private Set<CommentEntity> comments;
 
-    @Column(nullable = false)
-    private int likeCount = 0;
-
-    @Column(nullable = false)
-    private int commentCount = 0;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "posts_reposts", joinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
+    private Set<UserEntity> reposts;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -82,8 +77,9 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 audioUrl,
                 type,
                 user.toDTO(),
-                likeCount,
-                commentCount,
+                likes.size(),
+                reposts.size(),
+                comments.size(),
                 createdAt);
     }
 

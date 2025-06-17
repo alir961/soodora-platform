@@ -11,6 +11,7 @@ import com.grooveconductor.domain.product.ProductDTO;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserRepository {
 
@@ -29,5 +30,9 @@ public interface UserRepository {
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
     LinkPageDTO retrieveLinkPage(Identifier identifier);
+    void follow(Identifier follower, Identifier following);
+    Set<UserDTO> retrieveFollowers(Identifier identifier);
+    Set<UserDTO> retrieveFollowing(Identifier identifier);
+    void unfollow(Identifier follower, Identifier following);
 
 }

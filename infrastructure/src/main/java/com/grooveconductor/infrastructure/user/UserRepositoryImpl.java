@@ -14,6 +14,7 @@ import com.grooveconductor.infrastructure.common.DomainEntity;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toSet;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -149,6 +151,48 @@ public class UserRepositoryImpl implements UserRepository {
             throw new LinkPageNotFoundException("Link Page not found for user " + identifier);
 
         return user.getLinkPage().toDTO();
+    }
+
+    @Override
+    @Transactional
+    public void follow(Identifier follower, Identifier following) {
+        UserEntity followerUser = findUserByIdentifierOrThrows(follower);
+        UserEntity followingUser = findUserByIdentifierOrThrows(following);
+
+        followerUser.follow(followingUser);
+        userRepository.save(followerUser);
+        userRepository.save(followingUser);
+    }
+
+    @Override
+    @Transactional
+    public Set<UserDTO> retrieveFollowers(Identifier identifier) {
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
+
+        return user.getFollowers().stream()
+                .map(DomainEntity::toDTO)
+                .collect(toSet());
+    }
+
+    @Override
+    @Transactional
+    public Set<UserDTO> retrieveFollowing(Identifier identifier) {
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
+
+        return user.getFollowing().stream()
+                .map(DomainEntity::toDTO)
+                .collect(toSet());
+    }
+
+    @Override
+    @Transactional
+    public void unfollow(Identifier follower, Identifier following) {
+        UserEntity followerUser = findUserByIdentifierOrThrows(follower);
+        UserEntity followingUser = findUserByIdentifierOrThrows(following);
+
+        followerUser.unfollow(followingUser);
+        userRepository.save(followerUser);
+        userRepository.save(followingUser);
     }
 
     @Override

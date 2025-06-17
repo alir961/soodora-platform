@@ -25,6 +25,7 @@ public class PostFactory {
                 buildDefaultUser(),
                 0,
                 0,
+                0,
                 new Date());
     }
 

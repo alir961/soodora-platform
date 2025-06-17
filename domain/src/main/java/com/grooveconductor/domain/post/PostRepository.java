@@ -3,11 +3,12 @@ package com.grooveconductor.domain.post;
 import com.grooveconductor.domain.user.UserDTO;
 
 import java.util.List;
+import java.util.Set;
 
 public interface PostRepository {
 
     PostDTO save(CreatePostCommand command, UserDTO user);
-    PostDTO find(String slug);
+    PostDTO find(String postSlug);
     List<PostDTO> findAll();
     void likePost(String postSlug, UserDTO user);
     void unlikePost(String postSlug, UserDTO user);
@@ -16,9 +17,10 @@ public interface PostRepository {
     void likeComment(String commentSlug, UserDTO user);
     void deleteComment(String commentSlug);
     List<LikeDTO> retrieveLikes(String postSlug);
+    Set<UserDTO> retrieveReposts(String postSlug);
     List<CommentDTO> retrieveComments(String postSlug);
-    PostCounterDTO getPostCounters(String postSlug);
-    CommentCounterDTO getCommentCounters(String commentSlug);
     List<LikeDTO> retrieveCommentLikes(String commentSlug);
-    void delete(String slug);
+    void delete(String postSlug);
+    void repost(String postSlug, UserDTO user);
+    void unrepost(String postSlug, UserDTO user);
 }

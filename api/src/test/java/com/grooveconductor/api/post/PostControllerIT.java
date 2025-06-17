@@ -17,11 +17,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -35,23 +36,27 @@ import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.test.TestConstants.ARTIST_USER;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.PostFactory.buildDefaultPost;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class PostControllerIT {
+class PostControllerIT {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private PostService postService;
 
-    @MockBean
+    @MockitoBean
     private UserRepository userRepository;
 
     private static final PostDTO POST_1 = buildDefaultPost("postSlug1", "Post 1");
     private static final PostDTO POST_2 = buildDefaultPost("postSlug2", "Post 2");
     private static final PostDTO POST_3 = buildDefaultPost("postSlug3", "Post 3");
+
+    private static final UserDTO USER_1 = buildDefaultUser(1);
+    private static final UserDTO USER_2 = buildDefaultUser(2);
 
     @Test
     void createPost_Success() throws Exception {
@@ -224,14 +229,13 @@ public class PostControllerIT {
         // GIVEN
         when(postService.retrieveLikes("postSlug1"))
                 .thenReturn(List.of(
-                        new PostLikeDTO(POST_1.slug(), USER, new Date()),
-                        new PostLikeDTO("postSlug1", USER, new Date())));
+                        new PostLikeDTO(POST_1.slug(), USER_1, new Date()),
+                        new PostLikeDTO("postSlug1", USER_2, new Date())));
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1/likes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].user.slug").value(USER.slug()))
-                .andExpect(jsonPath("$[1].user.slug").value(USER.slug()));
+                .andExpect(jsonPath("$[*]", containsInAnyOrder(USER_1.slug(), USER_2.slug())));
     }
 
     @Test
