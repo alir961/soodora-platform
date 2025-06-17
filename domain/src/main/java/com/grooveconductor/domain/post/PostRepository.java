@@ -5,6 +5,9 @@ import com.grooveconductor.domain.user.UserDTO;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface PostRepository {
 
     PostDTO save(CreatePostCommand command, UserDTO user);
@@ -23,4 +26,5 @@ public interface PostRepository {
     void delete(String postSlug);
     void repost(String postSlug, UserDTO user);
     void unrepost(String postSlug, UserDTO user);
+    Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable);
 }

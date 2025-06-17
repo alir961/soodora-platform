@@ -2,6 +2,7 @@ package com.grooveconductor.service.post;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.*;
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 
@@ -10,6 +11,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -153,6 +156,16 @@ public class PostService {
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
+    }
+
+    public Page<PostDTO> retrievePostsFromFollowings(Identifier identifier, Pageable pageable) {
+        List<String> followingSlugs = userRepository
+                .retrieveFollowing(identifier)
+                .stream()
+                .map(UserDTO::slug)
+                .toList();
+
+        return postRepository.findByFollowingSlugs(followingSlugs, pageable);
     }
 
     public void deletePostBySlug(String postSlug) throws UnknownPostException {

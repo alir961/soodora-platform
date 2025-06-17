@@ -2,10 +2,12 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
+import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
+import com.grooveconductor.service.post.PostService;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
@@ -13,8 +15,11 @@ import com.grooveconductor.service.user.UserService;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -34,6 +39,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 public class UserController {
 
     private final UserService userService;
+    private final PostService postService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -86,6 +92,17 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowing(identifier);
+    }
+
+    @GetMapping("/posts/following")
+    @SecurityRequirement(name = "bearerAuth")
+    public Page<PostDTO> getFollowingPosts(
+            @AuthenticationPrincipal UserDTO user,
+            Pageable pageable) {
+
+        Identifier identifier = createFromSlug(user.slug());
+
+        return postService.retrievePostsFromFollowings(identifier, pageable);
     }
 
 }

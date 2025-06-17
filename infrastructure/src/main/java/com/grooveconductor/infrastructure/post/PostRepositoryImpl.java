@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -209,6 +211,12 @@ public class PostRepositoryImpl implements PostRepository {
 
         postEntity.getReposts().remove(userEntity);
         postRepository.save(postEntity);
+    }
+
+    @Override
+    public Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable) {
+        return postRepository.findByUserSlugIn(followingSlugs, pageable)
+                .map(PostEntity::toDTO);
     }
 
     protected UserEntity findUserBySlugOrThrow(String slug) {
