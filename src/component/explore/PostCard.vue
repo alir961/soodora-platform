@@ -14,13 +14,22 @@ import {
   IonNote,
   toastController,
 } from '@ionic/vue';
-import { onMounted, PropType, Ref, ref } from 'vue';
-import { Post, PostCounters } from '@/entity/Post';
-import { chatbubbleOutline, heart, heartOutline, shareOutline, trashOutline } from 'ionicons/icons';
-import { deleteLike, deletePost, getPostCounters, getPostLikes, postLike } from '@/client/postClient';
+import { PropType, Ref, ref, watch } from 'vue';
+import { Post } from '@/entity/Post';
+import { chatbubbleOutline, heart, heartOutline, shareOutline, syncOutline, trashOutline } from 'ionicons/icons';
+import {
+  callPostUnlike,
+  callDeletePost,
+  callGetPostLikes,
+  callPostLike,
+  callPostUnrepost,
+  callPostRepost,
+  callGetPostReposts,
+} from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
+import { User } from '@/entity/User';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -32,11 +41,11 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['post-deleted']);
+const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repost', 'post-unrepost']);
 
-const focusedPost: Ref<Post | null> = ref(null);
-const likedPosts: Ref<Set<string>> = ref(new Set());
-const postCounters: Ref<PostCounters> = ref({});
+const isFocused: Ref<boolean> = ref(false);
+const isLiked: Ref<boolean> = ref(false);
+const isReposted: Ref<boolean> = ref(false);
 
 const exportThemes = [
   {
@@ -55,10 +64,6 @@ const exportThemes = [
     value: 'transparent',
   },
 ] as AlertInput[];
-
-const focusPost = (post: Post) => {
-  focusedPost.value = focusedPost.value === post ? null : post;
-};
 
 const exportPost = async (post: Post) => {
   const alert = await alertController.create({
@@ -97,7 +102,7 @@ const askDeletePost = async (slug: string) => {
         text: 'Delete',
         handler: async () => {
           try {
-            await deletePost(slug);
+            await callDeletePost(slug);
             emit('post-deleted', slug);
           } catch (error) {
             const toast = await toastController.create({
@@ -114,61 +119,90 @@ const askDeletePost = async (slug: string) => {
   await alert.present();
 };
 
-const toggleLikePost = async (slug: string) => {
-  const isLiked = likedPosts.value.has(slug);
-
+const loadLikes = async (postSlug: string) => {
   try {
-    if (isLiked) {
-      await deleteLike(slug);
-      likedPosts.value.delete(slug);
-    } else {
-      await postLike(slug);
-      likedPosts.value.add(slug);
-    }
-
-    await loadCounters(slug);
-  } catch (error) {
-    console.error('Unable to update like: ', error);
-  }
-};
-
-const loadCounters = async (slug: string) => {
-  try {
-    postCounters.value[slug] = await getPostCounters(slug);
-  } catch (error) {
-    console.error('Unable to load post counters:', error);
-  }
-};
-
-const loadLikes = async (slug: string) => {
-  try {
-    const likes = await getPostLikes(slug);
+    const likes = await callGetPostLikes(postSlug);
     const userSlug = authStore.getAuthenticatedUserSlug;
 
-    if (likes.some((like) => like.user.slug === userSlug)) {
-      likedPosts.value.add(slug);
-    }
+    if (likes.some((like) => like === userSlug)) isLiked.value = true;
   } catch (error) {
-    console.error('Unable to load likes:', error);
+    console.error('Unable to load likes', error);
   }
 };
 
-const goToComments = (slug: string) => {
-  router.push({ name: 'CommentView', params: { slug } });
+const loadReposts = async (postSlug: string) => {
+  try {
+    const reposts = await callGetPostReposts(postSlug);
+    const userSlug = authStore.getAuthenticatedUserSlug;
+
+    if (reposts.some((repost) => repost === userSlug)) isReposted.value = true;
+  } catch (error) {
+    console.error('Unable to load reposts', error);
+  }
 };
 
-onMounted(() => {
-  loadCounters(props.post.slug);
-  loadLikes(props.post.slug);
-});
+const toggleLikePost = async (postSlug: string) => {
+  try {
+    if (isLiked.value && props.post) {
+      await callPostUnlike(postSlug);
+      isLiked.value = false;
+      emit('post-unlike');
+    } else {
+      await callPostLike(postSlug);
+      isLiked.value = true;
+      emit('post-like');
+    }
+  } catch (error) {
+    console.error('Unable to update like', error);
+  }
+};
+
+const toggleRepostPost = async (postSlug: string) => {
+  try {
+    if (isReposted.value && props.post) {
+      await callPostUnrepost(postSlug);
+      isReposted.value = false;
+      emit('post-unrepost');
+    } else {
+      await callPostRepost(postSlug);
+      isReposted.value = true;
+      emit('post-repost');
+    }
+  } catch (error) {
+    console.error('Unable to update repost', error);
+  }
+};
+
+const redirectToUserProfile = async (user: User) => {
+  await router.push(`/user/${user.slug}`);
+};
+
+const redirectToPostComments = async (postSlug: string) => {
+  await router.push({ name: 'CommentView', params: { slug: postSlug } });
+};
+
+watch(
+  () => authStore.getAuthenticatedUser,
+  (newUser) => {
+    if (newUser) {
+      const postSlug = props.post.slug;
+
+      loadLikes(postSlug);
+      loadReposts(postSlug);
+    }
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
-    <ion-card @click="focusPost(post)" :class="{ focused: focusedPost === post }">
+    <ion-card @click="isFocused = !isFocused" :class="{ focused: isFocused }">
       <ion-card-header>
         <div>
-          <ion-card-title class="artist-name"><span>@</span>{{ post.owner.username }}</ion-card-title>
+          <ion-card-title class="artist-name" @click="redirectToUserProfile(post.owner)">
+            <span>@</span>{{ post.owner.username }}
+          </ion-card-title>
           <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
           <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
@@ -180,23 +214,29 @@ onMounted(() => {
         <div v-if="post.audioUrl" class="audio-content">
           <audio :src="post.audioUrl" controls></audio>
         </div>
-        <div v-if="focusedPost === post" class="settings-container">
+        <div v-if="isFocused" class="settings-container">
           <ion-button fill="clear" size="small" @click.stop="toggleLikePost(post.slug)">
-            <ion-icon
-              :icon="likedPosts.has(post.slug) ? heart : heartOutline"
-              :color="likedPosts.has(post.slug) ? 'danger' : ''"
-              slot="start" />
-            <ion-note v-if="postCounters[post.slug]">({{ postCounters[post.slug].likeCount }})</ion-note>
+            <ion-icon :icon="isLiked ? heart : heartOutline" :color="isLiked ? 'danger' : ''" slot="start" />
+            <ion-note>{{ post.likeCount }}</ion-note>
           </ion-button>
 
-          <ion-button fill="clear" size="small" @click.stop="goToComments(post.slug)">
+          <ion-button fill="clear" size="small" @click.stop="toggleRepostPost(post.slug)">
+            <ion-icon
+              :icon="syncOutline"
+              :color="isReposted ? 'danger' : ''"
+              slot="start"
+              :class="{ rotate: isReposted }" />
+            <ion-note>{{ post.repostCount }}</ion-note>
+          </ion-button>
+
+          <ion-button fill="clear" size="small" @click.stop="redirectToPostComments(post.slug)">
             <ion-icon :icon="chatbubbleOutline" slot="start" />
-            <ion-note v-if="postCounters[post.slug]">({{ postCounters[post.slug].commentCount }})</ion-note>
+            <ion-note>{{ post.commentCount }}</ion-note>
           </ion-button>
 
           <ion-button fill="clear" size="small" @click.stop="exportPost(post)" id="export-button">
-            Export
             <ion-icon :icon="shareOutline" />
+            <ion-note>Export</ion-note>
           </ion-button>
 
           <ion-button
@@ -272,9 +312,22 @@ ion-card-content {
       font-weight: bold;
 
       & ion-icon {
-        margin-left: 0.4em;
+        margin-right: 0.4em;
       }
     }
+  }
+}
+
+.rotate {
+  animation: rotate 3s infinite;
+}
+
+@-webkit-keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 </style>

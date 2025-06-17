@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import { User } from '@/entity/User';
 
 async function callRetrieveUser(slug: string): Promise<User> {
@@ -14,22 +13,24 @@ async function callRetrieveUser(slug: string): Promise<User> {
     .catch(reject);
 }
 
-async function callUpdateUser(slug: string, payload: UserUpdatePayload): Promise<void> {
+async function callRetrieveFollowers(user: User): Promise<User[]> {
   return axios
-    .put(`/users/${slug}`, payload, { headers: await getAuthorizedHeader() })
+    .get(`/users/${user.slug}/followers`, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (!response || response.status !== 202) return reject('Unable to call API');
+      if (response && response.status === 200 && response.data) return response.data as User[];
+      return reject('Unable to call API');
     })
     .catch(reject);
 }
 
-async function callDeleteUser(slug: string): Promise<void> {
+async function callRetrieveFollowing(user: User): Promise<User[]> {
   return axios
-    .delete(`/users/${slug}`, { headers: await getAuthorizedHeader() })
+    .get(`/users/${user.slug}/following`, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (!response || response.status !== 200) return reject('Unable to call API');
+      if (response && response.status === 200 && response.data) return response.data as User[];
+      return reject('Unable to call API');
     })
     .catch(reject);
 }
 
-export { callRetrieveUser, callUpdateUser, callDeleteUser };
+export { callRetrieveUser, callRetrieveFollowers, callRetrieveFollowing };

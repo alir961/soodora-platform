@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
-import { Post, PostLike, Comment } from '@/entity/Post';
+import { Post, Comment } from '@/entity/Post';
 
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
 
-async function createPost(post: CreatePostRequest): Promise<void> {
+async function callCreatePost(post: CreatePostRequest): Promise<void> {
   return axios
     .post('/posts', post, { headers: await getAuthorizedHeader() })
     .then((response) => {
@@ -14,7 +14,7 @@ async function createPost(post: CreatePostRequest): Promise<void> {
     .catch(reject);
 }
 
-async function retrievePosts(): Promise<Post[]> {
+async function callRetrievePosts(): Promise<Post[]> {
   try {
     const response = await axios.get('/posts');
     if (response.status === 200 && response.data) {
@@ -24,15 +24,15 @@ async function retrievePosts(): Promise<Post[]> {
       }));
     }
     return reject('Unable to call API');
-  } catch (error: unknown) {
+  } catch (error) {
     let message: string = 'Post retrieving Failed!';
-    if (error instanceof Error) message = error.message;
 
+    if (error instanceof Error) message = error.message;
     return reject(message);
   }
 }
 
-async function deletePost(slug: string): Promise<void> {
+async function callDeletePost(slug: string): Promise<void> {
   return axios
     .delete(`/posts/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
@@ -41,83 +41,120 @@ async function deletePost(slug: string): Promise<void> {
     .catch(reject);
 }
 
-const postLike = async (slug: string): Promise<void> => {
+async function callPostLike(slug: string): Promise<void> {
   return axios
     .post(`/posts/${slug}/likes`, null, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (!response || response.status !== 200) return reject('Failed to like post.');
     })
     .catch(reject);
-};
+}
 
-const deleteLike = async (slug: string): Promise<void> => {
+async function callPostUnlike(slug: string): Promise<void> {
   return axios
     .delete(`/posts/${slug}/likes`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (!response || response.status !== 200) return reject('Failed to remove like.');
     })
     .catch(reject);
-};
+}
 
-const getPostCounters = async (slug: string): Promise<{ likeCount: number; commentCount: number }> => {
-  const response = await axios.get(`/posts/${slug}/counters`);
-  if (response.status === 200 && response.data) return response.data;
-  return reject('Failed to retrieve post counters.');
-};
+async function callPostRepost(slug: string): Promise<void> {
+  return axios
+    .post(`/posts/${slug}/reposts`, null, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Failed to repost post.');
+    })
+    .catch(reject);
+}
 
-const getPostLikes = async (slug: string): Promise<PostLike[]> => {
+async function callPostUnrepost(slug: string): Promise<void> {
+  return axios
+    .delete(`/posts/${slug}/reposts`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Failed to remove repost.');
+    })
+    .catch(reject);
+}
+
+async function callGetPostLikes(slug: string): Promise<string[]> {
   const response = await axios.get(`/posts/${slug}/likes`);
+
   if (response.status === 200 && response.data) return response.data;
   return reject('Failed to retrieve post likes.');
-};
+}
 
-export const getComments = async (postSlug: string): Promise<Comment[]> => {
-  const response = await axios.get(`/posts/${postSlug}/comments`);
+async function callGetPostReposts(slug: string): Promise<string[]> {
+  const response = await axios.get(`/posts/${slug}/reposts`);
+
   if (response.status === 200 && response.data) return response.data;
-  return Promise.reject('Failed to retrieve comments.');
-};
+  return reject('Failed to retrieve post likes.');
+}
 
-const createComment = async (postSlug: string, content: string): Promise<void> => {
+export async function callGetComments(postSlug: string): Promise<Comment[]> {
+  const response = await axios.get(`/posts/${postSlug}/comments`);
+
+  if (response.status === 200 && response.data) return response.data;
+  return reject('Failed to retrieve comments.');
+}
+
+async function callCreateComment(postSlug: string, content: string): Promise<void> {
   const response = await axios.post(
     `/posts/${postSlug}/comments`,
     { content },
     { headers: await getAuthorizedHeader() }
   );
-  if (response.status !== 201) return Promise.reject('Failed to create comment.');
-};
 
-const likeComment = async (postSlug: string, commentSlug: string): Promise<void> => {
+  if (response.status !== 201) return reject('Failed to create comment.');
+}
+
+async function callLikeComment(postSlug: string, commentSlug: string): Promise<void> {
   const response = await axios.post(`/posts/${postSlug}/comments/${commentSlug}/likes`, null, {
     headers: await getAuthorizedHeader(),
   });
-  if (response.status !== 200) return Promise.reject('Failed to like comment.');
-};
 
-const unlikeComment = async (postSlug: string, commentSlug: string): Promise<void> => {
+  if (response.status !== 200) return reject('Failed to like comment.');
+}
+
+async function callGetCommentLikes(postSlug: string, commentSlug: string): Promise<string[]> {
+  const response = await axios.get(`/posts/${postSlug}/comments/${commentSlug}/likes`, {
+    headers: await getAuthorizedHeader(),
+  });
+
+  if (response.status === 200 && response.data) return response.data;
+  return reject('Failed to retrieve comment likes.');
+}
+
+async function callUnlikeComment(postSlug: string, commentSlug: string): Promise<void> {
   const response = await axios.delete(`/posts/${postSlug}/comments/${commentSlug}/likes`, {
     headers: await getAuthorizedHeader(),
   });
-  if (response.status !== 200) return Promise.reject('Failed to unlike comment.');
-};
 
-const deleteComment = async (postSlug: string, commentSlug: string): Promise<void> => {
+  if (response.status !== 200) return reject('Failed to unlike comment.');
+}
+
+async function callDeleteComment(postSlug: string, commentSlug: string): Promise<void> {
   const response = await axios.delete(`/posts/${postSlug}/comments/${commentSlug}`, {
     headers: await getAuthorizedHeader(),
   });
-  if (response.status !== 200) return Promise.reject('Failed to delete comment.');
-};
+
+  if (response.status !== 200) return reject('Failed to delete comment.');
+}
 
 export type { CreatePostRequest };
 export {
-  createPost,
-  retrievePosts,
-  deletePost,
-  postLike,
-  deleteLike,
-  getPostCounters,
-  getPostLikes,
-  createComment,
-  deleteComment,
-  likeComment,
-  unlikeComment,
+  callCreatePost,
+  callRetrievePosts,
+  callDeletePost,
+  callPostLike,
+  callPostUnlike,
+  callPostRepost,
+  callPostUnrepost,
+  callGetPostLikes,
+  callGetPostReposts,
+  callCreateComment,
+  callGetCommentLikes,
+  callDeleteComment,
+  callLikeComment,
+  callUnlikeComment,
 };

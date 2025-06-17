@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons, IonBackButton } from '@ionic/vue';
 import { checkStatus } from '@/client/authenticationClient';
 import { onMounted } from 'vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { loadBearerToken } from '@/store/localStorage';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const props = defineProps({
   title: {
@@ -14,6 +17,7 @@ const props = defineProps({
   authenticated: Boolean,
   offline: Boolean,
   fullscreen: Boolean,
+  backButton: Boolean,
 });
 const authStore = useAuthStore();
 
@@ -35,6 +39,9 @@ onMounted(async () => {
   <ion-page>
     <ion-header v-if="!fullscreen" :translucent="true">
       <ion-toolbar style="--background: #0d0d0d">
+        <ion-buttons slot="start" v-if="backButton">
+          <ion-back-button @click="router.back()" />
+        </ion-buttons>
         <ion-title>{{ $props.title }}</ion-title>
       </ion-toolbar>
     </ion-header>

@@ -6,7 +6,7 @@ import { User } from '@/entity/User';
 import { useAuthStore } from '@/store/reactiveStorage';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
-import { retrievePosts } from '@/client/postClient';
+import { callRetrievePosts } from '@/client/postClient';
 
 const posts: Ref<Post[]> = ref([]);
 const userData: Ref<User | null> = ref(null);
@@ -14,7 +14,7 @@ const authStore = useAuthStore();
 
 const loadPosts = async () => {
   try {
-    posts.value = await retrievePosts();
+    posts.value = await callRetrievePosts();
   } catch (error) {
     const toast = await toastController.create({
       message: `Failed to load feed!`,
@@ -22,6 +22,7 @@ const loadPosts = async () => {
       position: 'top',
     });
 
+    console.error(error);
     await toast.present();
   }
 };
@@ -39,7 +40,15 @@ onMounted(() => {
   <ApplicationViewport title="Explore">
     <ion-grid>
       <ion-row>
-        <PostCard v-for="post in posts" :key="post.slug" :post="post" @post-deleted="loadPosts" />
+        <PostCard
+          v-for="post in posts"
+          :key="post.slug"
+          :post="post"
+          @post-deleted="loadPosts"
+          @post-like="post.likeCount++"
+          @post-unlike="post.likeCount--"
+          @post-repost="post.repostCount++"
+          @post-unrepost="post.repostCount--" />
       </ion-row>
     </ion-grid>
   </ApplicationViewport>

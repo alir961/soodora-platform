@@ -105,7 +105,7 @@ const passwordCriteria = computed(() => {
       <ion-input placeholder="Password" type="password" v-model="password"></ion-input>
     </ion-item>
 
-    <ul v-if="!isLogin" style="color: red; margin-left: 20px; font-size: 0.9em">
+    <ul v-if="!isLogin" class="criteria">
       <li :style="{ color: passwordCriteria.minLength ? 'gray' : 'red' }">Minimum 6 characters</li>
       <li :style="{ color: passwordCriteria.hasLowerCase ? 'gray' : 'red' }">At least one lowercase letter</li>
       <li :style="{ color: passwordCriteria.hasUpperCase ? 'gray' : 'red' }">At least one uppercase letter</li>
@@ -126,5 +126,12 @@ ion-item {
 
 ion-button {
   margin-top: 5%;
+}
+
+.criteria {
+  color: red;
+  margin-left: 1em;
+  font-size: 0.9em;
+  text-align: left;
 }
 </style>

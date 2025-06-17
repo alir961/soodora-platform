@@ -3,6 +3,7 @@ import { IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle } from '@i
 import { User } from '@/entity/User';
 import { PropType } from 'vue';
 import RoleTagComponent from '@/component/user/RoleTagComponent.vue';
+import FollowersComponent from '@/component/user/FollowersComponent.vue';
 
 defineProps({
   profile: {
@@ -27,6 +28,8 @@ defineProps({
       <p>{{ profile.email }}</p>
 
       <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" />
+
+      <FollowersComponent :profile="profile" class="followers" />
     </ion-card-content>
   </div>
 </template>
@@ -54,6 +57,10 @@ defineProps({
     font-size: 1em;
     line-height: 1.375em;
     margin: 0 0 1em 0;
+  }
+
+  .followers {
+    width: 200px;
   }
 }
 </style>
