@@ -29,9 +29,9 @@ const isFollowing = computed(() => {
 });
 
 const canFollowUser = computed(() => {
-  const authenticatedUser = authStore.getAuthenticatedUser;
+  const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
 
-  return props.profile !== authenticatedUser;
+  return props.profile.slug !== authenticatedUserSlug;
 });
 
 const reloadFollowers = () => {
