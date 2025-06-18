@@ -3,7 +3,7 @@ import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { User } from '@/entity/User';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
-import { ProfilePageResponse } from '@/entity/ProfileSearchResponse';
+import { ProfilePageResponse } from '@/entity/ProfileSearch';
 
 type OAuthProvider = 'google';
 

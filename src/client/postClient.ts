@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 import { Post, Comment } from '@/entity/Post';
+import { PostSearchResponse } from '@/entity/PostSearch';
 
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
 
@@ -141,6 +142,36 @@ async function callDeleteComment(postSlug: string, commentSlug: string): Promise
   if (response.status !== 200) return reject('Failed to delete comment.');
 }
 
+async function searchPosts(
+  title: string | null,
+  description: string | null,
+  pageNumber: number,
+  pageSize: number,
+  sortValue: string
+): Promise<PostSearchResponse> {
+  try {
+    const params = new URLSearchParams();
+
+    if (title) params.append('title', title);
+    if (description) params.append('description', description);
+
+    params.append('page', pageNumber.toString());
+    params.append('size', pageSize.toString());
+    params.append('sort', sortValue);
+
+    const response = await axios.get<PostSearchResponse>(`/posts?${params.toString()}`, {
+      headers: await getAuthorizedHeader(),
+    });
+
+    return response.data;
+  } catch (error) {
+    let message: string = 'Posts searching Failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
+}
+
 export type { CreatePostRequest };
 export {
   callCreatePost,
@@ -157,4 +188,5 @@ export {
   callDeleteComment,
   callLikeComment,
   callUnlikeComment,
+  searchPosts,
 };

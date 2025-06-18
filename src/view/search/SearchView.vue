@@ -9,57 +9,130 @@ import {
   IonAvatar,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
+  IonRow,
+  IonIcon,
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import type { User } from '@/entity/User';
+import type { Post } from '@/entity/Post';
 import { searchProfile } from '@/client/profileClient';
+import { searchPosts } from '@/client/postClient';
+import { PostSearchParams } from '@/entity/PostSearch';
+import PostCard from '@/component/explore/PostCard.vue';
+import { chatboxEllipsesOutline, personCircleOutline } from 'ionicons/icons';
 
 const searchTerm = ref('');
+const searchMode = ref<'profiles' | 'posts'>('profiles');
+
 const artists = ref<User[]>([]);
 const users = ref<User[]>([]);
+const posts = ref<Post[]>([]);
+
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 const router = useRouter();
 
-const currentPage = ref(0);
-const hasMore = ref(true);
-const isLoading = ref(false);
+const currentPageProfiles = ref(0);
+const hasMoreProfiles = ref(true);
+const isLoadingProfiles = ref(false);
+
+const currentPagePosts = ref(0);
+const hasMorePosts = ref(true);
+const isLoadingPosts = ref(false);
 
 const fetchProfiles = async (reset = false) => {
   if (!searchTerm.value.trim()) {
     artists.value = [];
     users.value = [];
-    currentPage.value = 0;
-    hasMore.value = true;
+    currentPageProfiles.value = 0;
+    hasMoreProfiles.value = true;
     return;
   }
+  if (isLoadingProfiles.value || !hasMoreProfiles.value) return;
 
-  if (isLoading.value || !hasMore.value) return;
-
-  isLoading.value = true;
+  isLoadingProfiles.value = true;
 
   try {
     if (reset) {
-      currentPage.value = 0;
-      hasMore.value = true;
+      currentPageProfiles.value = 0;
+      hasMoreProfiles.value = true;
       artists.value = [];
       users.value = [];
     }
 
-    const response = await searchProfile(searchTerm.value, false, currentPage.value, 10, 'username');
+    const response = await searchProfile(searchTerm.value, false, currentPageProfiles.value, 10, 'username');
     const allUsers = response.content;
 
     artists.value.push(...allUsers.filter((u) => u.roles.includes('ARTIST')));
     users.value.push(...allUsers.filter((u) => !u.roles.includes('ARTIST')));
 
-    hasMore.value = allUsers.length === 10;
-    if (hasMore.value) currentPage.value++;
+    hasMoreProfiles.value = allUsers.length === 10;
+    if (hasMoreProfiles.value) currentPageProfiles.value++;
   } catch (error) {
-    console.error('Search failed:', error);
-    hasMore.value = false;
+    console.error('Search profiles failed:', error);
+    hasMoreProfiles.value = false;
   } finally {
-    isLoading.value = false;
+    isLoadingProfiles.value = false;
+  }
+};
+
+const fetchPosts = async (reset = false) => {
+  if (!searchTerm.value.trim()) {
+    posts.value = [];
+    currentPagePosts.value = 0;
+    hasMorePosts.value = true;
+    return;
+  }
+  if (isLoadingPosts.value || !hasMorePosts.value) return;
+
+  isLoadingPosts.value = true;
+
+  try {
+    if (reset) {
+      currentPagePosts.value = 0;
+      hasMorePosts.value = true;
+      posts.value = [];
+    }
+
+    const params: PostSearchParams = {
+      page: currentPagePosts.value,
+      size: 10,
+      sort: 'createdAt,desc',
+    };
+
+    if (searchTerm.value?.trim()) {
+      params.title = searchTerm.value.trim();
+      params.description = searchTerm.value.trim();
+    }
+
+    const response = await searchPosts(
+      params.title ?? null,
+      params.description ?? null,
+      params.page,
+      params.size,
+      params.sort
+    );
+
+    const fetchedPosts = response.content;
+
+    posts.value.push(...fetchedPosts);
+
+    hasMorePosts.value = fetchedPosts.length === 10;
+    if (hasMorePosts.value) currentPagePosts.value++;
+  } catch (error) {
+    console.error('Search posts failed:', error);
+    hasMorePosts.value = false;
+  } finally {
+    isLoadingPosts.value = false;
+  }
+};
+
+const fetchResults = async (reset = false) => {
+  if (searchMode.value === 'profiles') {
+    await fetchProfiles(reset);
+  } else {
+    await fetchPosts(reset);
   }
 };
 
@@ -67,12 +140,12 @@ watch(searchTerm, () => {
   if (searchTimeout.value) clearTimeout(searchTimeout.value);
 
   searchTimeout.value = setTimeout(() => {
-    fetchProfiles(true);
+    fetchResults(true);
   }, 500);
 });
 
 const loadMore = async (ev: CustomEvent) => {
-  await fetchProfiles();
+  await fetchResults();
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
 };
 
@@ -84,40 +157,79 @@ const redirectToUserProfile = (user: User) => {
 <template>
   <ApplicationViewport title="Search">
     <ion-content class="ion-padding">
-      <ion-searchbar placeholder="Search for artists or users" v-model="searchTerm" :debounce="0" />
+      <div class="search-toggle">
+        <ion-icon
+          :icon="personCircleOutline"
+          class="mode-icon"
+          :class="{ active: searchMode === 'profiles' }"
+          @click="searchMode = 'profiles'" />
+        <ion-icon
+          :icon="chatboxEllipsesOutline"
+          class="mode-icon"
+          :class="{ active: searchMode === 'posts' }"
+          @click="searchMode = 'posts'" />
+      </div>
+      <ion-searchbar placeholder="Search" v-model="searchTerm" :debounce="0" />
 
       <div v-if="searchTerm.length > 0">
-        <h2 class="section-title">Artists</h2>
-        <ion-list v-if="artists.length > 0">
-          <ion-item v-for="artist in artists" :key="artist.slug" button @click="redirectToUserProfile(artist)">
-            <ion-avatar slot="start">
-              <img :src="artist.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
-            </ion-avatar>
-            <ion-label>@{{ artist.username }}</ion-label>
-          </ion-item>
-        </ion-list>
-        <ion-list v-else>
-          <ion-item>
-            <ion-label>No matching artists yet</ion-label>
-          </ion-item>
-        </ion-list>
+        <template v-if="searchMode === 'profiles'">
+          <h2 class="section-title">Artists</h2>
+          <ion-list v-if="artists.length > 0">
+            <ion-item v-for="artist in artists" :key="artist.slug" button @click="redirectToUserProfile(artist)">
+              <ion-avatar slot="start">
+                <img :src="artist.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
+              </ion-avatar>
+              <ion-label>@{{ artist.username }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <ion-list v-else>
+            <ion-item>
+              <ion-label>No matching artists yet</ion-label>
+            </ion-item>
+          </ion-list>
 
-        <h2 class="section-title">Users</h2>
-        <ion-list v-if="users.length > 0">
-          <ion-item v-for="user in users" :key="user.slug" button @click="redirectToUserProfile(user)">
-            <ion-avatar slot="start">
-              <img :src="user.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
-            </ion-avatar>
-            <ion-label>@{{ user.username }}</ion-label>
-          </ion-item>
-        </ion-list>
-        <ion-list v-else>
-          <ion-item>
-            <ion-label>No matching users yet</ion-label>
-          </ion-item>
-        </ion-list>
+          <h2 class="section-title">Users</h2>
+          <ion-list v-if="users.length > 0">
+            <ion-item v-for="user in users" :key="user.slug" button @click="redirectToUserProfile(user)">
+              <ion-avatar slot="start">
+                <img :src="user.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
+              </ion-avatar>
+              <ion-label>@{{ user.username }}</ion-label>
+            </ion-item>
+          </ion-list>
+          <ion-list v-else>
+            <ion-item>
+              <ion-label>No matching users yet</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
 
-        <ion-infinite-scroll @ionInfinite="loadMore" threshold="100px" :disabled="!hasMore">
+        <template v-else-if="searchMode === 'posts'">
+          <h2 class="section-title">Posts</h2>
+          <ion-list v-if="posts.length > 0">
+            <ion-row>
+              <PostCard
+                v-for="post in posts"
+                :key="post.slug"
+                :post="post"
+                @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"
+                @post-like="post.likeCount++"
+                @post-unlike="post.likeCount--"
+                @post-repost="post.repostCount++"
+                @post-unrepost="post.repostCount--" />
+            </ion-row>
+          </ion-list>
+          <ion-list v-else>
+            <ion-item>
+              <ion-label>No matching posts yet</ion-label>
+            </ion-item>
+          </ion-list>
+        </template>
+
+        <ion-infinite-scroll
+          @ionInfinite="loadMore"
+          threshold="100px"
+          :disabled="searchMode === 'profiles' ? !hasMoreProfiles : !hasMorePosts">
           <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
         </ion-infinite-scroll>
       </div>
@@ -138,5 +250,33 @@ ion-avatar img {
   width: 100%;
   height: 100%;
   border-radius: 50%;
+}
+
+.search-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 0.125rem solid #ccc;
+  padding-bottom: 0.75rem;
+}
+
+.mode-icon {
+  font-size: 2.25rem;
+  cursor: pointer;
+  color: var(--ion-color-medium);
+  padding: 0.5rem;
+  border-radius: 0.625rem;
+  transition: all 0.2s ease;
+}
+
+.mode-icon:hover {
+  background-color: var(--ion-color-light);
+}
+
+.mode-icon.active {
+  background-color: var(--ion-color-primary);
+  color: white;
+  transform: scale(1.1);
 }
 </style>
