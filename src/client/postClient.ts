@@ -3,6 +3,7 @@ import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 import { Post, Comment } from '@/entity/Post';
 import { PostSearchResponse } from '@/entity/PostSearch';
+import { PageableParams } from '@/entity/PageableParams';
 
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
 
@@ -15,14 +16,25 @@ async function callCreatePost(post: CreatePostRequest): Promise<void> {
     .catch(reject);
 }
 
-async function callRetrievePosts(): Promise<Post[]> {
+async function callRetrievePosts(params: PageableParams): Promise<{ content: Post[]; hasMore: boolean }> {
   try {
-    const response = await axios.get('/posts');
-    if (response.status === 200 && response.data) {
-      return response.data.map((post: Post) => ({
+    const response = await axios.get('/posts', {
+      params: {
+        page: params.page,
+        size: params.size,
+        sort: params.sort,
+      },
+    });
+
+    if (response.status === 200 && response.data?.content) {
+      const posts = response.data.content.map((post: Post) => ({
         ...post,
         createdAt: new Date(post.createdAt),
       }));
+
+      const hasMore = !response.data.empty && response.data.content.length === params.size;
+
+      return { content: posts, hasMore };
     }
     return reject('Unable to call API');
   } catch (error) {

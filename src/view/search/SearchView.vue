@@ -40,6 +40,7 @@ const isLoadingProfiles = ref(false);
 const currentPagePosts = ref(0);
 const hasMorePosts = ref(true);
 const isLoadingPosts = ref(false);
+const PAGE_SIZE = 10;
 
 const fetchProfiles = async (reset = false) => {
   if (!searchTerm.value.trim()) {
@@ -61,7 +62,7 @@ const fetchProfiles = async (reset = false) => {
       users.value = [];
     }
 
-    const response = await searchProfile(searchTerm.value, false, currentPageProfiles.value, 10, 'username');
+    const response = await searchProfile(searchTerm.value, false, currentPageProfiles.value, PAGE_SIZE, 'username');
     const allUsers = response.content;
 
     artists.value.push(...allUsers.filter((u) => u.roles.includes('ARTIST')));

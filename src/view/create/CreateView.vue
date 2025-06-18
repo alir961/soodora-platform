@@ -7,10 +7,7 @@ import {
   IonTitle,
   IonContent,
   IonItem,
-  IonLabel,
   IonInput,
-  IonSelect,
-  IonSelectOption,
   toastController,
   IonIcon,
 } from '@ionic/vue';
@@ -71,7 +68,6 @@ const newPost = ref<CreatePostRequest>({
   content: '',
   imageUrl: '',
   audioUrl: '',
-  type: 'ANNOUNCE',
   createdAt: new Date(),
   likeCount: 0,
   repostCount: 0,
@@ -181,14 +177,6 @@ const publishProduct = async () => {
                 v-model="newPost.audioUrl"
                 clearInput>
               </ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-label>Type</ion-label>
-              <ion-select v-model="newPost.type" placeholder="Select type">
-                <ion-select-option value="ANNOUNCE">Announce</ion-select-option>
-                <ion-select-option value="MERCH_DROP">Merch Drop</ion-select-option>
-                <ion-select-option value="NEW_EVENT">New Event</ion-select-option>
-              </ion-select>
             </ion-item>
             <ion-button expand="block" @click="publishPost" class="post-button"> Create Post</ion-button>
           </div>
