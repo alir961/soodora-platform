@@ -10,7 +10,6 @@ public record PostDTO(
         String content,
         String imageUrl,
         String audioUrl,
-        PostType type,
         UserDTO owner,
         int likeCount,
         int repostCount,
