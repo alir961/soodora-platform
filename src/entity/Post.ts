@@ -6,7 +6,6 @@ interface Post {
   content: string;
   imageUrl: string;
   audioUrl: string;
-  type: 'ANNOUNCE' | 'MERCH_DROP' | 'NEW_EVENT';
   owner: User;
   createdAt: Date;
   likeCount: number;

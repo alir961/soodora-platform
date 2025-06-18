@@ -6,7 +6,6 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardSubtitle,
   IonCardTitle,
   IonCol,
   IonIcon,
@@ -204,7 +203,6 @@ watch(
             <span>@</span>{{ post.owner.username }}
           </ion-card-title>
           <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
-          <ion-card-subtitle>{{ post.type.replaceAll('_', ' ') }}</ion-card-subtitle>
         </div>
       </ion-card-header>
       <ion-card-content>
