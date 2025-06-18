@@ -12,7 +12,7 @@ public interface PostRepository {
 
     PostDTO save(CreatePostCommand command, UserDTO user);
     PostDTO find(String postSlug);
-    List<PostDTO> findAll();
+    Page<PostDTO> findAll(Pageable pageable);
     void likePost(String postSlug, UserDTO user);
     void unlikePost(String postSlug, UserDTO user);
     CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user);
@@ -27,4 +27,5 @@ public interface PostRepository {
     void repost(String postSlug, UserDTO user);
     void unrepost(String postSlug, UserDTO user);
     Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable);
+    Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable);
 }

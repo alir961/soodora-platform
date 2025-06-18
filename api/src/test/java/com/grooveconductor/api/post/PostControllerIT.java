@@ -17,12 +17,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -101,25 +103,32 @@ class PostControllerIT {
     @Test
     void retrievePost_Success() throws Exception {
         // GIVEN
-        when(postService.retrieveAllPosts()).thenReturn(asList(POST_1, POST_2, POST_3));
+        Page<PostDTO> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
+        when(postService.retrievePosts(any(), any())).thenReturn(postsPage);
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts")
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(3)))
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()))
+                .andExpect(jsonPath("$.content[1].slug").value(POST_2.slug()))
+                .andExpect(jsonPath("$.content[2].slug").value(POST_3.slug()));
     }
 
     @Test
     void retrievePosts_Empty() throws Exception {
         // GIVEN
-        when(postService.retrieveAllPosts()).thenReturn(emptyList());
+        Page<PostDTO> emptyPage = new PageImpl<>(List.of());
+        when(postService.retrievePosts(any(), any())).thenReturn(emptyPage);
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts")
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(0)));
     }
 
     @Test
@@ -146,6 +155,27 @@ class PostControllerIT {
         mockMvc.perform(get("/posts/unknown")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void getPosts_WithFilters_ReturnsFilteredPage() throws Exception {
+        // GIVEN
+        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+
+        when(postService.retrievePosts(any(PostFilter.class), any(Pageable.class)))
+                .thenReturn(filteredPage);
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts")
+                .param("userSlug", "slug1")
+                .param("hasAudio", "true")
+                .param("title", "title1")
+                .param("description", "desc1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
     }
 
     @Test

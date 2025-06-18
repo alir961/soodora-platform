@@ -2,5 +2,6 @@ package com.grooveconductor.domain.post;
 
 import java.util.Optional;
 
-public record PostFilter(Optional<String> userSlug, Optional<Boolean> hasAudio) {
+public record PostFilter(Optional<String> userSlug, Optional<Boolean> hasAudio, Optional<String> title,
+        Optional<String> description) {
 }

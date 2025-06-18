@@ -9,7 +9,6 @@ import com.grooveconductor.domain.user.UserRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -111,27 +110,21 @@ public class PostService {
         }
     }
 
-    public List<PostDTO> retrieveAllPosts() {
-        return postRepository.findAll();
+    public Page<PostDTO> retrieveAllPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
     }
 
-    public List<PostDTO> retrievePosts(PostFilter filter) {
-        Optional<String> userSlug = filter.userSlug();
-        Stream<PostDTO> posts;
+    public Page<PostDTO> retrievePosts(PostFilter filter, Pageable pageable) {
+        boolean isFilterEmpty = filter.userSlug().isEmpty()
+                && filter.hasAudio().isEmpty()
+                && filter.title().isEmpty()
+                && filter.description().isEmpty();
 
-        posts = userSlug
-                .map(s -> userRepository.retrievePosts(createFromSlug(s)).stream())
-                .orElseGet(() -> retrieveAllPosts().stream());
-
-        if (filter.hasAudio().isPresent()) {
-            if (filter.hasAudio().get()) {
-                posts = posts.filter(post -> post.audioUrl() != null && !post.audioUrl().isBlank());
-            } else {
-                posts = posts.filter(post -> post.audioUrl() == null || post.audioUrl().isBlank());
-            }
+        if (isFilterEmpty) {
+            return retrieveAllPosts(pageable);
+        } else {
+            return postRepository.findByFilter(filter, pageable);
         }
-
-        return posts.toList();
     }
 
     public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {
