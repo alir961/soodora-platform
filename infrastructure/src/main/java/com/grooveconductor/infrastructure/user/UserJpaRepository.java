@@ -19,7 +19,4 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 
     Page<UserEntity> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 
-    Page<UserEntity> findByUsernameContainingIgnoreCaseAndRoles_Name(String username, String roleName,
-            Pageable pageable);
-
 }

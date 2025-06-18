@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface PostJpaRepository extends JpaRepository<PostEntity, UUID>, JpaSpecificationExecutor<PostEntity> {
+
     Optional<PostEntity> findBySlug(String slug);
 
     Optional<List<PostEntity>> findPostByUserSlug(String slug);

@@ -61,4 +61,5 @@ public class PostSpecification {
     private static Specification<PostEntity> hasDescription(String description) {
         return (root, query, cb) -> cb.like(cb.lower(root.get("content")), "%" + description.toLowerCase() + "%");
     }
+
 }

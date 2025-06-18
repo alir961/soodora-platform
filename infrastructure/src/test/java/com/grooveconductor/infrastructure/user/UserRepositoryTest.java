@@ -5,6 +5,7 @@ import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
+import com.grooveconductor.infrastructure.artist.ArtistJpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,8 @@ class UserRepositoryImplTest {
     @BeforeEach
     void setUp() {
         userJpaRepository = mock(UserJpaRepository.class);
-        userRepository = new UserRepositoryImpl(userJpaRepository);
+        ArtistJpaRepository artistJpaRepository = mock(ArtistJpaRepository.class);
+        userRepository = new UserRepositoryImpl(userJpaRepository, artistJpaRepository);
         validUser = UserEntityFactory.buildDefaultUserEntity();
     }
 

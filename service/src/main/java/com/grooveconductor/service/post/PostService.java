@@ -115,10 +115,7 @@ public class PostService {
     }
 
     public Page<PostDTO> retrievePosts(PostFilter filter, Pageable pageable) {
-        boolean isFilterEmpty = filter.userSlug().isEmpty()
-                && filter.hasAudio().isEmpty()
-                && filter.title().isEmpty()
-                && filter.description().isEmpty();
+        boolean isFilterEmpty = filter.isEmpty();
 
         if (isFilterEmpty) {
             return retrieveAllPosts(pageable);
