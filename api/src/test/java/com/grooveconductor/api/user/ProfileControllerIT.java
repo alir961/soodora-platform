@@ -1,20 +1,27 @@
 package com.grooveconductor.api.user;
 
+import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
+import com.grooveconductor.service.post.PostService;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,6 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static com.grooveconductor.api.JsonStringify.asJsonString;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 import static com.grooveconductor.test.TestConstants.USER;
+import static com.grooveconductor.test.factory.PostFactory.buildDefaultPost;
 import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 
 @SpringBootTest
@@ -40,6 +48,9 @@ class ProfileControllerIT {
 
     @MockitoBean
     private UserService userService;
+
+    @MockitoBean
+    private PostService postService;
 
     @Test
     void givenAuthenticatedRequest_whenGetProfile_thenReturnProfile() throws Exception {
@@ -245,6 +256,30 @@ class ProfileControllerIT {
         // WHEN & THEN
         mockMvc.perform(delete("/profile/followers/slug"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenGetFollowingPosts_thenStatusOk() throws Exception {
+        // GIVEN
+        PostDTO post1 = buildDefaultPost("slug1", "Title 1");
+        PostDTO post2 = buildDefaultPost("slug2", "Title 2");
+        List<PostDTO> posts = List.of(post1, post2);
+        Pageable pageable = PageRequest.of(0, 50);
+        Page<PostDTO> pageWithPosts = new PageImpl<>(posts, pageable, posts.size());
+
+        when(postService.retrievePostsFromFollowing(any(Identifier.class), any(Pageable.class)))
+                .thenReturn(pageWithPosts);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/users/posts/following")
+                .with(user(new UserPrincipal(USER)))
+                .param("page", "0")
+                .param("size", "50")
+                .accept("application/json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[0].slug").value("slug1"))
+                .andExpect(jsonPath("$.content[1].slug").value("slug2"));
     }
 
 }

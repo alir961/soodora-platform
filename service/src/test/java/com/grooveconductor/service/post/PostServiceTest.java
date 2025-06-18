@@ -2,10 +2,14 @@ package com.grooveconductor.service.post;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.*;
+import com.grooveconductor.domain.user.Identifier;
+import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.domain.user.UserRepository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
@@ -20,10 +28,13 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.domain.Sort.by;
 
+import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 import static com.grooveconductor.test.TestConstants.USER;
 import static com.grooveconductor.test.factory.PostFactory.buildDefaultPost;
 import static com.grooveconductor.test.factory.PostFactory.buildDefaultPostWithoutAudio;
+import static com.grooveconductor.test.factory.UserFactory.buildDefaultUser;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {
@@ -445,6 +456,36 @@ class PostServiceTest {
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserComments(filter));
+    }
+
+    @Test
+    void retrievePostsFromFollowings_returnsPostsPage() {
+        // GIVEN
+        Identifier identifier = createFromSlug("slug1");
+        Pageable pageable = PageRequest.of(0, 50, by("slug").ascending());
+
+        Set<UserDTO> followings = Set.of(
+                buildDefaultUser(2),
+                buildDefaultUser(3));
+        List<String> followingSlugs = Stream.of("slug2", "slug3").sorted().toList();
+
+        PostDTO post1 = buildDefaultPost("slug1", "title");
+        PostDTO post2 = buildDefaultPost("slug2", "title");
+
+        Page<PostDTO> expectedPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
+
+        when(userRepository.retrieveFollowing(identifier)).thenReturn(followings);
+        when(postRepository.findByFollowingSlugs(followingSlugs, pageable)).thenReturn(expectedPage);
+
+        // WHEN
+        Page<PostDTO> result = postService.retrievePostsFromFollowing(identifier, pageable);
+
+        // THEN
+        assertNotNull(result);
+        assertEquals(2, result.getTotalElements());
+        assertEquals(expectedPage, result);
+        verify(userRepository).retrieveFollowing(identifier);
+        verify(postRepository).findByFollowingSlugs(followingSlugs, pageable);
     }
 
 }

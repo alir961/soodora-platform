@@ -2,15 +2,19 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
+import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
+import com.grooveconductor.service.post.PostService;
 import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -32,6 +36,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 public class ProfileController {
 
     private final UserService userService;
+    private final PostService postService;
 
     @GetMapping
     public UserDTO getLoggedUser(@AuthenticationPrincipal UserDTO user) {
@@ -85,6 +90,12 @@ public class ProfileController {
     @DeleteMapping("/followers/{slug}")
     public void unfollowUser(@AuthenticationPrincipal UserDTO user, @PathVariable("slug") String slug) {
         userService.unfollow(user.identifier(), createFromSlug(slug));
+    }
+
+    @GetMapping("/following/posts")
+    @SecurityRequirement(name = "bearerAuth")
+    public Page<PostDTO> getFollowingPosts(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
+        return postService.retrievePostsFromFollowing(user.identifier(), pageable);
     }
 
 }
