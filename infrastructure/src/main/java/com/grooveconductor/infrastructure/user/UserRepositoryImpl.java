@@ -15,8 +15,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,17 +81,14 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     @Transactional
-    public Set<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists) {
-        Set<UserEntity> results;
+    public Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
         if (onlyArtists) {
-            results = userRepository.findByUsernameContainingIgnoreCaseAndRoles_Name(usernameQuery, "ROLE_ARTIST");
+            return userRepository
+                    .findByUsernameContainingIgnoreCaseAndRoles_Name(usernameQuery, "ROLE_ARTIST", pageable)
+                    .map(UserEntity::toDTO);
         } else {
-            results = userRepository.findByUsernameContainingIgnoreCase(usernameQuery);
+            return userRepository.findByUsernameContainingIgnoreCase(usernameQuery, pageable).map(UserEntity::toDTO);
         }
-
-        return results.stream()
-                .map(UserEntity::toDTO)
-                .collect(Collectors.toSet());
     }
 
     @Override

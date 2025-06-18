@@ -1,9 +1,10 @@
 package com.grooveconductor.infrastructure.user;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,8 +17,9 @@ public interface UserJpaRepository extends JpaRepository<UserEntity, UUID> {
 
     Optional<UserEntity> findByEmail(String email);
 
-    Set<UserEntity> findByUsernameContainingIgnoreCase(String username);
+    Page<UserEntity> findByUsernameContainingIgnoreCase(String username, Pageable pageable);
 
-    Set<UserEntity> findByUsernameContainingIgnoreCaseAndRoles_Name(String username, String roleName);
+    Page<UserEntity> findByUsernameContainingIgnoreCaseAndRoles_Name(String username, String roleName,
+            Pageable pageable);
 
 }

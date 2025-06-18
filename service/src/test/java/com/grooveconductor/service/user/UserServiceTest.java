@@ -3,7 +3,6 @@ package com.grooveconductor.service.user;
 import com.grooveconductor.domain.user.*;
 
 import java.util.List;
-import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -162,32 +165,38 @@ class UserServiceTest {
     void searchUsersByUsername_OnlyArtists_Success() {
         // GIVEN
         boolean onlyArtists = true;
-        Set<UserDTO> expectedUsers = Set.of(ARTIST_USER);
+        Pageable pageable = PageRequest.of(0, 20);
+        List<UserDTO> usersList = List.of(ARTIST_USER);
+        Page<UserDTO> expectedPage = new PageImpl<>(usersList, pageable, usersList.size());
 
-        when(userRepository.searchUsersByUsername(ARTIST_USER.username(), onlyArtists)).thenReturn(expectedUsers);
+        when(userRepository.searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable))
+                .thenReturn(expectedPage);
 
         // WHEN
-        Set<UserDTO> result = userService.searchUsersByUsername(ARTIST_USER.username(), onlyArtists);
+        Page<UserDTO> result = userService.searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable);
 
         // THEN
-        assertEquals(expectedUsers, result);
-        verify(userRepository).searchUsersByUsername(ARTIST_USER.username(), onlyArtists);
+        assertEquals(expectedPage, result);
+        verify(userRepository).searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable);
     }
 
     @Test
     void searchUsersByUsername_AllUsers_Success() {
         // GIVEN
         boolean onlyArtists = false;
-        Set<UserDTO> expectedUsers = Set.of(USER);
+        Pageable pageable = PageRequest.of(0, 20);
+        List<UserDTO> usersList = List.of(USER);
+        Page<UserDTO> expectedPage = new PageImpl<>(usersList, pageable, usersList.size());
 
-        when(userRepository.searchUsersByUsername(USER.username(), onlyArtists)).thenReturn(expectedUsers);
+        when(userRepository.searchUsersByUsername(USER.username(), onlyArtists, pageable))
+                .thenReturn(expectedPage);
 
         // WHEN
-        Set<UserDTO> result = userService.searchUsersByUsername(USER.username(), onlyArtists);
+        Page<UserDTO> result = userService.searchUsersByUsername(USER.username(), onlyArtists, pageable);
 
         // THEN
-        assertEquals(expectedUsers, result);
-        verify(userRepository).searchUsersByUsername(USER.username(), onlyArtists);
+        assertEquals(expectedPage, result);
+        verify(userRepository).searchUsersByUsername(USER.username(), onlyArtists, pageable);
     }
 
 }

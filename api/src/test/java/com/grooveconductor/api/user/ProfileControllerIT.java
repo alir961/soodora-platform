@@ -287,21 +287,24 @@ class ProfileControllerIT {
         // GIVEN
         String username = "username";
         boolean onlyArtists = true;
-
-        Set<UserDTO> expectedUsers = Set.of(
+        Pageable pageable = PageRequest.of(0, 50);
+        List<UserDTO> userList = List.of(
                 buildDefaultUser(1),
                 buildDefaultUser(2));
+        Page<UserDTO> expectedPage = new PageImpl<>(userList, pageable, userList.size());
 
-        when(userService.searchUsersByUsername(username, onlyArtists)).thenReturn(expectedUsers);
+        when(userService.searchUsersByUsername(username, onlyArtists, pageable)).thenReturn(expectedPage);
 
         // WHEN & THEN
         mockMvc.perform(get("/profile/search")
                 .param("username", username)
                 .param("onlyArtists", String.valueOf(onlyArtists))
+                .param("page", "0")
+                .param("size", "50")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[*].username", containsInAnyOrder("username1", "username2")));
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[*].username", containsInAnyOrder("username1", "username2")));
     }
 
 }

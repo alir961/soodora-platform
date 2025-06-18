@@ -7,6 +7,8 @@ import com.grooveconductor.service.auth.UserPrincipal;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -37,8 +39,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public Set<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists) {
-        return userRepository.searchUsersByUsername(usernameQuery, onlyArtists);
+    public Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
+        return userRepository.searchUsersByUsername(usernameQuery, onlyArtists, pageable);
     }
 
     public boolean existsUser(Identifier identifier) {
