@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,21 @@ public class UserRepositoryImpl implements UserRepository {
         return userRepository.findAll().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public Set<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists) {
+        Set<UserEntity> results;
+        if (onlyArtists) {
+            results = userRepository.findByUsernameContainingIgnoreCaseAndRoles_Name(usernameQuery, "ROLE_ARTIST");
+        } else {
+            results = userRepository.findByUsernameContainingIgnoreCase(usernameQuery);
+        }
+
+        return results.stream()
+                .map(UserEntity::toDTO)
+                .collect(Collectors.toSet());
     }
 
     @Override

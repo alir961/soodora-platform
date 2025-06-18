@@ -282,4 +282,26 @@ class ProfileControllerIT {
                 .andExpect(jsonPath("$.content[1].slug").value("slug2"));
     }
 
+    @Test
+    void givenAuthenticatedUser_whenSearchProfiles_thenReturnMatchingUsers() throws Exception {
+        // GIVEN
+        String username = "username";
+        boolean onlyArtists = true;
+
+        Set<UserDTO> expectedUsers = Set.of(
+                buildDefaultUser(1),
+                buildDefaultUser(2));
+
+        when(userService.searchUsersByUsername(username, onlyArtists)).thenReturn(expectedUsers);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/profile/search")
+                .param("username", username)
+                .param("onlyArtists", String.valueOf(onlyArtists))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[*].username", containsInAnyOrder("username1", "username2")));
+    }
+
 }

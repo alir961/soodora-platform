@@ -19,6 +19,7 @@ public interface UserRepository {
     UserDTO update(UpdateUserCommand command, Identifier identifier);
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
+    Set<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists);
     void delete(Identifier identifier);
     void deleteAvatar(Identifier identifier);
     boolean isUsed(Identifier identifier);

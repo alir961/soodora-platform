@@ -3,6 +3,7 @@ package com.grooveconductor.service.user;
 import com.grooveconductor.domain.user.*;
 
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.test.TestConstants.ARTIST_USER;
 import static com.grooveconductor.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
@@ -154,6 +156,38 @@ class UserServiceTest {
 
         // THEN
         assertThrows(UnknownUserException.class, executable);
+    }
+
+    @Test
+    void searchUsersByUsername_OnlyArtists_Success() {
+        // GIVEN
+        boolean onlyArtists = true;
+        Set<UserDTO> expectedUsers = Set.of(ARTIST_USER);
+
+        when(userRepository.searchUsersByUsername(ARTIST_USER.username(), onlyArtists)).thenReturn(expectedUsers);
+
+        // WHEN
+        Set<UserDTO> result = userService.searchUsersByUsername(ARTIST_USER.username(), onlyArtists);
+
+        // THEN
+        assertEquals(expectedUsers, result);
+        verify(userRepository).searchUsersByUsername(ARTIST_USER.username(), onlyArtists);
+    }
+
+    @Test
+    void searchUsersByUsername_AllUsers_Success() {
+        // GIVEN
+        boolean onlyArtists = false;
+        Set<UserDTO> expectedUsers = Set.of(USER);
+
+        when(userRepository.searchUsersByUsername(USER.username(), onlyArtists)).thenReturn(expectedUsers);
+
+        // WHEN
+        Set<UserDTO> result = userService.searchUsersByUsername(USER.username(), onlyArtists);
+
+        // THEN
+        assertEquals(expectedUsers, result);
+        verify(userRepository).searchUsersByUsername(USER.username(), onlyArtists);
     }
 
 }

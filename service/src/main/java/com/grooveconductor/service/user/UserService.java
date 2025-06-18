@@ -37,6 +37,10 @@ public class UserService implements UserDetailsService {
         }
     }
 
+    public Set<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists) {
+        return userRepository.searchUsersByUsername(usernameQuery, onlyArtists);
+    }
+
     public boolean existsUser(Identifier identifier) {
         return userRepository.isUsed(identifier);
     }
