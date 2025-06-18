@@ -9,6 +9,7 @@ import com.grooveconductor.service.post.CreatePostRequest;
 import com.grooveconductor.service.post.PostService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -51,26 +52,26 @@ public class PostController {
         }
     }
 
+    @GetMapping
+    public Page<PostDTO> getPosts(
+            @RequestParam(value = "userSlug") Optional<String> userSlug,
+            @RequestParam(value = "hasAudio") Optional<Boolean> hasAudio,
+            @RequestParam(value = "title") Optional<String> title,
+            @RequestParam(value = "description") Optional<String> description,
+            Pageable pageable) {
+        PostFilter filter = new PostFilter(userSlug, hasAudio, title, description);
+
+        return postService.retrievePosts(filter, pageable);
+    }
+
+    @GetMapping("/explore")
+    public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
+        return postService.retrieveRecommendedPosts(user, pageable);
+    }
+
     @GetMapping("/{postSlug}")
     public PostDTO getPost(@PathVariable String postSlug) {
         return postService.retrievePostBySlug(postSlug);
-    }
-
-    @GetMapping
-    public Page<PostDTO> getPosts(
-            @RequestParam(value = "userSlug", required = false) String userSlug,
-            @RequestParam(value = "hasAudio", required = false) Boolean hasAudio,
-            @RequestParam(value = "title", required = false) String title,
-            @RequestParam(value = "description", required = false) String description,
-            Pageable pageable) {
-
-        PostFilter filter = new PostFilter(
-                ofNullable(userSlug),
-                ofNullable(hasAudio),
-                ofNullable(title),
-                ofNullable(description));
-
-        return postService.retrievePosts(filter, pageable);
     }
 
     @DeleteMapping("/{postSlug}")

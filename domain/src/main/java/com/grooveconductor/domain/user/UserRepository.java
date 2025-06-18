@@ -6,7 +6,6 @@ import com.grooveconductor.domain.linkpage.LinkPageDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.post.CommentDTO;
 import com.grooveconductor.domain.post.LikeDTO;
-import com.grooveconductor.domain.post.PostDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,6 @@ public interface UserRepository {
     String retrieveEncodedPassword(Identifier identifier);
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
     List<PlaylistDTO> retrievePlaylists(Identifier identifier);
-    List<PostDTO> retrievePosts(Identifier identifier);
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
     LinkPageDTO retrieveLinkPage(Identifier identifier);

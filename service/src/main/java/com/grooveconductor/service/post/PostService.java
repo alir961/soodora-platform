@@ -110,18 +110,17 @@ public class PostService {
         }
     }
 
-    public Page<PostDTO> retrieveAllPosts(Pageable pageable) {
-        return postRepository.findAll(pageable);
+    public Page<PostDTO> retrievePosts(PostFilter filter, Pageable pageable) {
+        if (filter.isEmpty())
+            return postRepository.findAll(pageable);
+        else
+            return postRepository.findByFilter(filter, pageable);
     }
 
-    public Page<PostDTO> retrievePosts(PostFilter filter, Pageable pageable) {
-        boolean isFilterEmpty = filter.isEmpty();
-
-        if (isFilterEmpty) {
-            return retrieveAllPosts(pageable);
-        } else {
-            return postRepository.findByFilter(filter, pageable);
-        }
+    public Page<PostDTO> retrieveRecommendedPosts(UserDTO user, Pageable pageable) {
+        if (user == null)
+            return postRepository.findAll(pageable);
+        return postRepository.findRecommendedPosts(user, pageable);
     }
 
     public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {

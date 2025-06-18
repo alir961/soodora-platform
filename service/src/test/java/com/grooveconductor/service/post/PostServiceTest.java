@@ -71,30 +71,6 @@ class PostServiceTest {
     }
 
     @Test
-    void retrieveAllPosts_Success() {
-        // GIVEN
-        when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS);
-
-        // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrieveAllPosts(PAGEABLE);
-
-        // THEN
-        assertEquals(POSTS, retrievedPosts);
-    }
-
-    @Test
-    void retrieveAllPosts_NoContent() {
-        // GIVEN
-        when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS_EMPTY);
-
-        // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrieveAllPosts(PAGEABLE);
-
-        // THEN
-        assertEquals(POSTS_EMPTY, retrievedPosts);
-    }
-
-    @Test
     void retrievePosts_NoFilter() {
         // GIVEN
         PostFilter noFilter = new PostFilter(empty(), empty(), empty(), empty());
@@ -487,7 +463,6 @@ class PostServiceTest {
         Set<UserDTO> followings = Set.of(user2, user3);
         List<String> followingSlugs = followings.stream()
                 .map(UserDTO::slug)
-                .sorted()
                 .toList();
 
         PostDTO post1 = buildDefaultPost("slug2", "title1");

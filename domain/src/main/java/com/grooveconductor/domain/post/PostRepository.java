@@ -28,4 +28,5 @@ public interface PostRepository {
     void unrepost(String postSlug, UserDTO user);
     Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable);
     Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable);
+    Page<PostDTO> findRecommendedPosts(UserDTO user, Pageable pageable);
 }

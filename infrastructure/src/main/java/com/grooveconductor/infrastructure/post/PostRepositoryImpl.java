@@ -13,11 +13,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+
+import static java.lang.Double.compare;
+import static java.lang.Math.min;
+import static java.lang.Math.toIntExact;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -65,6 +70,23 @@ public class PostRepositoryImpl implements PostRepository {
     public Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable) {
         return postRepository.findAll(PostSpecification.build(filter), pageable)
                 .map(PostEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<PostDTO> findRecommendedPosts(UserDTO user, Pageable pageable) {
+        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        Set<UserEntity> followers = userEntity.getFollowers();
+        List<PostEntity> sortedPosts = postRepository.findAll().stream()
+                .sorted((a, b) -> compare(b.getEngagementScore(followers), a.getEngagementScore(followers)))
+                .toList();
+        int start = toIntExact(pageable.getOffset());
+        int end = min(start + pageable.getPageSize(), sortedPosts.size());
+        List<PostDTO> pageContent = sortedPosts.subList(start, end).stream()
+                .map(PostEntity::toDTO)
+                .toList();
+
+        return new PageImpl<>(pageContent, pageable, sortedPosts.size());
     }
 
     @Override
