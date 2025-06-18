@@ -50,25 +50,27 @@ const fetchProfiles = async (reset = false) => {
     hasMoreProfiles.value = true;
     return;
   }
-  if (isLoadingProfiles.value || !hasMoreProfiles.value) return;
+
+  if (isLoadingProfiles.value || (!hasMoreProfiles.value && !reset)) return;
+
+  if (reset) {
+    artists.value = [];
+    users.value = [];
+    currentPageProfiles.value = 0;
+    hasMoreProfiles.value = true;
+  }
 
   isLoadingProfiles.value = true;
 
   try {
-    if (reset) {
-      currentPageProfiles.value = 0;
-      hasMoreProfiles.value = true;
-      artists.value = [];
-      users.value = [];
-    }
-
     const response = await searchProfile(searchTerm.value, false, currentPageProfiles.value, PAGE_SIZE, 'username');
+
     const allUsers = response.content;
 
     artists.value.push(...allUsers.filter((u) => u.roles.includes('ARTIST')));
     users.value.push(...allUsers.filter((u) => !u.roles.includes('ARTIST')));
 
-    hasMoreProfiles.value = allUsers.length === 10;
+    hasMoreProfiles.value = allUsers.length === PAGE_SIZE;
     if (hasMoreProfiles.value) currentPageProfiles.value++;
   } catch (error) {
     console.error('Search profiles failed:', error);
@@ -85,27 +87,25 @@ const fetchPosts = async (reset = false) => {
     hasMorePosts.value = true;
     return;
   }
-  if (isLoadingPosts.value || !hasMorePosts.value) return;
+
+  if (isLoadingPosts.value || (!hasMorePosts.value && !reset)) return;
+
+  if (reset) {
+    posts.value = [];
+    currentPagePosts.value = 0;
+    hasMorePosts.value = true;
+  }
 
   isLoadingPosts.value = true;
 
   try {
-    if (reset) {
-      currentPagePosts.value = 0;
-      hasMorePosts.value = true;
-      posts.value = [];
-    }
-
     const params: PostSearchParams = {
       page: currentPagePosts.value,
-      size: 10,
+      size: PAGE_SIZE,
       sort: 'createdAt,desc',
+      title: searchTerm.value.trim(),
+      description: searchTerm.value.trim(),
     };
-
-    if (searchTerm.value?.trim()) {
-      params.title = searchTerm.value.trim();
-      params.description = searchTerm.value.trim();
-    }
 
     const response = await searchPosts(
       params.title ?? null,
@@ -115,11 +115,13 @@ const fetchPosts = async (reset = false) => {
       params.sort
     );
 
-    const fetchedPosts = response.content;
-
+    const fetchedPosts = response.content.map((post) => ({
+      ...post,
+      createdAt: new Date(post.createdAt),
+    }));
     posts.value.push(...fetchedPosts);
 
-    hasMorePosts.value = fetchedPosts.length === 10;
+    hasMorePosts.value = fetchedPosts.length === PAGE_SIZE;
     if (hasMorePosts.value) currentPagePosts.value++;
   } catch (error) {
     console.error('Search posts failed:', error);
@@ -142,7 +144,7 @@ watch(searchTerm, () => {
 
   searchTimeout.value = setTimeout(() => {
     fetchResults(true);
-  }, 500);
+  }, 300);
 });
 
 const loadMore = async (ev: CustomEvent) => {

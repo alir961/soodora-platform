@@ -33,7 +33,7 @@ const loadPosts = async (reset = false) => {
 
     if (reset) {
       posts.value = content;
-      currentPage.value = 0;
+      currentPage.value = 1;
     } else {
       posts.value.push(...content);
       currentPage.value++;
