@@ -158,7 +158,7 @@ public class PostService {
         }
     }
 
-    public Page<PostDTO> retrievePostsFromFollowings(Identifier identifier, Pageable pageable) {
+    public Page<PostDTO> retrievePostsFromFollowing(Identifier identifier, Pageable pageable) {
         List<String> followingSlugs = userRepository
                 .retrieveFollowing(identifier)
                 .stream()
