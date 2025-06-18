@@ -9,6 +9,7 @@ import com.grooveconductor.domain.post.LikeDTO;
 import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.*;
+import com.grooveconductor.infrastructure.artist.ArtistJpaRepository;
 import com.grooveconductor.infrastructure.common.DomainEntity;
 
 import java.util.HashSet;
@@ -16,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,7 @@ import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSl
 public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userRepository;
+    private final ArtistJpaRepository artistRepository;
 
     @Override
     @Transactional
@@ -75,6 +79,19 @@ public class UserRepositoryImpl implements UserRepository {
         return userRepository.findAll().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
+        if (onlyArtists) {
+            return artistRepository
+                    .findByUserUsernameContainingIgnoreCase(usernameQuery, pageable)
+                    .map(artist -> artist.getUser().toDTO());
+        } else {
+            return userRepository.findByUsernameContainingIgnoreCase(usernameQuery, pageable)
+                    .map(UserEntity::toDTO);
+        }
     }
 
     @Override

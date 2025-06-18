@@ -13,12 +13,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface UserRepository {
 
     UserDTO save(RegisterCommand command);
     UserDTO update(UpdateUserCommand command, Identifier identifier);
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
+    Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);
     void delete(Identifier identifier);
     void deleteAvatar(Identifier identifier);
     boolean isUsed(Identifier identifier);

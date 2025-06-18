@@ -11,6 +11,8 @@ import com.grooveconductor.service.post.PostService;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -55,15 +57,20 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostDTO> getPosts(
+    public Page<PostDTO> getPosts(
             @RequestParam(value = "userSlug", required = false) String userSlug,
-            @RequestParam(value = "hasAudio", required = false) Boolean hasAudio) {
+            @RequestParam(value = "hasAudio", required = false) Boolean hasAudio,
+            @RequestParam(value = "title", required = false) String title,
+            @RequestParam(value = "description", required = false) String description,
+            Pageable pageable) {
 
         PostFilter filter = new PostFilter(
                 ofNullable(userSlug),
-                ofNullable(hasAudio));
+                ofNullable(hasAudio),
+                ofNullable(title),
+                ofNullable(description));
 
-        return postService.retrievePosts(filter);
+        return postService.retrievePosts(filter, pageable);
     }
 
     @DeleteMapping("/{postSlug}")
@@ -114,7 +121,7 @@ public class PostController {
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(
             @RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty());
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty());
 
         return postService.retrieveUserLikes(filter);
     }
@@ -122,7 +129,7 @@ public class PostController {
     @GetMapping("/comments")
     public List<CommentDTO> getUserComments(
             @RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty());
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty());
         return postService.retrieveUserComments(filter);
     }
 

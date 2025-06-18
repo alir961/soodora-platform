@@ -98,4 +98,12 @@ public class ProfileController {
         return postService.retrievePostsFromFollowing(user.identifier(), pageable);
     }
 
+    @GetMapping("/search")
+    public Page<UserDTO> searchProfiles(
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "onlyArtists") boolean onlyArtists,
+            Pageable pageable) {
+        return userService.searchUsersByUsername(username, onlyArtists, pageable);
+    }
+
 }

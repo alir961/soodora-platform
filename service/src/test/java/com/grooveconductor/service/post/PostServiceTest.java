@@ -9,7 +9,6 @@ import com.grooveconductor.domain.user.UserRepository;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,12 +16,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 
-import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,7 +46,10 @@ class PostServiceTest {
     private static final PostDTO POST_2 = buildDefaultPost("slug2", "Post 2");
     private static final PostDTO POST_3 = buildDefaultPost("slug3", "Post 3");
     private static final PostDTO POST_4_WITHOUT_AUDIO = buildDefaultPostWithoutAudio("slug4", "Post 4");
-    private static final List<PostDTO> POSTS = List.of(POST_1, POST_2, POST_3);
+    private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
+    private static final List<PostDTO> POST_LIST = List.of(POST_1, POST_2, POST_3);
+    private static final Page<PostDTO> POSTS = new PageImpl<>(POST_LIST, PAGEABLE, POST_LIST.size());
+    private static final Page<PostDTO> POSTS_EMPTY = new PageImpl<>(List.of(), PAGEABLE, 0);
 
     @BeforeEach
     void setUp() {
@@ -75,10 +73,10 @@ class PostServiceTest {
     @Test
     void retrieveAllPosts_Success() {
         // GIVEN
-        when(postRepository.findAll()).thenReturn(POSTS);
+        when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS);
 
         // WHEN
-        List<PostDTO> retrievedPosts = postService.retrieveAllPosts();
+        Page<PostDTO> retrievedPosts = postService.retrieveAllPosts(PAGEABLE);
 
         // THEN
         assertEquals(POSTS, retrievedPosts);
@@ -87,24 +85,24 @@ class PostServiceTest {
     @Test
     void retrieveAllPosts_NoContent() {
         // GIVEN
-        when(postRepository.findAll()).thenReturn(emptyList());
+        when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS_EMPTY);
 
         // WHEN
-        List<PostDTO> retrievedPosts = postService.retrieveAllPosts();
+        Page<PostDTO> retrievedPosts = postService.retrieveAllPosts(PAGEABLE);
 
         // THEN
-        assertTrue(retrievedPosts.isEmpty());
+        assertEquals(POSTS_EMPTY, retrievedPosts);
     }
 
     @Test
     void retrievePosts_NoFilter() {
         // GIVEN
-        PostFilter noFilter = new PostFilter(empty(), empty());
+        PostFilter noFilter = new PostFilter(empty(), empty(), empty(), empty());
 
-        when(postRepository.findAll()).thenReturn(POSTS);
+        when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS);
 
         // WHEN
-        List<PostDTO> retrievedPosts = postService.retrievePosts(noFilter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(noFilter, PAGEABLE);
 
         // THEN
         assertEquals(POSTS, retrievedPosts);
@@ -113,73 +111,92 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
 
-        when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3));
+        List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
+        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+
+        when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
-        assertEquals(2, retrievedPost.size());
-        assertEquals(POST_1, retrievedPost.get(0));
-        assertEquals(POST_3, retrievedPost.get(1));
+        assertEquals(2, retrievedPosts.getContent().size());
+        assertEquals(POST_1, retrievedPosts.getContent().get(0));
+        assertEquals(POST_3, retrievedPosts.getContent().get(1));
     }
 
     @Test
     void retrievePost_FilterHasAudioUrl_True() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), of(true));
+        PostFilter filter = new PostFilter(empty(), of(true), empty(), empty());
 
-        when(postRepository.findAll()).thenReturn(List.of(POST_1, POST_2, POST_4_WITHOUT_AUDIO));
+        List<PostDTO> postsWithAudio = List.of(POST_1, POST_2);
+        Page<PostDTO> pageWithAudio = new PageImpl<>(postsWithAudio, PAGEABLE, postsWithAudio.size());
+
+        when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageWithAudio);
 
         // WHEN
-        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
-        assertEquals(List.of(POST_1, POST_2), retrievedPost);
+        assertEquals(postsWithAudio.size(), retrievedPosts.getContent().size());
+        assertEquals(postsWithAudio, retrievedPosts.getContent());
     }
 
     @Test
     void retrievePost_FilterHasAudioUrl_False() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), of(false));
+        PostFilter filter = new PostFilter(empty(), of(false), empty(), empty());
 
-        when(postRepository.findAll()).thenReturn(List.of(POST_1, POST_2, POST_4_WITHOUT_AUDIO));
+        List<PostDTO> postsWithoutAudio = List.of(POST_4_WITHOUT_AUDIO);
+        Page<PostDTO> pageWithoutAudio = new PageImpl<>(postsWithoutAudio, PAGEABLE, postsWithoutAudio.size());
+
+        when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageWithoutAudio);
 
         // WHEN
-        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
-        assertEquals(List.of(POST_4_WITHOUT_AUDIO), retrievedPost);
+        assertEquals(postsWithoutAudio.size(), retrievedPosts.getContent().size());
+        assertEquals(postsWithoutAudio, retrievedPosts.getContent());
     }
 
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_True() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(true));
+        PostFilter filter = new PostFilter(of(USER.slug()), of(true), empty(), empty());
 
-        when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3, POST_4_WITHOUT_AUDIO));
+        List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
+        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+
+        when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
-        assertEquals(List.of(POST_1, POST_3), retrievedPost);
+        assertEquals(filteredPosts.size(), retrievedPosts.getContent().size());
+        assertEquals(filteredPosts, retrievedPosts.getContent());
     }
 
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_False() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(false));
+        PostFilter filter = new PostFilter(of(USER.slug()), of(false), empty(), empty());
 
-        when(userRepository.retrievePosts(any())).thenReturn(List.of(POST_1, POST_3, POST_4_WITHOUT_AUDIO));
+        List<PostDTO> filteredPosts = List.of(POST_4_WITHOUT_AUDIO);
+        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+
+        when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        List<PostDTO> retrievedPost = postService.retrievePosts(filter);
+        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
-        assertEquals(List.of(POST_4_WITHOUT_AUDIO), retrievedPost);
+        assertEquals(filteredPosts.size(), retrievedPosts.getContent().size());
+        assertEquals(filteredPosts, retrievedPosts.getContent());
     }
 
     @Test
@@ -413,7 +430,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
         List<LikeDTO> expected = List.of(
                 new PostLikeDTO(POST_1.slug(), USER, new Date()),
                 new CommentLikeDTO("comment-slug", USER, new Date()));
@@ -429,7 +446,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), empty());
+        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserLikes(filter));
@@ -438,7 +455,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
         List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
         when(userRepository.retrievePostComments(any())).thenReturn(expected);
 
@@ -452,7 +469,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), empty());
+        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserComments(filter));
@@ -464,13 +481,17 @@ class PostServiceTest {
         Identifier identifier = createFromSlug("slug1");
         Pageable pageable = PageRequest.of(0, 50, by("slug").ascending());
 
-        Set<UserDTO> followings = Set.of(
-                buildDefaultUser(2),
-                buildDefaultUser(3));
-        List<String> followingSlugs = Stream.of("slug2", "slug3").sorted().toList();
+        UserDTO user2 = buildDefaultUser(2);
+        UserDTO user3 = buildDefaultUser(3);
 
-        PostDTO post1 = buildDefaultPost("slug1", "title");
-        PostDTO post2 = buildDefaultPost("slug2", "title");
+        Set<UserDTO> followings = Set.of(user2, user3);
+        List<String> followingSlugs = followings.stream()
+                .map(UserDTO::slug)
+                .sorted()
+                .toList();
+
+        PostDTO post1 = buildDefaultPost("slug2", "title1");
+        PostDTO post2 = buildDefaultPost("slug3", "title2");
 
         Page<PostDTO> expectedPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
 
@@ -482,8 +503,9 @@ class PostServiceTest {
 
         // THEN
         assertNotNull(result);
-        assertEquals(2, result.getTotalElements());
-        assertEquals(expectedPage, result);
+        assertEquals(expectedPage.getTotalElements(), result.getTotalElements());
+        assertEquals(expectedPage.getContent(), result.getContent());
+
         verify(userRepository).retrieveFollowing(identifier);
         verify(postRepository).findByFollowingSlugs(followingSlugs, pageable);
     }

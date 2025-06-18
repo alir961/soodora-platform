@@ -10,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +22,7 @@ import static org.mockito.Mockito.*;
 
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromEmail;
 import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
+import static com.grooveconductor.test.TestConstants.ARTIST_USER;
 import static com.grooveconductor.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
@@ -154,6 +159,44 @@ class UserServiceTest {
 
         // THEN
         assertThrows(UnknownUserException.class, executable);
+    }
+
+    @Test
+    void searchUsersByUsername_OnlyArtists_Success() {
+        // GIVEN
+        boolean onlyArtists = true;
+        Pageable pageable = PageRequest.of(0, 20);
+        List<UserDTO> usersList = List.of(ARTIST_USER);
+        Page<UserDTO> expectedPage = new PageImpl<>(usersList, pageable, usersList.size());
+
+        when(userRepository.searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable))
+                .thenReturn(expectedPage);
+
+        // WHEN
+        Page<UserDTO> result = userService.searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable);
+
+        // THEN
+        assertEquals(expectedPage, result);
+        verify(userRepository).searchUsersByUsername(ARTIST_USER.username(), onlyArtists, pageable);
+    }
+
+    @Test
+    void searchUsersByUsername_AllUsers_Success() {
+        // GIVEN
+        boolean onlyArtists = false;
+        Pageable pageable = PageRequest.of(0, 20);
+        List<UserDTO> usersList = List.of(USER);
+        Page<UserDTO> expectedPage = new PageImpl<>(usersList, pageable, usersList.size());
+
+        when(userRepository.searchUsersByUsername(USER.username(), onlyArtists, pageable))
+                .thenReturn(expectedPage);
+
+        // WHEN
+        Page<UserDTO> result = userService.searchUsersByUsername(USER.username(), onlyArtists, pageable);
+
+        // THEN
+        assertEquals(expectedPage, result);
+        verify(userRepository).searchUsersByUsername(USER.username(), onlyArtists, pageable);
     }
 
 }

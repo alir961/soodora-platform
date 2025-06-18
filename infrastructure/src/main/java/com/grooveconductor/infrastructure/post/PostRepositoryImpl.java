@@ -3,7 +3,6 @@ package com.grooveconductor.infrastructure.post;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.*;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
@@ -52,10 +51,16 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public List<PostDTO> findAll() {
-        return postRepository.findAll().stream()
-                .map(DomainEntity::toDTO)
-                .toList();
+    public Page<PostDTO> findAll(Pageable pageable) {
+        Page<PostEntity> page = postRepository.findAll(pageable);
+        return page.map(PostEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable) {
+        return postRepository.findAll(PostSpecification.build(filter), pageable)
+                .map(PostEntity::toDTO);
     }
 
     @Override
