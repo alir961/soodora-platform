@@ -1,38 +1,66 @@
 <script setup lang="ts">
-import { Ref, ref, onMounted } from 'vue';
-import { IonGrid, IonRow, onIonViewWillEnter, toastController } from '@ionic/vue';
+import { Ref, ref } from 'vue';
+import {
+  IonGrid,
+  IonRow,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  onIonViewWillEnter,
+  toastController,
+} from '@ionic/vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { User } from '@/entity/User';
-import { useAuthStore } from '@/store/reactiveStorage';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { callRetrievePosts } from '@/client/postClient';
 
 const posts: Ref<Post[]> = ref([]);
-const userData: Ref<User | null> = ref(null);
-const authStore = useAuthStore();
+const currentPage = ref(0);
+const isLoading = ref(false);
+const hasMore = ref(true);
+const PAGE_SIZE = 10;
 
-const loadPosts = async () => {
+const loadPosts = async (reset = false) => {
+  if (isLoading.value || (!hasMore.value && !reset)) return;
+
+  isLoading.value = true;
   try {
-    posts.value = await callRetrievePosts();
+    const page = reset ? 0 : currentPage.value;
+    const { content, hasMore: more } = await callRetrievePosts({
+      page,
+      size: PAGE_SIZE,
+      sort: 'createdAt,desc',
+    });
+
+    if (reset) {
+      posts.value = content;
+      currentPage.value = 1;
+    } else {
+      posts.value.push(...content);
+      currentPage.value++;
+    }
+
+    hasMore.value = more;
   } catch (error) {
     const toast = await toastController.create({
-      message: `Failed to load feed!`,
+      message: 'Failed to load feed!',
       duration: 1500,
       position: 'top',
     });
 
     console.error(error);
     await toast.present();
+  } finally {
+    isLoading.value = false;
   }
 };
 
-onIonViewWillEnter(async () => {
+const onInfinite = async (ev: CustomEvent<void>) => {
   await loadPosts();
-});
+  await (ev.target as HTMLIonInfiniteScrollElement).complete();
+};
 
-onMounted(() => {
-  if (authStore.isAuthenticated) userData.value = authStore.getAuthenticatedUser;
+onIonViewWillEnter(() => {
+  loadPosts(true);
 });
 </script>
 
@@ -44,12 +72,16 @@ onMounted(() => {
           v-for="post in posts"
           :key="post.slug"
           :post="post"
-          @post-deleted="loadPosts"
+          @post-deleted="loadPosts(true)"
           @post-like="post.likeCount++"
           @post-unlike="post.likeCount--"
           @post-repost="post.repostCount++"
           @post-unrepost="post.repostCount--" />
       </ion-row>
     </ion-grid>
+
+    <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
+      <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
+    </ion-infinite-scroll>
   </ApplicationViewport>
 </template>
