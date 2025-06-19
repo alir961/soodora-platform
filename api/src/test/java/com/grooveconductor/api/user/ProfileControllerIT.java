@@ -271,7 +271,7 @@ class ProfileControllerIT {
                 .thenReturn(pageWithPosts);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/posts/following")
+        mockMvc.perform(get("/profile/following/posts")
                 .with(user(new UserPrincipal(USER)))
                 .param("page", "0")
                 .param("size", "50")

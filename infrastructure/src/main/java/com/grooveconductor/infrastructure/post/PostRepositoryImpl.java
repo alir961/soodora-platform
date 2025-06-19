@@ -7,6 +7,7 @@ import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,6 +41,9 @@ public class PostRepositoryImpl implements PostRepository {
         entity.setAudioUrl(command.audioUrl());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
+        entity.setLikes(new HashSet<>());
+        entity.setReposts(new HashSet<>());
+        entity.setComments(new HashSet<>());
         return postRepository.save(entity).toDTO();
     }
 
