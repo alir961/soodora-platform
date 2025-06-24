@@ -1,11 +1,16 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
-import { Post, Comment } from '@/entity/Post';
+import { Post, Comment, populatePost } from '@/entity/Post';
 import { PostSearchResponse } from '@/entity/PostSearch';
-import { PageableParams } from '@/entity/PageableParams';
+import { Pageable, SortPageable } from '@/entity/PageableParams';
 
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
+
+interface PostPage {
+  content: Post[];
+  hasMore: boolean;
+}
 
 async function callCreatePost(post: CreatePostRequest): Promise<void> {
   return axios
@@ -16,7 +21,55 @@ async function callCreatePost(post: CreatePostRequest): Promise<void> {
     .catch(reject);
 }
 
-async function callRetrievePosts(params: PageableParams): Promise<{ content: Post[]; hasMore: boolean }> {
+async function callRetrieveRecommendedPosts(pageable: Pageable): Promise<PostPage> {
+  try {
+    const response = await axios.get('/posts/explore', {
+      params: {
+        page: pageable.page,
+        size: pageable.size,
+      },
+      headers: await getAuthorizedHeader(),
+    });
+
+    if (response.status !== 200 || !response.data) return reject('Unable to call API');
+    if (!response.data.content) return reject('Unable to parse API response');
+    const content = response.data.content.map((post: Post) => populatePost(post));
+    const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+    return { content, hasMore };
+  } catch (error) {
+    let message: string = 'Post retrieving Failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
+}
+
+async function callRetrieveFollowingPosts(pageable: Pageable): Promise<PostPage> {
+  try {
+    const response = await axios.get('/profile/following/posts', {
+      params: {
+        page: pageable.page,
+        size: pageable.size,
+      },
+      headers: await getAuthorizedHeader(),
+    });
+
+    if (response.status !== 200 || !response.data) return reject('Unable to call API');
+    if (!response.data.content) return reject('Unable to parse API response');
+    const content = response.data.content.map((post: Post) => populatePost(post));
+    const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+    return { content, hasMore };
+  } catch (error) {
+    let message: string = 'Post retrieving Failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
+}
+
+async function callRetrievePosts(params: SortPageable): Promise<{ content: Post[]; hasMore: boolean }> {
   try {
     const response = await axios.get('/posts', {
       params: {
@@ -184,10 +237,12 @@ async function searchPosts(
   }
 }
 
-export type { CreatePostRequest };
+export type { CreatePostRequest, PostPage };
 export {
   callCreatePost,
   callRetrievePosts,
+  callRetrieveRecommendedPosts,
+  callRetrieveFollowingPosts,
   callDeletePost,
   callPostLike,
   callPostUnlike,

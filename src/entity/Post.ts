@@ -28,4 +28,12 @@ interface Comment {
   createdAt: string;
 }
 
+function populatePost(post: Post): Post {
+  return {
+    ...post,
+    createdAt: new Date(post.createdAt),
+  } as Post;
+}
+
+export { populatePost };
 export type { Post, PostLike, Comment };
