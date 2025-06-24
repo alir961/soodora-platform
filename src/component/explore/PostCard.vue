@@ -6,16 +6,15 @@ import {
   IonCard,
   IonCardContent,
   IonCardHeader,
-  IonCardTitle,
   IonCol,
   IonIcon,
   IonImg,
   IonNote,
+  IonAvatar,
   toastController,
 } from '@ionic/vue';
-import { PropType, Ref, ref, watch } from 'vue';
+import { PropType, Ref, ref, watch, computed } from 'vue';
 import { Post } from '@/entity/Post';
-import { chatbubbleOutline, heart, heartOutline, shareOutline, syncOutline, trashOutline } from 'ionicons/icons';
 import {
   callPostUnlike,
   callDeletePost,
@@ -29,6 +28,13 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
+import customLikeIcon from '@/assets/icons/like.svg';
+import customCommentIcon from '@/assets/icons/comment.svg';
+import customRepostIcon from '@/assets/icons/repost.svg';
+import customShareIcon from '@/assets/icons/share.svg';
+import customTrashIcon from '@/assets/icons/trash.svg';
+import customPlayIcon from '@/assets/icons/play.svg';
+import customPauseIcon from '@/assets/icons/pause.svg';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -42,9 +48,46 @@ const props = defineProps({
 
 const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repost', 'post-unrepost']);
 
-const isFocused: Ref<boolean> = ref(false);
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
+
+const audioRef = ref<HTMLAudioElement | null>(null);
+const isPlaying = ref(false);
+const duration = ref(0);
+const currentTime = ref(0);
+
+const progressBackground = computed(() => {
+  if (duration.value === 0) return '';
+  const percent = (currentTime.value / duration.value) * 100;
+  return `background: linear-gradient(90deg, var(--ion-color-primary) ${percent}%, #161515 ${percent}%)`;
+});
+
+const togglePlay = () => {
+  const audio = audioRef.value;
+  if (!audio) return;
+  if (audio.paused) {
+    audio.play();
+    isPlaying.value = true;
+  } else {
+    audio.pause();
+    isPlaying.value = false;
+  }
+};
+
+const onLoadedMetadata = () => {
+  const audio = audioRef.value;
+  if (audio) duration.value = audio.duration;
+};
+
+const onTimeUpdate = () => {
+  const audio = audioRef.value;
+  if (audio) currentTime.value = audio.currentTime;
+};
+
+const seekAudio = () => {
+  const audio = audioRef.value;
+  if (audio) audio.currentTime = currentTime.value;
+};
 
 const exportThemes = [
   {
@@ -192,58 +235,103 @@ watch(
   },
   { immediate: true }
 );
+function formatPostDate(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours}h`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 4) {
+    return `${diffDays}d`;
+  }
+
+  // Otherwise, show date as DD/MM/YYYY
+  return date.toLocaleDateString();
+}
+
+function formatCount(count: number): string {
+  if (count === 0) return '';
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+  if (count >= 1000) {
+    return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  }
+  return count.toString();
+}
+
+const formatTime = (time: number) => {
+  const minutes = Math.floor(time / 60);
+  const seconds = Math.floor(time % 60);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
 </script>
 
 <template>
-  <ion-col size="12" size-md="6" size-lg="4">
-    <ion-card @click="isFocused = !isFocused" :class="{ focused: isFocused }">
-      <ion-card-header>
-        <div>
-          <ion-card-title class="artist-name" @click="redirectToUserProfile(post.owner)">
-            <span>@</span>{{ post.owner.username }}
-          </ion-card-title>
-          <ion-note>{{ post.createdAt.toLocaleString() }}</ion-note>
+  <ion-col size="12" size-md="7" size-lg="5">
+    <ion-card>
+      <ion-card-header class="post-header">
+        <div class="header-line">
+          <ion-avatar>
+            <img :src="post.owner.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
+          </ion-avatar>
+          <div class="post-header-content">
+            <div class="header-row">
+              <span class="username" @click="redirectToUserProfile(post.owner)">
+                @{{ post.owner.username }}
+              </span>
+              <span class="post-date">{{ formatPostDate(post.createdAt) }}</span>
+            </div>
+            <span class="post-title">{{ post.title }}</span>
+          </div>
         </div>
       </ion-card-header>
       <ion-card-content>
-        <ion-card-title>{{ post.title }}</ion-card-title>
         <p>{{ post.content }}</p>
         <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
         <div v-if="post.audioUrl" class="audio-content">
-          <audio :src="post.audioUrl" controls></audio>
+          <audio :src="post.audioUrl" ref="audioRef" @loadedmetadata="onLoadedMetadata" @timeupdate="onTimeUpdate" />
+          <div class="custom-audio-controls">
+            <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
+            <span class="audio-time">{{ formatTime(currentTime) }}</span>
+            <input type="range" min="0" :max="duration" step="0.1" v-model="currentTime" @input="seekAudio" :style="progressBackground" />
+            <span class="audio-duration">{{ formatTime(duration) }}</span>
+          </div>
         </div>
-        <div v-if="isFocused" class="settings-container">
-          <ion-button fill="clear" size="small" @click.stop="toggleLikePost(post.slug)">
-            <ion-icon :icon="isLiked ? heart : heartOutline" :color="isLiked ? 'danger' : ''" slot="start" />
-            <ion-note>{{ post.likeCount }}</ion-note>
-          </ion-button>
+        <div class="settings-container">
+          <div class="post-actions">
+            <ion-button class="like-button" fill="clear" size="default" @click.stop="toggleLikePost(post.slug)" :class="{ 'heart-active': isLiked }">
+              <ion-icon :src="customLikeIcon" />
+              <ion-note v-if="formatCount(post.likeCount)">{{ formatCount(post.likeCount) }}</ion-note>
+            </ion-button>
 
-          <ion-button fill="clear" size="small" @click.stop="toggleRepostPost(post.slug)">
-            <ion-icon
-              :icon="syncOutline"
-              :color="isReposted ? 'danger' : ''"
-              slot="start"
-              :class="{ rotate: isReposted }" />
-            <ion-note>{{ post.repostCount }}</ion-note>
-          </ion-button>
+            <ion-button class="comment-button" fill="clear" size="default" @click.stop="redirectToPostComments(post.slug)">
+              <ion-icon :src="customCommentIcon" />
+              <ion-note v-if="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+            </ion-button>
 
-          <ion-button fill="clear" size="small" @click.stop="redirectToPostComments(post.slug)">
-            <ion-icon :icon="chatbubbleOutline" slot="start" />
-            <ion-note>{{ post.commentCount }}</ion-note>
-          </ion-button>
+            <ion-button class="repost-button" fill="clear" size="default" @click.stop="toggleRepostPost(post.slug)" :class="{ 'repost-active': isReposted }">
+              <ion-icon :src="customRepostIcon" />
+              <ion-note v-if="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
+            </ion-button>
 
-          <ion-button fill="clear" size="small" @click.stop="exportPost(post)" id="export-button">
-            <ion-icon :icon="shareOutline" />
-            <ion-note>Export</ion-note>
-          </ion-button>
-
-          <ion-button
-            v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
-            fill="clear"
-            size="small"
-            @click.stop="askDeletePost(post.slug)">
-            Delete
-            <ion-icon :icon="trashOutline" />
+            <ion-button fill="clear" size="default" @click.stop="exportPost(post)">
+              <ion-icon :src="customShareIcon" />
+            </ion-button>
+          </div>
+          <ion-button v-if="post.owner.slug === authStore.getAuthenticatedUserSlug" fill="clear" size="default"
+            @click.stop="askDeletePost(post.slug)" class="delete-button">
+            <ion-icon :src="customTrashIcon" />
           </ion-button>
         </div>
       </ion-card-content>
@@ -253,79 +341,217 @@ watch(
 
 <style scoped>
 ion-card {
-  margin: 0 0.4em 1em 0.4em;
-
-  &.focused {
-    outline: 0.2em solid #3880ff;
-  }
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  background: transparent !important;
+  --background: transparent !important;
 }
 
-ion-card-header > div {
-  display: flex;
-  justify-content: space-between;
-  align-content: center;
-
-  & .artist-name {
-    font-size: 1em;
-    color: #999999;
-
-    & span {
-      color: white;
-    }
-  }
+ion-card-header {
+  padding-bottom: 0.2em;
+  padding-top: 1em;
 }
 
 ion-card-content {
-  & ion-card-title {
-    font-size: 1.3rem;
-    margin-bottom: 0.4em;
-  }
+  padding-bottom: 0;
 
   & p {
     text-align: justify;
+    font-size: 1.1rem;
   }
 
   & ion-img {
-    border-radius: 5px;
+    border-radius: 10px;
     overflow: hidden;
-    margin-top: 1em;
+    margin-top: 0.3em;
   }
 
-  & .audio-content {
-    padding-top: 0;
-  }
-
-  & audio {
-    width: 100%;
-    margin-top: 10px;
-  }
-
-  & .settings-container {
-    margin-top: 0.8em;
+  .custom-audio-controls {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+    gap: 0;
+    box-sizing: border-box;
+  }
 
-    & ion-button {
-      margin: 0;
-      font-weight: bold;
+  .play-pause-icon {
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+  }
 
-      & ion-icon {
-        margin-right: 0.4em;
-      }
-    }
+  .audio-time,
+  .audio-duration {
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .custom-audio-controls input[type="range"] {
+    flex: 1;
+    appearance: none;
+    height: 4px;
+    background: transparent;
+    border-radius: 2px;
+    outline: none;
+    margin: 0 0.5em;
+  }
+
+  .custom-audio-controls input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    background: rgb(255, 255, 255);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  & audio::-webkit-media-controls-play-button,
+  & audio::-webkit-media-controls-mute-button,
+  & audio::-webkit-media-controls-volume-slider,
+  & audio::-webkit-media-controls-timeline,
+  & audio::-webkit-media-controls-current-time-display,
+  & audio::-webkit-media-controls-time-remaining-display {
+    filter: invert(1);
+    opacity: 0.9;
+  }
+
+  & audio::-webkit-media-controls-play-button:hover {
+    opacity: 1;
+  }
+
+}
+
+.post-header {
+  padding-bottom: 0.2em;
+  padding-top: 1em;
+}
+
+.header-line {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+ion-avatar {
+  min-width: 40px;
+  min-height: 40px;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+ion-avatar img {
+  border-radius: 50% !important;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.post-header-content {
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  max-width: 100%;
+}
+
+.username {
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+}
+
+.post-date {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+  width: auto;
+}
+
+.post-title {
+  font-size: 1.1rem;
+  color: white;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.settings-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  & ion-button {
+    margin: 0;
+    font-weight: bold;
+    color: white;
+    --color: white;
+  }
+
+  & ion-note {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ion-color-medium);
+    margin-left: 0.3em;
+    padding: 0;
+    line-height: 1rem;
+    height: 0.8rem;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  & ion-icon {
+    vertical-align: middle;
+    display: inline-block;
+    line-height: 1;
   }
 }
 
-.rotate {
-  animation: rotate 3s infinite;
+.post-actions {
+  display: flex;
+  align-items: center;
 }
 
-@-webkit-keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.like-button {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.comment-button {
+  --padding-end: 0;
+}
+
+.repost-button {
+  --padding-end: 0;
+}
+
+.settings-container ion-button.heart-active {
+  --color: var(--ion-color-primary);
+  color: var(--ion-color-primary);
+}
+
+.settings-container ion-button.repost-active {
+  --color: var(--ion-color-primary);
+  color: var(--ion-color-primary);
+}
+
+.delete-button {
+  --padding-start: 0;
+  --padding-end: 0;
 }
 </style>

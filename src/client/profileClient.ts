@@ -11,7 +11,13 @@ async function retrieveAuthenticatedProfile(): Promise<User> {
   return axios
     .get('/profile', { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 200 && response.data) return response.data as User;
+      if (response && response.status === 200 && response.data) {
+        const user = response.data as User;
+        if (!user.roles || user.roles.length === 0) {
+          user.roles = ['USER'];
+        }
+        return user;
+      }
       return reject('Unable to call API');
     })
     .catch(reject);

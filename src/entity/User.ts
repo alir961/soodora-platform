@@ -1,4 +1,4 @@
-type Role = 'ADMIN' | 'ARTIST' | 'PREMIUM';
+type Role = 'ADMIN' | 'ARTIST' | 'PREMIUM' | 'USER';
 
 interface User {
   slug: string;

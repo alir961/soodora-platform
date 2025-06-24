@@ -8,18 +8,15 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   onIonViewWillEnter,
   toastController,
 } from '@ionic/vue';
 import { deleteBearerToken } from '@/store/localStorage';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
-import { redirectExplore, userIdentifierNotFoundToast } from '@/utils';
+import { userIdentifierNotFoundToast } from '@/utils';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import {
   OAuthProvider,
@@ -31,9 +28,10 @@ import {
 } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import OAuthButton from '@/component/user/OAuthButton.vue';
-import { logOutOutline, trashOutline, settingsOutline } from 'ionicons/icons';
+import { logOutOutline, trashOutline, checkmarkOutline, arrowBackOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
+import customSettingsIcon from '@/assets/icons/settings.svg';
 
 const router = useRouter();
 const route = useRoute();
@@ -47,6 +45,14 @@ const usernameInput = ref('');
 const firstnameInput = ref('');
 const lastnameInput = ref('');
 const avatarUrlInput = ref('');
+const saving = ref(false);
+
+const originalData = ref({
+  username: '',
+  firstname: '',
+  lastname: '',
+  avatarUrl: '',
+});
 
 watch(showModal, (newVal) => {
   if (newVal && userData.value) {
@@ -54,7 +60,24 @@ watch(showModal, (newVal) => {
     firstnameInput.value = userData.value.firstname;
     lastnameInput.value = userData.value.lastname;
     avatarUrlInput.value = userData.value.avatarUrl ?? '';
+
+    // Store original data for comparison
+    originalData.value = {
+      username: userData.value.username,
+      firstname: userData.value.firstname,
+      lastname: userData.value.lastname,
+      avatarUrl: userData.value.avatarUrl ?? '',
+    };
   }
+});
+
+const hasChanges = computed(() => {
+  return (
+    usernameInput.value !== originalData.value.username ||
+    firstnameInput.value !== originalData.value.firstname ||
+    lastnameInput.value !== originalData.value.lastname ||
+    avatarUrlInput.value !== originalData.value.avatarUrl
+  );
 });
 
 onIonViewWillEnter(async () => {
@@ -81,7 +104,8 @@ const fetchUserData = async () => {
 const logout = async () => {
   await deleteBearerToken();
   authStore.logout();
-  await redirectExplore(router);
+  await router.push('/authentication');
+  window.location.reload();
 };
 
 const deleteAccount = async () => {
@@ -126,15 +150,25 @@ const updateAccount = async () => {
     return;
   }
   try {
+    saving.value = true;
+
+    if (avatarUrlInput.value === '') {
+      await callDeleteUserAvatar();
+    }
+
     const payload: UserUpdatePayload = {
       username: usernameInput.value,
       firstname: firstnameInput.value,
       lastname: lastnameInput.value,
-      avatarUrl: avatarUrlInput.value,
+      avatarUrl: avatarUrlInput.value || '',
     };
 
     await callUpdateProfile(payload);
-    authStore.authenticate(await retrieveAuthenticatedProfile());
+
+    const freshProfile = await retrieveAuthenticatedProfile();
+    authStore.authenticate(freshProfile);
+    userData.value = freshProfile;
+    avatarUrlInput.value = freshProfile.avatarUrl ?? '';
     showModal.value = false;
   } catch (error) {
     const toast = await toastController.create({
@@ -142,15 +176,18 @@ const updateAccount = async () => {
       duration: 1500,
       position: 'top',
     });
-
     await toast.present();
+  } finally {
+    saving.value = false;
   }
 };
 
 const deleteAvatar = async () => {
   try {
     await callDeleteUserAvatar();
-    await fetchUserData();
+    const freshProfile = await retrieveAuthenticatedProfile();
+    userData.value = freshProfile;
+    avatarUrlInput.value = freshProfile.avatarUrl ?? '';
   } catch (error) {
     const toast = await toastController.create({
       message: 'Failed to delete account avatar.',
@@ -167,45 +204,69 @@ const openProfileEditionModal = () => {
   userData.value = authStore.getAuthenticatedUser;
   showModal.value = true;
 };
+
+const clearAvatarUrl = () => {
+  avatarUrlInput.value = '';
+};
 </script>
 
 <template>
   <ApplicationViewport title="Account" authenticated>
     <template #toolbar>
       <div id="toolbar-button">
-        <ion-button size="small" @click="openProfileEditionModal">
-          <ion-icon :icon="settingsOutline" />
+        <ion-button size="default" @click="openProfileEditionModal" fill="clear">
+          <ion-icon :src="customSettingsIcon" style="width: 25px; height: 25px;" />
         </ion-button>
       </div>
     </template>
 
     <ion-modal :isOpen="showModal">
       <div class="modal-content">
-        <ion-header>
-          <ion-toolbar>
-            <ion-title>Edit Profile</ion-title>
-            <ion-button slot="end" @click="showModal = false">Close</ion-button>
-          </ion-toolbar>
-        </ion-header>
         <ion-content>
-          <ion-item>
-            <ion-label position="stacked">Username</ion-label>
-            <ion-input v-model="usernameInput" />
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">First Name</ion-label>
-            <ion-input v-model="firstnameInput" />
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Last Name</ion-label>
-            <ion-input v-model="lastnameInput" />
-          </ion-item>
-          <ion-item>
-            <ion-label position="stacked">Avatar URL</ion-label>
-            <ion-input v-model="avatarUrlInput" />
-          </ion-item>
-          <ion-button expand="block" @click="updateAccount">Save</ion-button>
-          <ion-button expand="block" @click="deleteAvatar">Delete Avatar</ion-button>
+          <div class="floating-header">
+            <ion-button class="inline-back-button" fill="clear" size="large" @click="showModal = false" aria-label="Back">
+              <ion-icon :icon="arrowBackOutline" class="back-icon" />
+              <span>Back</span>
+            </ion-button>
+            <h2>Edit Profile</h2>
+            <ion-button v-if="hasChanges" class="inline-save-button" :disabled="saving" @click="updateAccount" size="small" fill="outline" color="primary" aria-label="Save changes">
+              <ion-icon v-if="!saving" :icon="checkmarkOutline" class="save-button-icon" />
+              <span v-if="!saving" class="save-button-text">Save</span>
+            </ion-button>
+          </div>
+          <div id="section-content">
+            <ion-item class="modal-item">
+              <ion-label position="stacked">Username</ion-label>
+              <ion-input placeholder="Add a username" v-model="usernameInput"></ion-input>
+            </ion-item>
+            <ion-item class="modal-item">
+              <ion-label position="stacked">First Name</ion-label>
+              <ion-input placeholder="Add a first name" v-model="firstnameInput"></ion-input>
+            </ion-item>
+            <ion-item class="modal-item">
+              <ion-label position="stacked">Last Name</ion-label>
+              <ion-input placeholder="Add a last name" v-model="lastnameInput"></ion-input>
+            </ion-item>
+            <ion-item class="modal-item">
+              <div class="profile-picture-url-wrapper">
+                <div class="profile-picture-url-label-row">
+                  <span>Profile Picture URL</span>
+                  <ion-icon v-if="avatarUrlInput" :icon="trashOutline" class="profile-picture-url-delete-icon" @click="clearAvatarUrl" />
+                </div>
+                <ion-input placeholder="Add a profile picture URL" v-model="avatarUrlInput" />
+              </div>
+            </ion-item>
+          </div>
+          <div class="settings-actions">
+            <ion-button class="settings-logout" @click="logout">
+              <ion-icon class="icon" :icon="logOutOutline" />
+              Logout
+            </ion-button>
+            <ion-button class="settings-delete-account" @click="deleteAccount">
+              <ion-icon class="icon" :icon="trashOutline" />
+              Delete Account
+            </ion-button>
+          </div>
         </ion-content>
       </div>
     </ion-modal>
@@ -218,76 +279,122 @@ const openProfileEditionModal = () => {
       <ProfileComponent :profile="authStore.getAuthenticatedUser" />
     </ion-card>
 
-    <OAuthButton
-      v-for="provider in providers"
-      :key="provider"
-      :provider="provider"
-      :linked="linkedProviders.includes(provider)"
-      @unlink="fetchUserData" />
-
-    <ion-button expand="block" @click="logout" id="logout-button">
-      <ion-icon class="icon" :icon="logOutOutline" />
-      Logout
-    </ion-button>
-
-    <ion-button expand="block" @click="deleteAccount" id="delete-account-button">
-      <ion-icon class="icon" :icon="trashOutline" />
-      Delete Account
-    </ion-button>
+    <OAuthButton v-for="provider in providers" :key="provider" :provider="provider"
+      :linked="linkedProviders.includes(provider)" @unlink="fetchUserData" />
   </ApplicationViewport>
 </template>
 
 <style scoped>
 #toolbar-button {
-  width: 25%;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
   align-items: center;
+  height: 100%;
+}
 
-  & ion-button {
-    --border-radius: 15px;
-
-    height: 70%;
-    width: 50%;
-  }
+#toolbar-button ion-button {
+  --border-radius: 15px;
+  --background: transparent;
+  --color: #fff;
 }
 
 .modal-content {
   height: 100%;
-
-  & ion-button {
-    margin: 20px;
-  }
 }
 
-.loading {
-  text-align: center;
-  font-size: 2em;
-  color: #8c8c8c;
-  font-weight: 800;
+#section-content {
+  padding: 20px 40px;
 }
 
-ion-card {
-  border-radius: 20px;
-  margin: 0 20px 20px 20px;
+.modal-item {
+  --background: var(--ion-background-color, #fff);
+  --padding-start: 0;
 }
 
-#logout-button {
-  --background: #cc2222;
+.back-icon {
+  margin-right: 6px;
+}
+
+.settings-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.settings-actions ion-button {
+  max-width: 300px;
+  width: 100%;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 14px;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.settings-actions .icon {
+  margin-right: 8px;
+}
+
+.settings-logout {
+  --background: #ffffff;
+  --color: rgb(255, 0, 0);
+}
+
+.settings-delete-account {
+  --background: #db3030;
   --color: white;
-  border-radius: 20px;
-  margin: 0 20px 20px 20px;
 }
 
-#delete-account-button {
-  --background: #ff3b30;
-  --color: white;
-  border-radius: 20px;
-  margin: 0 20px 20px 20px;
+.profile-picture-url-wrapper {
+  margin-top: 12px;
+  width: 100%;
 }
 
-.icon {
-  margin-right: 10px;
+.profile-picture-url-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-picture-url-delete-icon {
+  color: #db3030;
+}
+
+.floating-header {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.inline-back-button {
+  position: absolute;
+  left: 0px;
+  top: 50%;
+  transform: translateY(-50%);
+  --border-radius: 12px;
+  min-width: 80px;
+  min-height: 30px;
+}
+
+.inline-save-button {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  --border-radius: 12px;
+  min-width: 80px;
+  min-height: 30px;
+}
+
+.save-button-text {
+  color: #fff;
+  padding-left: 4px;
+}
+
+.save-button-icon {
+  color: #fff;
 }
 </style>

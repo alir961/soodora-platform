@@ -12,6 +12,7 @@ function getRoleColors(role: Role): RoleColors {
   if (role === 'PREMIUM') return { color: '#fff', backgroundColor: '#e91' };
   if (role === 'ARTIST') return { color: '#fff', backgroundColor: '#a5d' };
   if (role === 'ADMIN') return { color: '#fff', backgroundColor: '#c22' };
+  if (role === 'USER') return { color: '#fff', backgroundColor: '#555' };
   return { color: '#fff', backgroundColor: '#fff' };
 }
 

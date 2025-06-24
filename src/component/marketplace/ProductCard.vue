@@ -27,8 +27,8 @@ const focusProduct = (product: Product) => {
       </ion-card-header>
       <ion-card-content>
         <p>{{ product.description }}</p>
-        <p>Price: {{ product.price.toFixed(2) }}€</p>
-        <p>Available Quantity: {{ product.quantity }}</p>
+        <p>Price: {{ product.price !== null ? product.price.toFixed(2) + '€' : 'No price' }}</p>
+        <p>Available Quantity: {{ product.quantity !== null ? product.quantity : 'No quantity' }}</p>
         <p>Vendor: {{ product.vendor.username }}</p>
         <ion-button v-if="focusedProduct === product" expand="block">Add to Cart</ion-button>
       </ion-card-content>
