@@ -2,6 +2,7 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
+import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
@@ -13,6 +14,8 @@ import com.grooveconductor.service.user.UserService;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -86,6 +89,27 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowing(identifier);
+    }
+
+    @GetMapping("/{slug}/posts")
+    public Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrievePosts(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/reposts")
+    public Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveReposts(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/audios")
+    public Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveAudios(identifier, pageable);
     }
 
 }

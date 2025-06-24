@@ -1,6 +1,8 @@
 package com.grooveconductor.service.user;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
+import com.grooveconductor.domain.post.PostDTO;
+import com.grooveconductor.domain.post.PostRepository;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.service.auth.UserPrincipal;
 
@@ -26,6 +28,7 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
+    private final PostRepository postRepository;
 
     public List<UserDTO> retrieveAllUsers() {
         return userRepository.findAll();
@@ -101,6 +104,18 @@ public class UserService implements UserDetailsService {
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
+    }
+
+    public Page<PostDTO> retrievePosts(Identifier identifier, Pageable pageable) {
+        return postRepository.findUserPosts(identifier, pageable);
+    }
+
+    public Page<PostDTO> retrieveReposts(Identifier identifier, Pageable pageable) {
+        return postRepository.findUserReposts(identifier, pageable);
+    }
+
+    public Page<PostDTO> retrieveAudios(Identifier identifier, Pageable pageable) {
+        return postRepository.findUserAudios(identifier, pageable);
     }
 
     @Override

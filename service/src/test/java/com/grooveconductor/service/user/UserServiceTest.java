@@ -1,5 +1,6 @@
 package com.grooveconductor.service.user;
 
+import com.grooveconductor.domain.post.PostRepository;
 import com.grooveconductor.domain.user.*;
 
 import java.util.List;
@@ -30,6 +31,10 @@ class UserServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private PostRepository postRepository;
+
     private UserService userService;
 
     private static final List<UserDTO> USERS = List.of(USER);
@@ -37,7 +42,7 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository);
+        userService = new UserService(userRepository, postRepository);
     }
 
     @Test

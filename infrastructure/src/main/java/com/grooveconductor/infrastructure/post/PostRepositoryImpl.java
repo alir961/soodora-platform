@@ -2,12 +2,12 @@ package com.grooveconductor.infrastructure.post;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.*;
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import static java.lang.Double.compare;
 import static java.lang.Math.min;
 import static java.lang.Math.toIntExact;
+import static java.util.Collections.emptySet;
 
 import static com.grooveconductor.infrastructure.common.SlugGenerator.generateSlug;
 
@@ -46,9 +47,9 @@ public class PostRepositoryImpl implements PostRepository {
         entity.setAudioUrl(command.audioUrl());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
-        entity.setLikes(new HashSet<>());
-        entity.setReposts(new HashSet<>());
-        entity.setComments(new HashSet<>());
+        entity.setLikes(emptySet());
+        entity.setComments(emptySet());
+        entity.setReposts(emptySet());
         return postRepository.save(entity).toDTO();
     }
 
@@ -87,6 +88,25 @@ public class PostRepositoryImpl implements PostRepository {
                 .toList();
 
         return new PageImpl<>(pageContent, pageable, sortedPosts.size());
+    }
+
+    @Override
+    @Transactional
+    public Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable) {
+        return postRepository.findByUserSlug(identifier.getValue(), pageable).map(PostEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<PostDTO> findUserReposts(Identifier identifier, Pageable pageable) {
+        return postRepository.findByRepostsSlug(identifier.getValue(), pageable).map(PostEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable) {
+        return postRepository.findByUserSlugAndAudioUrlIsNotNull(identifier.getValue(), pageable)
+                .map(PostEntity::toDTO);
     }
 
     @Override
