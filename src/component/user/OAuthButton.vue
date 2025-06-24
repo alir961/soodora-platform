@@ -78,9 +78,14 @@ const clickButton = async () => {
 </script>
 
 <template>
-  <div style="display: flex; justify-content: center;">
-    <ion-button @click="clickButton" expand="block" :class="provider.provider" :disabled="disabled" style="width: 100%; max-width: 350px;">
-      <span class="wrapper" style="width: 100%; justify-content: center;">
+  <div style="display: flex; justify-content: center">
+    <ion-button
+      @click="clickButton"
+      expand="block"
+      :class="provider.provider"
+      :disabled="disabled"
+      style="width: 100%; max-width: 350px">
+      <span class="wrapper" style="width: 100%; justify-content: center">
         <ion-icon :icon="provider.icon" />
         {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
       </span>

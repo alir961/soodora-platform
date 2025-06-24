@@ -287,9 +287,7 @@ const formatTime = (time: number) => {
           </ion-avatar>
           <div class="post-header-content">
             <div class="header-row">
-              <span class="username" @click="redirectToUserProfile(post.owner)">
-                @{{ post.owner.username }}
-              </span>
+              <span class="username" @click="redirectToUserProfile(post.owner)"> @{{ post.owner.username }} </span>
               <span class="post-date">{{ formatPostDate(post.createdAt) }}</span>
             </div>
             <span class="post-title">{{ post.title }}</span>
@@ -304,23 +302,44 @@ const formatTime = (time: number) => {
           <div class="custom-audio-controls">
             <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
             <span class="audio-time">{{ formatTime(currentTime) }}</span>
-            <input type="range" min="0" :max="duration" step="0.1" v-model="currentTime" @input="seekAudio" :style="progressBackground" />
+            <input
+              type="range"
+              min="0"
+              :max="duration"
+              step="0.1"
+              v-model="currentTime"
+              @input="seekAudio"
+              :style="progressBackground" />
             <span class="audio-duration">{{ formatTime(duration) }}</span>
           </div>
         </div>
         <div class="settings-container">
           <div class="post-actions">
-            <ion-button class="like-button" fill="clear" size="default" @click.stop="toggleLikePost(post.slug)" :class="{ 'heart-active': isLiked }">
+            <ion-button
+              class="like-button"
+              fill="clear"
+              size="default"
+              @click.stop="toggleLikePost(post.slug)"
+              :class="{ 'heart-active': isLiked }">
               <ion-icon :src="customLikeIcon" />
               <ion-note v-if="formatCount(post.likeCount)">{{ formatCount(post.likeCount) }}</ion-note>
             </ion-button>
 
-            <ion-button class="comment-button" fill="clear" size="default" @click.stop="redirectToPostComments(post.slug)">
+            <ion-button
+              class="comment-button"
+              fill="clear"
+              size="default"
+              @click.stop="redirectToPostComments(post.slug)">
               <ion-icon :src="customCommentIcon" />
               <ion-note v-if="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
             </ion-button>
 
-            <ion-button class="repost-button" fill="clear" size="default" @click.stop="toggleRepostPost(post.slug)" :class="{ 'repost-active': isReposted }">
+            <ion-button
+              class="repost-button"
+              fill="clear"
+              size="default"
+              @click.stop="toggleRepostPost(post.slug)"
+              :class="{ 'repost-active': isReposted }">
               <ion-icon :src="customRepostIcon" />
               <ion-note v-if="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
             </ion-button>
@@ -329,8 +348,12 @@ const formatTime = (time: number) => {
               <ion-icon :src="customShareIcon" />
             </ion-button>
           </div>
-          <ion-button v-if="post.owner.slug === authStore.getAuthenticatedUserSlug" fill="clear" size="default"
-            @click.stop="askDeletePost(post.slug)" class="delete-button">
+          <ion-button
+            v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+            fill="clear"
+            size="default"
+            @click.stop="askDeletePost(post.slug)"
+            class="delete-button">
             <ion-icon :src="customTrashIcon" />
           </ion-button>
         </div>
@@ -392,7 +415,7 @@ ion-card-content {
     text-align: center;
   }
 
-  .custom-audio-controls input[type="range"] {
+  .custom-audio-controls input[type='range'] {
     flex: 1;
     appearance: none;
     height: 4px;
@@ -402,7 +425,7 @@ ion-card-content {
     margin: 0 0.5em;
   }
 
-  .custom-audio-controls input[type="range"]::-webkit-slider-thumb {
+  .custom-audio-controls input[type='range']::-webkit-slider-thumb {
     appearance: none;
     width: 12px;
     height: 12px;
@@ -424,7 +447,6 @@ ion-card-content {
   & audio::-webkit-media-controls-play-button:hover {
     opacity: 1;
   }
-
 }
 
 .post-header {

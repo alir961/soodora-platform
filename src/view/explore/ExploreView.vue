@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { ref, Ref, nextTick } from 'vue';
-import { onIonViewWillEnter, toastController, IonInfiniteScroll, IonInfiniteScrollContent, IonGrid, IonRow, IonPage } from '@ionic/vue';
+import { ref, Ref } from 'vue';
+import {
+  onIonViewWillEnter,
+  toastController,
+  IonInfiniteScroll,
+  IonInfiniteScrollContent,
+  IonGrid,
+  IonRow,
+  IonPage,
+} from '@ionic/vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Swiper as SwiperClass } from 'swiper';
 import 'swiper/css';
@@ -89,26 +97,11 @@ onIonViewWillEnter(() => {
   <ion-page>
     <ApplicationViewport title="Explore">
       <div class="tab-header">
-        <div
-          :class="['tab-button', activeTab === 'foryou' ? 'active' : '']"
-          @click="goToTab(0)"
-        >
-          For You
-        </div>
-        <div
-          :class="['tab-button', activeTab === 'following' ? 'active' : '']"
-          @click="goToTab(1)"
-        >
-          Following
-        </div>
+        <div :class="['tab-button', activeTab === 'foryou' ? 'active' : '']" @click="goToTab(0)">For You</div>
+        <div :class="['tab-button', activeTab === 'following' ? 'active' : '']" @click="goToTab(1)">Following</div>
       </div>
 
-      <swiper
-        @swiper="onSwiperInit"
-        @slideChange="onSlideChange"
-        :initial-slide="0"
-        :speed="250"
-      >
+      <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
         <swiper-slide>
           <ion-grid>
             <ion-row>
@@ -120,8 +113,7 @@ onIonViewWillEnter(() => {
                   @post-unlike="post.likeCount--"
                   @post-repost="post.repostCount++"
                   @post-unrepost="post.repostCount--"
-                  class="postcard"
-                />
+                  class="postcard" />
               </div>
             </ion-row>
           </ion-grid>
@@ -131,7 +123,7 @@ onIonViewWillEnter(() => {
         </swiper-slide>
 
         <swiper-slide>
-          <div style="display: flex; justify-content: center; align-items: center;  height: 50vh; font-size: 1.2rem; ">
+          <div style="display: flex; justify-content: center; align-items: center; height: 50vh; font-size: 1.2rem">
             <p>Following feed is coming soon!</p>
           </div>
         </swiper-slide>
@@ -173,5 +165,4 @@ ion-grid {
   color: white;
   border-bottom: 2px solid white;
 }
-
 </style>

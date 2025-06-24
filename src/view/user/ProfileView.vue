@@ -182,24 +182,6 @@ const updateAccount = async () => {
   }
 };
 
-const deleteAvatar = async () => {
-  try {
-    await callDeleteUserAvatar();
-    const freshProfile = await retrieveAuthenticatedProfile();
-    userData.value = freshProfile;
-    avatarUrlInput.value = freshProfile.avatarUrl ?? '';
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to delete account avatar.',
-      duration: 1500,
-      position: 'top',
-    });
-
-    await toast.present();
-  }
-  showModal.value = false;
-};
-
 const openProfileEditionModal = () => {
   userData.value = authStore.getAuthenticatedUser;
   showModal.value = true;
@@ -215,7 +197,7 @@ const clearAvatarUrl = () => {
     <template #toolbar>
       <div id="toolbar-button">
         <ion-button size="default" @click="openProfileEditionModal" fill="clear">
-          <ion-icon :src="customSettingsIcon" style="width: 25px; height: 25px;" />
+          <ion-icon :src="customSettingsIcon" style="width: 25px; height: 25px" />
         </ion-button>
       </div>
     </template>
@@ -224,12 +206,25 @@ const clearAvatarUrl = () => {
       <div class="modal-content">
         <ion-content>
           <div class="floating-header">
-            <ion-button class="inline-back-button" fill="clear" size="large" @click="showModal = false" aria-label="Back">
+            <ion-button
+              class="inline-back-button"
+              fill="clear"
+              size="large"
+              @click="showModal = false"
+              aria-label="Back">
               <ion-icon :icon="arrowBackOutline" class="back-icon" />
               <span>Back</span>
             </ion-button>
             <h2>Edit Profile</h2>
-            <ion-button v-if="hasChanges" class="inline-save-button" :disabled="saving" @click="updateAccount" size="small" fill="outline" color="primary" aria-label="Save changes">
+            <ion-button
+              v-if="hasChanges"
+              class="inline-save-button"
+              :disabled="saving"
+              @click="updateAccount"
+              size="small"
+              fill="outline"
+              color="primary"
+              aria-label="Save changes">
               <ion-icon v-if="!saving" :icon="checkmarkOutline" class="save-button-icon" />
               <span v-if="!saving" class="save-button-text">Save</span>
             </ion-button>
@@ -251,7 +246,11 @@ const clearAvatarUrl = () => {
               <div class="profile-picture-url-wrapper">
                 <div class="profile-picture-url-label-row">
                   <span>Profile Picture URL</span>
-                  <ion-icon v-if="avatarUrlInput" :icon="trashOutline" class="profile-picture-url-delete-icon" @click="clearAvatarUrl" />
+                  <ion-icon
+                    v-if="avatarUrlInput"
+                    :icon="trashOutline"
+                    class="profile-picture-url-delete-icon"
+                    @click="clearAvatarUrl" />
                 </div>
                 <ion-input placeholder="Add a profile picture URL" v-model="avatarUrlInput" />
               </div>
@@ -279,8 +278,12 @@ const clearAvatarUrl = () => {
       <ProfileComponent :profile="authStore.getAuthenticatedUser" />
     </ion-card>
 
-    <OAuthButton v-for="provider in providers" :key="provider" :provider="provider"
-      :linked="linkedProviders.includes(provider)" @unlink="fetchUserData" />
+    <OAuthButton
+      v-for="provider in providers"
+      :key="provider"
+      :provider="provider"
+      :linked="linkedProviders.includes(provider)"
+      @unlink="fetchUserData" />
   </ApplicationViewport>
 </template>
 

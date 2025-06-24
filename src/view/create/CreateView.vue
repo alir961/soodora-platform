@@ -144,7 +144,12 @@ const publishProduct = async () => {
         <ion-content>
           <div>
             <div class="floating-header">
-              <ion-button class="inline-back-button" fill="clear" size="large" @click="showModal = false" aria-label="Back">
+              <ion-button
+                class="inline-back-button"
+                fill="clear"
+                size="large"
+                @click="showModal = false"
+                aria-label="Back">
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
               </ion-button>
@@ -163,7 +168,11 @@ const publishProduct = async () => {
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon v-if="newPost.imageUrl" :icon="trashOutline" class="url-delete-icon" @click="newPost.imageUrl = ''" />
+                    <ion-icon
+                      v-if="newPost.imageUrl"
+                      :icon="trashOutline"
+                      class="url-delete-icon"
+                      @click="newPost.imageUrl = ''" />
                   </div>
                   <ion-input placeholder="Add an image URL" v-model="newPost.imageUrl" />
                 </div>
@@ -172,9 +181,13 @@ const publishProduct = async () => {
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Audio URL</ion-label>
-                    <ion-icon v-if="newPost.audioUrl" :icon="trashOutline" class="url-delete-icon" @click="newPost.audioUrl = ''" />
+                    <ion-icon
+                      v-if="newPost.audioUrl"
+                      :icon="trashOutline"
+                      class="url-delete-icon"
+                      @click="newPost.audioUrl = ''" />
                   </div>
-                  <ion-input placeholder="Add an audio URL" v-model="newPost.audioUrl"/>
+                  <ion-input placeholder="Add an audio URL" v-model="newPost.audioUrl" />
                 </div>
               </ion-item>
             </div>
@@ -189,7 +202,11 @@ const publishProduct = async () => {
         <ion-content>
           <div>
             <div class="floating-header">
-              <ion-button class="inline-back-button" fill="clear" size="large" @click="showProductModal = false"
+              <ion-button
+                class="inline-back-button"
+                fill="clear"
+                size="large"
+                @click="showProductModal = false"
                 aria-label="Back">
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
@@ -209,7 +226,11 @@ const publishProduct = async () => {
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon v-if="newProduct.imageUrl" :icon="trashOutline" class="url-delete-icon" @click="newProduct.imageUrl = ''" />
+                    <ion-icon
+                      v-if="newProduct.imageUrl"
+                      :icon="trashOutline"
+                      class="url-delete-icon"
+                      @click="newProduct.imageUrl = ''" />
                   </div>
                   <ion-input placeholder="Add an image URL" v-model="newProduct.imageUrl" />
                 </div>
@@ -234,7 +255,9 @@ const publishProduct = async () => {
               </ion-item>
               <ion-item class="modal-item">
                 <ion-label position="stacked">Quantity</ion-label>
-                <ion-input type="number" placeholder="Add how many you’ve got in stock"
+                <ion-input
+                  type="number"
+                  placeholder="Add how many you’ve got in stock"
                   v-model.number="newProduct.quantity"></ion-input>
               </ion-item>
             </div>
@@ -349,5 +372,4 @@ ion-button.post-button::part(native) {
   --background: var(--ion-color-primary);
   --color: rgb(255, 255, 255);
 }
-
 </style>
