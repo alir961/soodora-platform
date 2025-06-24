@@ -37,13 +37,14 @@ const onSwiperInit = (instance: SwiperClass) => {
 const loadPosts = async (tab: Tab, reset: boolean) => {
   if (isLoading.value || (!hasMore.value && !reset)) return;
 
-  isLoading.value = true;
   try {
     const page = reset ? 0 : currentPage.value;
+    const pageable = { page, size: PAGE_SIZE };
     let postsPage: PostPage;
 
-    if (tab === 'for-you') postsPage = await callRetrieveRecommendedPosts({ page, size: PAGE_SIZE });
-    else postsPage = await callRetrieveFollowingPosts({ page, size: PAGE_SIZE });
+    isLoading.value = true;
+    if (tab === 'for-you') postsPage = await callRetrieveRecommendedPosts(pageable);
+    else postsPage = await callRetrieveFollowingPosts(pageable);
     if (reset) {
       if (tab === 'for-you') posts.value = postsPage.content;
       else followingPosts.value = postsPage.content;

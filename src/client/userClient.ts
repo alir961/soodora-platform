@@ -2,6 +2,9 @@ import axios from 'axios';
 import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { User } from '@/entity/User';
+import { populatePost, Post } from '@/entity/Post';
+import { Pageable } from '@/entity/PageableParams';
+import { PostPage } from '@/client/postClient';
 
 async function callRetrieveUser(slug: string): Promise<User> {
   return axios
@@ -33,4 +36,53 @@ async function callRetrieveFollowing(user: User): Promise<User[]> {
     .catch(reject);
 }
 
-export { callRetrieveUser, callRetrieveFollowers, callRetrieveFollowing };
+async function callRetrieveUserPosts(user: User, pageable: Pageable): Promise<PostPage> {
+  return axios
+    .get(`/users/${user.slug}/posts`, { params: pageable, headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response.status !== 200 || !response.data) return reject('Unable to call API');
+      if (!response.data.content) return reject('Unable to parse API response');
+      const content = response.data.content.map((post: Post) => populatePost(post));
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+      return { content, hasMore };
+    })
+    .catch(reject);
+}
+
+async function callRetrieveUserReposts(user: User, pageable: Pageable): Promise<PostPage> {
+  return axios
+    .get(`/users/${user.slug}/reposts`, { params: pageable, headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response.status !== 200 || !response.data) return reject('Unable to call API');
+      if (!response.data.content) return reject('Unable to parse API response');
+      const content = response.data.content.map((post: Post) => populatePost(post));
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+      return { content, hasMore };
+    })
+    .catch(reject);
+}
+
+async function callRetrieveUserAudios(user: User, pageable: Pageable): Promise<PostPage> {
+  return axios
+    .get(`/users/${user.slug}/audios`, { params: pageable, headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response.status !== 200 || !response.data) return reject('Unable to call API');
+      if (!response.data.content) return reject('Unable to parse API response');
+      const content = response.data.content.map((post: Post) => populatePost(post));
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+      return { content, hasMore };
+    })
+    .catch(reject);
+}
+
+export {
+  callRetrieveUser,
+  callRetrieveFollowers,
+  callRetrieveFollowing,
+  callRetrieveUserPosts,
+  callRetrieveUserReposts,
+  callRetrieveUserAudios,
+};

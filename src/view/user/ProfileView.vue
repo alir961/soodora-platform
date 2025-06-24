@@ -32,6 +32,7 @@ import { logOutOutline, trashOutline, checkmarkOutline, arrowBackOutline } from 
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import customSettingsIcon from '@/assets/icons/settings.svg';
+import UserPostList from '@/component/user/UserPostList.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -284,6 +285,10 @@ const clearAvatarUrl = () => {
       :provider="provider"
       :linked="linkedProviders.includes(provider)"
       @unlink="fetchUserData" />
+
+    <div v-if="authStore.getAuthenticatedUser" class="post-list">
+      <UserPostList :user="authStore.getAuthenticatedUser" />
+    </div>
   </ApplicationViewport>
 </template>
 
@@ -399,5 +404,9 @@ const clearAvatarUrl = () => {
 
 .save-button-icon {
   color: #fff;
+}
+
+.post-list {
+  margin-top: 2rem !important;
 }
 </style>

@@ -24,10 +24,7 @@ async function callCreatePost(post: CreatePostRequest): Promise<void> {
 async function callRetrieveRecommendedPosts(pageable: Pageable): Promise<PostPage> {
   try {
     const response = await axios.get('/posts/explore', {
-      params: {
-        page: pageable.page,
-        size: pageable.size,
-      },
+      params: pageable,
       headers: await getAuthorizedHeader(),
     });
 
@@ -48,10 +45,7 @@ async function callRetrieveRecommendedPosts(pageable: Pageable): Promise<PostPag
 async function callRetrieveFollowingPosts(pageable: Pageable): Promise<PostPage> {
   try {
     const response = await axios.get('/profile/following/posts', {
-      params: {
-        page: pageable.page,
-        size: pageable.size,
-      },
+      params: pageable,
       headers: await getAuthorizedHeader(),
     });
 
@@ -69,14 +63,10 @@ async function callRetrieveFollowingPosts(pageable: Pageable): Promise<PostPage>
   }
 }
 
-async function callRetrievePosts(params: SortPageable): Promise<{ content: Post[]; hasMore: boolean }> {
+async function callRetrievePosts(pageable: SortPageable): Promise<PostPage> {
   try {
     const response = await axios.get('/posts', {
-      params: {
-        page: params.page,
-        size: params.size,
-        sort: params.sort,
-      },
+      params: pageable,
     });
 
     if (response.status === 200 && response.data?.content) {
@@ -85,7 +75,7 @@ async function callRetrievePosts(params: SortPageable): Promise<{ content: Post[
         createdAt: new Date(post.createdAt),
       }));
 
-      const hasMore = !response.data.empty && response.data.content.length === params.size;
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
 
       return { content: posts, hasMore };
     }

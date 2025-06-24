@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router';
 import { User } from '@/entity/User';
 import { callRetrieveUser } from '@/client/userClient';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
+import UserPostList from '@/component/user/UserPostList.vue';
 
 const route = useRoute();
 
@@ -24,6 +25,7 @@ onMounted(async () => {
 <template>
   <ApplicationViewport title="User Profile" back-button>
     <ProfileComponent v-if="user" :profile="user" />
+    <UserPostList v-if="user" :user="user" />
     <div v-else class="loading">
       <p>Loading...</p>
     </div>
