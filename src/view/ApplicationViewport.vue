@@ -37,30 +37,20 @@ onMounted(async () => {
 
 <template>
   <ion-page>
-    <ion-header v-if="!fullscreen" :translucent="true">
+    <ion-header v-if="!fullscreen" collapse="condense" class="safe-area">
+      <ion-buttons slot="start">
+        <slot name="buttons"></slot>
+      </ion-buttons>
       <ion-toolbar style="--background: #0d0d0d">
-        <ion-buttons slot="start" v-if="backButton">
-          <ion-back-button @click="router.back()" />
-        </ion-buttons>
-        <ion-title>{{ $props.title }}</ion-title>
+        <div id="header">
+          <div id="header-image-container">
+            <img src="/assets/images/png/banner-light.png" alt="Soodora banner" />
+          </div>
+          <slot name="toolbar"></slot>
+        </div>
       </ion-toolbar>
     </ion-header>
-
     <ion-content :fullscreen="true">
-      <ion-header v-if="!fullscreen" collapse="condense">
-        <ion-buttons slot="start">
-          <slot name="buttons"></slot>
-        </ion-buttons>
-        <ion-toolbar style="--background: #0d0d0d">
-          <div id="header">
-            <div id="header-image-container">
-              <img src="/assets/banner-light.png" alt="Soodora banner" />
-            </div>
-            <slot name="toolbar"></slot>
-          </div>
-        </ion-toolbar>
-      </ion-header>
-
       <slot></slot>
     </ion-content>
   </ion-page>
@@ -83,7 +73,7 @@ ion-header {
 }
 
 #header-image-container {
-  padding-left: 3%;
+  padding-left: 1em;
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -93,5 +83,12 @@ ion-header {
 #header-image-container img {
   width: auto;
   align-items: center;
+}
+
+.safe-area {
+  padding-top: calc(env(safe-area-inset-top) - 10px);
+  padding-left: 0px;
+  padding-right: 0px;
+  padding-bottom: 0px;
 }
 </style>

@@ -180,7 +180,7 @@ const redirectToUserProfile = (user: User) => {
           <ion-list v-if="artists.length > 0">
             <ion-item v-for="artist in artists" :key="artist.slug" button @click="redirectToUserProfile(artist)">
               <ion-avatar slot="start">
-                <img :src="artist.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
+                <img :src="artist.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
               </ion-avatar>
               <ion-label>@{{ artist.username }}</ion-label>
             </ion-item>
@@ -195,7 +195,7 @@ const redirectToUserProfile = (user: User) => {
           <ion-list v-if="users.length > 0">
             <ion-item v-for="user in users" :key="user.slug" button @click="redirectToUserProfile(user)">
               <ion-avatar slot="start">
-                <img :src="user.avatarUrl || '/assets/default-avatar.png'" alt="avatar" />
+                <img :src="user.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
               </ion-avatar>
               <ion-label>@{{ user.username }}</ion-label>
             </ion-item>

@@ -1,3 +1,17 @@
+@font-face {
+  font-family: 'Overpass';
+  src: url('/assets/fonts/Overpass/Overpass-VariableFont_wght.ttf') format('truetype');
+  font-weight: 1 999;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Overpass';
+  src: url('/assets/fonts/Overpass/Overpass-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 1 999;
+  font-style: italic;
+}
+
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
 
@@ -17,6 +31,12 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-secondary-shade: #b8962f;
   --ion-color-secondary-tint: #e5c456;
 
+  /* Medium Color */
+  --ion-color-medium: #8E8E93;
+  --ion-color-medium-rgb: 142, 142, 147;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+
   /* Background and Text Colors */
   --ion-background-color: #ffffff;
   --ion-text-color: #333333;
@@ -31,6 +51,8 @@ http://ionicframework.com/docs/theming/ */
   --ion-button-color-primary: var(--ion-color-primary);
   --ion-button-color-secondary: var(--ion-color-secondary);
   --ion-item-border-color: #ddd;
+
+  --ion-font-family-base: 'Overpass', sans-serif;
 }
 
 /* Text and Title Styling */
@@ -40,4 +62,13 @@ ion-title {
 
 ion-text {
   color: var(--ion-text-color);
+}
+
+body {
+  font-family: var(--ion-font-family-base);
+}
+
+/* Force Overpass font on everything, including all Ionic components */
+*, ion-app, ion-content, ion-label, ion-text, ion-title, ion-card-title, ion-button, ion-input, ion-item, ion-list, ion-header, ion-footer, ion-toolbar, ion-chip, ion-segment, ion-segment-button {
+  font-family: 'Overpass', sans-serif !important;
 }

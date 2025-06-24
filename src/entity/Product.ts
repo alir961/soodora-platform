@@ -6,8 +6,8 @@ interface Product {
   description: string;
   imageUrl: string;
   category: string;
-  price: number;
-  quantity: number;
+  price: number | null;
+  quantity: number | null;
   vendor: User;
 }
 
