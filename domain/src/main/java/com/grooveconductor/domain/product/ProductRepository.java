@@ -1,5 +1,6 @@
 package com.grooveconductor.domain.product;
 
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 
 import org.springframework.data.domain.Page;
@@ -12,6 +13,7 @@ public interface ProductRepository {
     ProductDTO findBySlug(String slug);
     Page<ProductDTO> findAll(Pageable pageable);
     Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable);
+    Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable);
     void deleteProductBySlug(String slug);
     boolean isProductNameUsedByUser(String name, String userSlug);
 

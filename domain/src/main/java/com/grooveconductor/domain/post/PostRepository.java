@@ -1,5 +1,6 @@
 package com.grooveconductor.domain.post;
 
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 
 import java.util.List;
@@ -28,4 +29,9 @@ public interface PostRepository {
     void unrepost(String postSlug, UserDTO user);
     Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable);
     Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable);
+    Page<PostDTO> findRecommendedPosts(UserDTO user, Pageable pageable);
+    Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable);
+    Page<PostDTO> findUserReposts(Identifier identifier, Pageable pageable);
+    Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable);
+
 }

@@ -6,7 +6,6 @@ import com.grooveconductor.domain.linkpage.LinkPageDTO;
 import com.grooveconductor.domain.playlist.PlaylistDTO;
 import com.grooveconductor.domain.post.CommentDTO;
 import com.grooveconductor.domain.post.LikeDTO;
-import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.infrastructure.artist.ArtistJpaRepository;
 import com.grooveconductor.infrastructure.common.DomainEntity;
@@ -139,14 +138,6 @@ public class UserRepositoryImpl implements UserRepository {
     @Transactional
     public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
-                .map(DomainEntity::toDTO)
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public List<PostDTO> retrievePosts(Identifier identifier) {
-        return findUserByIdentifierOrThrows(identifier).getPosts().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
     }

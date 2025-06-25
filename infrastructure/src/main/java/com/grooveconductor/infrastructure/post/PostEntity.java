@@ -15,12 +15,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static java.lang.Math.max;
+import static java.lang.Math.pow;
+import static java.lang.System.currentTimeMillis;
+
 @Getter
 @Setter
 @Entity(name = "posts")
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostEntity implements DomainEntity<PostDTO> {
+
+    private static final double LIKE_FACTOR = 2.0;
+    private static final double COMMENT_FACTOR = 3.0;
+    private static final double REPOST_FACTOR = 5.0;
+    private static final double DECAY_FACTOR = 1.2;
+    private static final double FOLLOW_FACTOR = 2.0;
+    private static final double RECENTNESS_FACTOR = 10.0;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -62,6 +73,18 @@ public class PostEntity implements DomainEntity<PostDTO> {
     @UpdateTimestamp
     @Column
     private Date updatedAt;
+
+    public double getEngagementScore(Set<UserEntity> followers) {
+        double engagement = LIKE_FACTOR * likes.size() + COMMENT_FACTOR * comments.size()
+                + REPOST_FACTOR * reposts.size();
+        long ageInHours = max(1, (currentTimeMillis() - createdAt.getTime()) / (1000 * 60 * 60));
+        double timeDecay = pow(ageInHours + 2.0, DECAY_FACTOR);
+
+        engagement += RECENTNESS_FACTOR / ageInHours;
+        if (followers.contains(this.user))
+            engagement *= FOLLOW_FACTOR;
+        return engagement / timeDecay;
+    }
 
     @Override
     public PostDTO toDTO() {

@@ -2,6 +2,8 @@ package com.grooveconductor.api.user;
 
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
+import com.grooveconductor.domain.post.PostDTO;
+import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
@@ -13,6 +15,8 @@ import com.grooveconductor.service.user.UserService;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +33,6 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "User Controller")
 public class UserController {
 
@@ -37,6 +40,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public List<UserDTO> getUsers() {
         return userService.retrieveAllUsers();
     }
@@ -48,8 +52,17 @@ public class UserController {
         return userService.retrieveUser(identifier);
     }
 
+    @GetMapping("/search")
+    public Page<UserDTO> searchUsers(
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "onlyArtists") boolean onlyArtists,
+            Pageable pageable) {
+        return userService.searchUsersByUsername(username, onlyArtists, pageable);
+    }
+
     @PutMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
         try {
             UpdateUserCommand command = request.toCommand();
@@ -63,6 +76,7 @@ public class UserController {
 
     @DeleteMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> deleteUser(@PathVariable("slug") String slug) {
         try {
             Identifier identifier = createFromSlug(slug);
@@ -86,6 +100,34 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowing(identifier);
+    }
+
+    @GetMapping("/{slug}/posts")
+    public Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrievePosts(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/reposts")
+    public Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveReposts(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/audios")
+    public Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveAudios(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/products")
+    public Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveProducts(identifier, pageable);
     }
 
 }

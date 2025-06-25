@@ -2,7 +2,6 @@ package com.grooveconductor.service.product;
 
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.*;
-import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
 
 import java.util.List;

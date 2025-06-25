@@ -6,6 +6,7 @@ import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.product.ProductFilter;
 import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.domain.product.UpdateProductCommand;
+import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
@@ -88,6 +89,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Transactional
     public Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable) {
         return repository.findAll(ProductSpecification.build(filter), pageable)
+                .map(ProductEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
+        return repository.findByUserSlug(identifier.getValue(), pageable)
                 .map(ProductEntity::toDTO);
     }
 
