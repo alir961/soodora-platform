@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { Product } from '@/entity/Product';
+import { Product, ProductSearchParams } from '@/entity/Product';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import { reject } from '@/utils';
 
 type CreateProductRequest = Omit<Omit<Product, 'slug'>, 'vendor'>;
 
@@ -14,12 +13,19 @@ async function createProduct(product: CreateProductRequest): Promise<void> {
   return axios.post('/products', product, { headers: await getAuthorizedHeader() });
 }
 
-async function retrieveProducts(): Promise<Product[]> {
-  return axios.get('/products').then((response) => {
-    if (response && response.status === 200 && response.data) return response.data as Product[];
-    return reject('Unable to call API');
+async function callSearchProducts(params: ProductSearchParams): Promise<ProductPage> {
+  const response = await axios.get('/products/search', {
+    params: {
+      ...params,
+    },
   });
+
+  const hasMore = !response.data.empty && response.data.content.length === params.size;
+  return {
+    content: response.data.content,
+    hasMore,
+  };
 }
 
 export type { CreateProductRequest, ProductPage };
-export { retrieveProducts, createProduct };
+export { callSearchProducts, createProduct };
