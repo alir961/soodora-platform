@@ -59,6 +59,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/users/*/posts").permitAll()
                         .requestMatchers(GET, "/users/*/reposts").permitAll()
                         .requestMatchers(GET, "/users/*/audios").permitAll()
+                        .requestMatchers(GET, "/users/*/products").permitAll()
                         .requestMatchers(GET, "/posts").permitAll()
                         .requestMatchers(GET, "/posts/*").permitAll()
                         .requestMatchers(GET, "/posts/*/likes").permitAll()

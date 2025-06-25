@@ -3,6 +3,8 @@ package com.grooveconductor.service.user;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.post.PostDTO;
 import com.grooveconductor.domain.post.PostRepository;
+import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.domain.user.*;
 import com.grooveconductor.service.auth.UserPrincipal;
 
@@ -29,6 +31,7 @@ public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final ProductRepository productRepository;
 
     public List<UserDTO> retrieveAllUsers() {
         return userRepository.findAll();
@@ -116,6 +119,10 @@ public class UserService implements UserDetailsService {
 
     public Page<PostDTO> retrieveAudios(Identifier identifier, Pageable pageable) {
         return postRepository.findUserAudios(identifier, pageable);
+    }
+
+    public Page<ProductDTO> retrieveProducts(Identifier identifier, Pageable pageable) {
+        return productRepository.findUserProducts(identifier, pageable);
     }
 
     @Override

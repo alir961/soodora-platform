@@ -3,6 +3,7 @@ package com.grooveconductor.api.user;
 import com.grooveconductor.api.common.ExceptionResponse;
 import com.grooveconductor.api.common.JsonResponse;
 import com.grooveconductor.domain.post.PostDTO;
+import com.grooveconductor.domain.product.ProductDTO;
 import com.grooveconductor.domain.user.Identifier;
 import com.grooveconductor.domain.user.UpdateUserCommand;
 import com.grooveconductor.domain.user.UserDTO;
@@ -120,6 +121,13 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveAudios(identifier, pageable);
+    }
+
+    @GetMapping("/{slug}/products")
+    public Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable) {
+        Identifier identifier = createFromSlug(slug);
+
+        return userService.retrieveProducts(identifier, pageable);
     }
 
 }
