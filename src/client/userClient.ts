@@ -5,6 +5,7 @@ import { User } from '@/entity/User';
 import { populatePost, Post } from '@/entity/Post';
 import { Pageable } from '@/entity/PageableParams';
 import { PostPage } from '@/client/postClient';
+import { UserPage } from '@/entity/ProfileSearch';
 
 async function callRetrieveUser(slug: string): Promise<User> {
   return axios
@@ -14,6 +15,33 @@ async function callRetrieveUser(slug: string): Promise<User> {
       return response.data as User;
     })
     .catch(reject);
+}
+
+async function callSearchUsers(
+  username: string,
+  onlyArtists: boolean,
+  pageNumber: number,
+  pageSize: number,
+  sortValue: string
+): Promise<UserPage> {
+  try {
+    const response = await axios.get<UserPage>('/users/search', {
+      params: {
+        username: encodeURIComponent(username),
+        onlyArtists: onlyArtists,
+        page: pageNumber,
+        size: pageSize,
+        sort: sortValue,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    let message: string = 'Fetch users from API failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
 }
 
 async function callRetrieveFollowers(user: User): Promise<User[]> {
@@ -80,6 +108,7 @@ async function callRetrieveUserAudios(user: User, pageable: Pageable): Promise<P
 
 export {
   callRetrieveUser,
+  callSearchUsers,
   callRetrieveFollowers,
   callRetrieveFollowing,
   callRetrieveUserPosts,

@@ -1,6 +1,6 @@
 import type { User } from '@/entity/User';
 
-interface ProfilePageResponse {
+interface UserPage {
   content: User[];
   number: number;
   sort: {
@@ -12,4 +12,4 @@ interface ProfilePageResponse {
   empty: boolean;
 }
 
-export type { ProfilePageResponse };
+export type { UserPage };

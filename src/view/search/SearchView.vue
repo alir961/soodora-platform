@@ -17,14 +17,18 @@ import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import type { User } from '@/entity/User';
 import type { Post } from '@/entity/Post';
-import { searchProfile } from '@/client/profileClient';
-import { searchPosts } from '@/client/postClient';
+import { callSearchPosts } from '@/client/postClient';
 import { PostSearchParams } from '@/entity/PostSearch';
 import PostCard from '@/component/explore/PostCard.vue';
 import { chatboxEllipsesOutline, personCircleOutline } from 'ionicons/icons';
+import { callSearchUsers } from '@/client/userClient';
 
-const searchTerm = ref('');
-const searchMode = ref<'profiles' | 'posts'>('profiles');
+type SearchMode = 'user' | 'post';
+
+const PAGE_SIZE = 10;
+
+const searchInput = ref('');
+const searchMode = ref<SearchMode>('user');
 
 const artists = ref<User[]>([]);
 const users = ref<User[]>([]);
@@ -33,55 +37,55 @@ const posts = ref<Post[]>([]);
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 const router = useRouter();
 
-const currentPageProfiles = ref(0);
-const hasMoreProfiles = ref(true);
-const isLoadingProfiles = ref(false);
+const currentPageUsers = ref(0);
+const hasMoreUsers = ref(true);
+const isLoadingUsers = ref(false);
 
 const currentPagePosts = ref(0);
 const hasMorePosts = ref(true);
 const isLoadingPosts = ref(false);
-const PAGE_SIZE = 10;
 
-const fetchProfiles = async (reset = false) => {
-  if (!searchTerm.value.trim()) {
+const fetchUsers = async (reset = false) => {
+  if (!searchInput.value.trim()) {
     artists.value = [];
     users.value = [];
-    currentPageProfiles.value = 0;
-    hasMoreProfiles.value = true;
+    currentPageUsers.value = 0;
+    hasMoreUsers.value = true;
     return;
   }
 
-  if (isLoadingProfiles.value || (!hasMoreProfiles.value && !reset)) return;
+  if (isLoadingUsers.value || (!hasMoreUsers.value && !reset)) return;
 
   if (reset) {
     artists.value = [];
     users.value = [];
-    currentPageProfiles.value = 0;
-    hasMoreProfiles.value = true;
+    currentPageUsers.value = 0;
+    hasMoreUsers.value = true;
   }
 
-  isLoadingProfiles.value = true;
+  isLoadingUsers.value = true;
 
   try {
-    const response = await searchProfile(searchTerm.value, false, currentPageProfiles.value, PAGE_SIZE, 'username');
+    const { content } = await callSearchUsers(searchInput.value, false, currentPageUsers.value, PAGE_SIZE, 'username');
+    const isArtist = (user: User) => {
+      return user.roles.includes('ARTIST') || user.roles.includes('PREMIUM');
+    };
 
-    const allUsers = response.content;
+    artists.value.push(...content.filter(isArtist));
+    users.value.push(...content.filter((user) => !isArtist(user)));
 
-    artists.value.push(...allUsers.filter((u) => u.roles.includes('ARTIST')));
-    users.value.push(...allUsers.filter((u) => !u.roles.includes('ARTIST')));
-
-    hasMoreProfiles.value = allUsers.length === PAGE_SIZE;
-    if (hasMoreProfiles.value) currentPageProfiles.value++;
+    hasMoreUsers.value = content.length === PAGE_SIZE;
+    if (hasMoreUsers.value) currentPageUsers.value++;
   } catch (error) {
-    console.error('Search profiles failed:', error);
-    hasMoreProfiles.value = false;
+    console.error('Search profiles failed', error);
+    hasMoreUsers.value = false;
   } finally {
-    isLoadingProfiles.value = false;
+    isLoadingUsers.value = false;
   }
 };
 
 const fetchPosts = async (reset = false) => {
-  if (!searchTerm.value.trim()) {
+  if (!searchInput.value.trim()) {
     posts.value = [];
     currentPagePosts.value = 0;
     hasMorePosts.value = true;
@@ -103,11 +107,11 @@ const fetchPosts = async (reset = false) => {
       page: currentPagePosts.value,
       size: PAGE_SIZE,
       sort: 'createdAt,desc',
-      title: searchTerm.value.trim(),
-      description: searchTerm.value.trim(),
+      title: searchInput.value.trim(),
+      description: searchInput.value.trim(),
     };
 
-    const response = await searchPosts(
+    const response = await callSearchPosts(
       params.title ?? null,
       params.description ?? null,
       params.page,
@@ -132,14 +136,14 @@ const fetchPosts = async (reset = false) => {
 };
 
 const fetchResults = async (reset = false) => {
-  if (searchMode.value === 'profiles') {
-    await fetchProfiles(reset);
+  if (searchMode.value === 'user') {
+    await fetchUsers(reset);
   } else {
     await fetchPosts(reset);
   }
 };
 
-watch(searchTerm, () => {
+watch(searchInput, () => {
   if (searchTimeout.value) clearTimeout(searchTimeout.value);
 
   searchTimeout.value = setTimeout(() => {
@@ -164,18 +168,18 @@ const redirectToUserProfile = (user: User) => {
         <ion-icon
           :icon="personCircleOutline"
           class="mode-icon"
-          :class="{ active: searchMode === 'profiles' }"
-          @click="searchMode = 'profiles'" />
+          :class="{ active: searchMode === 'user' }"
+          @click="searchMode = 'user'" />
         <ion-icon
           :icon="chatboxEllipsesOutline"
           class="mode-icon"
-          :class="{ active: searchMode === 'posts' }"
-          @click="searchMode = 'posts'" />
+          :class="{ active: searchMode === 'post' }"
+          @click="searchMode = 'post'" />
       </div>
-      <ion-searchbar placeholder="Search" v-model="searchTerm" :debounce="0" />
+      <ion-searchbar placeholder="Search" v-model="searchInput" :debounce="0" />
 
-      <div v-if="searchTerm.length > 0">
-        <template v-if="searchMode === 'profiles'">
+      <div v-if="searchInput.length > 0">
+        <template v-if="searchMode === 'user'">
           <h2 class="section-title">Artists</h2>
           <ion-list v-if="artists.length > 0">
             <ion-item v-for="artist in artists" :key="artist.slug" button @click="redirectToUserProfile(artist)">
@@ -207,7 +211,7 @@ const redirectToUserProfile = (user: User) => {
           </ion-list>
         </template>
 
-        <template v-else-if="searchMode === 'posts'">
+        <template v-else-if="searchMode === 'post'">
           <h2 class="section-title">Posts</h2>
           <ion-list v-if="posts.length > 0">
             <ion-row>
@@ -232,7 +236,7 @@ const redirectToUserProfile = (user: User) => {
         <ion-infinite-scroll
           @ionInfinite="loadMore"
           threshold="100px"
-          :disabled="searchMode === 'profiles' ? !hasMoreProfiles : !hasMorePosts">
+          :disabled="searchMode === 'user' ? !hasMoreUsers : !hasMorePosts">
           <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
         </ion-infinite-scroll>
       </div>

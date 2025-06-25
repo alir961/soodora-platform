@@ -3,7 +3,7 @@ import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { User } from '@/entity/User';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
-import { ProfilePageResponse } from '@/entity/ProfileSearch';
+import { UserPage } from '@/entity/ProfileSearch';
 
 type OAuthProvider = 'google';
 
@@ -81,30 +81,6 @@ async function callUnfollowUser(slug: string): Promise<void> {
     .catch(reject);
 }
 
-async function searchProfile(
-  username: string,
-  onlyArtists: boolean,
-  pageNumber: number,
-  pageSize: number,
-  sortValue: string
-): Promise<ProfilePageResponse> {
-  try {
-    const response = await axios.get<ProfilePageResponse>(
-      `/profile/search?username=${encodeURIComponent(username)}&onlyArtists=${onlyArtists}&page=${pageNumber}&size=${pageSize}&sort=${sortValue}`,
-      {
-        headers: await getAuthorizedHeader(),
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    let message: string = 'Profile searching Failed!';
-
-    if (error instanceof Error) message = error.message;
-    return reject(message);
-  }
-}
-
 export type { OAuthProvider };
 export {
   retrieveAuthenticatedProfile,
@@ -114,5 +90,4 @@ export {
   callRetrieveLinkedOAuthProviders,
   callFollowUser,
   callUnfollowUser,
-  searchProfile,
 };

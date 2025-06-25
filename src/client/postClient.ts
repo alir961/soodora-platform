@@ -197,7 +197,7 @@ async function callDeleteComment(postSlug: string, commentSlug: string): Promise
   if (response.status !== 200) return reject('Failed to delete comment.');
 }
 
-async function searchPosts(
+async function callSearchPosts(
   title: string | null,
   description: string | null,
   pageNumber: number,
@@ -214,13 +214,14 @@ async function searchPosts(
     params.append('size', pageSize.toString());
     params.append('sort', sortValue);
 
-    const response = await axios.get<PostSearchResponse>(`/posts?${params.toString()}`, {
+    const response = await axios.get<PostSearchResponse>('/posts/search', {
       headers: await getAuthorizedHeader(),
+      params: params,
     });
 
     return response.data;
   } catch (error) {
-    let message: string = 'Posts searching Failed!';
+    let message: string = 'Fetch posts from API failed!';
 
     if (error instanceof Error) message = error.message;
     return reject(message);
@@ -245,5 +246,5 @@ export {
   callDeleteComment,
   callLikeComment,
   callUnlikeComment,
-  searchPosts,
+  callSearchPosts,
 };
