@@ -66,7 +66,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/posts/*/reposts").permitAll()
                         .requestMatchers(GET, "/posts/*/comments").permitAll()
                         .requestMatchers(GET, "/posts/*/comments/*/likes").permitAll()
-                        .requestMatchers(GET, "/products").permitAll()
+                        .requestMatchers(GET, "/products/*").permitAll()
                         .requestMatchers(GET, "/linkpages").permitAll()
                         .requestMatchers(GET, "/linkpages/**").permitAll()
                         .requestMatchers("/auth/google").permitAll()
