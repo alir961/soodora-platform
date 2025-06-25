@@ -27,7 +27,6 @@ import {
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
-import { User } from '@/entity/User';
 import customLikeIcon from '@/assets/icons/like.svg';
 import customCommentIcon from '@/assets/icons/comment.svg';
 import customRepostIcon from '@/assets/icons/repost.svg';
@@ -35,6 +34,7 @@ import customShareIcon from '@/assets/icons/share.svg';
 import customTrashIcon from '@/assets/icons/trash.svg';
 import customPlayIcon from '@/assets/icons/play.svg';
 import customPauseIcon from '@/assets/icons/pause.svg';
+import UsernameTag from '@/component/user/UsernameTag.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -215,10 +215,6 @@ const toggleRepostPost = async (postSlug: string) => {
   }
 };
 
-const redirectToUserProfile = async (user: User) => {
-  await router.push(`/user/${user.slug}`);
-};
-
 const redirectToPostComments = async (postSlug: string) => {
   await router.push({ name: 'CommentView', params: { slug: postSlug } });
 };
@@ -294,7 +290,7 @@ const formatTime = (time: number) => {
           </ion-avatar>
           <div class="post-header-content">
             <div class="header-row">
-              <span class="username" @click="redirectToUserProfile(post.owner)"> @{{ post.owner.username }} </span>
+              <UsernameTag :user="post.owner" />
               <span class="post-date">{{ formatPostDate(post.createdAt) }}</span>
             </div>
             <span class="post-title">{{ post.title }}</span>
@@ -496,12 +492,6 @@ ion-avatar img {
   display: flex;
   justify-content: space-between;
   max-width: 100%;
-}
-
-.username {
-  font-size: 1.2rem;
-  color: white;
-  cursor: pointer;
 }
 
 .post-date {

@@ -2,6 +2,7 @@
 import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol } from '@ionic/vue';
 import { Product } from '@/entity/Product';
 import { PropType, Ref, ref } from 'vue';
+import UsernameTag from '@/component/user/UsernameTag.vue';
 
 defineProps({
   product: {
@@ -29,7 +30,7 @@ const focusProduct = (product: Product) => {
         <p>{{ product.description }}</p>
         <p>Price: {{ product.price !== null ? product.price.toFixed(2) + '€' : 'No price' }}</p>
         <p>Available Quantity: {{ product.quantity !== null ? product.quantity : 'No quantity' }}</p>
-        <p>Vendor: {{ product.vendor.username }}</p>
+        <p>Vendor: <UsernameTag :user="product.vendor" /></p>
         <ion-button v-if="focusedProduct === product" expand="block">Add to Cart</ion-button>
       </ion-card-content>
     </ion-card>
