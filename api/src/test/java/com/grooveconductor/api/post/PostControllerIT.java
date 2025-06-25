@@ -23,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static java.lang.String.valueOf;
+import static java.util.Optional.of;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
@@ -108,7 +110,7 @@ class PostControllerIT {
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(get("/posts")
+        mockMvc.perform(get("/posts/search")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))
@@ -125,7 +127,7 @@ class PostControllerIT {
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(get("/posts")
+        mockMvc.perform(get("/posts/search")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(0)));
@@ -158,20 +160,24 @@ class PostControllerIT {
     }
 
     @Test
-    void getPosts_WithFilters_ReturnsFilteredPage() throws Exception {
+    void givenValidFilter_whenSearchPosts_thenRetrieveFilteredPosts() throws Exception {
         // GIVEN
+        String userSlug = "slug1";
+        boolean hasAudio = true;
+        String title = "title1";
+        String description = "description1";
         Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+        PostFilter postFilter = new PostFilter(of(userSlug), of(hasAudio), of(title), of(description));
 
-        when(postService.retrievePosts(any(PostFilter.class), any(Pageable.class)))
-                .thenReturn(filteredPage);
+        when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(get("/posts")
-                .param("userSlug", "slug1")
-                .param("hasAudio", "true")
-                .param("title", "title1")
-                .param("description", "desc1")
+        mockMvc.perform(get("/posts/search")
+                .param("userSlug", userSlug)
+                .param("hasAudio", valueOf(hasAudio))
+                .param("title", title)
+                .param("description", description)
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))

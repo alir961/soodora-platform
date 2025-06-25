@@ -52,8 +52,8 @@ public class PostController {
         }
     }
 
-    @GetMapping
-    public Page<PostDTO> getPosts(
+    @GetMapping("/search")
+    public Page<PostDTO> searchPosts(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "hasAudio") Optional<Boolean> hasAudio,
             @RequestParam(value = "title") Optional<String> title,
@@ -65,6 +65,7 @@ public class PostController {
     }
 
     @GetMapping("/explore")
+    @SecurityRequirement(name = "bearerAuth")
     public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
         return postService.retrieveRecommendedPosts(user, pageable);
     }
@@ -120,8 +121,7 @@ public class PostController {
     }
 
     @GetMapping("/likes")
-    public List<LikeDTO> getUserLikes(
-            @RequestParam(value = "userSlug") String userSlug) {
+    public List<LikeDTO> getUserLikes(@RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty());
 
         return postService.retrieveUserLikes(filter);

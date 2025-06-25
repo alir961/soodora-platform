@@ -9,12 +9,17 @@ import com.grooveconductor.service.user.UnknownUserException;
 import com.grooveconductor.service.user.UpdateUserRequest;
 import com.grooveconductor.service.user.UserService;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -85,8 +90,7 @@ class UserControllerIT {
         when(userService.retrieveUser(identifier)).thenReturn(USER_1);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/slug1")
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/users/slug1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value("slug1"))
                 .andExpect(jsonPath("$.username").value("username1"))
@@ -102,16 +106,31 @@ class UserControllerIT {
                 .when(userService).retrieveUser(identifier);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/" + identifier.getValue())
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/users/" + identifier.getValue()))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void givenUnauthenticated_whenRetrieveUserBySlug_thenForbidden() throws Exception {
+    void givenAuthenticatedUser_whenSearchUsers_thenReturnMatchingUsers() throws Exception {
+        // GIVEN
+        String username = "username";
+        boolean onlyArtists = true;
+        Pageable pageable = PageRequest.of(0, 50);
+        List<UserDTO> userList = List.of(buildDefaultUser(1), buildDefaultUser(2));
+        Page<UserDTO> expectedPage = new PageImpl<>(userList, pageable, userList.size());
+
+        when(userService.searchUsersByUsername(username, onlyArtists, pageable)).thenReturn(expectedPage);
+
         // WHEN & THEN
-        mockMvc.perform(get("/users/slug1"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/users/search")
+                .param("username", username)
+                .param("onlyArtists", String.valueOf(onlyArtists))
+                .param("page", "0")
+                .param("size", "50")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(2)))
+                .andExpect(jsonPath("$.content[*].username", containsInAnyOrder("username1", "username2")));
     }
 
     @Test

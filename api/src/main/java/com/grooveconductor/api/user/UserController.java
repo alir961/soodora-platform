@@ -32,7 +32,6 @@ import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "User Controller")
 public class UserController {
 
@@ -40,6 +39,7 @@ public class UserController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public List<UserDTO> getUsers() {
         return userService.retrieveAllUsers();
     }
@@ -51,8 +51,17 @@ public class UserController {
         return userService.retrieveUser(identifier);
     }
 
+    @GetMapping("/search")
+    public Page<UserDTO> searchUsers(
+            @RequestParam(value = "username") String username,
+            @RequestParam(value = "onlyArtists") boolean onlyArtists,
+            Pageable pageable) {
+        return userService.searchUsersByUsername(username, onlyArtists, pageable);
+    }
+
     @PutMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
         try {
             UpdateUserCommand command = request.toCommand();
@@ -66,6 +75,7 @@ public class UserController {
 
     @DeleteMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<Void> deleteUser(@PathVariable("slug") String slug) {
         try {
             Identifier identifier = createFromSlug(slug);
