@@ -91,7 +91,11 @@ watch([searchInput, selectedSort], () => {
 
       <ion-grid>
         <ion-row>
-          <ProductCard v-for="product in products" :key="product.slug" :product="product" />
+          <ProductCard
+            v-for="product in products"
+            :key="product.slug"
+            :product="product"
+            @product-deleted="() => loadProducts(true)" />
         </ion-row>
       </ion-grid>
 

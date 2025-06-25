@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Product, ProductSearchParams } from '@/entity/Product';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
+import { reject } from '@/utils';
 
 type CreateProductRequest = Omit<Omit<Product, 'slug'>, 'vendor'>;
 
@@ -27,5 +28,14 @@ async function callSearchProducts(params: ProductSearchParams): Promise<ProductP
   };
 }
 
+async function callDeleteProduct(slug: string): Promise<void> {
+  return axios
+    .delete(`/products/${slug}`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { CreateProductRequest, ProductPage };
-export { callSearchProducts, createProduct };
+export { callSearchProducts, createProduct, callDeleteProduct };
