@@ -13,7 +13,7 @@ import {
   IonAvatar,
   toastController,
 } from '@ionic/vue';
-import { PropType, Ref, ref, watch, computed } from 'vue';
+import { PropType, Ref, ref, watch, computed, onMounted } from 'vue';
 import { Post } from '@/entity/Post';
 import {
   callPostUnlike,
@@ -235,6 +235,13 @@ watch(
   },
   { immediate: true }
 );
+
+onMounted(() => {
+  const postSlug = props.post.slug;
+
+  loadLikes(postSlug);
+  loadReposts(postSlug);
+});
 function formatPostDate(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   const now = new Date();
