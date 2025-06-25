@@ -5,6 +5,11 @@ import { reject } from '@/utils';
 
 type CreateProductRequest = Omit<Omit<Product, 'slug'>, 'vendor'>;
 
+interface ProductPage {
+  content: Product[];
+  hasMore: boolean;
+}
+
 async function createProduct(product: CreateProductRequest): Promise<void> {
   return axios.post('/products', product, { headers: await getAuthorizedHeader() });
 }
@@ -16,5 +21,5 @@ async function retrieveProducts(): Promise<Product[]> {
   });
 }
 
-export type { CreateProductRequest };
+export type { CreateProductRequest, ProductPage };
 export { retrieveProducts, createProduct };

@@ -1,11 +1,16 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
-import { Post, Comment } from '@/entity/Post';
+import { Post, Comment, populatePost } from '@/entity/Post';
 import { PostSearchResponse } from '@/entity/PostSearch';
-import { PageableParams } from '@/entity/PageableParams';
+import { Pageable, SortPageable } from '@/entity/PageableParams';
 
 type CreatePostRequest = Omit<Omit<Post, 'slug'>, 'owner'>;
+
+interface PostPage {
+  content: Post[];
+  hasMore: boolean;
+}
 
 async function callCreatePost(post: CreatePostRequest): Promise<void> {
   return axios
@@ -16,14 +21,52 @@ async function callCreatePost(post: CreatePostRequest): Promise<void> {
     .catch(reject);
 }
 
-async function callRetrievePosts(params: PageableParams): Promise<{ content: Post[]; hasMore: boolean }> {
+async function callRetrieveRecommendedPosts(pageable: Pageable): Promise<PostPage> {
+  try {
+    const response = await axios.get('/posts/explore', {
+      params: pageable,
+      headers: await getAuthorizedHeader(),
+    });
+
+    if (response.status !== 200 || !response.data) return reject('Unable to call API');
+    if (!response.data.content) return reject('Unable to parse API response');
+    const content = response.data.content.map((post: Post) => populatePost(post));
+    const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+    return { content, hasMore };
+  } catch (error) {
+    let message: string = 'Post retrieving Failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
+}
+
+async function callRetrieveFollowingPosts(pageable: Pageable): Promise<PostPage> {
+  try {
+    const response = await axios.get('/profile/following/posts', {
+      params: pageable,
+      headers: await getAuthorizedHeader(),
+    });
+
+    if (response.status !== 200 || !response.data) return reject('Unable to call API');
+    if (!response.data.content) return reject('Unable to parse API response');
+    const content = response.data.content.map((post: Post) => populatePost(post));
+    const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+    return { content, hasMore };
+  } catch (error) {
+    let message: string = 'Post retrieving Failed!';
+
+    if (error instanceof Error) message = error.message;
+    return reject(message);
+  }
+}
+
+async function callRetrievePosts(pageable: SortPageable): Promise<PostPage> {
   try {
     const response = await axios.get('/posts', {
-      params: {
-        page: params.page,
-        size: params.size,
-        sort: params.sort,
-      },
+      params: pageable,
     });
 
     if (response.status === 200 && response.data?.content) {
@@ -32,7 +75,7 @@ async function callRetrievePosts(params: PageableParams): Promise<{ content: Pos
         createdAt: new Date(post.createdAt),
       }));
 
-      const hasMore = !response.data.empty && response.data.content.length === params.size;
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
 
       return { content: posts, hasMore };
     }
@@ -154,7 +197,7 @@ async function callDeleteComment(postSlug: string, commentSlug: string): Promise
   if (response.status !== 200) return reject('Failed to delete comment.');
 }
 
-async function searchPosts(
+async function callSearchPosts(
   title: string | null,
   description: string | null,
   pageNumber: number,
@@ -171,23 +214,26 @@ async function searchPosts(
     params.append('size', pageSize.toString());
     params.append('sort', sortValue);
 
-    const response = await axios.get<PostSearchResponse>(`/posts?${params.toString()}`, {
+    const response = await axios.get<PostSearchResponse>('/posts/search', {
       headers: await getAuthorizedHeader(),
+      params: params,
     });
 
     return response.data;
   } catch (error) {
-    let message: string = 'Posts searching Failed!';
+    let message: string = 'Fetch posts from API failed!';
 
     if (error instanceof Error) message = error.message;
     return reject(message);
   }
 }
 
-export type { CreatePostRequest };
+export type { CreatePostRequest, PostPage };
 export {
   callCreatePost,
   callRetrievePosts,
+  callRetrieveRecommendedPosts,
+  callRetrieveFollowingPosts,
   callDeletePost,
   callPostLike,
   callPostUnlike,
@@ -200,5 +246,5 @@ export {
   callDeleteComment,
   callLikeComment,
   callUnlikeComment,
-  searchPosts,
+  callSearchPosts,
 };

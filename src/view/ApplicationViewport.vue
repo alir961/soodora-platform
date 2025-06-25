@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButtons, IonBackButton } from '@ionic/vue';
+import { IonContent, IonHeader, IonPage, IonToolbar, IonButtons } from '@ionic/vue';
 import { checkStatus } from '@/client/authenticationClient';
 import { onMounted } from 'vue';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { loadBearerToken } from '@/store/localStorage';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
 
 const props = defineProps({
   title: {
@@ -86,9 +83,6 @@ ion-header {
 }
 
 .safe-area {
-  padding-top: calc(env(safe-area-inset-top) - 10px);
-  padding-left: 0px;
-  padding-right: 0px;
-  padding-bottom: 0px;
+  padding: calc(env(safe-area-inset-top) - 10px) 0px 0px;
 }
 </style>

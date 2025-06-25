@@ -27,7 +27,7 @@ defineProps({
     <ion-card-content>
       <p>{{ profile.email }}</p>
 
-      <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag"/>
+      <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
 
       <FollowersComponent :profile="profile" class="followers" />
     </ion-card-content>
@@ -53,8 +53,8 @@ defineProps({
       height: 2.5em;
       width: 2.5em;
       margin-right: 0.75em;
-      border: 1px solid #0074E4;
-      box-shadow: 0 0 4px #0074E4;
+      border: 1px solid #0074e4;
+      box-shadow: 0 0 4px #0074e4;
       transition: transform 0.3s ease;
     }
     img:hover {
@@ -93,7 +93,7 @@ defineProps({
     }
 
     .role-tag {
-      padding : 0.2em 0.8em;
+      padding: 0.2em 0.8em;
     }
   }
 }

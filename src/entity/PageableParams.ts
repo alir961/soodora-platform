@@ -1,7 +1,12 @@
-interface PageableParams {
+interface SortPageable {
   page: number;
   size: number;
   sort: string;
 }
 
-export type { PageableParams };
+interface Pageable {
+  page: number;
+  size: number;
+}
+
+export type { SortPageable, Pageable };
