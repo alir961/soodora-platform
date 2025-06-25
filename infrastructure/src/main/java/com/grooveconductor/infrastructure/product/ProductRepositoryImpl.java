@@ -3,16 +3,18 @@ package com.grooveconductor.infrastructure.product;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.CreateProductCommand;
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.ProductFilter;
 import com.grooveconductor.domain.product.ProductRepository;
 import com.grooveconductor.domain.product.UpdateProductCommand;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.infrastructure.common.DomainEntity;
 import com.grooveconductor.infrastructure.user.UserEntity;
 import com.grooveconductor.infrastructure.user.UserJpaRepository;
 
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,10 +80,15 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public List<ProductDTO> findAll() {
-        return repository.findAll().stream()
-                .map(DomainEntity::toDTO)
-                .toList();
+    public Page<ProductDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(ProductEntity::toDTO);
+    }
+
+    @Override
+    @Transactional
+    public Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable) {
+        return repository.findAll(ProductSpecification.build(filter), pageable)
+                .map(ProductEntity::toDTO);
     }
 
     @Override

@@ -3,22 +3,18 @@ package com.grooveconductor.service.product;
 import com.grooveconductor.domain.common.UnknownSlugException;
 import com.grooveconductor.domain.product.*;
 import com.grooveconductor.domain.user.UserDTO;
-import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.user.UnknownUserException;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-
-import static com.grooveconductor.domain.user.IdentifierFactory.createFromSlug;
 
 @Service
 @RequiredArgsConstructor
 public class ProductService {
 
-    private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
     public void createProduct(CreateProductCommand command, UserDTO user) {
@@ -27,15 +23,17 @@ public class ProductService {
         productRepository.save(command, user);
     }
 
-    public List<ProductDTO> retrieveAllProducts() {
-        return productRepository.findAll();
+    public Page<ProductDTO> retrieveAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable);
     }
 
-    public List<ProductDTO> retrieveProducts(ProductFilter filter) {
-        if (filter.userSlug().isPresent())
-            return userRepository.retrieveProducts(createFromSlug(filter.userSlug().get()));
+    public Page<ProductDTO> retrieveProducts(ProductFilter filter, Pageable pageable) {
+        boolean isFilterEmpty = filter.isEmpty();
+
+        if (isFilterEmpty)
+            return retrieveAllProducts(pageable);
         else
-            return retrieveAllProducts();
+            return productRepository.findByFilter(filter, pageable);
     }
 
     public ProductDTO retrieveProduct(String slug) {

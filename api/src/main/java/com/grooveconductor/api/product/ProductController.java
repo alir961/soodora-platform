@@ -9,8 +9,10 @@ import com.grooveconductor.domain.user.UserDTO;
 import com.grooveconductor.service.common.InvalidRequestException;
 import com.grooveconductor.service.product.*;
 
-import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
-import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
@@ -44,11 +45,16 @@ public class ProductController {
         }
     }
 
-    @GetMapping
-    public List<ProductDTO> getProducts(@RequestParam(value = "userSlug", required = false) String userSlug) {
-        ProductFilter filter = new ProductFilter(ofNullable(userSlug));
+    @GetMapping("/search")
+    public Page<ProductDTO> getProducts(@RequestParam(value = "userSlug") Optional<String> userSlug,
+            @RequestParam(value = "name") Optional<String> name,
+            @RequestParam(value = "description") Optional<String> description,
+            @RequestParam(value = "category") Optional<String> category,
+            Pageable pageable) {
 
-        return service.retrieveProducts(filter);
+        ProductFilter filter = new ProductFilter(userSlug, name, description, category);
+
+        return service.retrieveProducts(filter, pageable);
     }
 
     @SecurityRequirement(name = "bearerAuth")
