@@ -32,7 +32,7 @@ import { logOutOutline, trashOutline, checkmarkOutline, arrowBackOutline } from 
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import customSettingsIcon from '@/assets/icons/settings.svg';
-import UserPostList from '@/component/user/UserPostList.vue';
+import UserContentList from '@/component/user/UserContentList.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -287,7 +287,7 @@ const clearAvatarUrl = () => {
       @unlink="fetchUserData" />
 
     <div v-if="authStore.getAuthenticatedUser" class="post-list">
-      <UserPostList :user="authStore.getAuthenticatedUser" />
+      <UserContentList :user="authStore.getAuthenticatedUser" />
     </div>
   </ApplicationViewport>
 </template>

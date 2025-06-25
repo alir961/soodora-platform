@@ -6,6 +6,8 @@ import { populatePost, Post } from '@/entity/Post';
 import { Pageable } from '@/entity/PageableParams';
 import { PostPage } from '@/client/postClient';
 import { UserPage } from '@/entity/ProfileSearch';
+import { ProductPage } from '@/client/productClient';
+import { Product } from '@/entity/Product';
 
 async function callRetrieveUser(slug: string): Promise<User> {
   return axios
@@ -106,6 +108,20 @@ async function callRetrieveUserAudios(user: User, pageable: Pageable): Promise<P
     .catch(reject);
 }
 
+async function callRetrieveUserProduct(user: User, pageable: Pageable): Promise<ProductPage> {
+  return axios
+    .get(`/users/${user.slug}/products`, { params: pageable, headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response.status !== 200 || !response.data) return reject('Unable to call API');
+      if (!response.data.content) return reject('Unable to parse API response');
+      const content = response.data.content as Product[];
+      const hasMore = !response.data.empty && response.data.content.length === pageable.size;
+
+      return { content, hasMore };
+    })
+    .catch(reject);
+}
+
 export {
   callRetrieveUser,
   callSearchUsers,
@@ -114,4 +130,5 @@ export {
   callRetrieveUserPosts,
   callRetrieveUserReposts,
   callRetrieveUserAudios,
+  callRetrieveUserProduct,
 };

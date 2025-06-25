@@ -5,11 +5,18 @@ import { Swiper as SwiperClass } from 'swiper';
 import { IonGrid, IonInfiniteScroll, IonInfiniteScrollContent, IonRow, toastController } from '@ionic/vue';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
-import { callRetrieveUserAudios, callRetrieveUserPosts, callRetrieveUserReposts } from '@/client/userClient';
+import {
+  callRetrieveUserAudios,
+  callRetrieveUserPosts,
+  callRetrieveUserProduct,
+  callRetrieveUserReposts,
+} from '@/client/userClient';
 import { User } from '@/entity/User';
 import { PostPage } from '@/client/postClient';
+import { Product } from '@/entity/Product';
+import ProductCard from '@/component/marketplace/ProductCard.vue';
 
-type PostFilter = 'posts' | 'reposts' | 'audios';
+type Tab = 'posts' | 'reposts' | 'audios' | 'products';
 
 const PAGE_SIZE = 10;
 
@@ -23,26 +30,33 @@ const props = defineProps({
 const isLoading = ref(false);
 
 const posts: Ref<Post[]> = ref([]);
+const products: Ref<Product[]> = ref([]);
 
-const currentPage = ref(0);
-const hasMore = ref(true);
+const currentPostPage = ref(0);
+const hasMorePost = ref(true);
 
-const postFilter = ref<PostFilter>('posts');
+const currentProductPage = ref(0);
+const hasMoreProduct = ref(true);
+
+const activeTab = ref<Tab>('posts');
 const swiperInstance = ref<SwiperClass | null>(null);
 
 const onSwiperInit = (instance: SwiperClass) => {
   swiperInstance.value = instance;
 };
 
-const onSlideChange = () => {
+const onSlideChange = async () => {
   const swiper = swiperInstance.value;
   const index = swiper?.activeIndex;
 
   if (!swiper) return;
-  if (index == 0) postFilter.value = 'posts';
-  else if (index == 1) postFilter.value = 'reposts';
-  else if (index == 2) postFilter.value = 'audios';
-  loadPosts(postFilter.value, true);
+  if (index == 0) activeTab.value = 'posts';
+  else if (index == 1) activeTab.value = 'reposts';
+  else if (index == 2) activeTab.value = 'audios';
+  else if (index == 3) activeTab.value = 'products';
+
+  if (activeTab.value === 'products') await loadProducts(true);
+  else await loadPosts(activeTab.value, true);
 };
 
 const goToTab = (index: number) => {
@@ -52,10 +66,10 @@ const goToTab = (index: number) => {
   swiper.slideTo(index);
 };
 
-const loadPosts = async (filter: PostFilter, reset: boolean) => {
-  if (isLoading.value || (!hasMore.value && !reset)) return;
+const loadPosts = async (filter: Tab, reset: boolean) => {
+  if (isLoading.value || (!hasMorePost.value && !reset)) return;
   try {
-    const page = reset ? 0 : currentPage.value;
+    const page = reset ? 0 : currentPostPage.value;
     const pageable = { page, size: PAGE_SIZE };
     let postPage: PostPage | null = null;
 
@@ -67,12 +81,12 @@ const loadPosts = async (filter: PostFilter, reset: boolean) => {
 
     if (reset) {
       posts.value = postPage.content;
-      currentPage.value = 1;
+      currentPostPage.value = 1;
     } else {
       posts.value.push(...postPage.content);
-      currentPage.value++;
+      currentPostPage.value++;
     }
-    hasMore.value = postPage.hasMore;
+    hasMorePost.value = postPage.hasMore;
   } catch (error) {
     const toast = await toastController.create({
       message: 'Failed to load user posts!',
@@ -86,8 +100,24 @@ const loadPosts = async (filter: PostFilter, reset: boolean) => {
   }
 };
 
+const loadProducts = async (reset: boolean) => {
+  const page = reset ? 0 : currentPostPage.value;
+  const pageable = { page, size: PAGE_SIZE };
+  const productPage = await callRetrieveUserProduct(props.user, pageable);
+
+  if (reset) {
+    products.value = productPage.content;
+    currentProductPage.value = 1;
+  } else {
+    products.value.push(...productPage.content);
+    currentProductPage.value++;
+  }
+  hasMoreProduct.value = productPage.hasMore;
+};
+
 const onInfinite = async (ev: CustomEvent<void>) => {
-  await loadPosts(postFilter.value, false);
+  if (activeTab.value === 'products') await loadProducts(false);
+  else await loadPosts(activeTab.value, false);
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
 };
 
@@ -98,9 +128,10 @@ onMounted(() => {
 
 <template>
   <div class="tab-header">
-    <div :class="['tab-button', postFilter === 'posts' ? 'active' : '']" @click="goToTab(0)">Posts</div>
-    <div :class="['tab-button', postFilter === 'reposts' ? 'active' : '']" @click="goToTab(1)">Reposts</div>
-    <div :class="['tab-button', postFilter === 'audios' ? 'active' : '']" @click="goToTab(2)">Audios</div>
+    <div :class="['tab-button', activeTab === 'posts' ? 'active' : '']" @click="goToTab(0)">Posts</div>
+    <div :class="['tab-button', activeTab === 'reposts' ? 'active' : '']" @click="goToTab(1)">Reposts</div>
+    <div :class="['tab-button', activeTab === 'audios' ? 'active' : '']" @click="goToTab(2)">Audios</div>
+    <div :class="['tab-button', activeTab === 'products' ? 'active' : '']" @click="goToTab(3)">Products</div>
   </div>
 
   <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
@@ -119,7 +150,7 @@ onMounted(() => {
           </div>
         </ion-row>
       </ion-grid>
-      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
+      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMorePost">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </swiper-slide>
@@ -138,7 +169,7 @@ onMounted(() => {
           </div>
         </ion-row>
       </ion-grid>
-      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
+      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMorePost">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </swiper-slide>
@@ -157,7 +188,19 @@ onMounted(() => {
           </div>
         </ion-row>
       </ion-grid>
-      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
+      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMorePost">
+        <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
+      </ion-infinite-scroll>
+    </swiper-slide>
+    <swiper-slide>
+      <ion-grid>
+        <ion-row>
+          <div v-for="product in products" :key="product.slug" class="post-wrapper">
+            <ProductCard :product="product" />
+          </div>
+        </ion-row>
+      </ion-grid>
+      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMorePost">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </swiper-slide>
