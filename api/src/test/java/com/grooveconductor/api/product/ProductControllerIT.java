@@ -1,6 +1,7 @@
 package com.grooveconductor.api.product;
 
 import com.grooveconductor.domain.product.ProductDTO;
+import com.grooveconductor.domain.product.ProductFilter;
 import com.grooveconductor.domain.user.UserRepository;
 import com.grooveconductor.service.auth.UserPrincipal;
 import com.grooveconductor.service.common.InvalidRequestException;
@@ -8,14 +9,19 @@ import com.grooveconductor.service.product.CreateProductRequest;
 import com.grooveconductor.service.product.ProductService;
 import com.grooveconductor.service.product.UpdateProductRequest;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -91,10 +97,18 @@ class ProductControllerIT {
     @Test
     void getProducts_Success() throws Exception {
         // GIVEN
-        when(productService.retrieveAllProducts()).thenReturn(singletonList(A_PRODUCT));
+        Page<ProductDTO> productsPage = new PageImpl<>(List.of(A_PRODUCT));
+        when(productService.retrieveProducts(any(ProductFilter.class), any(Pageable.class))).thenReturn(productsPage);
 
-        mockMvc.perform(get("/products"))
-                .andExpect(status().isOk());
+        // WHEN & THEN
+        mockMvc.perform(get("/products/search")
+                .with(user(new UserPrincipal(USER))) // if your endpoint requires auth like /posts example
+                .param("page", "0")
+                .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].slug").value(A_PRODUCT.slug()))
+                .andExpect(jsonPath("$.content[0].name").value(A_PRODUCT.name()));
     }
 
     @Test
