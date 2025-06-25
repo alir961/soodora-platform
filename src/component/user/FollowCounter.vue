@@ -4,8 +4,9 @@ import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
-import { IonButton } from '@ionic/vue';
+import { IonButton, modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
+import UserList from '@/component/user/UserList.vue';
 
 const followers = ref<User[]>([]);
 const following = ref<User[]>([]);
@@ -58,6 +59,30 @@ const toggleFollow = async () => {
   }
 };
 
+const openFollowersList = async () => {
+  const modal = await modalController.create({
+    component: UserList,
+    componentProps: {
+      title: 'Followers',
+      users: followers.value,
+    },
+  });
+
+  await modal.present();
+};
+
+const openFollowingList = async () => {
+  const modal = await modalController.create({
+    component: UserList,
+    componentProps: {
+      title: 'Following',
+      users: following.value,
+    },
+  });
+
+  await modal.present();
+};
+
 onMounted(() => {
   reloadFollowers();
   reloadFollowing();
@@ -75,10 +100,10 @@ watch(
 <template>
   <div class="followers-container">
     <div class="counters">
-      <p>
+      <p @click="openFollowersList">
         <span>{{ followers.length }}</span> Followers
       </p>
-      <p>
+      <p @click="openFollowingList">
         <span>{{ following.length }}</span> Following
       </p>
     </div>

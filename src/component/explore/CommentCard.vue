@@ -2,11 +2,10 @@
 import { heart, heartOutline, trash } from 'ionicons/icons';
 import { IonButton, IonIcon, IonItem, IonLabel } from '@ionic/vue';
 import { callDeleteComment, callGetCommentLikes, callLikeComment, callUnlikeComment } from '@/client/postClient';
-import { User } from '@/entity/User';
 import { PropType, ref, Ref, watch } from 'vue';
 import { Comment } from '@/entity/Post';
-import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/reactiveStorage';
+import UsernameTag from '@/component/user/UsernameTag.vue';
 
 const props = defineProps({
   comment: {
@@ -16,7 +15,6 @@ const props = defineProps({
 });
 const emit = defineEmits(['comment-deleted']);
 
-const router = useRouter();
 const authStore = useAuthStore();
 
 const isLiked: Ref<boolean> = ref(false);
@@ -55,10 +53,6 @@ const handleDelete = async (commentSlug: string) => {
   }
 };
 
-const redirectUserProfile = async (user: User) => {
-  await router.push(`/user/${user.slug}`);
-};
-
 watch(
   () => authStore.getAuthenticatedUser,
   (newUser) => {
@@ -75,7 +69,7 @@ watch(
 <template>
   <ion-item class="ion-padding-vertical">
     <ion-label class="ion-text-wrap">
-      <h3 @click="redirectUserProfile(comment.user)">{{ comment.user.username }}</h3>
+      <UsernameTag :user="comment.user" />
       <p>{{ comment.content }}</p>
       <small>{{ new Date(comment.createdAt).toLocaleString() }}</small>
     </ion-label>
