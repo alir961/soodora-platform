@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   alertController,
+  AlertInput,
   IonButton,
   IonCard,
   IonCardContent,
@@ -15,8 +16,11 @@ import { Product } from '@/entity/Product';
 import { PropType, Ref, ref } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import customTrashIcon from '@/assets/icons/trash.svg';
+import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct } from '@/client/productClient';
+import { Post } from '@/entity/Post';
+import { createPostCanvas, createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 
 defineProps({
   product: {
@@ -61,6 +65,51 @@ const askDeleteProduct = async (slug: string) => {
   });
   await alert.present();
 };
+
+const exportThemes = [
+  {
+    label: 'Black',
+    type: 'radio',
+    value: 'black',
+  },
+  {
+    label: 'White',
+    type: 'radio',
+    value: 'white',
+  },
+  {
+    label: 'Transparent',
+    type: 'radio',
+    value: 'transparent',
+  },
+] as AlertInput[];
+
+const exportProduct = async (product: Product) => {
+  const alert = await alertController.create({
+    header: 'Select theme for export',
+    inputs: exportThemes,
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Export',
+        handler: async (selectedTheme: string) => {
+          if (!selectedTheme) return;
+          try {
+            const canvas = await createProductCanvas(product, selectedTheme as ExportTheme);
+
+            downloadCanvas(canvas);
+          } catch (err) {
+            console.error('Export failed:', err);
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
+};
 </script>
 
 <template>
@@ -85,6 +134,9 @@ const askDeleteProduct = async (slug: string) => {
         @click.stop="askDeleteProduct(product.slug)"
         class="delete-button">
         <ion-icon :src="customTrashIcon" />
+      </ion-button>
+      <ion-button fill="clear" size="default" @click.stop="exportProduct(product)" class="delete-button">
+        <ion-icon :src="customShareIcon" />
       </ion-button>
     </ion-card>
   </ion-col>
