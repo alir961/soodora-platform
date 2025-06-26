@@ -1,8 +1,22 @@
 <script setup lang="ts">
-import { IonButton, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCol } from '@ionic/vue';
+import {
+  alertController,
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardSubtitle,
+  IonCardTitle,
+  IonCol,
+  IonIcon,
+  toastController,
+} from '@ionic/vue';
 import { Product } from '@/entity/Product';
 import { PropType, Ref, ref } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
+import customTrashIcon from '@/assets/icons/trash.svg';
+import { useAuthStore } from '@/store/reactiveStorage';
+import { callDeleteProduct } from '@/client/productClient';
 
 defineProps({
   product: {
@@ -11,10 +25,41 @@ defineProps({
   },
 });
 
+const emit = defineEmits(['product-deleted']);
+
+const authStore = useAuthStore();
+
 const focusedProduct: Ref<Product | null> = ref(null);
 
 const focusProduct = (product: Product) => {
   focusedProduct.value = focusedProduct.value === product ? null : product;
+};
+
+const askDeleteProduct = async (slug: string) => {
+  const alert = await alertController.create({
+    header: 'Confirm Product Deletion',
+    message: 'Are you sure you want to delete this product?',
+    buttons: [
+      { text: 'Cancel', role: 'cancel' },
+      {
+        text: 'Delete',
+        handler: async () => {
+          try {
+            await callDeleteProduct(slug);
+            emit('product-deleted', slug);
+          } catch (error) {
+            const toast = await toastController.create({
+              message: 'Failed to delete post.',
+              duration: 1500,
+              position: 'top',
+            });
+            await toast.present();
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
 };
 </script>
 
@@ -33,6 +78,14 @@ const focusProduct = (product: Product) => {
         <p>Vendor: <UsernameTag :user="product.vendor" /></p>
         <ion-button v-if="focusedProduct === product" expand="block">Add to Cart</ion-button>
       </ion-card-content>
+      <ion-button
+        v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
+        fill="clear"
+        size="default"
+        @click.stop="askDeleteProduct(product.slug)"
+        class="delete-button">
+        <ion-icon :src="customTrashIcon" />
+      </ion-button>
     </ion-card>
   </ion-col>
 </template>

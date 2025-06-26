@@ -11,6 +11,7 @@ import {
   IonInfiniteScrollContent,
   IonRow,
   IonIcon,
+  IonButton,
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
@@ -44,6 +45,8 @@ const isLoadingUsers = ref(false);
 const currentPagePosts = ref(0);
 const hasMorePosts = ref(true);
 const isLoadingPosts = ref(false);
+
+const filterHasAudio = ref<boolean | null>(null);
 
 const fetchUsers = async (reset = false) => {
   if (!searchInput.value.trim()) {
@@ -109,11 +112,13 @@ const fetchPosts = async (reset = false) => {
       sort: 'createdAt,desc',
       title: searchInput.value.trim(),
       description: searchInput.value.trim(),
+      ...(filterHasAudio.value !== null ? { hasAudio: filterHasAudio.value } : {}),
     };
 
     const response = await callSearchPosts(
       params.title ?? null,
       params.description ?? null,
+      params.hasAudio ?? undefined,
       params.page,
       params.size,
       params.sort
@@ -151,6 +156,10 @@ watch(searchInput, () => {
   }, 300);
 });
 
+watch(filterHasAudio, () => {
+  if (searchInput.value.trim()) fetchPosts(true);
+});
+
 const loadMore = async (ev: CustomEvent) => {
   await fetchResults();
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
@@ -177,6 +186,11 @@ const redirectToUserProfile = (user: User) => {
           @click="searchMode = 'post'" />
       </div>
       <ion-searchbar placeholder="Search" v-model="searchInput" :debounce="0" />
+
+      <div v-if="searchMode === 'post'" class="audio-filter">
+        <ion-button :class="{ active: filterHasAudio === null }" @click="filterHasAudio = null">All</ion-button>
+        <ion-button :class="{ active: filterHasAudio === true }" @click="filterHasAudio = true">With Audio</ion-button>
+      </div>
 
       <div v-if="searchInput.length > 0">
         <template v-if="searchMode === 'user'">
@@ -285,5 +299,27 @@ ion-avatar img {
   background-color: var(--ion-color-primary);
   color: white;
   transform: scale(1.1);
+}
+
+.audio-filter {
+  margin: 1rem 0;
+  display: flex;
+  gap: 1rem;
+}
+
+.audio-filter ion-button {
+  --background: var(--ion-color-light);
+  --color: var(--ion-color-medium);
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.audio-filter ion-button.active {
+  --background: var(--ion-color-primary);
+  --color: white;
+  font-weight: 600;
 }
 </style>

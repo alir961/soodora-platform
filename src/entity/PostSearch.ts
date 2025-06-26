@@ -3,6 +3,7 @@ import { Post } from '@/entity/Post';
 interface PostSearchParams {
   title?: string;
   description?: string;
+  hasAudio?: boolean;
   page: number;
   size: number;
   sort: string;

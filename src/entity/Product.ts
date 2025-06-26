@@ -1,5 +1,15 @@
 import { User } from '@/entity/User';
 
+interface ProductSearchParams {
+  name?: string;
+  description?: string;
+  category?: string;
+  userSlug?: string;
+  page: number;
+  size: number;
+  sort: string;
+}
+
 interface Product {
   slug: string;
   name: string;
@@ -11,4 +21,4 @@ interface Product {
   vendor: User;
 }
 
-export type { Product };
+export type { Product, ProductSearchParams };
