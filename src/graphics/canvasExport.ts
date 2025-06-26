@@ -41,7 +41,7 @@ async function createPostCanvas(post: Post, theme: ExportTheme): Promise<StaticC
   const colorTheme = retrieveColorTheme(theme);
   const canvas = new StaticCanvas(undefined, { width: 1080, height: 1920, backgroundColor: colorTheme.background });
   const soodoraBanner = await FabricImage.fromURL(
-    `/assets/${colorTheme.banner}`,
+    `/assets/images/png/${colorTheme.banner}`,
     {},
     {
       top: currentY,
@@ -56,7 +56,7 @@ async function createPostCanvas(post: Post, theme: ExportTheme): Promise<StaticC
   const usernameSize = 80;
   const avatarWidth = 150;
   const authorAvatar = await FabricImage.fromURL(
-    post.owner.avatarUrl ?? '/assets/avatar.svg',
+    post.owner.avatarUrl ?? '/assets/images/svg/avatar.svg',
     { crossOrigin: 'anonymous' },
     {
       top: currentY,
