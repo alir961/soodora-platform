@@ -238,6 +238,7 @@ onMounted(() => {
   loadLikes(postSlug);
   loadReposts(postSlug);
 });
+
 function formatPostDate(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   const now = new Date();
@@ -254,7 +255,7 @@ function formatPostDate(dateInput: string | Date): string {
   }
 
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 4) {
+  if (diffDays < 8) {
     return `${diffDays}d`;
   }
 

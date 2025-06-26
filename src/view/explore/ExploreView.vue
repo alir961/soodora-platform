@@ -137,7 +137,7 @@ onIonViewWillEnter(() => {
                   class="postcard" />
               </div>
               <div v-if="followingPosts.length === 0" class="no-content">
-                <p>Follow someone to see their posts!</p>
+                <p class="no-content-text">Follow someone <br/> to see their posts!</p>
               </div>
             </ion-row>
           </ion-grid>
@@ -187,9 +187,18 @@ ion-grid {
 }
 
 .no-content {
-  text-align: center;
-  width: 80%;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: calc(50vh);
+  margin: 0;
   font-size: 1.2rem;
+  color: var(--ion-color-medium);
+}
+
+.no-content-text {
+  text-align: center;
+  width: 100%;
 }
 </style>

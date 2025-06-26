@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import trashIcon from '@/assets/icons/trash.svg';
 import { heart, heartOutline, trash } from 'ionicons/icons';
-import { IonButton, IonIcon, IonItem, IonLabel } from '@ionic/vue';
+import { IonButton, IonIcon, IonItem, IonLabel, IonAvatar, IonItemSliding, IonItemOptions, IonItemOption } from '@ionic/vue';
 import { callDeleteComment, callGetCommentLikes, callLikeComment, callUnlikeComment } from '@/client/postClient';
 import { PropType, ref, Ref, watch } from 'vue';
 import { Comment } from '@/entity/Post';
@@ -13,10 +14,9 @@ const props = defineProps({
     type: Object as PropType<Comment>,
   },
 });
+
 const emit = defineEmits(['comment-deleted']);
-
 const authStore = useAuthStore();
-
 const isLiked: Ref<boolean> = ref(false);
 
 const loadCommentLikes = async (postSlug: string, commentSlug: string) => {
@@ -53,6 +53,29 @@ const handleDelete = async (commentSlug: string) => {
   }
 };
 
+function formatPostDate(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  if (diffMinutes < 60) {
+    return `${diffMinutes}m`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) {
+    return `${diffHours}h`;
+  }
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 8) {
+    return `${diffDays}d`;
+  }
+
+  return date.toLocaleDateString();
+}
+
 watch(
   () => authStore.getAuthenticatedUser,
   (newUser) => {
@@ -67,23 +90,109 @@ watch(
 </script>
 
 <template>
-  <ion-item class="ion-padding-vertical">
-    <ion-label class="ion-text-wrap">
-      <UsernameTag :user="comment.user" />
-      <p>{{ comment.content }}</p>
-      <small>{{ new Date(comment.createdAt).toLocaleString() }}</small>
-    </ion-label>
-
-    <ion-button fill="clear" @click="toggleLike(comment.slug)">
-      <ion-icon :icon="isLiked ? heart : heartOutline" slot="icon-only" />
-    </ion-button>
-
-    <ion-button
-      v-if="comment.user.slug === authStore.getAuthenticatedUserSlug"
-      fill="clear"
-      color="danger"
-      @click="handleDelete(comment.slug)">
-      <ion-icon :icon="trash" slot="icon-only" />
-    </ion-button>
-  </ion-item>
+  <ion-item-sliding>
+    <ion-item lines="none" class="comment-card">
+      <ion-label>
+        <div class="comment-header">
+          <ion-avatar>
+            <img :src="comment.user.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
+          </ion-avatar>
+          <div class="user-info">
+            <UsernameTag :user="comment.user" />
+            <small class="comment-date">{{ formatPostDate(comment.createdAt) }}</small>
+          </div>
+        </div>
+        <div class="comment-content-wrapper">
+          <div class="content-with-heart">
+            <p>{{ comment.content }}</p>
+            <ion-button fill="clear" class="heart-button" @click="toggleLike(comment.slug)">
+              <ion-icon :icon="isLiked ? heart : heartOutline" />
+            </ion-button>
+          </div>
+        </div>
+      </ion-label>
+    </ion-item>
+    <ion-item-options side="end">
+      <ion-item-option
+        color="danger"
+        expandable
+        @click="handleDelete(comment.slug)">
+        <img :src="trashIcon" alt="delete" class="delete-icon" />
+      </ion-item-option>
+    </ion-item-options>
+  </ion-item-sliding>
 </template>
+
+<style scoped>
+.comment-card {
+  padding: 0;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  padding-left: 0%;
+}
+
+.comment-header ion-avatar {
+  width: 32px;
+  height: 32px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+ion-label {
+  padding-left: 0;
+  padding-right: 0;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.comment-date {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+  margin-left: auto;
+}
+
+ion-label p {
+  font-size: 1.1rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.comment-content-wrapper {
+  margin-left: 40px;
+  color: var(--ion-color-medium);
+}
+
+.content-with-heart {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--heart-gap, 0em);
+}
+
+.heart-button {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  height: 100%;
+  padding: 0 0 0 0.3em;
+  display: flex;
+  align-items: center;
+}
+
+.delete-icon {
+  width: 24px;
+  height: 24px;
+  filter: brightness(0) invert(1);
+  margin-right: 1em;
+  margin-left: 1em;
+}
+</style>

@@ -24,12 +24,19 @@ http://ionicframework.com/docs/theming/ */
   --ion-color-primary-shade: #5179dc;
   --ion-color-primary-tint: #7099f7;
 
-  --ion-color-secondary: #cba135; /* Light Purple */
-  --ion-color-secondary-rgb: 177, 156, 217;
-  --ion-color-secondary-contrast: #ffffff;
-  --ion-color-secondary-contrast-rgb: 255, 255, 255;
-  --ion-color-secondary-shade: #b8962f;
-  --ion-color-secondary-tint: #e5c456;
+  --ion-color-secondary: #FF914D; /* Orange */
+  --ion-color-secondary-rgb: 255, 145, 77;
+  --ion-color-secondary-contrast: #000000;
+  --ion-color-secondary-contrast-rgb: 0, 0, 0;
+  --ion-color-secondary-shade: #e68a3f;
+  --ion-color-secondary-tint: #ffb07a;
+
+  /* Neutral Colors */
+  --ion-color-light: #FFFAF0; /* Floral White */
+  --ion-color-light-rgb: 255, 250, 240;
+  --ion-color-light-contrast: #333333; /* Dark Text for Contrast */
+  --ion-color-light-contrast-rgb: 51, 51, 51;
+
 
   /* Medium Color */
   --ion-color-medium: #8E8E93;
