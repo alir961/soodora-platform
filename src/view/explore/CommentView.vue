@@ -8,7 +8,6 @@ import { callCreateComment, callGetComments } from '@/client/postClient';
 import { Comment } from '@/entity/Post';
 import CommentCard from '@/component/explore/CommentCard.vue';
 
-import { Keyboard } from '@capacitor/keyboard';
 
 const route = useRoute();
 const postSlug = route.params.slug as string;
@@ -16,8 +15,6 @@ const postSlug = route.params.slug as string;
 const comments = ref<Comment[]>([]);
 const commentInput = ref<string>('');
 
-const isKeyboardOpen = ref(false);
-const keyboardHeight = ref(0);
 
 const loadComments = async () => {
   try {
@@ -42,14 +39,6 @@ const createComment = async () => {
 
 onMounted(() => {
   loadComments();
-  Keyboard.addListener('keyboardWillShow', (info) => {
-    isKeyboardOpen.value = true;
-    keyboardHeight.value = info.keyboardHeight || 300;
-  });
-  Keyboard.addListener('keyboardWillHide', () => {
-    isKeyboardOpen.value = false;
-    keyboardHeight.value = 0;
-  });
 });
 </script>
 
@@ -63,10 +52,14 @@ onMounted(() => {
     <div v-for="comment in comments" :key="comment.slug" class="comment-wrapper">
       <CommentCard :comment="comment" @comment-deleted="loadComments" />
     </div>
-    <div v-if="isKeyboardOpen" class="keyboard-backdrop" :style="{ height: `${keyboardHeight}px` }"></div>
     <div class="comment-input-wrapper">
       <ion-item lines="none" class="comment-input">
-        <ion-input v-model="commentInput" placeholder="Drop a comment" clearInput @keyup.enter="createComment" />
+        <ion-input
+          v-model="commentInput"
+          placeholder="Drop a comment"
+          clearInput
+          @keyup.enter="createComment"
+        />
         <ion-button class="send-comment-btn" @click="createComment">
           <ion-icon :icon="arrowUp" slot="icon-only" />
         </ion-button>

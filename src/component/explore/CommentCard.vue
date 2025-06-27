@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import trashIcon from '@/assets/icons/trash.svg';
-import { heart, heartOutline, trash } from 'ionicons/icons';
+import { heart, heartOutline } from 'ionicons/icons';
 import { IonButton, IonIcon, IonItem, IonLabel, IonAvatar, IonItemSliding, IonItemOptions, IonItemOption } from '@ionic/vue';
 import { callDeleteComment, callGetCommentLikes, callLikeComment, callUnlikeComment } from '@/client/postClient';
 import { PropType, ref, Ref, watch } from 'vue';
 import { Comment } from '@/entity/Post';
 import { useAuthStore } from '@/store/reactiveStorage';
 import UsernameTag from '@/component/user/UsernameTag.vue';
+import Avatar from '@/component/user/Avatar.vue';
+import DateDisplay from '@/component/date/DateDisplay.vue';
 
 const props = defineProps({
   comment: {
@@ -53,29 +55,6 @@ const handleDelete = async (commentSlug: string) => {
   }
 };
 
-function formatPostDate(dateInput: string | Date): string {
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) {
-    return `${diffHours}h`;
-  }
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 8) {
-    return `${diffDays}d`;
-  }
-
-  return date.toLocaleDateString();
-}
-
 watch(
   () => authStore.getAuthenticatedUser,
   (newUser) => {
@@ -95,11 +74,11 @@ watch(
       <ion-label>
         <div class="comment-header">
           <ion-avatar>
-            <img :src="comment.user.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
+            <Avatar :user="comment.user" />
           </ion-avatar>
           <div class="user-info">
             <UsernameTag :user="comment.user" />
-            <small class="comment-date">{{ formatPostDate(comment.createdAt) }}</small>
+            <DateDisplay :date="comment.createdAt" class="comment-date" />
           </div>
         </div>
         <div class="comment-content-wrapper">

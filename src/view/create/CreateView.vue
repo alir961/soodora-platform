@@ -98,6 +98,7 @@ const newProduct = ref<CreateProductRequest>({
   category: '',
   price: null,
   quantity: null,
+  createdAt: '',
 });
 
 const publishProduct = async () => {

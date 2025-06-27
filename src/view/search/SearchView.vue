@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import {
   IonContent,
-  IonSearchbar,
   IonList,
   IonItem,
   IonLabel,
@@ -10,8 +9,10 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonRow,
-  IonIcon,
   IonButton,
+  IonSelect,
+  IonSelectOption,
+  IonModal,
 } from '@ionic/vue';
 import { useRouter } from 'vue-router';
 
@@ -21,15 +22,18 @@ import type { Post } from '@/entity/Post';
 import { callSearchPosts } from '@/client/postClient';
 import { PostSearchParams } from '@/entity/PostSearch';
 import PostCard from '@/component/explore/PostCard.vue';
-import { chatboxEllipsesOutline, personCircleOutline } from 'ionicons/icons';
 import { callSearchUsers } from '@/client/userClient';
+import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
+import UserListItem from '@/component/search/UserListItem.vue';
+import Avatar from '@/component/user/Avatar.vue';
+import UsernameTag from '@/component/user/UsernameTag.vue';
 
-type SearchMode = 'user' | 'post';
+type SearchMode = '' | 'user' | 'artist' | 'post' | 'music';
 
 const PAGE_SIZE = 10;
 
 const searchInput = ref('');
-const searchMode = ref<SearchMode>('user');
+const searchMode = ref<SearchMode>('');
 
 const artists = ref<User[]>([]);
 const users = ref<User[]>([]);
@@ -46,7 +50,9 @@ const currentPagePosts = ref(0);
 const hasMorePosts = ref(true);
 const isLoadingPosts = ref(false);
 
-const filterHasAudio = ref<boolean | null>(null);
+const showFilterModal = ref(false);
+
+const isFilterActive = computed(() => searchMode.value !== '');
 
 const fetchUsers = async (reset = false) => {
   if (!searchInput.value.trim()) {
@@ -74,8 +80,17 @@ const fetchUsers = async (reset = false) => {
       return user.roles.includes('ARTIST') || user.roles.includes('PREMIUM');
     };
 
-    artists.value.push(...content.filter(isArtist));
-    users.value.push(...content.filter((user) => !isArtist(user)));
+    if (searchMode.value === 'artist') {
+      artists.value.push(...content.filter(isArtist));
+    } else if (searchMode.value === '') {
+      // Default mode: separate users and artists
+      artists.value.push(...content.filter(isArtist));
+      users.value.push(...content.filter((user) => !isArtist(user)));
+    } else {
+      // 'user' mode: only non-artists
+      users.value.push(...content.filter((user) => !isArtist(user)));
+      artists.value = [];
+    }
 
     hasMoreUsers.value = content.length === PAGE_SIZE;
     if (hasMoreUsers.value) currentPageUsers.value++;
@@ -112,7 +127,7 @@ const fetchPosts = async (reset = false) => {
       sort: 'createdAt,desc',
       title: searchInput.value.trim(),
       description: searchInput.value.trim(),
-      ...(filterHasAudio.value !== null ? { hasAudio: filterHasAudio.value } : {}),
+      ...(searchMode.value === 'music' ? { hasAudio: true } : {}),
     };
 
     const response = await callSearchPosts(
@@ -141,9 +156,11 @@ const fetchPosts = async (reset = false) => {
 };
 
 const fetchResults = async (reset = false) => {
-  if (searchMode.value === 'user') {
+  if (searchMode.value === '' || searchMode.value === null) {
+    await Promise.all([fetchUsers(reset), fetchPosts(reset)]);
+  } else if (searchMode.value === 'user' || searchMode.value === 'artist') {
     await fetchUsers(reset);
-  } else {
+  } else if (searchMode.value === 'post' || searchMode.value === 'music') {
     await fetchPosts(reset);
   }
 };
@@ -156,8 +173,8 @@ watch(searchInput, () => {
   }, 300);
 });
 
-watch(filterHasAudio, () => {
-  if (searchInput.value.trim()) fetchPosts(true);
+watch(searchMode, () => {
+  fetchResults(true);
 });
 
 const loadMore = async (ev: CustomEvent) => {
@@ -168,158 +185,202 @@ const loadMore = async (ev: CustomEvent) => {
 const redirectToUserProfile = (user: User) => {
   router.push(`/user/${user.slug}`);
 };
+
+const searchPlaceholder = computed(() => {
+  switch (searchMode.value) {
+    case 'artist':
+      return 'Search for artists...';
+    case 'user':
+      return 'Search for users...';
+    case 'post':
+      return 'Search for posts...';
+    case 'music':
+      return 'Search for music...';
+    default:
+      return 'Search for anything...';
+  }
+});
 </script>
 
 <template>
   <ApplicationViewport title="Search">
-    <ion-content class="ion-padding">
-      <div class="search-toggle">
-        <ion-icon
-          :icon="personCircleOutline"
-          class="mode-icon"
-          :class="{ active: searchMode === 'user' }"
-          @click="searchMode = 'user'" />
-        <ion-icon
-          :icon="chatboxEllipsesOutline"
-          class="mode-icon"
-          :class="{ active: searchMode === 'post' }"
-          @click="searchMode = 'post'" />
+    <ion-content>
+      <ion-modal :is-open="showFilterModal" @didDismiss="showFilterModal = false" :breakpoints="[0, 0.3, 0.5]"
+        initial-breakpoint="0.3" handle-behavior="cycle">
+        <ion-content class="ion-padding">
+          <div class="filter-modal">
+            <h2>Search Filters</h2>
+            <ion-select v-model="searchMode" class="filter-select">
+              <div slot="label">Search Type: </div>
+              <ion-select-option value="">All</ion-select-option>
+              <ion-select-option value="artist">Artists</ion-select-option>
+              <ion-select-option value="user">Users</ion-select-option>
+              <ion-select-option value="post">Posts</ion-select-option>
+              <ion-select-option value="music">Music</ion-select-option>
+            </ion-select>
+            <ion-button expand="block" @click="showFilterModal = false">Apply</ion-button>
+          </div>
+        </ion-content>
+      </ion-modal>
+      <SearchBarWithFilters
+        v-model="searchInput"
+        :placeholder="searchPlaceholder"
+        :isFilterActive="isFilterActive"
+        @filterClick="showFilterModal = true"
+      />
+
+      <div v-if="searchInput.trim().length === 0" class="search-placeholder-message">
+        <div class="glow-background"></div>
+        <div class="search-info-glow-wrapper">
+          <ion-label class="search-info-label-glow">
+            Begin your search adventure! <br/> Find users, artists, posts, <br/> or tunes here.
+          </ion-label>
+          <div class="search-info-icon">🔍</div>
+        </div>
       </div>
-      <ion-searchbar placeholder="Search" v-model="searchInput" :debounce="0" />
 
-      <div v-if="searchMode === 'post'" class="audio-filter">
-        <ion-button :class="{ active: filterHasAudio === null }" @click="filterHasAudio = null">All</ion-button>
-        <ion-button :class="{ active: filterHasAudio === true }" @click="filterHasAudio = true">With Audio</ion-button>
-      </div>
+      <template v-if="(searchMode === '' || searchMode === 'artist') && searchInput.trim().length > 0">
+        <h2 class="section-title">Artists</h2>
+        <ion-list v-if="artists.length" class="name-list">
+          <UserListItem v-for="(artist, index) in artists" :key="artist.slug" :user="artist" :isLast="index === artists.length - 1" />
+        </ion-list>
+        <ion-list v-else>
+          <ion-label class="no-results-label">No matching artists found</ion-label>
+        </ion-list>
+      </template>
 
-      <div v-if="searchInput.length > 0">
-        <template v-if="searchMode === 'user'">
-          <h2 class="section-title">Artists</h2>
-          <ion-list v-if="artists.length > 0">
-            <ion-item v-for="artist in artists" :key="artist.slug" button @click="redirectToUserProfile(artist)">
-              <ion-avatar slot="start">
-                <img :src="artist.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
-              </ion-avatar>
-              <ion-label>@{{ artist.username }}</ion-label>
-            </ion-item>
-          </ion-list>
-          <ion-list v-else>
-            <ion-item>
-              <ion-label>No matching artists yet</ion-label>
-            </ion-item>
-          </ion-list>
+      <template v-if="(searchMode === '' || searchMode === 'user') && searchInput.trim().length > 0">
+        <h2 class="section-title">Users</h2>
+        <ion-list v-if="users.length > 0" class="name-list">
+          <UserListItem v-for="(user, index) in users" :key="user.slug" :user="user" :isLast="index === users.length - 1" />
+        </ion-list>
+        <ion-list v-else>
+          <ion-label class="no-results-label">No matching users found</ion-label>
+        </ion-list>
+      </template>
 
-          <h2 class="section-title">Users</h2>
-          <ion-list v-if="users.length > 0">
-            <ion-item v-for="user in users" :key="user.slug" button @click="redirectToUserProfile(user)">
-              <ion-avatar slot="start">
-                <img :src="user.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
-              </ion-avatar>
-              <ion-label>@{{ user.username }}</ion-label>
-            </ion-item>
-          </ion-list>
-          <ion-list v-else>
-            <ion-item>
-              <ion-label>No matching users yet</ion-label>
-            </ion-item>
-          </ion-list>
-        </template>
-
-        <template v-else-if="searchMode === 'post'">
-          <h2 class="section-title">Posts</h2>
-          <ion-list v-if="posts.length > 0">
-            <ion-row>
+      <template v-if="(searchMode === '' || searchMode === 'post' || searchMode === 'music') && searchInput.trim().length > 0">
+        <h2 class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
+        <ion-list v-if="posts.length > 0">
+          <ion-row>
+            <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+              <div class="post-separator"></div>
               <PostCard
-                v-for="post in posts"
-                :key="post.slug"
                 :post="post"
                 @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"
                 @post-like="post.likeCount++"
                 @post-unlike="post.likeCount--"
                 @post-repost="post.repostCount++"
-                @post-unrepost="post.repostCount--" />
-            </ion-row>
-          </ion-list>
-          <ion-list v-else>
-            <ion-item>
-              <ion-label>No matching posts yet</ion-label>
-            </ion-item>
-          </ion-list>
-        </template>
-
-        <ion-infinite-scroll
-          @ionInfinite="loadMore"
-          threshold="100px"
-          :disabled="searchMode === 'user' ? !hasMoreUsers : !hasMorePosts">
-          <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
-        </ion-infinite-scroll>
-      </div>
+                @post-unrepost="post.repostCount--"
+                class="post-card"
+              />
+            </div>
+          </ion-row>
+        </ion-list>
+        <ion-list v-else>
+          <ion-label class="no-results-label">No matching posts found</ion-label>
+        </ion-list>
+      </template>
+      <ion-infinite-scroll @ionInfinite="loadMore" threshold="100px"
+        :disabled="searchMode === 'user' ? !hasMoreUsers : !hasMorePosts">
+        <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
+      </ion-infinite-scroll>
     </ion-content>
   </ApplicationViewport>
 </template>
 
 <style scoped>
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-top: 20px;
-  margin-bottom: 10px;
-}
-
-ion-avatar img {
-  object-fit: cover;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-.search-toggle {
+.search-placeholder-message {
+  position: fixed;
+  top: 40%;
+  left: 0;
+  width: 100vw;
   display: flex;
   justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 0.125rem solid #ccc;
-  padding-bottom: 0.75rem;
+  align-items: center;
+  height: 30vh;
+  text-align: center;
+  padding: 0 1.5rem;
+  animation: float 4s ease-in-out infinite;
 }
 
-.mode-icon {
-  font-size: 2.25rem;
-  cursor: pointer;
+.search-info-label-glow {
   color: var(--ion-color-medium);
-  padding: 0.5rem;
-  border-radius: 0.625rem;
-  transition: all 0.2s ease;
+  font-size: 1.4rem;
+  line-height: 1.5;
+  color: #ffffff;
 }
 
-.mode-icon:hover {
-  background-color: var(--ion-color-light);
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
-.mode-icon.active {
-  background-color: var(--ion-color-primary);
-  color: white;
-  transform: scale(1.1);
+.glow-background {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 136, 255, 0.6) 0%, rgba(0, 51, 204, 0.4) 40%, rgba(0, 0, 0, 0) 100%);
+  filter: blur(100px);
+  opacity: 0.6;
+  z-index: 0;
+  animation: pulse 6s ease-in-out infinite alternate;
 }
 
-.audio-filter {
-  margin: 1rem 0;
-  display: flex;
-  gap: 1rem;
+.search-info-icon {
+  font-size: 2.2rem;
+  margin-top: 0.5rem;
 }
 
-.audio-filter ion-button {
-  --background: var(--ion-color-light);
-  --color: var(--ion-color-medium);
-  cursor: pointer;
-  border-radius: 0.25rem;
-  transition:
-    background-color 0.3s,
-    color 0.3s;
-}
-
-.audio-filter ion-button.active {
-  --background: var(--ion-color-primary);
-  --color: white;
+.section-title {
+  font-size: 20px;
   font-weight: 600;
+  padding-top: 1em;
+  padding-left: 1.5em;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.name-list {
+  padding-left: 1em;
+  padding-right: 1em;
+}
+
+.post-wrapper {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  width: calc(100% - 1em);
+}
+
+.post-separator {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.15);
+  width: calc(100% - 2em);
+  margin: 0 auto;
+}
+
+.post-card {
+  padding: 0;
+  margin: 0;
+}
+
+.no-results-label {
+  padding-left: 1.8em;
+  color: var(--ion-color-medium);
+}
+
+.filter-modal {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+ion-button {
+  --color: white;
 }
 </style>

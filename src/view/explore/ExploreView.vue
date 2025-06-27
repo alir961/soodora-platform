@@ -124,23 +124,21 @@ onIonViewWillEnter(() => {
         </swiper-slide>
 
         <swiper-slide>
-          <ion-grid>
-            <ion-row>
-              <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
-                <PostCard
-                  :post="post"
-                  @post-deleted="() => loadPosts('following', true)"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="postcard" />
-              </div>
-              <div v-if="followingPosts.length === 0" class="no-content">
-                <p class="no-content-text">Follow someone <br/> to see their posts!</p>
-              </div>
-            </ion-row>
-          </ion-grid>
+          <ion-row>
+            <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
+              <PostCard
+                :post="post"
+                @post-deleted="() => loadPosts('following', true)"
+                @post-like="post.likeCount++"
+                @post-unlike="post.likeCount--"
+                @post-repost="post.repostCount++"
+                @post-unrepost="post.repostCount--"
+                class="postcard" />
+            </div>
+            <div v-if="followingPosts.length === 0" class="no-content">
+              <p class="no-content-text">Follow someone <br/> to see their posts!</p>
+            </div>
+          </ion-row>
           <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
             <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
           </ion-infinite-scroll>
@@ -151,12 +149,6 @@ onIonViewWillEnter(() => {
 </template>
 
 <style scoped>
-ion-grid {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-
 .tab-header {
   display: flex;
   justify-content: space-around;
