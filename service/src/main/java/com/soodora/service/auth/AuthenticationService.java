@@ -8,6 +8,7 @@ import com.soodora.domain.oauth.OAuthProvider;
 import com.soodora.domain.oauth.OAuthTokenRepository;
 import com.soodora.domain.oauth.RefreshableAuthorization;
 import com.soodora.domain.user.Identifier;
+import com.soodora.domain.user.UnknownIdentifierException;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.user.UnknownUserException;
@@ -59,13 +60,17 @@ public class AuthenticationService {
     }
 
     public String loginUser(LoginCommand command) {
-        Identifier identifier = createFromEmail(command.email());
-        UserDTO user = userRepository.find(identifier);
-        String password = userRepository.retrieveEncodedPassword(identifier);
+        try {
+            Identifier identifier = createFromEmail(command.email());
+            UserDTO user = userRepository.find(identifier);
+            String password = userRepository.retrieveEncodedPassword(identifier);
 
-        if (!passwordEncoder.matches(command.password(), password))
-            throw new UnknownUserException("Invalid password");
-        return tokenRepository.generateToken(user);
+            if (!passwordEncoder.matches(command.password(), password))
+                throw new UnknownUserException("Invalid password");
+            return tokenRepository.generateToken(user);
+        } catch (UnknownIdentifierException exception) {
+            throw new UnknownUserException("Invalid email");
+        }
     }
 
     public List<OAuthProvider> retrieveUserProviders(UserDTO user) {

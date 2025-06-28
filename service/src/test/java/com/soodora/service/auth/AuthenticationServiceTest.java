@@ -115,7 +115,7 @@ class AuthenticationServiceTest {
         Executable executable = () -> authenticationService.loginUser(command);
 
         // THEN
-        assertThrows(UnknownIdentifierException.class, executable);
+        assertThrows(UnknownUserException.class, executable);
     }
 
     @Test
