@@ -5,6 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.Identifier;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
 
 import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
@@ -46,10 +48,10 @@ public class UserController {
     }
 
     @GetMapping("/{slug}")
-    public UserDTO getUser(@PathVariable String slug) {
+    public PublicUserDTO getUser(@PathVariable String slug) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveUser(identifier);
+        return userService.retrieveUser(identifier).toPublic();
     }
 
     @GetMapping("/search")
@@ -89,17 +91,21 @@ public class UserController {
     }
 
     @GetMapping("/{slug}/followers")
-    public Set<UserDTO> getFollowers(@PathVariable("slug") String slug) {
+    public Set<PublicUserDTO> getFollowers(@PathVariable("slug") String slug) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveFollowers(identifier);
+        return userService.retrieveFollowers(identifier).stream()
+                .map(UserDTO::toPublic)
+                .collect(toSet());
     }
 
     @GetMapping("/{slug}/following")
-    public Set<UserDTO> getFollowing(@PathVariable("slug") String slug) {
+    public Set<PublicUserDTO> getFollowing(@PathVariable("slug") String slug) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveFollowing(identifier);
+        return userService.retrieveFollowing(identifier).stream()
+                .map(UserDTO::toPublic)
+                .collect(toSet());
     }
 
     @GetMapping("/{slug}/posts")

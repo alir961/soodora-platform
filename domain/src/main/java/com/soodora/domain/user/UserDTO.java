@@ -18,4 +18,8 @@ public record UserDTO(
         return createFromSlug(slug);
     }
 
+    public PublicUserDTO toPublic() {
+        return new PublicUserDTO(slug, username, description, avatarUrl, roles);
+    }
+
 }

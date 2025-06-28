@@ -1,6 +1,6 @@
 package com.soodora.domain.product;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.PublicUserDTO;
 
 public record ProductDTO(
         String slug,
@@ -10,6 +10,6 @@ public record ProductDTO(
         String category,
         long price,
         long quantity,
-        UserDTO vendor) {
+        PublicUserDTO vendor) {
 
 }

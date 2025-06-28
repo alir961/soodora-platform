@@ -1,6 +1,6 @@
 package com.soodora.domain.post;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.PublicUserDTO;
 
 import java.util.Date;
 
@@ -10,7 +10,7 @@ public record PostDTO(
         String content,
         String imageUrl,
         String audioUrl,
-        UserDTO owner,
+        PublicUserDTO owner,
         int likeCount,
         int repostCount,
         int commentCount,

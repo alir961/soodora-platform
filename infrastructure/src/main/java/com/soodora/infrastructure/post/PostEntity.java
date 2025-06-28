@@ -94,7 +94,7 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 content,
                 imageUrl,
                 audioUrl,
-                user.toDTO(),
+                user.toDTO().toPublic(),
                 likes.size(),
                 reposts.size(),
                 comments.size(),

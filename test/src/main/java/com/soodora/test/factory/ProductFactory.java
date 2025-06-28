@@ -20,7 +20,7 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser());
+                buildDefaultUser().toPublic());
     }
 
     public static ProductDTO buildProduct(String suffix) {
@@ -32,7 +32,7 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser());
+                buildDefaultUser().toPublic());
     }
 
 }
