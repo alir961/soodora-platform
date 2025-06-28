@@ -23,7 +23,7 @@ import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct } from '@/client/productClient';
 import { ref } from 'vue';
-import Avatar from '@/component/user/Avatar.vue';
+import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 
@@ -163,8 +163,7 @@ const exportProduct = async (product: Product) => {
         <ion-card-title class="product-title">{{ product.name }}</ion-card-title>
         <div class="category-date-row">
           <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
-          <!-- This doesn't work because the createdAt field is not yet passed on by the API, fix this later -->
-          <ion-card-subtitle><DateDisplay :date="product.slug" /></ion-card-subtitle>
+          <ion-card-subtitle><DateDisplay :date="product.createdAt" /></ion-card-subtitle>
         </div>
       </ion-card-header>
       <ion-card-content>
@@ -186,7 +185,7 @@ const exportProduct = async (product: Product) => {
       handle-behavior="cycle">
       <ion-content class="ion-padding modal-content">
         <img :src="modalImageSrc" alt="Fullscreen product image" class="modal-image" />
-        <ion-button expand="block" @click="showComingSoonToast" class="buy-button"> Add to Cart </ion-button>
+        <ion-button expand="block" @click="showComingSoonToast" class="buy-button">Add to Cart</ion-button>
       </ion-content>
     </ion-modal>
   </ion-col>

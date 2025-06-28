@@ -3,9 +3,7 @@ import { ref, watch, computed } from 'vue';
 import {
   IonContent,
   IonList,
-  IonItem,
   IonLabel,
-  IonAvatar,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonRow,
@@ -14,7 +12,6 @@ import {
   IonSelectOption,
   IonModal,
 } from '@ionic/vue';
-import { useRouter } from 'vue-router';
 
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import type { User } from '@/entity/User';
@@ -24,9 +21,7 @@ import { PostSearchParams } from '@/entity/PostSearch';
 import PostCard from '@/component/explore/PostCard.vue';
 import { callSearchUsers } from '@/client/userClient';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
-import UserListItem from '@/component/search/UserListItem.vue';
-import Avatar from '@/component/user/Avatar.vue';
-import UsernameTag from '@/component/user/UsernameTag.vue';
+import UserListItem from '@/component/user/UserListItem.vue';
 
 type SearchMode = '' | 'user' | 'artist' | 'post' | 'music';
 
@@ -40,7 +35,6 @@ const users = ref<User[]>([]);
 const posts = ref<Post[]>([]);
 
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
-const router = useRouter();
 
 const currentPageUsers = ref(0);
 const hasMoreUsers = ref(true);
@@ -182,10 +176,6 @@ const loadMore = async (ev: CustomEvent) => {
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
 };
 
-const redirectToUserProfile = (user: User) => {
-  router.push(`/user/${user.slug}`);
-};
-
 const searchPlaceholder = computed(() => {
   switch (searchMode.value) {
     case 'artist':
@@ -205,13 +195,17 @@ const searchPlaceholder = computed(() => {
 <template>
   <ApplicationViewport title="Search">
     <ion-content>
-      <ion-modal :is-open="showFilterModal" @didDismiss="showFilterModal = false" :breakpoints="[0, 0.3, 0.5]"
-        initial-breakpoint="0.3" handle-behavior="cycle">
+      <ion-modal
+        :is-open="showFilterModal"
+        @didDismiss="showFilterModal = false"
+        :breakpoints="[0, 0.3, 0.5]"
+        initial-breakpoint="0.3"
+        handle-behavior="cycle">
         <ion-content class="ion-padding">
           <div class="filter-modal">
             <h2>Search Filters</h2>
             <ion-select v-model="searchMode" class="filter-select">
-              <div slot="label">Search Type: </div>
+              <div slot="label">Search Type:</div>
               <ion-select-option value="">All</ion-select-option>
               <ion-select-option value="artist">Artists</ion-select-option>
               <ion-select-option value="user">Users</ion-select-option>
@@ -226,14 +220,15 @@ const searchPlaceholder = computed(() => {
         v-model="searchInput"
         :placeholder="searchPlaceholder"
         :isFilterActive="isFilterActive"
-        @filterClick="showFilterModal = true"
-      />
+        @filterClick="showFilterModal = true" />
 
       <div v-if="searchInput.trim().length === 0" class="search-placeholder-message">
         <div class="glow-background"></div>
         <div class="search-info-glow-wrapper">
           <ion-label class="search-info-label-glow">
-            Begin your search adventure! <br/> Find users, artists, posts, <br/> or tunes here.
+            Begin your search adventure!<br />
+            Find users, artists, posts, <br />
+            or tunes here.
           </ion-label>
           <div class="search-info-icon">🔍</div>
         </div>
@@ -242,7 +237,11 @@ const searchPlaceholder = computed(() => {
       <template v-if="(searchMode === '' || searchMode === 'artist') && searchInput.trim().length > 0">
         <h2 class="section-title">Artists</h2>
         <ion-list v-if="artists.length" class="name-list">
-          <UserListItem v-for="(artist, index) in artists" :key="artist.slug" :user="artist" :isLast="index === artists.length - 1" />
+          <UserListItem
+            v-for="(artist, index) in artists"
+            :key="artist.slug"
+            :user="artist"
+            :isLast="index === artists.length - 1" />
         </ion-list>
         <ion-list v-else>
           <ion-label class="no-results-label">No matching artists found</ion-label>
@@ -252,14 +251,19 @@ const searchPlaceholder = computed(() => {
       <template v-if="(searchMode === '' || searchMode === 'user') && searchInput.trim().length > 0">
         <h2 class="section-title">Users</h2>
         <ion-list v-if="users.length > 0" class="name-list">
-          <UserListItem v-for="(user, index) in users" :key="user.slug" :user="user" :isLast="index === users.length - 1" />
+          <UserListItem
+            v-for="(user, index) in users"
+            :key="user.slug"
+            :user="user"
+            :isLast="index === users.length - 1" />
         </ion-list>
         <ion-list v-else>
           <ion-label class="no-results-label">No matching users found</ion-label>
         </ion-list>
       </template>
 
-      <template v-if="(searchMode === '' || searchMode === 'post' || searchMode === 'music') && searchInput.trim().length > 0">
+      <template
+        v-if="(searchMode === '' || searchMode === 'post' || searchMode === 'music') && searchInput.trim().length > 0">
         <h2 class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
         <ion-list v-if="posts.length > 0">
           <ion-row>
@@ -272,8 +276,7 @@ const searchPlaceholder = computed(() => {
                 @post-unlike="post.likeCount--"
                 @post-repost="post.repostCount++"
                 @post-unrepost="post.repostCount--"
-                class="post-card"
-              />
+                class="post-card" />
             </div>
           </ion-row>
         </ion-list>
@@ -281,7 +284,9 @@ const searchPlaceholder = computed(() => {
           <ion-label class="no-results-label">No matching posts found</ion-label>
         </ion-list>
       </template>
-      <ion-infinite-scroll @ionInfinite="loadMore" threshold="100px"
+      <ion-infinite-scroll
+        @ionInfinite="loadMore"
+        threshold="100px"
         :disabled="searchMode === 'user' ? !hasMoreUsers : !hasMorePosts">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>

@@ -1,30 +1,24 @@
 <script setup lang="ts">
-import { PropType } from 'vue';
 import { IonItem, IonAvatar } from '@ionic/vue';
 import { User } from '@/entity/User';
 import { useRouter } from 'vue-router';
-import Avatar from '@/component/user/Avatar.vue';
+import Avatar from '@/component/user/AvatarItem.vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import FollowButton from '../user/FollowButton.vue';
 
-const props = defineProps({
-  user: {
-    type: Object as PropType<User & {
-      canFollow?: boolean;
-      isFollowing?: boolean;
-      toggleFollow?: () => void;
-    }>,
-    required: true,
-  },
-  isLast: {
-    type: Boolean,
-    default: false,
-  },
-});
+const props = defineProps<{
+  user: User & {
+    canFollow?: boolean;
+    isFollowing?: boolean;
+    toggleFollow?: () => void;
+  };
+  isLast?: boolean;
+}>();
+
+const { user, isLast } = props;
 
 const router = useRouter();
 
-console.log('UserListItem user:', props.user);
 const redirectToProfile = async () => {
   await router.push(`/user/${props.user.slug}`);
 };
@@ -41,8 +35,8 @@ const redirectToProfile = async () => {
       v-if="user.canFollow"
       :canFollow="user.canFollow"
       :isFollowing="user.isFollowing ?? false"
-      @toggle="user.toggleFollow"
-    />
+      @toggle="user.toggleFollow" />
+    <!-- This doesn't work, I have to remember to fix it later pleaseee -->
   </ion-item>
   <div v-if="!isLast" class="post-separator"></div>
 </template>

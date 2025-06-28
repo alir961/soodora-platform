@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { IonButton, IonContent, IonIcon, IonInput, IonItem } from '@ionic/vue';
+import { IonButton, IonIcon, IonInput, IonItem } from '@ionic/vue';
 import { arrowBackOutline, arrowUp } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { callCreateComment, callGetComments } from '@/client/postClient';
 import { Comment } from '@/entity/Post';
 import CommentCard from '@/component/explore/CommentCard.vue';
 
-
 const route = useRoute();
 const postSlug = route.params.slug as string;
 
 const comments = ref<Comment[]>([]);
 const commentInput = ref<string>('');
-
 
 const loadComments = async () => {
   try {
@@ -45,21 +43,16 @@ onMounted(() => {
 <template>
   <ApplicationViewport title="Comments Section" back-button>
     <div class="top-bar">
-      <ion-icon :icon="arrowBackOutline" class="back-btn" style="cursor: pointer;" @click="$router.back()" />
+      <ion-icon :icon="arrowBackOutline" class="back-btn" style="cursor: pointer" @click="$router.back()" />
       <span class="top-bar-title">Join the Conversation</span>
-      <ion-icon class="back-btn" style="visibility: hidden;" />
+      <ion-icon class="back-btn" style="visibility: hidden" />
     </div>
     <div v-for="comment in comments" :key="comment.slug" class="comment-wrapper">
       <CommentCard :comment="comment" @comment-deleted="loadComments" />
     </div>
     <div class="comment-input-wrapper">
       <ion-item lines="none" class="comment-input">
-        <ion-input
-          v-model="commentInput"
-          placeholder="Drop a comment"
-          clearInput
-          @keyup.enter="createComment"
-        />
+        <ion-input v-model="commentInput" placeholder="Drop a comment" clearInput @keyup.enter="createComment" />
         <ion-button class="send-comment-btn" @click="createComment">
           <ion-icon :icon="arrowUp" slot="icon-only" />
         </ion-button>

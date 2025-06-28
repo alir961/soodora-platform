@@ -27,7 +27,9 @@ const hasMore = ref(true);
 const isLoading = ref(false);
 
 const searchInput = ref('');
-const selectedSort = ref<'price,asc' | 'price,desc' | 'quantity,asc' | 'quantity,desc' | 'createdAt,desc'>('createdAt,desc');
+const selectedSort = ref<'price,asc' | 'price,desc' | 'quantity,asc' | 'quantity,desc' | 'createdAt,desc'>(
+  'createdAt,desc'
+);
 
 const showFilterModal = ref(false);
 
@@ -96,8 +98,7 @@ const handleFilterModalClose = () => {
         v-model="searchInput"
         placeholder="Search products..."
         :isFilterActive="!isDefaultSort"
-        @filterClick="showFilterModal = true"
-      />
+        @filterClick="showFilterModal = true" />
 
       <ion-grid>
         <ion-row>
@@ -118,13 +119,12 @@ const handleFilterModalClose = () => {
       :breakpoints="[0, 0.3, 0.5]"
       :initial-breakpoint="0.3"
       handle-behavior="cycle"
-      @didDismiss="handleFilterModalClose"
-    >
+      @didDismiss="handleFilterModalClose">
       <ion-content class="ion-padding">
         <div class="filter-modal">
           <h2>Search Filters</h2>
           <ion-select v-model="selectedSort">
-            <div slot="label">Search Type: </div>
+            <div slot="label">Search Type:</div>
             <ion-select-option value="createdAt,desc">Recently Posted</ion-select-option>
             <ion-select-option value="price,desc">Price ↑</ion-select-option>
             <ion-select-option value="price,asc">Price ↓</ion-select-option>

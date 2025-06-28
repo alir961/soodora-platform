@@ -22,6 +22,5 @@ const redirectToProfile = async () => {
     :src="user.avatarUrl || '/assets/images/svg/avatar.svg'"
     alt="User avatar"
     class="avatar"
-    @click="redirectToProfile"
-  />
+    @click="redirectToProfile" />
 </template>

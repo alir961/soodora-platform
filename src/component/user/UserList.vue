@@ -8,12 +8,11 @@ import {
   IonButtons,
   IonButton,
   IonTitle,
-  IonItem,
   IonToolbar,
   IonContent,
   IonIcon,
 } from '@ionic/vue';
-import UsernameTag from '@/component/user/UsernameTag.vue';
+import UserListItem from '@/component/user/UserListItem.vue';
 import { arrowBackOutline } from 'ionicons/icons';
 
 defineProps({
@@ -46,9 +45,7 @@ const closeList = () => {
   </ion-header>
   <ion-content class="ion-padding">
     <ion-list>
-      <ion-item v-for="user in users" :key="user.slug">
-        <UsernameTag :user="user" @click="closeList" />
-      </ion-item>
+      <UserListItem v-for="(user, index) in users" :key="user.slug" :user="user" :isLast="index === users.length - 1" />
     </ion-list>
     <p v-if="users.length === 0" class="no-content">Nothing to display!</p>
   </ion-content>

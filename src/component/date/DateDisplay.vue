@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
-
-const props = defineProps({
-  date: {
-    type: [String, Date],
-    required: true,
-  },
-});
+defineProps<{
+  date: string | Date;
+}>();
 
 function formatPostDate(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;

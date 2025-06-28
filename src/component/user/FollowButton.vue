@@ -2,7 +2,7 @@
 import { defineProps, defineEmits } from 'vue';
 import { IonButton } from '@ionic/vue';
 
-const props = defineProps({
+defineProps({
   canFollow: { type: Boolean, required: true },
   isFollowing: { type: Boolean, required: true },
 });

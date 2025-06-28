@@ -4,7 +4,7 @@ import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
-import { IonButton, modalController } from '@ionic/vue';
+import { modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
 import UserList from '@/component/user/UserList.vue';
 import FollowButton from '@/component/user/FollowButton.vue';

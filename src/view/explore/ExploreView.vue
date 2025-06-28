@@ -136,7 +136,10 @@ onIonViewWillEnter(() => {
                 class="postcard" />
             </div>
             <div v-if="followingPosts.length === 0" class="no-content">
-              <p class="no-content-text">Follow someone <br/> to see their posts!</p>
+              <p class="no-content-text">
+                Follow someone<br />
+                to see their posts!
+              </p>
             </div>
           </ion-row>
           <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">

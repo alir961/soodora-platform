@@ -35,7 +35,7 @@ import customTrashIcon from '@/assets/icons/trash.svg';
 import customPlayIcon from '@/assets/icons/play.svg';
 import customPauseIcon from '@/assets/icons/pause.svg';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import Avatar from '@/component/user/Avatar.vue';
+import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 
 const router: Router = useRouter();

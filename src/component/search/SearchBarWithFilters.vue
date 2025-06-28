@@ -2,8 +2,9 @@
 import { defineProps, defineEmits } from 'vue';
 import { IonSearchbar, IonButton, IonIcon } from '@ionic/vue';
 import settingsIcon from '@/assets/icons/settings.svg';
+import type { SearchbarCustomEvent } from '@ionic/vue';
 
-const props = defineProps({
+defineProps({
   modelValue: String,
   placeholder: {
     type: String,
@@ -18,8 +19,8 @@ const props = defineProps({
 
 const emit = defineEmits(['update:modelValue', 'filterClick']);
 
-const updateValue = (event: any) => {
-  const value = event?.detail?.value ?? event?.target?.value ?? '';
+const updateValue = (event: SearchbarCustomEvent) => {
+  const value = event.detail.value ?? '';
   emit('update:modelValue', value);
 };
 
@@ -35,13 +36,11 @@ const triggerFilter = () => {
       :placeholder="placeholder"
       :debounce="debounce"
       :value="modelValue"
-      @ionInput="updateValue"
-    />
+      @ionInput="updateValue" />
     <ion-button
       fill="clear"
       :class="['search-settings-button', { 'active-filter': isFilterActive }]"
-      @click="triggerFilter"
-    >
+      @click="triggerFilter">
       <ion-icon class="settings-icon" :src="settingsIcon" />
     </ion-button>
   </div>

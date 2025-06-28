@@ -25,7 +25,7 @@ interface Comment {
   content: string;
   user: User;
   likeCount: number;
-  createdAt: string;
+  createdAt: Date;
 }
 
 function populatePost(post: Post): Post {

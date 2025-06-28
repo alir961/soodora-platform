@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import trashIcon from '@/assets/icons/trash.svg';
 import { heart, heartOutline } from 'ionicons/icons';
-import { IonButton, IonIcon, IonItem, IonLabel, IonAvatar, IonItemSliding, IonItemOptions, IonItemOption } from '@ionic/vue';
+import {
+  IonButton,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonAvatar,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+} from '@ionic/vue';
 import { callDeleteComment, callGetCommentLikes, callLikeComment, callUnlikeComment } from '@/client/postClient';
 import { PropType, ref, Ref, watch } from 'vue';
 import { Comment } from '@/entity/Post';
 import { useAuthStore } from '@/store/reactiveStorage';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import Avatar from '@/component/user/Avatar.vue';
+import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 
 const props = defineProps({
@@ -92,10 +101,7 @@ watch(
       </ion-label>
     </ion-item>
     <ion-item-options side="end">
-      <ion-item-option
-        color="danger"
-        expandable
-        @click="handleDelete(comment.slug)">
+      <ion-item-option color="danger" expandable @click="handleDelete(comment.slug)">
         <img :src="trashIcon" alt="delete" class="delete-icon" />
       </ion-item-option>
     </ion-item-options>

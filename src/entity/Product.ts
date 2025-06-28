@@ -19,7 +19,7 @@ interface Product {
   price: number | null;
   quantity: number | null;
   vendor: User;
-  createdAt: string;
+  createdAt: Date;
 }
 
 export type { Product, ProductSearchParams };
