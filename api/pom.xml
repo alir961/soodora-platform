@@ -6,7 +6,7 @@
 
     <parent>
         <artifactId>backend</artifactId>
-        <groupId>com.grooveconductor</groupId>
+        <groupId>com.soodora.com</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>api</artifactId>
@@ -19,17 +19,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.grooveconductor</groupId>
+            <groupId>com.soodora.com</groupId>
             <artifactId>service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.grooveconductor</groupId>
+            <groupId>com.soodora.com</groupId>
             <artifactId>domain</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.grooveconductor</groupId>
+            <groupId>com.soodora.com</groupId>
             <artifactId>infrastructure</artifactId>
             <version>${project.version}</version>
             <scope>runtime</scope>
@@ -71,7 +71,7 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.grooveconductor</groupId>
+            <groupId>com.soodora.com</groupId>
             <artifactId>test</artifactId>
             <version>0.0.1-SNAPSHOT</version>
             <scope>test</scope>

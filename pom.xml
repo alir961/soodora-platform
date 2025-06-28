@@ -10,7 +10,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>com.grooveconductor</groupId>
+    <groupId>com.soodora.com</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
@@ -130,7 +130,7 @@
                             <file>eclipse-formatter.xml</file>
                         </eclipse>
                         <importOrder>
-                            <order>com.grooveconductor,java,javax,org,com,io,,static com.grooveconductor,static</order>
+                            <order>com.soodora,java,javax,org,com,io,,static com.soodora,static</order>
                         </importOrder>
                         <removeUnusedImports/>
                         <endWithNewline/>
