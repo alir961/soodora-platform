@@ -55,7 +55,7 @@ class UserRepositoryImplTest {
     @Test
     void givenValidUpdateCommand_whenUpdate_thenUserIsUpdated() {
         // GIVEN
-        UpdateUserCommand command = new UpdateUserCommand("newUsername", null, "newLastname", null);
+        UpdateUserCommand command = new UpdateUserCommand("newUsername", null, "newLastname", "", null);
 
         when(userJpaRepository.findBySlug(validUser.getSlug())).thenReturn(Optional.of(validUser));
         when(userJpaRepository.save(any(UserEntity.class))).thenReturn(validUser);

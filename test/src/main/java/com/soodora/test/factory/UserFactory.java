@@ -2,11 +2,10 @@ package com.soodora.test.factory;
 
 import com.soodora.domain.user.UserDTO;
 
-import java.util.Set;
-
 import lombok.NoArgsConstructor;
 
 import static java.util.Collections.emptySet;
+import static java.util.Set.of;
 import static lombok.AccessLevel.PROTECTED;
 
 @NoArgsConstructor(access = PROTECTED)
@@ -19,8 +18,9 @@ public class UserFactory {
                 "user@example.com",
                 "John",
                 "Doe",
-                emptySet(),
-                null);
+                "Description",
+                null,
+                emptySet());
     }
 
     public static UserDTO buildDefaultUser(int id) {
@@ -30,8 +30,9 @@ public class UserFactory {
                 "user" + id + "@example.com",
                 "John",
                 "Doe",
-                emptySet(),
-                null);
+                "Description",
+                null,
+                emptySet());
     }
 
     public static UserDTO buildDefaultArtistUser() {
@@ -41,8 +42,9 @@ public class UserFactory {
                 "user@example.com",
                 "John",
                 "Doe",
-                Set.of("ARTIST"),
-                null);
+                "Description",
+                null,
+                of("ARTIST"));
     }
 
     public static UserDTO buildDefaultAdminUser() {
@@ -52,8 +54,9 @@ public class UserFactory {
                 "user@example.com",
                 "John",
                 "Doe",
-                Set.of("ADMIN"),
-                null);
+                "Description",
+                null,
+                of("ADMIN"));
     }
 
 }

@@ -21,6 +21,7 @@ public class UserEntityFactory extends UserFactory {
                 "Doe",
                 new Date(),
                 new Date(),
+                "Description",
                 null,
                 null,
                 emptyList(),

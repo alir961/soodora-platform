@@ -78,6 +78,7 @@ class ProfileControllerIT {
                 "newUsername",
                 "firstname",
                 "lastname",
+                "description",
                 "https//soodora.com/assets/avatar.png");
 
         // WHEN & THEN
@@ -91,7 +92,7 @@ class ProfileControllerIT {
     @Test
     void givenInvalidRequest_whenUpdateUser_thenBadRequest() throws Exception {
         // GIVEN
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "", "");
 
         doThrow(new InvalidRequestException("Invalid Request")).when(userService)
                 .updateUser(any(UpdateUserCommand.class), eq(USER.slug()));

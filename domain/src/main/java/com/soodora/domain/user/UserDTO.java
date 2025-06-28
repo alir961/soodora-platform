@@ -10,8 +10,9 @@ public record UserDTO(
         String email,
         String firstname,
         String lastname,
-        Set<String> roles,
-        String avatarUrl) {
+        String description,
+        String avatarUrl,
+        Set<String> roles) {
 
     public Identifier identifier() {
         return createFromSlug(slug);

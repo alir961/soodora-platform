@@ -45,6 +45,7 @@ public class UserRepositoryImpl implements UserRepository {
         user.setPassword(command.password());
         user.setFirstname(command.firstname());
         user.setLastname(command.lastname());
+        user.setDescription("");
         user.setRoles(new HashSet<>());
         return userRepository.save(user).toDTO();
     }
@@ -60,6 +61,8 @@ public class UserRepositoryImpl implements UserRepository {
             existingUser.setFirstname(command.firstname());
         if (isNotNullOrBlank(command.lastname()))
             existingUser.setLastname(command.lastname());
+        if (isNotNullOrBlank(command.description()))
+            existingUser.setDescription(command.description());
         if (isNotNullOrBlank(command.avatarUrl()))
             existingUser.setAvatarUrl(command.avatarUrl());
         return userRepository.save(existingUser).toDTO();

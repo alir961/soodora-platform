@@ -117,7 +117,7 @@ class UserServiceTest {
     void updateUser_Success() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "https//soodora.com/assets/avatar.png");
+                "Description", "https//soodora.com/assets/avatar.png");
 
         when(userRepository.update(updateCommand, IDENTIFIER)).thenReturn(USER);
 
@@ -133,7 +133,7 @@ class UserServiceTest {
     void updateUser_UnknownIdentifier() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "https//soodora.com/assets/avatar.png");
+                "Description", "https//soodora.com/assets/avatar.png");
 
         when(userRepository.update(updateCommand, IDENTIFIER))
                 .thenThrow(new UnknownIdentifierException("Identifier not found"));

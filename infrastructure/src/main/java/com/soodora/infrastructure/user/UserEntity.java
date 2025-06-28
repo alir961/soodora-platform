@@ -49,19 +49,22 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @Column(nullable = false)
     private String password;
 
-    @Column
+    @Column(nullable = false)
     private String firstname;
 
-    @Column
+    @Column(nullable = false)
     private String lastname;
 
     @CreationTimestamp
-    @Column(updatable = false)
+    @Column(nullable = false, updatable = false)
     private Date createdAt;
 
     @UpdateTimestamp
-    @Column
+    @Column(nullable = false)
     private Date updatedAt;
+
+    @Column(nullable = false)
+    String description;
 
     @Column
     private String avatarUrl;
@@ -123,8 +126,9 @@ public class UserEntity implements DomainEntity<UserDTO> {
                 email,
                 firstname,
                 lastname,
-                rolesNames,
-                avatarUrl);
+                description,
+                avatarUrl,
+                rolesNames);
     }
 
 }
