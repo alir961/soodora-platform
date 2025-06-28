@@ -2,6 +2,8 @@ package com.soodora.test.factory;
 
 import com.soodora.domain.product.ProductDTO;
 
+import java.util.Date;
+
 import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
@@ -20,7 +22,8 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser().toPublic());
+                buildDefaultUser().toPublic(),
+                new Date());
     }
 
     public static ProductDTO buildProduct(String suffix) {
@@ -32,7 +35,8 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser().toPublic());
+                buildDefaultUser().toPublic(),
+                new Date());
     }
 
 }

@@ -70,7 +70,8 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
                 category,
                 price,
                 quantity,
-                user.toDTO().toPublic());
+                user.toDTO().toPublic(),
+                createdAt);
     }
 
 }
