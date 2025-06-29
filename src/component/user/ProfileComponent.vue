@@ -25,7 +25,8 @@ defineProps({
     </ion-card-header>
 
     <ion-card-content>
-      <p>{{ profile.email }}</p>
+      <p v-if="profile.email" class="email">{{ profile.email }}</p>
+      <p>{{ profile.description }}</p>
 
       <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
 
@@ -76,6 +77,10 @@ defineProps({
       margin-bottom: 1.5em;
       color: #c0c0e0;
       user-select: text;
+
+      &.email {
+        margin-bottom: 0;
+      }
     }
 
     strong {

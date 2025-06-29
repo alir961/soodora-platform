@@ -6,8 +6,9 @@ interface User {
   email: string;
   firstname: string;
   lastname: string;
-  roles: Role[];
+  description: string;
   avatarUrl: string | null;
+  roles: Role[];
 }
 
 export type { Role, User };
