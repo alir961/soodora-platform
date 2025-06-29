@@ -1,6 +1,6 @@
-# GrooveConductor API
+# Soodora API
 
-GrooveConductor is a Java-based API for managing musical tracks, users, and playlists, developed with Spring Boot.
+Soodora is a Java-based API for managing musical tracks, users, and playlists, developed with Spring Boot.
 
 [![pipeline status](https://gitlab.com/soodora/api/badges/main/pipeline.svg)](https://gitlab.com/soodora/api/-/commits/main)
 [![coverage report](https://gitlab.com/soodora/api/badges/main/coverage.svg)](https://gitlab.com/soodora/api/-/commits/main) 
@@ -71,4 +71,3 @@ JAR can be found at `api/target/api-*.jar`
 
 The API is documented using OpenAPI (Swagger).   
 Once the service is running, you can access the API docs at: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html)
-
