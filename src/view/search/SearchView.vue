@@ -240,8 +240,8 @@ const searchPlaceholder = computed(() => {
           <UserListItem
             v-for="(artist, index) in artists"
             :key="artist.slug"
-            :user="artist"
-            :isLast="index === artists.length - 1" />
+            :isLast="index === artists.length - 1"
+            :user="artist" />
         </ion-list>
         <ion-list v-else>
           <ion-label class="no-results-label">No matching artists found</ion-label>
@@ -254,8 +254,8 @@ const searchPlaceholder = computed(() => {
           <UserListItem
             v-for="(user, index) in users"
             :key="user.slug"
-            :user="user"
-            :isLast="index === users.length - 1" />
+            :isLast="index === users.length - 1"
+            :user="user" />
         </ion-list>
         <ion-list v-else>
           <ion-label class="no-results-label">No matching users found</ion-label>

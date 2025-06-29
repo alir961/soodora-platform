@@ -4,7 +4,6 @@ import {
   toastController,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
-  IonGrid,
   IonRow,
   IonPage,
   onIonViewWillEnter,
@@ -104,27 +103,25 @@ onIonViewWillEnter(() => {
 
       <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
         <swiper-slide>
-          <ion-grid>
-            <ion-row>
-              <div v-for="post in posts" :key="post.slug" class="post-wrapper">
-                <PostCard
-                  :post="post"
-                  @post-deleted="() => loadPosts('for-you', true)"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="postcard" />
-              </div>
-            </ion-row>
-          </ion-grid>
+          <ion-row no-bounce>
+            <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+              <PostCard
+                :post="post"
+                @post-deleted="() => loadPosts('for-you', true)"
+                @post-like="post.likeCount++"
+                @post-unlike="post.likeCount--"
+                @post-repost="post.repostCount++"
+                @post-unrepost="post.repostCount--"
+                class="postcard" />
+            </div>
+          </ion-row>
           <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
             <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
           </ion-infinite-scroll>
         </swiper-slide>
 
         <swiper-slide>
-          <ion-row>
+          <ion-row no-bounce>
             <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
               <PostCard
                 :post="post"

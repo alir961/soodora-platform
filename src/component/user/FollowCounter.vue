@@ -4,10 +4,9 @@ import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
-import { modalController } from '@ionic/vue';
+import { IonButton, modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
 import UserList from '@/component/user/UserList.vue';
-import FollowButton from '@/component/user/FollowButton.vue';
 
 const followers = ref<User[]>([]);
 const following = ref<User[]>([]);
@@ -108,7 +107,11 @@ watch(
         <span>{{ following.length }}</span> Following
       </p>
     </div>
-    <FollowButton v-if="canFollowUser" :canFollow="canFollowUser" :isFollowing="isFollowing" @toggle="toggleFollow" />
+    <div v-if="canFollowUser" class="follow-button">
+      <ion-button fill="outline" size="small" color="danger" @click="toggleFollow">
+        {{ isFollowing ? 'Unfollow' : 'Follow' }}
+      </ion-button>
+    </div>
   </div>
 </template>
 

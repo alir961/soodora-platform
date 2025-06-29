@@ -4,7 +4,6 @@ import { User } from '@/entity/User';
 import { useRouter } from 'vue-router';
 import Avatar from '@/component/user/AvatarItem.vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import FollowButton from '../user/FollowButton.vue';
 
 const props = defineProps<{
   user: User & {
@@ -30,13 +29,6 @@ const redirectToProfile = async () => {
       <Avatar :user="user" />
     </ion-avatar>
     <UsernameTag :user="user" />
-    <!-- This doesn't work, I have to remember to fix it later pleaseee -->
-    <FollowButton
-      v-if="user.canFollow"
-      :canFollow="user.canFollow"
-      :isFollowing="user.isFollowing ?? false"
-      @toggle="user.toggleFollow" />
-    <!-- This doesn't work, I have to remember to fix it later pleaseee -->
   </ion-item>
   <div v-if="!isLast" class="post-separator"></div>
 </template>

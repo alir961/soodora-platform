@@ -16,13 +16,12 @@ import {
   AlertInput,
 } from '@ionic/vue';
 import { Product } from '@/entity/Product';
-import { PropType } from 'vue';
+import { PropType, ref } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import customTrashIcon from '@/assets/icons/trash.svg';
 import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct } from '@/client/productClient';
-import { ref } from 'vue';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
@@ -37,12 +36,25 @@ defineProps({
 const emit = defineEmits(['product-deleted']);
 
 const authStore = useAuthStore();
-
 const showImageModal = ref(false);
 const modalImageSrc = ref('');
+const modalBreakpoint = ref(0.5);
+const modalImageRef = ref<HTMLImageElement | null>(null);
+const addToCartBtnRef = ref<HTMLElement | null>(null);
+const productImageHeight = ref(0);
+
+const onProductImageLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  productImageHeight.value = img.clientHeight;
+};
 
 const openImageModal = (src: string) => {
   modalImageSrc.value = src;
+  const buttonAndPaddingHeight = 180;
+  const scaledImageHeight = productImageHeight.value * 1.1;
+  const totalHeightPx = scaledImageHeight + buttonAndPaddingHeight;
+  const viewportHeight = window.innerHeight;
+  modalBreakpoint.value = Math.min(Math.max(totalHeightPx / viewportHeight, 0.2), 1);
   showImageModal.value = true;
 };
 
@@ -137,7 +149,7 @@ const exportProduct = async (product: Product) => {
   <ion-col size="12" size-md="6" size-lg="4">
     <ion-card @click="openImageModal(product.imageUrl)">
       <div class="product-image-wrapper">
-        <img :src="product.imageUrl" :alt="`Product ${product.name}`" />
+        <img :src="product.imageUrl" :alt="`Product ${product.name}`" @load="onProductImageLoad" />
       </div>
       <div class="product-meta">
         <div class="vendor-info">
@@ -163,7 +175,7 @@ const exportProduct = async (product: Product) => {
         <ion-card-title class="product-title">{{ product.name }}</ion-card-title>
         <div class="category-date-row">
           <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
-          <ion-card-subtitle><DateDisplay :date="product.createdAt" /></ion-card-subtitle>
+          <DateDisplay :date="product.createdAt" class="product-date" />
         </div>
       </ion-card-header>
       <ion-card-content>
@@ -180,12 +192,14 @@ const exportProduct = async (product: Product) => {
       :is-open="showImageModal"
       @did-dismiss="closeImageModal"
       backdrop-dismiss="true"
-      :breakpoints="[0, 0.4, 0.5]"
-      :initial-breakpoint="0.5"
+      :breakpoints="[0, modalBreakpoint]"
+      :initial-breakpoint="modalBreakpoint"
       handle-behavior="cycle">
       <ion-content class="ion-padding modal-content">
-        <img :src="modalImageSrc" alt="Fullscreen product image" class="modal-image" />
-        <ion-button expand="block" @click="showComingSoonToast" class="buy-button">Add to Cart</ion-button>
+        <img ref="modalImageRef" :src="modalImageSrc" alt="Fullscreen product image" class="modal-image" />
+        <ion-button ref="addToCartBtnRef" expand="block" @click="showComingSoonToast" class="buy-button">
+          Add to Cart
+        </ion-button>
       </ion-content>
     </ion-modal>
   </ion-col>
@@ -221,6 +235,13 @@ ion-card-subtitle {
   width: 100%;
   height: auto;
   object-fit: cover;
+}
+
+.product-date {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+  margin-left: auto;
 }
 
 .product-description {
