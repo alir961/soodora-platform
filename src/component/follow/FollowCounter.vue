@@ -3,10 +3,10 @@ import { computed, onMounted, PropType, ref, watch } from 'vue';
 import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
-import { IonButton, modalController } from '@ionic/vue';
+import { modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
 import UserList from '@/component/user/UserList.vue';
+import FollowButton from '@/component/follow/FollowButton.vue';
 
 const followers = ref<User[]>([]);
 const following = ref<User[]>([]);
@@ -14,49 +14,30 @@ const following = ref<User[]>([]);
 const route = useRoute();
 
 const props = defineProps({
-  profile: {
-    required: true,
+  user: {
     type: Object as PropType<User>,
+    required: true,
   },
 });
 
 const authStore = useAuthStore();
 
-const isFollowing = computed(() => {
-  const authenticatedUser = authStore.getAuthenticatedUser;
-
-  if (!authenticatedUser) return false;
-  return followers.value.some((follower) => follower.slug === authenticatedUser.slug);
-});
-
 const canFollowUser = computed(() => {
   const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
 
-  return props.profile.slug !== authenticatedUserSlug;
+  return props.user.slug !== authenticatedUserSlug;
 });
 
 const reloadFollowers = () => {
-  callRetrieveFollowers(props.profile)
+  callRetrieveFollowers(props.user)
     .then((data) => (followers.value = data))
     .catch((error) => console.error(error));
 };
 
 const reloadFollowing = () => {
-  callRetrieveFollowing(props.profile)
+  callRetrieveFollowing(props.user)
     .then((data) => (following.value = data))
     .catch((error) => console.error(error));
-};
-
-const toggleFollow = async () => {
-  try {
-    const slug = props.profile.slug;
-
-    if (isFollowing.value) await callUnfollowUser(slug);
-    else await callFollowUser(slug);
-    reloadFollowers();
-  } catch (error) {
-    console.error(error);
-  }
 };
 
 const openFollowersList = async () => {
@@ -107,11 +88,7 @@ watch(
         <span>{{ following.length }}</span> Following
       </p>
     </div>
-    <div v-if="canFollowUser" class="follow-button">
-      <ion-button fill="outline" size="small" color="danger" @click="toggleFollow">
-        {{ isFollowing ? 'Unfollow' : 'Follow' }}
-      </ion-button>
-    </div>
+    <FollowButton v-if="canFollowUser" :user="user" class="follow-button" @toggle="reloadFollowers" />
   </div>
 </template>
 

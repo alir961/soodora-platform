@@ -3,7 +3,7 @@ import { IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle } from '@i
 import { User } from '@/entity/User';
 import { PropType } from 'vue';
 import RoleTagComponent from '@/component/user/RoleTagComponent.vue';
-import FollowCounter from '@/component/user/FollowCounter.vue';
+import FollowCounter from '@/component/follow/FollowCounter.vue';
 
 defineProps({
   profile: {
@@ -29,7 +29,7 @@ defineProps({
 
       <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
 
-      <FollowCounter :profile="profile" class="followers" />
+      <FollowCounter :user="profile" class="followers" />
     </ion-card-content>
   </div>
 </template>

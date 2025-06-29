@@ -35,7 +35,7 @@ const closeList = () => {
   <ion-header>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button fill="clear" size="default" @click="closeList" aria-label="Back">
+        <ion-button fill="clear" size="default" aria-label="Back" @click="closeList">
           <ion-icon :icon="arrowBackOutline" class="back-icon" />
           <span>Close</span>
         </ion-button>
@@ -45,7 +45,7 @@ const closeList = () => {
   </ion-header>
   <ion-content class="ion-padding">
     <ion-list>
-      <UserListItem v-for="(user, index) in users" :key="user.slug" :user="user" :isLast="index === users.length - 1" />
+      <UserListItem v-for="user in users" :key="user.slug" :user="user" @click="closeList" />
     </ion-list>
     <p v-if="users.length === 0" class="no-content">Nothing to display!</p>
   </ion-content>
@@ -83,9 +83,8 @@ ion-header {
 ion-content {
   padding: 1em;
 
-  & ion-item {
-    --background: var(--ion-background-color, #fff);
-    --padding-start: 0;
+  & ion-list {
+    background: var(--ion-background-color, #fff);
   }
 
   & .no-content {
