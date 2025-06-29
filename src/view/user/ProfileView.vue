@@ -27,7 +27,7 @@ import {
   callUpdateProfile,
 } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import OAuthButton from '@/component/user/OAuthButton.vue';
+import OAuthButton from '@/component/auth/OAuthButton.vue';
 import { logOutOutline, trashOutline, checkmarkOutline, arrowBackOutline } from 'ionicons/icons';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';

@@ -6,7 +6,7 @@ import { Router, useRouter, useRoute } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { logoGoogle } from 'ionicons/icons';
-import AuthenticationForm from '@/component/user/AuthenticationForm.vue';
+import AuthenticationForm from '@/component/auth/AuthenticationForm.vue';
 import { redirectToUrl } from '@/axiosConfiguration';
 
 const isLogin: Ref<boolean> = ref(true);
