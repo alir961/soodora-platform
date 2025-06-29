@@ -154,22 +154,29 @@ const exportProduct = async (product: Product) => {
       <div class="product-meta">
         <div class="vendor-info">
           <ion-avatar>
-            <Avatar :user="product.vendor" />
+            <Avatar :user="product.vendor" @click.stop />
           </ion-avatar>
-          <UsernameTag :user="product.vendor" />
+          <UsernameTag :user="product.vendor" @click.stop />
         </div>
-        <ion-button
-          v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
-          fill="clear"
-          size="default"
-          color="light"
-          @click.stop="askDeleteProduct(product.slug)"
-          class="delete-button">
-          <ion-icon :src="customTrashIcon" />
-        </ion-button>
-        <ion-button fill="clear" size="default" @click.stop="exportProduct(product)" class="delete-button">
-          <ion-icon :src="customShareIcon" />
-        </ion-button>
+        <div class="product-buttons">
+          <ion-button
+            v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
+            fill="clear"
+            size="default"
+            color="light"
+            class="delete-button"
+            @click.stop="askDeleteProduct(product.slug)">
+            <ion-icon :src="customTrashIcon" />
+          </ion-button>
+          <ion-button
+            fill="clear"
+            size="default"
+            color="light"
+            class="delete-button"
+            @click.stop="exportProduct(product)">
+            <ion-icon :src="customShareIcon" />
+          </ion-button>
+        </div>
       </div>
       <ion-card-header>
         <ion-card-title class="product-title">{{ product.name }}</ion-card-title>
@@ -196,7 +203,7 @@ const exportProduct = async (product: Product) => {
       :initial-breakpoint="modalBreakpoint"
       handle-behavior="cycle">
       <ion-content class="ion-padding modal-content">
-        <img ref="modalImageRef" :src="modalImageSrc" alt="Fullscreen product image" class="modal-image" />
+        <img ref="modalImageRef" :src="modalImageSrc" alt="Fullscreen product" class="modal-image" />
         <ion-button ref="addToCartBtnRef" expand="block" @click="showComingSoonToast" class="buy-button">
           Add to Cart
         </ion-button>
