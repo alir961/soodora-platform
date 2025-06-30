@@ -109,17 +109,16 @@ const openFeedbackForm = () => {
 }
 
 .feedback-button {
-  width: calc(100% - 2em);
-  margin-left: 1em;
-  margin-right: 1em;
+  width: 70%;
+  margin: 0 auto;
   background: linear-gradient(270deg, #6a11cb, #9425fc, #6a11cb, #9425fc);
   background-size: 400% 400%;
   animation: gradientFlow 6s ease-in-out infinite;
   color: #fff;
   text-align: center;
-  border-radius: 50px;
-  font-weight: 300;
-  padding: 0.5em 0;
+  border-radius: 15px;
+  font-weight: 500;
+  padding: 0.2em 0;
   font-size: 1.3em;
 }
 

@@ -32,7 +32,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
           <img v-else src="/assets/images/svg/avatar.svg" :alt="`${profile.username} avatar`" />
         </ion-card-title>
         <div>
-          <ion-card-title>{{ profile.username }}</ion-card-title>
+          <ion-card-title class="profile-username">{{ profile.username }}</ion-card-title>
           <div class="tag-and-follow">
             <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
             <FollowButton v-if="canFollow" :user="profile" @click.stop />
@@ -57,6 +57,10 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     font-size: 1.8em;
     letter-spacing: 0.05em;
     text-shadow: 0 0 2px rgba(0, 116, 228, 0.5);
+
+    &.profile-username {
+      font-size: 1.5em;
+    }
 
     img {
       border-radius: 50%;
@@ -91,6 +95,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
 
     .description {
       color: var(--ion-color-medium);
+      font-size: 1em;
     }
 
     .followers {
@@ -105,6 +110,10 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     display: flex;
     align-items: center;
     gap: 0.5em;
+
+    .role-tag {
+      font-size: 0.8em;
+    }
   }
 
   .header-content {

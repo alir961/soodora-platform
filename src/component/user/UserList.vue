@@ -1,17 +1,7 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
 import { User } from '@/entity/User';
-import {
-  modalController,
-  IonList,
-  IonHeader,
-  IonButtons,
-  IonButton,
-  IonTitle,
-  IonToolbar,
-  IonContent,
-  IonIcon,
-} from '@ionic/vue';
+import { modalController, IonList, IonButton, IonContent, IonIcon } from '@ionic/vue';
 import UserListItem from '@/component/user/UserListItem.vue';
 import { arrowBackOutline } from 'ionicons/icons';
 
@@ -25,72 +15,84 @@ defineProps({
     required: true,
   },
 });
-
-const closeList = () => {
-  modalController.dismiss(null, 'cancel');
-};
 </script>
 
 <template>
-  <ion-header>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-button fill="clear" size="default" aria-label="Back" @click="closeList">
-          <ion-icon :icon="arrowBackOutline" class="back-icon" />
-          <span>Close</span>
-        </ion-button>
-      </ion-buttons>
-      <ion-title>{{ title }}</ion-title>
-    </ion-toolbar>
-  </ion-header>
-  <ion-content class="ion-padding">
-    <ion-list>
-      <UserListItem v-for="user in users" :key="user.slug" :user="user" @click="closeList" />
+  <ion-content>
+    <div class="floating-header">
+      <ion-button
+        class="inline-back-button"
+        fill="clear"
+        size="large"
+        aria-label="Back"
+        @click="modalController.dismiss()">
+        <ion-icon :icon="arrowBackOutline" class="back-icon" />
+        <span>Back</span>
+      </ion-button>
+      <h2 class="floating-header-title">{{ title }}</h2>
+    </div>
+    <ion-list class="modal-item">
+      <UserListItem v-for="user in users" :key="user.slug" :user="user" @select="() => modalController.dismiss()" />
     </ion-list>
     <p v-if="users.length === 0" class="no-content">Nothing to display!</p>
   </ion-content>
 </template>
 
 <style scoped>
-ion-header {
+.floating-header {
   position: relative;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  padding-top: 3em;
+  padding-bottom: 1em;
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
 
-  & ion-toolbar {
-    --background: var(--ion-background-color, #fff);
+.floating-header-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5em;
+  color: var(--ion-color-light);
+  z-index: 1;
+  margin: 0;
+}
 
-    & ion-icon {
-      font-size: 1.2em;
-      vertical-align: middle;
-    }
+.inline-back-button {
+  font-size: 1.2em;
+  color: var(--ion-color-primary);
+  padding: 0 0.5em;
+}
 
-    & span {
-      margin-left: 0.1em;
-      font-size: 1.2em;
-    }
+.back-icon {
+  height: 20px;
+  width: 20px;
+  padding-bottom: 0.1em;
+  margin-right: 0.2em;
+  color: var(--ion-color-primary);
+}
 
-    & ion-title {
-      color: white;
-      font-size: 1.5em;
-    }
-  }
+.modal-item {
+  padding-left: 1.5em;
+  padding-right: 1.5em;
 }
 
 ion-content {
-  padding: 1em;
-
-  & ion-list {
-    background: var(--ion-background-color, #fff);
-  }
+  --padding-start: 1em;
+  --padding-end: 1em;
 
   & .no-content {
     width: 100%;
     text-align: center;
     font-size: 1.2em;
+    margin-top: 10em;
   }
+}
+
+ion-content::part(scroll) {
+  padding: 0;
+  background-color: var(--ion-color-primary-contrast);
 }
 </style>

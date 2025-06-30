@@ -80,7 +80,7 @@ const clickButton = async () => {
 <template>
   <div style="display: flex; justify-content: center">
     <div
-      @click="!disabled && clickButton"
+      @click="if (!disabled) clickButton();"
       :class="['oauth-button', provider.provider, { disabled }]"
       role="button"
       tabindex="0">
@@ -96,12 +96,11 @@ const clickButton = async () => {
 .oauth-button {
   color: white;
   box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.25);
-  width: 100%;
-  margin-left: 1.3em;
-  margin-right: 1.3em;
-  border-radius: 50px;
+  width: 70%;
+  margin: 0 auto;
+  border-radius: 15px;
   background-color: var(--ion-color-primary);
-  padding: 0.8em 1em;
+  padding: 0.4em 1em;
   cursor: pointer;
   user-select: none;
   outline: none;

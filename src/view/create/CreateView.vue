@@ -154,7 +154,7 @@ const publishProduct = async () => {
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
               </ion-button>
-              <h2>New Post</h2>
+              <h2 class="floating-header-title">New Post</h2>
             </div>
             <div id="section-content">
               <ion-item class="modal-item">
@@ -212,7 +212,7 @@ const publishProduct = async () => {
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
               </ion-button>
-              <h2>New Product</h2>
+              <h2 class="floating-header-title">New Product</h2>
             </div>
             <div id="section-content">
               <ion-item class="modal-item">
@@ -278,22 +278,34 @@ const publishProduct = async () => {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
-  padding: 20px;
+  padding-top: 3em;
+  padding-bottom: 1em;
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.floating-header-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.5em;
+  color: var(--ion-color-light);
+  z-index: 1;
+  margin: 0;
 }
 
 .back-icon {
-  margin-right: 6px;
+  height: 20px;
+  width: 20px;
+  padding-bottom: 0.1em;
+  margin-right: 0.2em;
+  color: var(--ion-color-primary);
 }
 
 .inline-back-button {
-  position: absolute;
-  left: 0px;
-  top: 50%;
-  transform: translateY(-50%);
-  --border-radius: 12px;
-  min-width: 80px;
-  min-height: 30px;
+  font-size: 1.2em;
+  color: var(--ion-color-primary);
+  padding: 0 0.5em;
 }
 
 #section-content {

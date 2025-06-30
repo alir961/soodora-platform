@@ -15,6 +15,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['select']);
+
 const authStore = useAuthStore();
 
 const canFollow = computed(() => {
@@ -29,7 +31,14 @@ const redirectToProfile = async () => {
 </script>
 
 <template>
-  <ion-item button @click="redirectToProfile">
+  <ion-item
+    button
+    @click="
+      () => {
+        emit('select');
+        redirectToProfile();
+      }
+    ">
     <ion-avatar slot="start">
       <Avatar :user="user" />
     </ion-avatar>
@@ -43,8 +52,6 @@ const redirectToProfile = async () => {
 ion-item {
   --border-width: 0;
   --border-style: none;
-  --background: var(--ion-background-color, #fff);
-
   & ion-avatar {
     width: 30px;
     height: 30px;

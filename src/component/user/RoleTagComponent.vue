@@ -33,8 +33,8 @@ defineProps({
 <style scoped>
 span {
   border-radius: 20px;
-  padding-left: 15px;
-  padding-right: 15px;
+  padding-left: 10px;
+  padding-right: 10px;
   padding-top: 5px;
   padding-bottom: 5px;
   font-weight: 600;

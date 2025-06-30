@@ -64,8 +64,8 @@ ion-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 4%;
-  margin-bottom: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
   height: 50px;
 }
 

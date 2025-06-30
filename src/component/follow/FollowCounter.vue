@@ -71,10 +71,10 @@ watch(
 <template>
   <div class="followers-container">
     <div class="counters">
-      <div class="counter" @click="openFollowersList">
+      <div @click="openFollowersList">
         <span>{{ followers.length }}</span> Followers
       </div>
-      <div class="counter" @click="openFollowingList">
+      <div @click="openFollowingList">
         <span>{{ following.length }}</span> Following
       </div>
     </div>
@@ -89,26 +89,22 @@ watch(
   }
 }
 
-.counter {
-  padding: 0.3em 1em;
+.counters > div {
+  padding: 0.3em 0.8em;
   border-radius: 20px;
   background-color: rgba(255, 255, 255, 0.06);
   font-weight: bold;
-  font-size: 1.2em;
+  font-size: 0.9em;
   color: var(--ion-color-medium);
   display: inline-block;
   cursor: pointer;
 }
 
-.counter span {
+.counters > div span {
   color: white;
 }
 
-.counter:active {
+.counters > div:active {
   background-color: rgba(255, 255, 255, 0.15);
-}
-
-.follow-button {
-  margin-top: 1em;
 }
 </style>

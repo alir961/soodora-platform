@@ -64,12 +64,12 @@ onMounted(() => {
 <style scoped>
 .follow-button {
   --border-radius: 20px;
-  --padding-start: 15px;
-  --padding-end: 15px;
+  --padding-start: 10px;
+  --padding-end: 10px;
   --padding-top: 5px;
   --padding-bottom: 5px;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 0.8rem;
   text-transform: none;
 }
 .follow-button:active {
