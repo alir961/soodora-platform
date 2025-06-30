@@ -51,9 +51,28 @@ onMounted(() => {
 </script>
 
 <template>
-  <ion-button fill="outline" size="small" color="danger" @click="toggleFollow">
+  <ion-button
+    class="follow-button"
+    fill="outline"
+    size="small"
+    :color="isFollowing ? 'danger' : 'primary'"
+    @click="toggleFollow">
     {{ isFollowing ? 'Unfollow' : 'Follow' }}
   </ion-button>
 </template>
 
-<style scoped></style>
+<style scoped>
+.follow-button {
+  --border-radius: 20px;
+  --padding-start: 15px;
+  --padding-end: 15px;
+  --padding-top: 5px;
+  --padding-bottom: 5px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: none;
+}
+.follow-button:active {
+  filter: brightness(0.9);
+}
+</style>

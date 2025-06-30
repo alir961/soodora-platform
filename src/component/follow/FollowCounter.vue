@@ -1,12 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, PropType, ref, watch } from 'vue';
+import { onMounted, PropType, ref, watch } from 'vue';
 import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
-import { useAuthStore } from '@/store/reactiveStorage';
 import { modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
 import UserList from '@/component/user/UserList.vue';
-import FollowButton from '@/component/follow/FollowButton.vue';
 
 const followers = ref<User[]>([]);
 const following = ref<User[]>([]);
@@ -18,14 +16,6 @@ const props = defineProps({
     type: Object as PropType<User>,
     required: true,
   },
-});
-
-const authStore = useAuthStore();
-
-const canFollowUser = computed(() => {
-  const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
-
-  return props.user.slug !== authenticatedUserSlug;
 });
 
 const reloadFollowers = () => {
@@ -81,14 +71,13 @@ watch(
 <template>
   <div class="followers-container">
     <div class="counters">
-      <p @click="openFollowersList">
+      <div class="counter" @click="openFollowersList">
         <span>{{ followers.length }}</span> Followers
-      </p>
-      <p @click="openFollowingList">
+      </div>
+      <div class="counter" @click="openFollowingList">
         <span>{{ following.length }}</span> Following
-      </p>
+      </div>
     </div>
-    <FollowButton v-if="canFollowUser" :user="user" class="follow-button" @toggle="reloadFollowers" />
   </div>
 </template>
 
@@ -97,16 +86,26 @@ watch(
   & .counters {
     display: flex;
     justify-content: space-between;
-
-    & p {
-      color: #999999;
-      font-weight: bold;
-
-      & > span {
-        color: white;
-      }
-    }
   }
+}
+
+.counter {
+  padding: 0.3em 1em;
+  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.06);
+  font-weight: bold;
+  font-size: 1.2em;
+  color: var(--ion-color-medium);
+  display: inline-block;
+  cursor: pointer;
+}
+
+.counter span {
+  color: white;
+}
+
+.counter:active {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .follow-button {

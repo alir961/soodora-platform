@@ -8,6 +8,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonTextarea,
   modalController,
   toastController,
 } from '@ionic/vue';
@@ -172,7 +173,7 @@ onMounted(() => {
       </ion-item>
       <ion-item class="modal-item">
         <ion-label position="stacked">Description</ion-label>
-        <ion-input placeholder="Add a description" v-model="descriptionInput" />
+        <ion-textarea placeholder="Add a description" v-model="descriptionInput" auto-grow />
       </ion-item>
       <ion-item class="modal-item">
         <div class="profile-picture-url-wrapper">

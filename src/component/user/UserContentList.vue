@@ -228,7 +228,8 @@ ion-grid {
   display: flex;
   justify-content: space-around;
   padding: 1rem 0;
-  background-color: #111;
+  background-color: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 

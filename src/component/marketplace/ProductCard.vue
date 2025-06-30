@@ -160,6 +160,14 @@ const exportProduct = async (product: Product) => {
         </div>
         <div class="product-buttons">
           <ion-button
+            fill="clear"
+            size="default"
+            color="light"
+            class="delete-button"
+            @click.stop="exportProduct(product)">
+            <ion-icon :src="customShareIcon" />
+          </ion-button>
+          <ion-button
             v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
             fill="clear"
             size="default"
@@ -167,14 +175,6 @@ const exportProduct = async (product: Product) => {
             class="delete-button"
             @click.stop="askDeleteProduct(product.slug)">
             <ion-icon :src="customTrashIcon" />
-          </ion-button>
-          <ion-button
-            fill="clear"
-            size="default"
-            color="light"
-            class="delete-button"
-            @click.stop="exportProduct(product)">
-            <ion-icon :src="customShareIcon" />
           </ion-button>
         </div>
       </div>

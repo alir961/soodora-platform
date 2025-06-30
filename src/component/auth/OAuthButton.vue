@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { alertController, IonButton, IonIcon, toastController } from '@ionic/vue';
+import { alertController, IonIcon, toastController } from '@ionic/vue';
 import { logoGoogle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
@@ -79,36 +79,53 @@ const clickButton = async () => {
 
 <template>
   <div style="display: flex; justify-content: center">
-    <ion-button
-      @click="clickButton"
-      expand="block"
-      :class="provider.provider"
-      :disabled="disabled"
-      style="width: 100%; max-width: 350px">
-      <span class="wrapper" style="width: 100%; justify-content: center">
+    <div
+      @click="!disabled && clickButton"
+      :class="['oauth-button', provider.provider, { disabled }]"
+      role="button"
+      tabindex="0">
+      <span class="wrapper">
         <ion-icon :icon="provider.icon" />
         {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
       </span>
-    </ion-button>
+    </div>
   </div>
 </template>
 
 <style scoped>
-ion-button {
-  --color: white;
-  --box-shadow: 0 2px 6px 0 rgb(0, 0, 0, 0.25);
+.oauth-button {
+  color: white;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.25);
+  width: 100%;
+  margin-left: 1.3em;
+  margin-right: 1.3em;
+  border-radius: 50px;
+  background-color: var(--ion-color-primary);
+  padding: 0.8em 1em;
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+  transition: opacity 0.2s ease;
+  margin-bottom: 0.8em;
+}
 
-  border-radius: 20px;
+.oauth-button.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: not-allowed;
+}
 
-  & .wrapper {
-    font-weight: bold;
-    display: flex;
-    align-items: center;
+.wrapper {
+  font-weight: bold;
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
 
-    & ion-icon {
-      margin-right: 10px;
-      font-size: 24px;
-    }
-  }
+.wrapper ion-icon {
+  margin-right: 10px;
+  padding-bottom: 0.2em;
 }
 </style>
