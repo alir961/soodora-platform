@@ -1,52 +1,66 @@
 <script setup lang="ts">
-import { IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle } from '@ionic/vue';
+import { IonCardContent, IonCardHeader, IonCardTitle } from '@ionic/vue';
 import { User } from '@/entity/User';
-import { PropType } from 'vue';
+import { PropType, computed } from 'vue';
+import { useAuthStore } from '@/store/reactiveStorage';
 import RoleTagComponent from '@/component/user/RoleTagComponent.vue';
-import FollowCounter from '@/component/user/FollowCounter.vue';
+import FollowCounter from '@/component/follow/FollowCounter.vue';
+import FollowButton from '@/component/follow/FollowButton.vue';
 
-defineProps({
+const props = defineProps({
   profile: {
     required: true,
     type: Object as PropType<User>,
   },
 });
+
+const authStore = useAuthStore();
+
+const canFollow = computed(() => {
+  return authStore.getAuthenticatedUserSlug !== props.profile.slug;
+});
+
+const formattedDescription = computed(() => props.profile.description?.replace(/\n/g, '<br>') ?? '');
 </script>
 
 <template>
   <div id="profile-container">
     <ion-card-header>
-      <ion-card-title>
-        <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.username} avatar`" />
-        <img v-else src="/assets/images/svg/avatar.svg" :alt="`${profile.username} avatar`" />
-        {{ profile.username }}
-      </ion-card-title>
-      <ion-card-subtitle>Account information</ion-card-subtitle>
+      <div class="header-content">
+        <ion-card-title>
+          <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.username} avatar`" />
+          <img v-else src="/assets/images/svg/avatar.svg" :alt="`${profile.username} avatar`" />
+        </ion-card-title>
+        <div>
+          <ion-card-title class="profile-username">{{ profile.username }}</ion-card-title>
+          <div class="tag-and-follow">
+            <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
+            <FollowButton v-if="canFollow" :user="profile" @click.stop />
+          </div>
+        </div>
+      </div>
     </ion-card-header>
 
     <ion-card-content>
-      <p>{{ profile.email }}</p>
-
-      <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
-
-      <FollowCounter :profile="profile" class="followers" />
+      <p v-html="formattedDescription" class="description" />
+      <FollowCounter :user="profile" class="followers" />
     </ion-card-content>
   </div>
 </template>
 
 <style scoped>
 #profile-container {
-  color: #e0e0f0;
-  font-family: 'Overpass', sans-serif;
-
   ion-card-title {
     display: flex;
     align-items: center;
-    margin-top: 0.5em;
     font-weight: 700;
     font-size: 1.8em;
     letter-spacing: 0.05em;
     text-shadow: 0 0 2px rgba(0, 116, 228, 0.5);
+
+    &.profile-username {
+      font-size: 1.5em;
+    }
 
     img {
       border-radius: 50%;
@@ -56,9 +70,10 @@ defineProps({
       border: 1px solid #0074e4;
       box-shadow: 0 0 4px #0074e4;
       transition: transform 0.3s ease;
-    }
-    img:hover {
-      transform: scale(1.1);
+
+      &:hover {
+        transform: scale(1.1);
+      }
     }
   }
 
@@ -70,31 +85,41 @@ defineProps({
   }
 
   ion-card-content {
+    padding-bottom: 1em;
     p {
       font-size: 1.1em;
       line-height: 1.6em;
-      margin-bottom: 1.5em;
       color: #c0c0e0;
       user-select: text;
     }
 
-    strong {
-      font-size: 1.3em;
-      line-height: 1.8em;
-      color: #db3030;
-      font-weight: 700;
+    .description {
+      color: var(--ion-color-medium);
+      font-size: 1em;
     }
 
     .followers {
       width: 100%;
-      margin-top: 1.5em;
-      border-top: 1px solid #3a3a5a;
+      margin-top: 0.5em;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
       padding-top: 1em;
+      margin-bottom: 0;
     }
+  }
+  .tag-and-follow {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
 
     .role-tag {
-      padding: 0.2em 0.8em;
+      font-size: 0.8em;
     }
+  }
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
   }
 }
 </style>

@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, PropType, ref, watch } from 'vue';
+import { onMounted, PropType, ref, watch } from 'vue';
 import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
-import { useAuthStore } from '@/store/reactiveStorage';
-import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
-import { IonButton, modalController } from '@ionic/vue';
+import { modalController } from '@ionic/vue';
 import { useRoute } from 'vue-router';
 import UserList from '@/component/user/UserList.vue';
 
@@ -14,49 +12,22 @@ const following = ref<User[]>([]);
 const route = useRoute();
 
 const props = defineProps({
-  profile: {
-    required: true,
+  user: {
     type: Object as PropType<User>,
+    required: true,
   },
 });
 
-const authStore = useAuthStore();
-
-const isFollowing = computed(() => {
-  const authenticatedUser = authStore.getAuthenticatedUser;
-
-  if (!authenticatedUser) return false;
-  return followers.value.some((follower) => follower.slug === authenticatedUser.slug);
-});
-
-const canFollowUser = computed(() => {
-  const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
-
-  return props.profile.slug !== authenticatedUserSlug;
-});
-
 const reloadFollowers = () => {
-  callRetrieveFollowers(props.profile)
+  callRetrieveFollowers(props.user)
     .then((data) => (followers.value = data))
     .catch((error) => console.error(error));
 };
 
 const reloadFollowing = () => {
-  callRetrieveFollowing(props.profile)
+  callRetrieveFollowing(props.user)
     .then((data) => (following.value = data))
     .catch((error) => console.error(error));
-};
-
-const toggleFollow = async () => {
-  try {
-    const slug = props.profile.slug;
-
-    if (isFollowing.value) await callUnfollowUser(slug);
-    else await callFollowUser(slug);
-    reloadFollowers();
-  } catch (error) {
-    console.error(error);
-  }
 };
 
 const openFollowersList = async () => {
@@ -100,17 +71,12 @@ watch(
 <template>
   <div class="followers-container">
     <div class="counters">
-      <p @click="openFollowersList">
+      <div @click="openFollowersList">
         <span>{{ followers.length }}</span> Followers
-      </p>
-      <p @click="openFollowingList">
+      </div>
+      <div @click="openFollowingList">
         <span>{{ following.length }}</span> Following
-      </p>
-    </div>
-    <div v-if="canFollowUser" class="follow-button">
-      <ion-button fill="outline" size="small" color="danger" @click="toggleFollow">
-        {{ isFollowing ? 'Unfollow' : 'Follow' }}
-      </ion-button>
+      </div>
     </div>
   </div>
 </template>
@@ -120,19 +86,25 @@ watch(
   & .counters {
     display: flex;
     justify-content: space-between;
-
-    & p {
-      color: #999999;
-      font-weight: bold;
-
-      & > span {
-        color: white;
-      }
-    }
   }
 }
 
-.follow-button {
-  margin-top: 1em;
+.counters > div {
+  padding: 0.3em 0.8em;
+  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.06);
+  font-weight: bold;
+  font-size: 0.9em;
+  color: var(--ion-color-medium);
+  display: inline-block;
+  cursor: pointer;
+}
+
+.counters > div span {
+  color: white;
+}
+
+.counters > div:active {
+  background-color: rgba(255, 255, 255, 0.15);
 }
 </style>

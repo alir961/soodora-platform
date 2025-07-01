@@ -35,6 +35,8 @@ import customTrashIcon from '@/assets/icons/trash.svg';
 import customPlayIcon from '@/assets/icons/play.svg';
 import customPauseIcon from '@/assets/icons/pause.svg';
 import UsernameTag from '@/component/user/UsernameTag.vue';
+import Avatar from '@/component/user/AvatarItem.vue';
+import DateDisplay from '@/component/date/DateDisplay.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -238,29 +240,6 @@ onMounted(() => {
   loadLikes(postSlug);
   loadReposts(postSlug);
 });
-function formatPostDate(dateInput: string | Date): string {
-  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-
-  const diffMinutes = Math.floor(diffMs / (1000 * 60));
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
-
-  const diffHours = Math.floor(diffMinutes / 60);
-  if (diffHours < 24) {
-    return `${diffHours}h`;
-  }
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 4) {
-    return `${diffDays}d`;
-  }
-
-  // Otherwise, show date as DD/MM/YYYY
-  return date.toLocaleDateString();
-}
 
 function formatCount(count: number): string {
   if (count === 0) return '';
@@ -286,12 +265,12 @@ const formatTime = (time: number) => {
       <ion-card-header class="post-header">
         <div class="header-line">
           <ion-avatar>
-            <img :src="post.owner.avatarUrl || '/assets/images/svg/avatar.svg'" alt="avatar" />
+            <Avatar :user="post.owner" />
           </ion-avatar>
           <div class="post-header-content">
             <div class="header-row">
               <UsernameTag :user="post.owner" />
-              <span class="post-date">{{ formatPostDate(post.createdAt) }}</span>
+              <DateDisplay :date="post.createdAt" class="post-date" />
             </div>
             <span class="post-title">{{ post.title }}</span>
           </div>

@@ -39,8 +39,8 @@ onMounted(async () => {
         <slot name="buttons"></slot>
       </ion-buttons>
       <ion-toolbar style="--background: #0d0d0d">
-        <div id="header">
-          <div id="header-image-container">
+        <div class="header">
+          <div class="header-image-container">
             <img src="/assets/images/png/banner-light.png" alt="Soodora banner" />
           </div>
           <slot name="toolbar"></slot>
@@ -60,16 +60,16 @@ ion-header {
   color: white;
 }
 
-#header {
+.header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  margin-top: 4%;
-  margin-bottom: 4%;
+  margin-top: 2%;
+  margin-bottom: 2%;
   height: 50px;
 }
 
-#header-image-container {
+.header-image-container {
   padding-left: 1em;
   display: flex;
   justify-content: flex-start;
@@ -77,7 +77,7 @@ ion-header {
   width: 50%;
 }
 
-#header-image-container img {
+.header-image-container img {
   width: auto;
   align-items: center;
 }

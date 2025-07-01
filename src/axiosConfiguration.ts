@@ -15,8 +15,6 @@ export function redirectToUrl(url: string) {
 export function configureAxios(): void {
   axios.defaults.baseURL = import.meta.env.VITE_API_URL as string;
   axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-  axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-  axios.defaults.headers.common['Access-Control-Allow-Methods'] = 'POST, GET, OPTIONS, PUT, DELETE';
 
   axios.interceptors.response.use(
     (response) => response,

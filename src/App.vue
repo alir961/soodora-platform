@@ -73,7 +73,6 @@ watchEffect(() => {
   <ion-app>
     <ion-tabs>
       <ion-router-outlet />
-
       <ion-tab-bar v-if="!fullscreenRoutes.includes($route.path)" slot="bottom">
         <ion-tab-button v-for="tab in filteredTabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
           <ion-icon :icon="tab.icon" />

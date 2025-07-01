@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   alertController,
-  AlertInput,
   IonButton,
   IonCard,
   IonCardContent,
@@ -10,17 +9,22 @@ import {
   IonCardTitle,
   IonCol,
   IonIcon,
+  IonModal,
+  IonContent,
+  IonAvatar,
   toastController,
+  AlertInput,
 } from '@ionic/vue';
 import { Product } from '@/entity/Product';
-import { PropType, Ref, ref } from 'vue';
+import { PropType, ref } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import customTrashIcon from '@/assets/icons/trash.svg';
 import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct } from '@/client/productClient';
-import { Post } from '@/entity/Post';
-import { createPostCanvas, createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
+import Avatar from '@/component/user/AvatarItem.vue';
+import DateDisplay from '@/component/date/DateDisplay.vue';
+import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 
 defineProps({
   product: {
@@ -32,11 +36,40 @@ defineProps({
 const emit = defineEmits(['product-deleted']);
 
 const authStore = useAuthStore();
+const showImageModal = ref(false);
+const modalImageSrc = ref('');
+const modalBreakpoint = ref(0.5);
+const modalImageRef = ref<HTMLImageElement | null>(null);
+const addToCartBtnRef = ref<HTMLElement | null>(null);
+const productImageHeight = ref(0);
 
-const focusedProduct: Ref<Product | null> = ref(null);
+const onProductImageLoad = (event: Event) => {
+  const img = event.target as HTMLImageElement;
+  productImageHeight.value = img.clientHeight;
+};
 
-const focusProduct = (product: Product) => {
-  focusedProduct.value = focusedProduct.value === product ? null : product;
+const openImageModal = (src: string) => {
+  modalImageSrc.value = src;
+  const buttonAndPaddingHeight = 180;
+  const scaledImageHeight = productImageHeight.value * 1.1;
+  const totalHeightPx = scaledImageHeight + buttonAndPaddingHeight;
+  const viewportHeight = window.innerHeight;
+  modalBreakpoint.value = Math.min(Math.max(totalHeightPx / viewportHeight, 0.2), 1);
+  showImageModal.value = true;
+};
+
+const closeImageModal = () => {
+  showImageModal.value = false;
+};
+
+const showComingSoonToast = async () => {
+  const toast = await toastController.create({
+    message: 'This feature is coming soon!',
+    duration: 1500,
+    color: 'primary',
+    position: 'top',
+  });
+  await toast.present();
 };
 
 const askDeleteProduct = async (slug: string) => {
@@ -114,37 +147,173 @@ const exportProduct = async (product: Product) => {
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
-    <ion-card @click="focusProduct(product)" :class="{ focused: focusedProduct === product }">
-      <img :src="product.imageUrl" :alt="`Product ${product.name}`" />
+    <ion-card @click="openImageModal(product.imageUrl)">
+      <div class="product-image-wrapper">
+        <img :src="product.imageUrl" :alt="`Product ${product.name}`" @load="onProductImageLoad" />
+      </div>
+      <div class="product-meta">
+        <div class="vendor-info">
+          <ion-avatar>
+            <Avatar :user="product.vendor" @click.stop />
+          </ion-avatar>
+          <UsernameTag :user="product.vendor" @click.stop />
+        </div>
+        <div class="product-buttons">
+          <ion-button
+            fill="clear"
+            size="default"
+            color="light"
+            class="delete-button"
+            @click.stop="exportProduct(product)">
+            <ion-icon :src="customShareIcon" />
+          </ion-button>
+          <ion-button
+            v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
+            fill="clear"
+            size="default"
+            color="light"
+            class="delete-button"
+            @click.stop="askDeleteProduct(product.slug)">
+            <ion-icon :src="customTrashIcon" />
+          </ion-button>
+        </div>
+      </div>
       <ion-card-header>
-        <ion-card-title>{{ product.name }}</ion-card-title>
-        <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
+        <ion-card-title class="product-title">{{ product.name }}</ion-card-title>
+        <div class="category-date-row">
+          <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
+          <DateDisplay :date="product.createdAt" class="product-date" />
+        </div>
       </ion-card-header>
       <ion-card-content>
-        <p>{{ product.description }}</p>
-        <p>Price: {{ product.price !== null ? product.price.toFixed(2) + '€' : 'No price' }}</p>
-        <p>Available Quantity: {{ product.quantity !== null ? product.quantity : 'No quantity' }}</p>
-        <p>Vendor: <UsernameTag :user="product.vendor" /></p>
-        <ion-button v-if="focusedProduct === product" expand="block">Add to Cart</ion-button>
+        <p class="product-description">{{ product.description }}</p>
+        <div class="price-quantity-row">
+          <h3 class="product-price">
+            {{ product.price !== null ? product.price.toFixed(2) + '€' : 'No price' }}
+          </h3>
+          <p class="product-quantity">In Stock: {{ product.quantity !== null ? product.quantity : 'N/A' }}</p>
+        </div>
       </ion-card-content>
-      <ion-button
-        v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
-        fill="clear"
-        size="default"
-        @click.stop="askDeleteProduct(product.slug)"
-        class="delete-button">
-        <ion-icon :src="customTrashIcon" />
-      </ion-button>
-      <ion-button fill="clear" size="default" @click.stop="exportProduct(product)" class="delete-button">
-        <ion-icon :src="customShareIcon" />
-      </ion-button>
     </ion-card>
+    <ion-modal
+      :is-open="showImageModal"
+      @did-dismiss="closeImageModal"
+      backdrop-dismiss="true"
+      :breakpoints="[0, modalBreakpoint]"
+      :initial-breakpoint="modalBreakpoint"
+      handle-behavior="cycle">
+      <ion-content class="ion-padding modal-content">
+        <img ref="modalImageRef" :src="modalImageSrc" alt="Fullscreen product" class="modal-image" />
+        <ion-button ref="addToCartBtnRef" expand="block" @click="showComingSoonToast" class="buy-button">
+          Add to Cart
+        </ion-button>
+      </ion-content>
+    </ion-modal>
   </ion-col>
 </template>
 
 <style scoped>
-.focused {
-  border: 0.2em solid #3880ff;
-  transform: scale(1.05);
+ion-card-header {
+  padding-bottom: 0;
+  padding-top: 0;
+}
+
+ion-card-subtitle {
+  font-size: 1rem;
+}
+
+.product-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.product-image-wrapper {
+  width: 100%;
+  max-height: 250px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.product-image-wrapper img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.product-date {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--ion-color-medium);
+  margin-left: auto;
+}
+
+.product-description {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.product-meta {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+}
+
+.vendor-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 1rem;
+}
+
+.product-price {
+  font-weight: bold;
+  font-size: 1.3rem;
+  margin-bottom: 0.25rem;
+}
+
+.product-quantity {
+  font-size: 1rem;
+}
+
+.product-title {
+  font-size: 1.35rem;
+}
+
+.modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-image {
+  border-radius: 15px;
+}
+
+.buy-button {
+  margin-top: 1rem;
+  --background: var(--ion-color-primary);
+  --color: white;
+}
+
+.price-quantity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 0.5rem;
+}
+
+.vendor-info ion-avatar {
+  width: 32px;
+  height: 32px;
+}
+
+.category-date-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
 }
 </style>

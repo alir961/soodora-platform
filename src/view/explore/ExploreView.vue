@@ -4,7 +4,6 @@ import {
   toastController,
   IonInfiniteScroll,
   IonInfiniteScrollContent,
-  IonGrid,
   IonRow,
   IonPage,
   onIonViewWillEnter,
@@ -104,43 +103,42 @@ onIonViewWillEnter(() => {
 
       <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
         <swiper-slide>
-          <ion-grid>
-            <ion-row>
-              <div v-for="post in posts" :key="post.slug" class="post-wrapper">
-                <PostCard
-                  :post="post"
-                  @post-deleted="() => loadPosts('for-you', true)"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="postcard" />
-              </div>
-            </ion-row>
-          </ion-grid>
+          <ion-row no-bounce>
+            <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+              <PostCard
+                :post="post"
+                @post-deleted="() => loadPosts('for-you', true)"
+                @post-like="post.likeCount++"
+                @post-unlike="post.likeCount--"
+                @post-repost="post.repostCount++"
+                @post-unrepost="post.repostCount--"
+                class="postcard" />
+            </div>
+          </ion-row>
           <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
             <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
           </ion-infinite-scroll>
         </swiper-slide>
 
         <swiper-slide>
-          <ion-grid>
-            <ion-row>
-              <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
-                <PostCard
-                  :post="post"
-                  @post-deleted="() => loadPosts('following', true)"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="postcard" />
-              </div>
-              <div v-if="followingPosts.length === 0" class="no-content">
-                <p>Follow someone to see their posts!</p>
-              </div>
-            </ion-row>
-          </ion-grid>
+          <ion-row no-bounce>
+            <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
+              <PostCard
+                :post="post"
+                @post-deleted="() => loadPosts('following', true)"
+                @post-like="post.likeCount++"
+                @post-unlike="post.likeCount--"
+                @post-repost="post.repostCount++"
+                @post-unrepost="post.repostCount--"
+                class="postcard" />
+            </div>
+            <div v-if="followingPosts.length === 0" class="no-content">
+              <p class="no-content-text">
+                Follow someone<br />
+                to see their posts!
+              </p>
+            </div>
+          </ion-row>
           <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
             <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
           </ion-infinite-scroll>
@@ -151,12 +149,6 @@ onIonViewWillEnter(() => {
 </template>
 
 <style scoped>
-ion-grid {
-  width: 100%;
-  padding: 0;
-  margin: 0;
-}
-
 .tab-header {
   display: flex;
   justify-content: space-around;
@@ -187,9 +179,18 @@ ion-grid {
 }
 
 .no-content {
-  text-align: center;
-  width: 80%;
-  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: calc(50vh);
+  margin: 0;
   font-size: 1.2rem;
+  color: var(--ion-color-medium);
+}
+
+.no-content-text {
+  text-align: center;
+  width: 100%;
 }
 </style>
