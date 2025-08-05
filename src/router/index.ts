@@ -11,6 +11,8 @@ import CommentView from '@/view/explore/CommentView.vue';
 import CreateView from '@/view/create/CreateView.vue';
 import LinkPageView from '@/view/create/LinkPageView.vue';
 import SearchView from '@/view/search/SearchView.vue';
+import PaymentSuccessView from '@/view/marketplace/PaymentSuccessView.vue';
+import PaymentCancelView from '@/view/marketplace/PaymentCancelView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -66,6 +68,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/marketplace',
     name: 'Marketplace',
     component: MarketPlaceView,
+  },
+  {
+    path: '/marketplace/payment/success',
+    name: 'PaymentSuccess',
+    component: PaymentSuccessView,
+  },
+  {
+    path: '/marketplace/payment/cancel',
+    name: 'PaymentCancel',
+    component: PaymentCancelView,
   },
   {
     path: '/maintenance',
