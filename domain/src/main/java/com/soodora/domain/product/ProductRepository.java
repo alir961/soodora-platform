@@ -10,6 +10,7 @@ public interface ProductRepository {
 
     ProductDTO save(CreateProductCommand command, UserDTO user);
     ProductDTO update(UpdateProductCommand command, String slug);
+    void updateQuantity(String slug, long quantity);
     ProductDTO findBySlug(String slug);
     Page<ProductDTO> findAll(Pageable pageable);
     Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable);

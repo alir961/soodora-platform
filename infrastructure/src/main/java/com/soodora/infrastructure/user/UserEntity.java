@@ -10,6 +10,7 @@ import com.soodora.infrastructure.post.CommentEntity;
 import com.soodora.infrastructure.post.LikeEntity;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.product.ProductEntity;
+import com.soodora.infrastructure.sale.SaleEntity;
 
 import java.util.*;
 
@@ -75,6 +76,9 @@ public class UserEntity implements DomainEntity<UserDTO> {
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<ProductEntity> products;
+
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
+    private List<SaleEntity> sales;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PlaylistEntity> playlists;

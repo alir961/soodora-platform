@@ -29,6 +29,7 @@ public class UserEntityFactory extends UserFactory {
                 emptyList(),
                 emptyList(),
                 emptyList(),
+                emptyList(),
                 null,
                 emptySet(),
                 emptySet(),

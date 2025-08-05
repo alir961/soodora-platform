@@ -68,9 +68,20 @@ public class ProductRepositoryImpl implements ProductRepository {
         if (command.getPrice() != 0 && command.getPrice() != existingProduct.getPrice())
             existingProduct.setPrice(command.getPrice());
         if (command.getQuantity() != 0 && command.getQuantity() != existingProduct.getQuantity())
-            existingProduct.setQuantity(command.getPrice());
+            existingProduct.setQuantity(command.getQuantity());
 
         return repository.save(existingProduct).toDTO();
+    }
+
+    @Override
+    @Transactional
+    public void updateQuantity(String slug, long quantity) {
+        ProductEntity existingProduct = findProductBySlugOrThrow(slug);
+
+        if (quantity != 0 && quantity != existingProduct.getQuantity())
+            existingProduct.setQuantity(quantity);
+
+        repository.save(existingProduct).toDTO();
     }
 
     @Override

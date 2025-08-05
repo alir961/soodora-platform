@@ -71,6 +71,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/linkpages").permitAll()
                         .requestMatchers(GET, "/linkpages/**").permitAll()
                         .requestMatchers("/auth/google").permitAll()
+                        .requestMatchers("/payments/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
