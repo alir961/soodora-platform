@@ -2,6 +2,7 @@ package com.soodora.api.payment;
 
 import com.soodora.service.stripe.CheckoutSessionRequest;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/payments")
+@Tag(name = "Payment Controller")
 public class PaymentController {
 
     @Value("${stripe.secret.key}")

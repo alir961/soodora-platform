@@ -30,6 +30,7 @@ public class SaleRepositoryImpl implements SaleRepository {
     private final ProductJpaRepository productRepository;
 
     @Override
+    @Transactional
     public SaleDTO save(SaveSaleCommand sale) {
         SaleEntity entity = new SaleEntity();
         UserEntity userEntity = userRepository.findBySlug(sale.user().slug())
@@ -45,12 +46,14 @@ public class SaleRepositoryImpl implements SaleRepository {
     }
 
     @Override
+    @Transactional
     public SaleDTO findBySlug(String slug) {
         return findSaleBySlugOrThrow(slug).toDTO();
 
     }
 
     @Override
+    @Transactional
     public Page<SaleDTO> findAll(Pageable pageable) {
         return repository.findAll(pageable).map(SaleEntity::toDTO);
     }

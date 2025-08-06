@@ -4,6 +4,8 @@ import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.service.stripe.StripePaymentService;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,17 +17,15 @@ import com.stripe.net.Webhook;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/payments")
+@Tag(name = "Stripe Webhook Controller")
 public class StripeWebhookController {
 
     @Value("${stripe.webhook.secret}")
     private String webhookSecret;
 
     private final StripePaymentService stripePaymentService;
-
-    public StripeWebhookController(StripePaymentService stripePaymentService) {
-        this.stripePaymentService = stripePaymentService;
-    }
 
     @PostMapping("/webhook")
     public ResponseEntity<JsonResponse> handleStripeWebhook(
