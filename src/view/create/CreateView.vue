@@ -115,6 +115,10 @@ const publishProduct = async () => {
     await toast.present();
   }
 };
+
+const goToSalesPage = async () => {
+  await router.push('/marketplace/mysales');
+};
 </script>
 
 <template>
@@ -139,6 +143,10 @@ const publishProduct = async () => {
       <ion-button @click="goToLinkPages" expand="block" class="go-button" color="primary" fill="solid">
         {{ hasLinkPage ? 'Edit your LinkPage' : 'Create a LinkPage' }}
         <ion-icon :icon="linkOutline" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" class="go-button" color="secondary" fill="solid" @click="goToSalesPage">
+        My Sales
       </ion-button>
 
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
@@ -384,5 +392,12 @@ ion-button.post-button::part(native) {
 .create-post {
   --background: var(--ion-color-primary);
   --color: rgb(255, 255, 255);
+}
+
+.go-button {
+  margin-top: 20px;
+  background: var(--ion-background-color);
+  border-radius: 12px;
+  padding: 10px 20px;
 }
 </style>

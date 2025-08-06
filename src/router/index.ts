@@ -13,6 +13,7 @@ import LinkPageView from '@/view/create/LinkPageView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentSuccessView from '@/view/marketplace/PaymentSuccessView.vue';
 import PaymentCancelView from '@/view/marketplace/PaymentCancelView.vue';
+import MySaleView from '@/view/marketplace/MySaleView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -78,6 +79,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/marketplace/payment/cancel',
     name: 'PaymentCancel',
     component: PaymentCancelView,
+  },
+  {
+    path: '/marketplace/mysales',
+    name: 'MySales',
+    component: MySaleView,
   },
   {
     path: '/maintenance',

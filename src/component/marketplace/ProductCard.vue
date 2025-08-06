@@ -96,7 +96,7 @@ const goToCheckout = async (product: Product) => {
   try {
     const response = await createCheckoutSession({
       name: product.name,
-      amount: Math.round(product.price * 100) * quantity.value,
+      amount: Math.round(product.price * 100),
       imageUrl: product.imageUrl,
       productSlug: product.slug,
       buyerSlug: product.vendor.slug,
