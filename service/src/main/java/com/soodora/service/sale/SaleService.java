@@ -2,10 +2,12 @@ package com.soodora.service.sale;
 
 import com.soodora.domain.sale.SaleDTO;
 import com.soodora.domain.sale.SaleRepository;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 

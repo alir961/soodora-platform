@@ -40,6 +40,7 @@ public class SaleRepositoryImpl implements SaleRepository {
 
         entity.setProduct(productEntity);
         entity.setQuantitySold(sale.quantitySold());
+        entity.setAmount(sale.amount());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
         return repository.save(entity).toDTO();

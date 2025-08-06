@@ -9,6 +9,7 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.service.product.UnknownProductException;
 import com.soodora.service.user.UnknownUserException;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -46,7 +47,9 @@ public class StripePaymentService {
 
             productRepository.updateQuantity(productSlug, productDTO.quantity() - quantityBought);
 
-            SaveSaleCommand saleCmd = new SaveSaleCommand(productDTO, userDTO, quantityBought);
+            BigDecimal amount = BigDecimal.valueOf(productDTO.price()).multiply(BigDecimal.valueOf(quantityBought));
+
+            SaveSaleCommand saleCmd = new SaveSaleCommand(productDTO, userDTO, quantityBought, amount);
             saleRepository.save(saleCmd);
         }
     }

@@ -5,6 +5,7 @@ import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.UUID;
 
@@ -38,6 +39,8 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
 
     private long quantitySold;
 
+    private BigDecimal amount;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;
@@ -53,6 +56,7 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
                 product.toDTO(),
                 user.toDTO(),
                 quantitySold,
+                amount,
                 createdAt);
     }
 

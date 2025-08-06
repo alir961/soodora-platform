@@ -4,6 +4,7 @@ CREATE TABLE sales (
                        product_id UUID NOT NULL,
                        user_id UUID NOT NULL,
                        quantity_sold BIGINT NOT NULL,
+                       amount NUMERIC(15, 2) NOT NULL,
                        created_at TIMESTAMP NULL,
                        updated_at TIMESTAMP NULL,
                        CONSTRAINT pk_sales PRIMARY KEY (id)
