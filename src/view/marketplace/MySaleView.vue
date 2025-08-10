@@ -27,6 +27,9 @@ const hasMore = ref(true);
 const fetchSales = async (pageNumber: number) => {
   try {
     const newSales = await getMySales(pageNumber, size, 'quantitySold');
+
+    newSales.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     if (newSales.length < size) {
       hasMore.value = false;
     }
@@ -86,6 +89,7 @@ onMounted(async () => {
             <span class="quantity">Sold: {{ sale.quantitySold }}</span>
           </div>
           <div class="sale-date">{{ new Date(sale.createdAt).toLocaleString() }}</div>
+          <div class="sale-date">{{ sale.buyer.username + ' ' + sale.buyer.email }}</div>
           <div class="sale-price">
             Unit price:
             {{ sale.product.price !== null ? sale.product.price.toFixed(2) + '€' : 'No price' }}

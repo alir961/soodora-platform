@@ -1,4 +1,4 @@
-import { User } from '@/entity/User';
+import { Artist } from '@/entity/Artist';
 
 interface ProductSearchParams {
   name?: string;
@@ -18,7 +18,7 @@ interface Product {
   category: string;
   price: number | null;
   quantity: number | null;
-  vendor: User;
+  vendor: Artist;
   createdAt: Date;
 }
 

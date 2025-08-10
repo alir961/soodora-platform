@@ -5,6 +5,7 @@ export interface CheckoutSessionRequest {
   amount: number;
   imageUrl?: string | null;
   productSlug: string;
+  vendorSlug: string;
   buyerSlug: string;
   quantity: number;
 }

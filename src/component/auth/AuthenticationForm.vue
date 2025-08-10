@@ -5,7 +5,7 @@ import { callLogin, callRegister, RegisterRequest } from '@/client/authenticatio
 import { saveBearerToken } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { fetchLoggedArtist, retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const { isLogin } = defineProps({
   isLogin: Boolean,
@@ -26,17 +26,29 @@ const lastname: Ref<string> = ref('');
 const login = async () => {
   try {
     const token = await callLogin({ email: email.value, password: password.value });
-
     await saveBearerToken(token);
+
+    const user = await retrieveAuthenticatedProfile();
+    authStore.authenticate(user);
+
+    if (user.roles.includes('ARTIST')) {
+      const artist = await fetchLoggedArtist();
+      if (artist?.slug) {
+        authStore.setArtistSlug(artist.slug);
+      } else {
+        authStore.setArtistSlug(null);
+      }
+    } else {
+      authStore.setArtistSlug(null);
+    }
+
     await router.push('/explore');
-    authStore.authenticate(await retrieveAuthenticatedProfile());
   } catch (error) {
     const toast = await toastController.create({
       message: 'Login Failed!',
       duration: 1500,
       position: 'top',
     });
-
     await toast.present();
   }
 };

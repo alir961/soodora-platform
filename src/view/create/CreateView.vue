@@ -27,10 +27,10 @@ const authStore = useAuthStore();
 const hasLinkPage = ref(false);
 
 const checkUserLinkPage = async () => {
-  const currentUser = authStore.getAuthenticatedUser;
-  if (currentUser) {
+  const currentArtistSlug = authStore.getAuthenticatedArtistSlug;
+  if (currentArtistSlug) {
     try {
-      const userPage = await getUserLinkPage(currentUser.slug);
+      const userPage = await getUserLinkPage(currentArtistSlug);
       hasLinkPage.value = !!userPage;
     } catch (error) {
       hasLinkPage.value = false;
@@ -45,11 +45,11 @@ onMounted(() => {
 });
 
 const goToLinkPages = async () => {
-  const currentUser = authStore.getAuthenticatedUser;
+  const currentArtistSlug = authStore.getAuthenticatedArtistSlug;
 
-  if (currentUser) {
+  if (currentArtistSlug) {
     try {
-      const userPage = await getUserLinkPage(currentUser.slug);
+      const userPage = await getUserLinkPage(currentArtistSlug);
 
       if (userPage) {
         await router.push(`/linkpages/${userPage.slug}`);

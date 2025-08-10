@@ -66,9 +66,9 @@ async function callRetrieveFollowing(user: User): Promise<User[]> {
     .catch(reject);
 }
 
-async function callRetrieveUserPosts(user: User, pageable: Pageable): Promise<PostPage> {
+async function callRetrieveUserPosts(artistSlug: string, pageable: Pageable): Promise<PostPage> {
   return axios
-    .get(`/users/${user.slug}/posts`, { params: pageable, headers: await getAuthorizedHeader() })
+    .get(`/users/${artistSlug}/posts`, { params: pageable, headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response.status !== 200 || !response.data) return reject('Unable to call API');
       if (!response.data.content) return reject('Unable to parse API response');
@@ -94,9 +94,9 @@ async function callRetrieveUserReposts(user: User, pageable: Pageable): Promise<
     .catch(reject);
 }
 
-async function callRetrieveUserAudios(user: User, pageable: Pageable): Promise<PostPage> {
+async function callRetrieveUserAudios(artistSlug: string, pageable: Pageable): Promise<PostPage> {
   return axios
-    .get(`/users/${user.slug}/audios`, { params: pageable, headers: await getAuthorizedHeader() })
+    .get(`/users/${artistSlug}/audios`, { params: pageable, headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response.status !== 200 || !response.data) return reject('Unable to call API');
       if (!response.data.content) return reject('Unable to parse API response');
@@ -108,9 +108,9 @@ async function callRetrieveUserAudios(user: User, pageable: Pageable): Promise<P
     .catch(reject);
 }
 
-async function callRetrieveUserProduct(user: User, pageable: Pageable): Promise<ProductPage> {
+async function callRetrieveUserProduct(artistSlug: string, pageable: Pageable): Promise<ProductPage> {
   return axios
-    .get(`/users/${user.slug}/products`, { params: pageable, headers: await getAuthorizedHeader() })
+    .get(`/users/${artistSlug}/products`, { params: pageable, headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response.status !== 200 || !response.data) return reject('Unable to call API');
       if (!response.data.content) return reject('Unable to parse API response');

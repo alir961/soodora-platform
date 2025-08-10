@@ -2,7 +2,7 @@
 import { IonContent, IonHeader, IonPage, IonToolbar, IonButtons } from '@ionic/vue';
 import { checkStatus } from '@/client/authenticationClient';
 import { onMounted } from 'vue';
-import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { fetchLoggedArtist, retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { loadBearerToken } from '@/store/localStorage';
 
@@ -26,6 +26,8 @@ onMounted(async () => {
     await loadBearerToken();
 
     authStore.authenticate(await retrieveAuthenticatedProfile());
+    const artist = await fetchLoggedArtist();
+    if (artist) authStore.setArtistSlug(artist?.slug);
   } catch (error) {
     authStore.logout();
   }

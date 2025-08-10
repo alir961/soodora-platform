@@ -25,6 +25,10 @@ const props = defineProps({
     required: true,
     type: Object as PropType<User>,
   },
+  artistSlug: {
+    type: String as PropType<string | null>,
+    default: null,
+  },
 });
 
 const isLoading = ref(false);
@@ -74,9 +78,12 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
     let postPage: PostPage | null = null;
 
     isLoading.value = true;
-    if (filter === 'posts') postPage = await callRetrieveUserPosts(props.user, pageable);
+    if (props.artistSlug) {
+      if (filter === 'posts') postPage = await callRetrieveUserPosts(props.artistSlug, pageable);
+      if (filter === 'audios') postPage = await callRetrieveUserAudios(props.artistSlug, pageable);
+    }
+
     if (filter === 'reposts') postPage = await callRetrieveUserReposts(props.user, pageable);
-    if (filter === 'audios') postPage = await callRetrieveUserAudios(props.user, pageable);
     if (!postPage) return;
 
     if (reset) {
@@ -101,18 +108,20 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
 };
 
 const loadProducts = async (reset: boolean) => {
-  const page = reset ? 0 : currentPostPage.value;
-  const pageable = { page, size: PAGE_SIZE };
-  const productPage = await callRetrieveUserProduct(props.user, pageable);
+  if (props.artistSlug) {
+    const page = reset ? 0 : currentPostPage.value;
+    const pageable = { page, size: PAGE_SIZE };
+    const productPage = await callRetrieveUserProduct(props.artistSlug, pageable);
 
-  if (reset) {
-    products.value = productPage.content;
-    currentProductPage.value = 1;
-  } else {
-    products.value.push(...productPage.content);
-    currentProductPage.value++;
+    if (reset) {
+      products.value = productPage.content;
+      currentProductPage.value = 1;
+    } else {
+      products.value.push(...productPage.content);
+      currentProductPage.value++;
+    }
+    hasMoreProduct.value = productPage.hasMore;
   }
-  hasMoreProduct.value = productPage.hasMore;
 };
 
 const onInfinite = async (ev: CustomEvent<void>) => {

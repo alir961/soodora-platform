@@ -93,13 +93,23 @@ const goToCheckout = async (product: Product) => {
     return;
   }
 
+  let userSlug: string | null = null;
+  const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
+  if (authenticatedUserSlug === null) {
+    console.error('Artist slug is null');
+    return;
+  } else {
+    userSlug = authenticatedUserSlug;
+  }
+
   try {
     const response = await createCheckoutSession({
       name: product.name,
       amount: Math.round(product.price * 100),
       imageUrl: product.imageUrl,
       productSlug: product.slug,
-      buyerSlug: product.vendor.slug,
+      vendorSlug: product.vendor.slug,
+      buyerSlug: userSlug,
       quantity: quantity.value,
     });
 
@@ -205,7 +215,7 @@ const exportProduct = async (product: Product) => {
             <ion-icon :src="customShareIcon" />
           </ion-button>
           <ion-button
-            v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
+            v-if="product.vendor.slug === authStore.getAuthenticatedArtistSlug"
             fill="clear"
             size="default"
             color="light"

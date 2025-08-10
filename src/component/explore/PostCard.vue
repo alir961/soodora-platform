@@ -331,7 +331,7 @@ const formatTime = (time: number) => {
             </ion-button>
           </div>
           <ion-button
-            v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+            v-if="post.owner.slug === authStore.getAuthenticatedArtistSlug"
             fill="clear"
             size="default"
             @click.stop="askDeletePost(post.slug)"

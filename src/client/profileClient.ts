@@ -3,6 +3,7 @@ import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { User } from '@/entity/User';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
+import { Artist } from '@/entity/Artist';
 
 type OAuthProvider = 'google';
 
@@ -20,6 +21,20 @@ async function retrieveAuthenticatedProfile(): Promise<User> {
       return reject('Unable to call API');
     })
     .catch(reject);
+}
+
+export async function fetchLoggedArtist(): Promise<Artist | null> {
+  try {
+    const headers = await getAuthorizedHeader();
+    const response = await axios.get<Artist>('/artists/:me', { headers });
+    if (response.status === 200 && response.data.slug) {
+      return response.data;
+    }
+    return null;
+  } catch (error) {
+    console.warn('Failed to fetch artist info:', error);
+    return null;
+  }
 }
 
 async function callUpdateProfile(payload: UserUpdatePayload): Promise<void> {

@@ -77,7 +77,7 @@ const openFeedbackForm = () => {
     <div class="feedback-button" @click="openFeedbackForm" style="cursor: pointer">Give Us Feedback</div>
 
     <div v-if="authStore.getAuthenticatedUser" class="post-list">
-      <UserContentList :user="authStore.getAuthenticatedUser" />
+      <UserContentList :user="authStore.getAuthenticatedUser" :artistSlug="authStore.getAuthenticatedArtistSlug" />
     </div>
   </ApplicationViewport>
 </template>

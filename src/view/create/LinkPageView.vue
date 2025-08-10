@@ -120,7 +120,7 @@ async function loadPage() {
       iconUrl: link.iconUrl,
     }));
 
-    isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
+    isOwner.value = authStore.getAuthenticatedArtistSlug === page.owner.slug;
   } catch (error) {
     if (isOwner.value) alert('Unable to load the Link Page : ' + error);
   }
@@ -177,15 +177,15 @@ async function submitLinkDeletion(index: number) {
 
 async function checkIfUserHasLinkPage() {
   try {
-    const currentUser = authStore.getAuthenticatedUser;
-    if (!currentUser) {
+    const currentArtistSlug = authStore.getAuthenticatedArtistSlug;
+    if (!currentArtistSlug) {
       isOwner.value = false;
       checkedOwnership.value = true;
       return;
     }
 
     if (!pageSlug.value) {
-      const userPage = await getUserLinkPage(currentUser.slug);
+      const userPage = await getUserLinkPage(currentArtistSlug);
       if (userPage) {
         await router.push(`/linkpages/${userPage.slug}`);
         checkedOwnership.value = true;
@@ -194,7 +194,7 @@ async function checkIfUserHasLinkPage() {
       isOwner.value = false;
     } else {
       const page = await getLinkPage(pageSlug.value);
-      isOwner.value = currentUser.slug === page.owner.slug;
+      isOwner.value = currentArtistSlug === page.owner.slug;
     }
     checkedOwnership.value = true;
   } catch (error) {
