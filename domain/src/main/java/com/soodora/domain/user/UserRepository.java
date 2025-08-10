@@ -2,7 +2,6 @@ package com.soodora.domain.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
-import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
@@ -29,7 +28,6 @@ public interface UserRepository {
     List<PlaylistDTO> retrievePlaylists(Identifier identifier);
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
-    LinkPageDTO retrieveLinkPage(Identifier identifier);
     void follow(Identifier follower, Identifier following);
     Set<UserDTO> retrieveFollowers(Identifier identifier);
     Set<UserDTO> retrieveFollowing(Identifier identifier);

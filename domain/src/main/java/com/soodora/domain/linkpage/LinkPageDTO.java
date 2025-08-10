@@ -1,7 +1,7 @@
 package com.soodora.domain.linkpage;
 
+import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.link.LinkDTO;
-import com.soodora.domain.user.UserDTO;
 
 import java.util.List;
 
@@ -10,6 +10,6 @@ public record LinkPageDTO(
         String title,
         String description,
         List<LinkDTO> links,
-        UserDTO owner) {
+        ArtistDTO owner) {
 
 }

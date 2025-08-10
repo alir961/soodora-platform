@@ -27,7 +27,7 @@ public class SaleService {
 
     public Page<SaleDTO> getUserSales(Pageable pageable, String userSlug) {
         try {
-            return saleRepository.findUserSales(createFromSlug(userSlug), pageable);
+            return saleRepository.findArtistSales(createFromSlug(userSlug), pageable);
         } catch (Exception e) {
             throw new UnknownSaleException(e.getMessage());
         }

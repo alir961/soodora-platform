@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.sale;
 
 import com.soodora.domain.sale.SaleDTO;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.user.UserEntity;
@@ -35,7 +36,10 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
     private ProductEntity product;
 
     @ManyToOne
-    private UserEntity user;
+    private ArtistEntity artist;
+
+    @ManyToOne
+    private UserEntity buyer;
 
     private long quantitySold;
 
@@ -54,7 +58,8 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
         return new SaleDTO(
                 slug,
                 product.toDTO(),
-                user.toDTO(),
+                artist.toDTO(),
+                buyer.toDTO(),
                 quantitySold,
                 amount,
                 createdAt);

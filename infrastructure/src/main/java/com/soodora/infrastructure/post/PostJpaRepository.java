@@ -15,13 +15,14 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, UUID>, JpaS
 
     Optional<PostEntity> findBySlug(String slug);
 
-    Page<PostEntity> findByUserSlug(String slug, Pageable pageable);
+    @Query("SELECT p FROM posts p WHERE p.artist.slug = :slug OR p.artist.user.slug = :slug")
+    Page<PostEntity> findByArtistSlugOrUserSlug(@Param("slug") String slug, Pageable pageable);
 
-    Page<PostEntity> findByUserSlugIn(List<String> userSlugs, Pageable pageable);
+    Page<PostEntity> findByArtistSlugIn(List<String> userSlugs, Pageable pageable);
 
     Page<PostEntity> findByRepostsSlug(String slug, Pageable pageable);
 
-    @Query("SELECT p FROM posts p WHERE p.user.slug = :slug AND p.audioUrl IS NOT NULL AND p.audioUrl <> ''")
-    Page<PostEntity> findByUserSlugAndAudioUrlIsNotNull(@Param("slug") String slug, Pageable pageable);
+    @Query("SELECT p FROM posts p WHERE (p.artist.slug = :slug OR p.artist.user.slug = :slug) AND p.audioUrl IS NOT NULL AND p.audioUrl <> ''")
+    Page<PostEntity> findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(@Param("slug") String slug, Pageable pageable);
 
 }

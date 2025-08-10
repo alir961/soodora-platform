@@ -10,7 +10,7 @@ public interface SaleRepository {
     SaleDTO save(SaveSaleCommand sale);
     SaleDTO findBySlug(String slug);
     Page<SaleDTO> findAll(Pageable pageable);
-    Page<SaleDTO> findUserSales(Identifier identifier, Pageable pageable);
+    Page<SaleDTO> findArtistSales(Identifier identifier, Pageable pageable);
     void deleteSaleBySlug(String slug);
 
 }

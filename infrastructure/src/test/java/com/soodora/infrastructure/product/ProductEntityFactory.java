@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.product;
 
-import com.soodora.infrastructure.user.UserEntity;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.test.factory.ProductFactory;
 
 import java.util.Date;
@@ -9,7 +9,7 @@ import static java.util.UUID.randomUUID;
 
 public class ProductEntityFactory extends ProductFactory {
 
-    public static ProductEntity buildDefaultProductEntity(UserEntity user) {
+    public static ProductEntity buildDefaultProductEntity(ArtistEntity artist) {
         return new ProductEntity(
                 randomUUID(),
                 "slug",
@@ -19,7 +19,7 @@ public class ProductEntityFactory extends ProductFactory {
                 "category",
                 100,
                 10,
-                user,
+                artist,
                 new Date(),
                 new Date());
     }

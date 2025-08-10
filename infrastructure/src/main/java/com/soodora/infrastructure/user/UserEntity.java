@@ -4,13 +4,9 @@ import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.auth.RoleEntity;
 import com.soodora.infrastructure.common.DomainEntity;
-import com.soodora.infrastructure.linkpage.LinkPageEntity;
 import com.soodora.infrastructure.playlist.PlaylistEntity;
 import com.soodora.infrastructure.post.CommentEntity;
 import com.soodora.infrastructure.post.LikeEntity;
-import com.soodora.infrastructure.post.PostEntity;
-import com.soodora.infrastructure.product.ProductEntity;
-import com.soodora.infrastructure.sale.SaleEntity;
 
 import java.util.*;
 
@@ -75,25 +71,13 @@ public class UserEntity implements DomainEntity<UserDTO> {
     private ArtistEntity artist;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
-    private List<ProductEntity> products;
-
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
-    private List<SaleEntity> sales;
-
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<PlaylistEntity> playlists;
-
-    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
-    private List<PostEntity> posts;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<LikeEntity> likes;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = ALL)
     private List<CommentEntity> comments;
-
-    @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
-    private LinkPageEntity linkPage;
 
     @ManyToMany(fetch = EAGER)
     @JoinTable(name = "users_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))

@@ -9,6 +9,7 @@ public record CheckoutSessionRequest(
         @NotNull @Min(1) Long amount,
         String imageUrl,
         @NotBlank String productSlug,
+        @NotBlank String vendorSlug,
         @NotBlank String buyerSlug,
         @NotNull @Min(1) Long quantity) {
 }

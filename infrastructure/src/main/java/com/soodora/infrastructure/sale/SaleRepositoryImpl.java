@@ -5,6 +5,8 @@ import com.soodora.domain.sale.SaleDTO;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
 import com.soodora.domain.user.Identifier;
+import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.product.ProductJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
@@ -26,6 +28,7 @@ import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 public class SaleRepositoryImpl implements SaleRepository {
 
     private final SaleJpaRepository repository;
+    private final ArtistJpaRepository artistRepository;
     private final UserJpaRepository userRepository;
     private final ProductJpaRepository productRepository;
 
@@ -33,8 +36,10 @@ public class SaleRepositoryImpl implements SaleRepository {
     @Transactional
     public SaleDTO save(SaveSaleCommand sale) {
         SaleEntity entity = new SaleEntity();
-        UserEntity userEntity = userRepository.findBySlug(sale.user().slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + sale.user().slug()));
+        ArtistEntity artistEntity = artistRepository.findBySlug(sale.artist().slug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist #" + sale.artist().slug()));
+        UserEntity buyerEntity = userRepository.findBySlug(sale.buyer().slug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + sale.buyer().slug()));
         ProductEntity productEntity = productRepository.findBySlug(sale.product().slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product#" + sale.product().slug()));
 
@@ -42,7 +47,8 @@ public class SaleRepositoryImpl implements SaleRepository {
         entity.setQuantitySold(sale.quantitySold());
         entity.setAmount(sale.amount());
         entity.setSlug(generateUniqueSlug());
-        entity.setUser(userEntity);
+        entity.setArtist(artistEntity);
+        entity.setBuyer(buyerEntity);
         return repository.save(entity).toDTO();
     }
 
@@ -61,8 +67,8 @@ public class SaleRepositoryImpl implements SaleRepository {
 
     @Override
     @Transactional
-    public Page<SaleDTO> findUserSales(Identifier identifier, Pageable pageable) {
-        return repository.findByUserSlug(identifier.getValue(), pageable)
+    public Page<SaleDTO> findArtistSales(Identifier identifier, Pageable pageable) {
+        return repository.findByArtistSlugOrArtistUserSlug(identifier.getValue(), pageable)
                 .map(SaleEntity::toDTO);
     }
 

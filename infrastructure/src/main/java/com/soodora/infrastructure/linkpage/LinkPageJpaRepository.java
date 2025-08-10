@@ -9,6 +9,6 @@ public interface LinkPageJpaRepository extends JpaRepository<LinkPageEntity, UUI
 
     Optional<LinkPageEntity> findBySlug(String slug);
 
-    Optional<LinkPageEntity> findByUserSlug(String slug);
+    Optional<LinkPageEntity> findByArtistUserSlug(String slug);
 
 }

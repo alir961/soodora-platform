@@ -5,9 +5,8 @@ import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.artist.CreateArtistCommand;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.user.UnknownEmailException;
-import com.soodora.domain.user.UnknownIdentifierException;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.linkpage.LinkPageDTO;
+import com.soodora.domain.user.*;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
@@ -75,6 +74,16 @@ public class ArtistRepositoryImpl implements ArtistRepository {
         return entity.getEvents().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public LinkPageDTO retrieveLinkPage(String slug) throws LinkPageNotFoundException {
+        ArtistEntity artist = findArtistBySlug(slug);
+        if (artist.getLinkPage() == null)
+            throw new LinkPageNotFoundException("Link Page not found for artist " + slug);
+
+        return artist.getLinkPage().toDTO();
     }
 
     private String generateUniqueSlug() {

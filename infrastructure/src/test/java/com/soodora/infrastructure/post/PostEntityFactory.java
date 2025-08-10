@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.post;
 
-import com.soodora.infrastructure.user.UserEntity;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.test.factory.PostFactory;
 
 import java.util.Date;
@@ -10,7 +10,7 @@ import static java.util.UUID.randomUUID;
 
 public class PostEntityFactory extends PostFactory {
 
-    public static PostEntity buildDefaultPostEntity(UserEntity user) {
+    public static PostEntity buildDefaultPostEntity(ArtistEntity artist) {
         return new PostEntity(
                 randomUUID(),
                 "slug",
@@ -18,7 +18,7 @@ public class PostEntityFactory extends PostFactory {
                 "Content",
                 "imageUrl",
                 "audioUrl",
-                user,
+                artist,
                 emptySet(),
                 emptySet(),
                 emptySet(),

@@ -33,7 +33,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     @Override
     @Transactional
     public LinkDTO save(CreateLinkCommand command, String userSlug) {
-        LinkPageEntity linkPage = linkPageRepository.findByUserSlug(userSlug)
+        LinkPageEntity linkPage = linkPageRepository.findByArtistUserSlug(userSlug)
                 .orElseThrow(() -> new UnknownSlugException("Link page not found for user slug: " + userSlug));
 
         LinkEntity entity = new LinkEntity();

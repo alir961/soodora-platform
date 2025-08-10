@@ -1,11 +1,14 @@
 package com.soodora.service.stripe;
 
+import com.soodora.domain.artist.ArtistDTO;
+import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
+import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.product.UnknownProductException;
 import com.soodora.service.user.UnknownUserException;
 
@@ -27,6 +30,7 @@ public class StripePaymentService {
 
     private final ProductRepository productRepository;
     private final SaleRepository saleRepository;
+    private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
 
     public void handleStripeEvent(Event event) {
@@ -37,10 +41,14 @@ public class StripePaymentService {
 
             String productSlug = session.getMetadata().get("productSlug");
             long quantityBought = Integer.parseInt(session.getMetadata().getOrDefault("quantity", "1"));
+            String vendorSlug = session.getMetadata().get("vendorSlug");
             String buyerSlug = session.getMetadata().get("buyerSlug");
 
             ProductDTO productDTO = Optional.ofNullable(productRepository.findBySlug(productSlug))
                     .orElseThrow(() -> new UnknownProductException("Product not found: " + productSlug));
+
+            ArtistDTO artistDTO = Optional.ofNullable(artistRepository.find(vendorSlug))
+                    .orElseThrow(() -> new UnknownArtistException("Artist not found: " + vendorSlug));
 
             UserDTO userDTO = Optional.ofNullable(userRepository.find(createFromSlug(buyerSlug)))
                     .orElseThrow(() -> new UnknownUserException("User not found: " + buyerSlug));
@@ -49,7 +57,7 @@ public class StripePaymentService {
 
             BigDecimal amount = BigDecimal.valueOf(productDTO.price()).multiply(BigDecimal.valueOf(quantityBought));
 
-            SaveSaleCommand saleCmd = new SaveSaleCommand(productDTO, userDTO, quantityBought, amount);
+            SaveSaleCommand saleCmd = new SaveSaleCommand(productDTO, artistDTO, userDTO, quantityBought, amount);
             saleRepository.save(saleCmd);
         }
     }

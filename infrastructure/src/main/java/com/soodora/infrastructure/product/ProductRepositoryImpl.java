@@ -8,8 +8,8 @@ import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.product.UpdateProductCommand;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
-import com.soodora.infrastructure.user.UserEntity;
-import com.soodora.infrastructure.user.UserJpaRepository;
+import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.artist.ArtistJpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,14 +28,14 @@ import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository repository;
-    private final UserJpaRepository userRepository;
+    private final ArtistJpaRepository artistRepository;
 
     @Override
     @Transactional
     public ProductDTO save(CreateProductCommand command, UserDTO user) {
         ProductEntity entity = new ProductEntity();
-        UserEntity userEntity = userRepository.findBySlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
 
         entity.setName(command.name());
         entity.setPrice(command.price());
@@ -44,7 +44,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setCategory(command.category());
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
-        entity.setUser(userEntity);
+        entity.setArtist(artistEntity);
         return repository.save(entity).toDTO();
     }
 
@@ -106,7 +106,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByUserSlug(identifier.getValue(), pageable)
+        return repository.findByArtistSlugOrUserSlug(identifier.getValue(), pageable)
                 .map(ProductEntity::toDTO);
     }
 
@@ -133,7 +133,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
-        return repository.findProductsByUserSlug(slug)
+        return repository.findProductsByArtistSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 

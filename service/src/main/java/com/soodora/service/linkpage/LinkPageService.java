@@ -1,10 +1,10 @@
 package com.soodora.service.linkpage;
 
+import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.linkpage.*;
 import com.soodora.domain.user.LinkPageNotFoundException;
 import com.soodora.domain.user.UserDTO;
-import com.soodora.domain.user.UserRepository;
 import com.soodora.service.link.LinkUnityException;
 import com.soodora.service.post.MissingUserSlugException;
 import com.soodora.service.user.UnknownUserException;
@@ -15,13 +15,11 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
-
 @Service
 @RequiredArgsConstructor
 public class LinkPageService {
 
-    private final UserRepository userRepository;
+    private final ArtistRepository artistRepository;
     private final LinkPageRepository linkPageRepository;
 
     public String createLinkPage(CreateLinkPageCommand command, UserDTO user) {
@@ -38,9 +36,9 @@ public class LinkPageService {
             throw new MissingUserSlugException();
 
         try {
-            return userRepository.retrieveLinkPage(createFromSlug(filter.userSlug().get()));
+            return artistRepository.retrieveLinkPage(filter.userSlug().get());
         } catch (LinkPageNotFoundException exception) {
-            throw new UnknownLinkPageException("Could not retrieve link page for user: " + filter.userSlug().get());
+            throw new UnknownLinkPageException("Could not retrieve link page for artist: " + filter.userSlug().get());
         }
     }
 

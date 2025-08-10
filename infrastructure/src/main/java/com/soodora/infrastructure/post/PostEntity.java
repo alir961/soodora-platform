@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.PostDTO;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -54,7 +55,7 @@ public class PostEntity implements DomainEntity<PostDTO> {
 
     @ManyToOne
     @JoinColumn
-    private UserEntity user;
+    private ArtistEntity artist;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<LikeEntity> likes;
@@ -81,7 +82,8 @@ public class PostEntity implements DomainEntity<PostDTO> {
         double timeDecay = pow(ageInHours + 2.0, DECAY_FACTOR);
 
         engagement += RECENTNESS_FACTOR / ageInHours;
-        if (followers.contains(this.user))
+        UserEntity user = this.artist.getUser();
+        if (followers.contains(user))
             engagement *= FOLLOW_FACTOR;
         return engagement / timeDecay;
     }
@@ -94,7 +96,7 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 content,
                 imageUrl,
                 audioUrl,
-                user.toDTO().toPublic(),
+                artist.toDTO(),
                 likes.size(),
                 reposts.size(),
                 comments.size(),
