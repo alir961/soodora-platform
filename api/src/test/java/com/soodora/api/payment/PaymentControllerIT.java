@@ -4,7 +4,6 @@ import com.soodora.service.stripe.CheckoutSessionRequest;
 import com.soodora.service.stripe.StripeService;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,6 +15,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.model.checkout.Session;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,10 +38,10 @@ public class PaymentControllerIT {
         // GIVEN
         String fakeUrl = "https://fake.stripe.session/url";
 
-        Session fakeSession = Mockito.mock(Session.class);
-        Mockito.when(fakeSession.getUrl()).thenReturn(fakeUrl);
+        Session fakeSession = mock(Session.class);
+        when(fakeSession.getUrl()).thenReturn(fakeUrl);
 
-        Mockito.when(stripeService.createCheckoutSession(any()))
+        when(stripeService.createCheckoutSession(any()))
                 .thenReturn(fakeSession);
 
         CheckoutSessionRequest request = new CheckoutSessionRequest(

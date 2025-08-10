@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -53,7 +53,7 @@ class SaleControllerIT {
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
 
-        Mockito.when(saleService.getAllSales(any(PageRequest.class)))
+        when(saleService.getAllSales(any(PageRequest.class)))
                 .thenReturn(page);
 
         // WHEN & THEN
@@ -79,7 +79,7 @@ class SaleControllerIT {
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
 
-        Mockito.when(saleService.getUserSales(any(PageRequest.class), eq("user-slug")))
+        when(saleService.getUserSales(any(PageRequest.class), eq("user-slug")))
                 .thenReturn(page);
 
         // WHEN & THEN
@@ -105,7 +105,7 @@ class SaleControllerIT {
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
 
-        Mockito.when(saleService.getUserSales(any(PageRequest.class), eq("slug")))
+        when(saleService.getUserSales(any(PageRequest.class), eq("slug")))
                 .thenReturn(page);
 
         // WHEN & THEN

@@ -13,6 +13,7 @@ import com.soodora.infrastructure.user.UserJpaRepository;
 
 import java.util.List;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     private final ArtistJpaRepository repository;
     private final UserJpaRepository userRepository;
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional
@@ -33,6 +35,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
         ArtistEntity entity = new ArtistEntity();
         UserEntity userEntity = userRepository.findByEmail(user.email())
                 .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + user.email() + "'"));
+        jdbcTemplate.update("INSERT INTO users_roles (user_id, role_id) VALUES (?, ?)", userEntity.getId(), 1);
 
         entity.setName(command.name());
         entity.setDescription(command.description());
