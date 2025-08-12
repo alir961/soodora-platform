@@ -4,7 +4,6 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.user.UnknownIdentifierException;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.artist.ArtistService;
-import com.soodora.service.artist.CreateArtistRequest;
 import com.soodora.service.artist.UnknownArtistException;
 
 import java.util.List;
@@ -33,11 +32,10 @@ public class ArtistController {
 
     @PostMapping(":migrate")
     public ResponseEntity<Void> migrateUser(
-            @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreateArtistRequest request) {
+            @AuthenticationPrincipal UserDTO user) {
         if (artistService.isArtist(user.identifier()))
             return new ResponseEntity<>(ACCEPTED);
-        artistService.createArtist(request.toCommand(), user);
+        artistService.createArtist(user);
         return new ResponseEntity<>(OK);
     }
 

@@ -2,18 +2,19 @@ package com.soodora.infrastructure.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.artist.CreateArtistCommand;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.user.*;
+import com.soodora.infrastructure.auth.RoleEntity;
+import com.soodora.infrastructure.auth.RoleJpaRepository;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
 import java.util.List;
+import java.util.Set;
 
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,21 +28,27 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     private final ArtistJpaRepository repository;
     private final UserJpaRepository userRepository;
-    private final JdbcTemplate jdbcTemplate;
+    private final RoleJpaRepository roleRepository;
 
     @Override
     @Transactional
-    public ArtistDTO save(CreateArtistCommand command, UserDTO user) {
+    public ArtistDTO save(UserDTO user) {
         ArtistEntity entity = new ArtistEntity();
+        RoleEntity artistRole = roleRepository.findByName("ROLE_ARTIST");
         UserEntity userEntity = userRepository.findByEmail(user.email())
                 .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + user.email() + "'"));
-        jdbcTemplate.update("INSERT INTO users_roles (user_id, role_id) VALUES (?, ?)", userEntity.getId(), 1);
+        Set<RoleEntity> userRoles = userEntity.getRoles();
 
-        entity.setName(command.name());
-        entity.setDescription(command.description());
-        entity.setImageUrl(command.imageUrl());
+        userRoles.add(artistRole);
+        userEntity.setRoles(userRoles);
+        userEntity = userRepository.save(userEntity);
+
+        entity.setName(userEntity.getUsername());
+        entity.setDescription(userEntity.getDescription());
+        entity.setImageUrl(userEntity.getAvatarUrl());
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
+
         return repository.save(entity)
                 .toDTO();
     }

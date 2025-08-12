@@ -3,7 +3,6 @@ package com.soodora.api.artist;
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.user.UnknownIdentifierException;
 import com.soodora.service.artist.ArtistService;
-import com.soodora.service.artist.CreateArtistRequest;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
@@ -19,8 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -30,16 +27,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static com.soodora.api.JsonStringify.asJsonString;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class ArtistControllerIT {
-
-    private static final CreateArtistRequest VALID_REQUEST = new CreateArtistRequest("Name", "", "");
-    private static final CreateArtistRequest INVALID_REQUEST = new CreateArtistRequest("  ", "", "");
 
     private static final ArtistDTO ARTIST_A = buildArtistDTO("A");
     private static final ArtistDTO ARTIST_B = buildArtistDTO("B");
@@ -60,7 +53,6 @@ class ArtistControllerIT {
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(VALID_REQUEST))
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -70,12 +62,11 @@ class ArtistControllerIT {
         // GIVEN
         when(artistService.isArtist(USER.identifier())).thenReturn(false);
         doThrow(InvalidRequestException.class)
-                .when(artistService).createArtist(any(), eq(USER));
+                .when(artistService).createArtist(USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(INVALID_REQUEST))
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest());
     }
@@ -88,7 +79,6 @@ class ArtistControllerIT {
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(VALID_REQUEST))
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
@@ -100,8 +90,7 @@ class ArtistControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(post("/artists/:migrate")
-                .contentType(APPLICATION_JSON)
-                .content(asJsonString(VALID_REQUEST)))
+                .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
 
