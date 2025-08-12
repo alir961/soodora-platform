@@ -14,6 +14,7 @@ import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
 import ConfirmationView from '@/view/user/ConfirmationView.vue';
+import MediaKitView from '@/view/create/MediaKitView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -97,6 +98,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/marketplace/mysales',
     name: 'MySales',
     component: MySaleView,
+  },
+  {
+    path: '/mediakits',
+    name: 'MediaKitCreation',
+    component: MediaKitView,
+  },
+  {
+    path: '/mediakits/:slug',
+    name: 'MediaKit',
+    component: MediaKitView,
   },
   {
     path: '/maintenance',

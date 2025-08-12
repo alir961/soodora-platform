@@ -125,6 +125,10 @@ const publishProduct = async () => {
 const goToSalesPage = async () => {
   await router.push('/marketplace/mysales');
 };
+
+const goToMediaKit = async () => {
+  await router.push('/mediakits');
+};
 </script>
 
 <template>
@@ -153,6 +157,11 @@ const goToSalesPage = async () => {
 
       <ion-button expand="block" class="go-button" color="secondary" fill="solid" @click="goToSalesPage">
         My Sales
+      </ion-button>
+
+      <ion-button @click="goToMediaKit" expand="block" class="go-button" color="primary" fill="solid">
+        Create MediaKit
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
       </ion-button>
 
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
