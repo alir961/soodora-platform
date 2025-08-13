@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.linkpage;
 
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.link.LinkPageUnityException;
 import com.soodora.domain.linkpage.CreateLinkPageCommand;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.linkpage.LinkPageRepository;
@@ -32,18 +33,19 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     public LinkPageDTO save(CreateLinkPageCommand command, UserDTO user) {
         ArtistEntity artistEntity = artistsRepository.findByUserSlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug: #" + user.slug()));
+        Optional<LinkPageEntity> existingLinkPage = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
 
-        Optional<LinkPageEntity> existingLinkPage = repository.findByArtistUserSlug(artistEntity.getSlug());
-        if (existingLinkPage.isPresent())
-            throw new IllegalStateException("Artist with user slug #" + user.slug() + " already has a LinkPage.");
+        if (existingLinkPage.isEmpty()) {
+            LinkPageEntity entity = new LinkPageEntity();
 
-        LinkPageEntity entity = new LinkPageEntity();
-        entity.setTitle(command.title());
-        entity.setDescription(command.description());
-        entity.setSlug(generateUniqueSlug());
-        entity.setArtist(artistEntity);
+            entity.setTitle(command.title());
+            entity.setDescription(command.description());
+            entity.setSlug(generateUniqueSlug());
+            entity.setArtist(artistEntity);
 
-        return repository.save(entity).toDTO();
+            return repository.save(entity).toDTO();
+        }
+        throw new LinkPageUnityException("Artist with user slug #" + user.slug() + " already has a link page.");
     }
 
     @Override

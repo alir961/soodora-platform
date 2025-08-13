@@ -10,6 +10,7 @@ import com.soodora.service.post.MissingUserSlugException;
 import com.soodora.service.user.UnknownUserException;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -32,13 +33,14 @@ public class LinkPageService {
 
     public LinkPageDTO retrieveLinkPage(LinkPageFilter filter)
             throws MissingUserSlugException, UnknownLinkPageException {
-        if (filter.userSlug().isEmpty())
-            throw new MissingUserSlugException();
+        Optional<String> userSlug = filter.userSlug();
 
+        if (userSlug.isEmpty())
+            throw new MissingUserSlugException();
         try {
-            return artistRepository.retrieveLinkPage(filter.userSlug().get());
+            return artistRepository.retrieveLinkPage(userSlug.get());
         } catch (LinkPageNotFoundException exception) {
-            throw new UnknownLinkPageException("Could not retrieve link page for artist: " + filter.userSlug().get());
+            throw new UnknownLinkPageException("Could not retrieve link page for artist: " + userSlug.get());
         }
     }
 

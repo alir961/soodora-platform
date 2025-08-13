@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -61,7 +60,7 @@ public class LinkPageEntity implements DomainEntity<LinkPageDTO> {
                 slug,
                 title,
                 description,
-                links.stream().map(LinkEntity::toDTO).collect(Collectors.toList()),
+                links.stream().map(LinkEntity::toDTO).toList(),
                 artist.toDTO());
     }
 
