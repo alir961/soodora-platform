@@ -8,16 +8,15 @@ DB_PASS="password"
 
 echo "Dropping all tables in database '$DB_NAME'..."
 
-tables=$(mariadb -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASS" -D"$DB_NAME" -e'SHOW TABLES;' | tail -n +2)
+tables=$(mariadb -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASS" \
+  -D"$DB_NAME" -e'SHOW TABLES;' | tail -n +2 | tr '\n' ',' | sed 's/,$//')
 
 if [[ -z "$tables" ]]; then
   echo "No tables found in database '$DB_NAME'."
   exit 0
 fi
 
-for table in $tables; do
-  echo "Dropping table: $table"
-  mariadb -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASS" -D"$DB_NAME" -e"DROP TABLE \`$table\`;"
-done
+mariadb -h"$DB_HOST" -P"$DB_PORT" -u"$DB_USER" -p"$DB_PASS" -D"$DB_NAME" \
+  -e"SET FOREIGN_KEY_CHECKS = 0; DROP TABLE $tables; SET FOREIGN_KEY_CHECKS = 1;"
 
 echo "> All tables dropped from '$DB_NAME'!"
