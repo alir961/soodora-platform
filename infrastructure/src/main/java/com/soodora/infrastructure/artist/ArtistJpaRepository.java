@@ -11,8 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArtistJpaRepository extends JpaRepository<ArtistEntity, UUID> {
 
-    Optional<ArtistEntity> findBySlug(String slug);
-
     Optional<ArtistEntity> findByUserSlug(String userSlug);
 
     Page<ArtistEntity> findByUserUsernameContainingIgnoreCase(String name, Pageable pageable);

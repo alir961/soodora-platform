@@ -18,7 +18,10 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
@@ -28,28 +31,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class StripePaymentServiceTest {
 
+    @Mock
     private ProductRepository productRepository;
-    private SaleRepository saleRepository;
-    private ArtistRepository artistRepository;
+
+    @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private ArtistRepository artistRepository;
+
+    @Mock
+    private SaleRepository saleRepository;
 
     private StripePaymentService stripePaymentService;
 
     @BeforeEach
     void setup() {
-        // GIVEN
-        productRepository = mock(ProductRepository.class);
-        saleRepository = mock(SaleRepository.class);
-        artistRepository = mock(ArtistRepository.class);
-        userRepository = mock(UserRepository.class);
-
         stripePaymentService = new StripePaymentService(
                 productRepository,
-                saleRepository,
+                userRepository,
                 artistRepository,
-                userRepository);
+                saleRepository);
     }
 
     @Test

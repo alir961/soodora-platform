@@ -106,7 +106,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByArtistSlugOrUserSlug(identifier.getValue(), pageable)
+        return repository.findByArtistUserSlug(identifier.getValue(), pageable)
                 .map(ProductEntity::toDTO);
     }
 
@@ -133,7 +133,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
-        return repository.findProductsByArtistSlug(slug)
+        return repository.findProductsByArtistUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 

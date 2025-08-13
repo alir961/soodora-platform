@@ -20,8 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
-
 @Repository
 @RequiredArgsConstructor
 public class ArtistRepositoryImpl implements ArtistRepository {
@@ -43,10 +41,6 @@ public class ArtistRepositoryImpl implements ArtistRepository {
         userEntity.setRoles(userRoles);
         userEntity = userRepository.save(userEntity);
 
-        entity.setName(userEntity.getUsername());
-        entity.setDescription(userEntity.getDescription());
-        entity.setImageUrl(userEntity.getAvatarUrl());
-        entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
 
         return repository.save(entity)
@@ -56,7 +50,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public ArtistDTO find(String slug) {
-        return findArtistBySlug(slug)
+        return findArtistByUserSlug(slug)
                 .toDTO();
     }
 
@@ -71,7 +65,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public void delete(String slug) {
-        ArtistEntity entity = findArtistBySlug(slug);
+        ArtistEntity entity = findArtistByUserSlug(slug);
 
         repository.delete(entity);
     }
@@ -79,7 +73,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public List<EventDTO> retrieveEvents(String slug) {
-        ArtistEntity entity = findArtistBySlug(slug);
+        ArtistEntity entity = findArtistByUserSlug(slug);
 
         return entity.getEvents().stream()
                 .map(DomainEntity::toDTO)
@@ -89,23 +83,15 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public LinkPageDTO retrieveLinkPage(String slug) throws LinkPageNotFoundException {
-        ArtistEntity artist = findArtistBySlug(slug);
+        ArtistEntity artist = findArtistByUserSlug(slug);
+
         if (artist.getLinkPage() == null)
             throw new LinkPageNotFoundException("Link Page not found for artist " + slug);
-
         return artist.getLinkPage().toDTO();
     }
 
-    private String generateUniqueSlug() {
-        String slug = generateSlug();
-
-        while (repository.findBySlug(slug).isPresent())
-            slug = generateSlug();
-        return slug;
-    }
-
-    private ArtistEntity findArtistBySlug(String slug) throws UnknownIdentifierException {
-        return repository.findBySlug(slug)
+    private ArtistEntity findArtistByUserSlug(String slug) throws UnknownIdentifierException {
+        return repository.findByUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist '" + slug + "'"));
     }
 

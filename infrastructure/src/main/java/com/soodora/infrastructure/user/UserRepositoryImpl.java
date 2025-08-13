@@ -72,14 +72,14 @@ public class UserRepositoryImpl implements UserRepository {
     @Transactional
     public UserDTO find(Identifier identifier) {
         String slug = identifier.getValue();
+        Optional<ArtistEntity> artistEntity = artistRepository.findByUserSlug(slug);
 
-        Optional<ArtistEntity> artistEntity = artistRepository.findBySlug(slug);
         if (artistEntity.isPresent()) {
             ArtistEntity artist = artistEntity.get();
             UserEntity user = artist.getUser();
+
             return user.toDTO();
         }
-
         return findUserByIdentifierOrThrows(identifier).toDTO();
     }
 

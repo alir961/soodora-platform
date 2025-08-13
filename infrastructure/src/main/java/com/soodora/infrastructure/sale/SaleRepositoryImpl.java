@@ -36,10 +36,10 @@ public class SaleRepositoryImpl implements SaleRepository {
     @Transactional
     public SaleDTO save(SaveSaleCommand sale) {
         SaleEntity entity = new SaleEntity();
-        ArtistEntity artistEntity = artistRepository.findBySlug(sale.artist().slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist #" + sale.artist().slug()));
         UserEntity buyerEntity = userRepository.findBySlug(sale.buyer().slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + sale.buyer().slug()));
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(sale.artist().slug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist #" + sale.artist().slug()));
         ProductEntity productEntity = productRepository.findBySlug(sale.product().slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product#" + sale.product().slug()));
 
@@ -68,7 +68,7 @@ public class SaleRepositoryImpl implements SaleRepository {
     @Override
     @Transactional
     public Page<SaleDTO> findArtistSales(Identifier identifier, Pageable pageable) {
-        return repository.findByArtistSlugOrArtistUserSlug(identifier.getValue(), pageable)
+        return repository.findByArtistUserSlug(identifier.getValue(), pageable)
                 .map(SaleEntity::toDTO);
     }
 

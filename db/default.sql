@@ -125,18 +125,18 @@ VALUES (@artist1Id, 1),
        (@adminId, 3);
 
 INSERT INTO artists
-(id, slug, name, description, image_url, created_at, updated_at, user_id)
-VALUES (@artist1Id, 'artist1', 'sky.leaf', '', '', NOW(), NOW(), @artist1Id),
-       (@artist2Id, 'artist2', 'leah.g', '', '', NOW(), NOW(), @artist2Id),
-       (@artist3Id, 'artist3', 'soundshaper93', '', '', NOW(), NOW(), @artist3Id),
-       (@artist4Id, 'artist4', 'dubwavez', '', '', NOW(), NOW(), @artist4Id),
-       (@artist5Id, 'artist5', 'synthfox', '', '', NOW(), NOW(), @artist5Id),
-       (@artist6Id, 'artist6', 'loop.nova', '', '', NOW(), NOW(), @artist6Id),
-       (@artist7Id, 'artist7', 'glitchmuse', '', '', NOW(), NOW(), @artist7Id),
-       (@artist8Id, 'artist8', 'bass.monarch', '', '', NOW(), NOW(), @artist8Id);
+    (id, user_id)
+VALUES (@artist1Id, @artist1Id),
+       (@artist2Id, @artist2Id),
+       (@artist3Id, @artist3Id),
+       (@artist4Id, @artist4Id),
+       (@artist5Id, @artist5Id),
+       (@artist6Id, @artist6Id),
+       (@artist7Id, @artist7Id),
+       (@artist8Id, @artist8Id);
 
 INSERT INTO posts
-(id, slug, title, content, image_url, audio_url, user_id, created_at, updated_at)
+(id, slug, title, content, image_url, audio_url, artist_id, created_at, updated_at)
 VALUES (@post1Id, '7Ql1jUpT', 'Diving into Dub FX', 'This might end up on the next project. Thoughts?', '', '',
         @artist1Id, NOW(), NOW()),
        (@post2Id, 'NSqrKaZM', 'Trying Out a New Sound', 'Testing a new effect chain. Might keep it minimal.', '',

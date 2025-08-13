@@ -96,7 +96,7 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     @Transactional
     public Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByArtistSlugOrUserSlug(identifier.getValue(), pageable)
+        return postRepository.findByArtistUserSlug(identifier.getValue(), pageable)
                 .map(PostEntity::toDTO);
     }
 
@@ -270,7 +270,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable) {
-        return postRepository.findByArtistSlugIn(followingSlugs, pageable)
+        return postRepository.findByArtistUserSlugIn(followingSlugs, pageable)
                 .map(PostEntity::toDTO);
     }
 
