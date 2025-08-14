@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -53,13 +54,10 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     public LinkPageDTO update(UpdateLinkPageCommand command, String slug) {
         LinkPageEntity existingLinkPage = findLinkPageBySlugOrThrow(slug);
 
-        if (command.getTitle() != null && !command.getTitle().isBlank()
-                && !command.getTitle().equals(existingLinkPage.getTitle()))
-            existingLinkPage.setTitle(command.getTitle());
-        if (command.getDescription() != null && !command.getDescription().isBlank()
-                && !command.getDescription().equals(existingLinkPage.getDescription()))
-            existingLinkPage.setDescription(command.getDescription());
-
+        if (isNotNullOrBlank(command.title()))
+            existingLinkPage.setTitle(command.title());
+        if (isNotNullOrBlank(command.description()))
+            existingLinkPage.setDescription(command.description());
         return repository.save(existingLinkPage).toDTO();
     }
 

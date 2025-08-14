@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -233,10 +234,6 @@ public class UserRepositoryImpl implements UserRepository {
         while (userRepository.findBySlug(slug).isPresent())
             slug = generateSlug();
         return slug;
-    }
-
-    private boolean isNotNullOrBlank(String input) {
-        return input != null && !input.isBlank();
     }
 
 }

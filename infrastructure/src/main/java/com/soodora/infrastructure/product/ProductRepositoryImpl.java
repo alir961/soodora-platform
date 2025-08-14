@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -53,22 +54,18 @@ public class ProductRepositoryImpl implements ProductRepository {
     public ProductDTO update(UpdateProductCommand command, String slug) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
-        if (command.getName() != null && !command.getName().isBlank()
-                && !command.getName().equals(existingProduct.getName()))
-            existingProduct.setName(command.getName());
-        if (command.getDescription() != null && !command.getDescription().isBlank()
-                && !command.getDescription().equals(existingProduct.getDescription()))
-            existingProduct.setDescription(command.getDescription());
-        if (command.getCategory() != null && !command.getCategory().isBlank()
-                && !command.getCategory().equals(existingProduct.getCategory()))
-            existingProduct.setCategory(command.getCategory());
-        if (command.getImageUrl() != null && !command.getImageUrl().isBlank()
-                && !command.getImageUrl().equals(existingProduct.getImageUrl()))
-            existingProduct.setImageUrl(command.getImageUrl());
-        if (command.getPrice() != 0 && command.getPrice() != existingProduct.getPrice())
-            existingProduct.setPrice(command.getPrice());
-        if (command.getQuantity() != 0 && command.getQuantity() != existingProduct.getQuantity())
-            existingProduct.setQuantity(command.getQuantity());
+        if (isNotNullOrBlank(command.name()))
+            existingProduct.setName(command.name());
+        if (isNotNullOrBlank(command.description()))
+            existingProduct.setDescription(command.description());
+        if (isNotNullOrBlank(command.category()))
+            existingProduct.setCategory(command.category());
+        if (isNotNullOrBlank(command.imageUrl()))
+            existingProduct.setImageUrl(command.imageUrl());
+        if (command.price() != 0)
+            existingProduct.setPrice(command.price());
+        if (command.quantity() != 0)
+            existingProduct.setQuantity(command.quantity());
 
         return repository.save(existingProduct).toDTO();
     }
