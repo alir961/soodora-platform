@@ -8,8 +8,8 @@ import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.product.UpdateProductCommand;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
-import com.soodora.infrastructure.user.UserEntity;
-import com.soodora.infrastructure.user.UserJpaRepository;
+import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.artist.ArtistJpaRepository;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -28,14 +29,14 @@ import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository repository;
-    private final UserJpaRepository userRepository;
+    private final ArtistJpaRepository artistRepository;
 
     @Override
     @Transactional
     public ProductDTO save(CreateProductCommand command, UserDTO user) {
         ProductEntity entity = new ProductEntity();
-        UserEntity userEntity = userRepository.findBySlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
 
         entity.setName(command.name());
         entity.setPrice(command.price());
@@ -44,7 +45,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setCategory(command.category());
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
-        entity.setUser(userEntity);
+        entity.setArtist(artistEntity);
         return repository.save(entity).toDTO();
     }
 
@@ -53,24 +54,30 @@ public class ProductRepositoryImpl implements ProductRepository {
     public ProductDTO update(UpdateProductCommand command, String slug) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
-        if (command.getName() != null && !command.getName().isBlank()
-                && !command.getName().equals(existingProduct.getName()))
-            existingProduct.setName(command.getName());
-        if (command.getDescription() != null && !command.getDescription().isBlank()
-                && !command.getDescription().equals(existingProduct.getDescription()))
-            existingProduct.setDescription(command.getDescription());
-        if (command.getCategory() != null && !command.getCategory().isBlank()
-                && !command.getCategory().equals(existingProduct.getCategory()))
-            existingProduct.setCategory(command.getCategory());
-        if (command.getImageUrl() != null && !command.getImageUrl().isBlank()
-                && !command.getImageUrl().equals(existingProduct.getImageUrl()))
-            existingProduct.setImageUrl(command.getImageUrl());
-        if (command.getPrice() != 0 && command.getPrice() != existingProduct.getPrice())
-            existingProduct.setPrice(command.getPrice());
-        if (command.getQuantity() != 0 && command.getQuantity() != existingProduct.getQuantity())
-            existingProduct.setQuantity(command.getPrice());
+        if (isNotNullOrBlank(command.name()))
+            existingProduct.setName(command.name());
+        if (isNotNullOrBlank(command.description()))
+            existingProduct.setDescription(command.description());
+        if (isNotNullOrBlank(command.category()))
+            existingProduct.setCategory(command.category());
+        if (isNotNullOrBlank(command.imageUrl()))
+            existingProduct.setImageUrl(command.imageUrl());
+        if (command.price() != 0)
+            existingProduct.setPrice(command.price());
+        if (command.quantity() != 0)
+            existingProduct.setQuantity(command.quantity());
 
         return repository.save(existingProduct).toDTO();
+    }
+
+    @Override
+    @Transactional
+    public void updateQuantity(String slug, long quantity) {
+        ProductEntity existingProduct = findProductBySlugOrThrow(slug);
+
+        if (quantity >= 0)
+            existingProduct.setQuantity(quantity);
+        repository.save(existingProduct).toDTO();
     }
 
     @Override
@@ -95,7 +102,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByUserSlug(identifier.getValue(), pageable)
+        return repository.findByArtistUserSlug(identifier.getValue(), pageable)
                 .map(ProductEntity::toDTO);
     }
 
@@ -122,7 +129,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
-        return repository.findProductsByUserSlug(slug)
+        return repository.findProductsByArtistUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 

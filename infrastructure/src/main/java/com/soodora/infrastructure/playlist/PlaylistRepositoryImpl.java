@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -53,19 +54,16 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     public PlaylistDTO update(UpdatePlaylistCommand command, String slug) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
-        if (command.getName() != null && !command.getName().isBlank()
-                && !command.getName().equals(existingPlaylist.getName()))
-            existingPlaylist.setName(command.getName());
-        if (command.getDescription() != null && !command.getDescription().isBlank()
-                && !command.getDescription().equals(existingPlaylist.getDescription()))
-            existingPlaylist.setDescription(command.getDescription());
-        if (command.getImageUrl() != null && !command.getImageUrl().isBlank()
-                && !command.getImageUrl().equals(existingPlaylist.getImageUrl()))
-            existingPlaylist.setImageUrl(command.getImageUrl());
-        if (command.getPrivacyState() != null && !command.getPrivacyState().equals(existingPlaylist.getPrivacy()))
-            existingPlaylist.setPrivacy(command.getPrivacyState());
-        if (command.getNumberOfTracks() != existingPlaylist.getNumberOfTracks())
-            existingPlaylist.setNumberOfTracks(command.getNumberOfTracks());
+        if (isNotNullOrBlank(command.name()))
+            existingPlaylist.setName(command.name());
+        if (isNotNullOrBlank(command.description()))
+            existingPlaylist.setDescription(command.description());
+        if (isNotNullOrBlank(command.imageUrl()))
+            existingPlaylist.setImageUrl(command.imageUrl());
+        if (command.privacyState() != null)
+            existingPlaylist.setPrivacy(command.privacyState());
+        if (command.numberOfTracks() >= 0)
+            existingPlaylist.setNumberOfTracks(command.numberOfTracks());
         return repository.save(existingPlaylist).toDTO();
     }
 

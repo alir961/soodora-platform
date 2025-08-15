@@ -2,6 +2,8 @@ package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostRepository;
+import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
@@ -39,6 +41,9 @@ class PostRepositoryTest {
     private UserJpaRepository userJpaRepository;
 
     @Mock
+    private ArtistJpaRepository artistJpaRepository;
+
+    @Mock
     private PostJpaRepository postJpaRepository;
 
     @Mock
@@ -48,7 +53,8 @@ class PostRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        postRepository = new PostRepositoryImpl(userJpaRepository, postJpaRepository, commentJpaRepository);
+        postRepository = new PostRepositoryImpl(userJpaRepository, postJpaRepository, commentJpaRepository,
+                artistJpaRepository);
 
         when(userJpaRepository.findBySlug(currentUser.getSlug())).thenReturn(Optional.of(currentUser));
     }
@@ -203,20 +209,22 @@ class PostRepositoryTest {
         PostEntity post = new PostEntity();
 
         post.setSlug(generateSlug());
-        post.setLikes(range(0, likes).mapToObj(index -> new LikeEntity()).collect(toSet()));
-        post.setComments(range(0, comments).mapToObj(index -> new CommentEntity()).collect(toSet()));
-        post.setReposts(range(0, reposts).mapToObj(index -> new UserEntity()).collect(toSet()));
+        post.setLikes(range(0, likes).mapToObj(i -> new LikeEntity()).collect(toSet()));
+        post.setComments(range(0, comments).mapToObj(i -> new CommentEntity()).collect(toSet()));
+        post.setReposts(range(0, reposts).mapToObj(i -> new UserEntity()).collect(toSet()));
         post.setCreatedAt(from(now().minus(ageInHours, HOURS)));
 
-        UserEntity author = new UserEntity();
-
-        author.setRoles(emptySet());
+        ArtistEntity artist = new ArtistEntity();
+        UserEntity artistUser = new UserEntity();
 
         if (isFollowed)
-            currentUser.setFollowers(Set.of(author));
+            currentUser.setFollowers(Set.of(artistUser));
         else
             currentUser.setFollowers(emptySet());
-        post.setUser(author);
+
+        artist.setUser(artistUser);
+        post.setArtist(artist);
+
         return post;
     }
 }

@@ -1,6 +1,6 @@
 package com.soodora.domain.product;
 
-import com.soodora.domain.user.PublicUserDTO;
+import com.soodora.domain.artist.ArtistDTO;
 
 import java.util.Date;
 
@@ -12,7 +12,7 @@ public record ProductDTO(
         String category,
         long price,
         long quantity,
-        PublicUserDTO vendor,
+        ArtistDTO vendor,
         Date createdAt) {
 
 }

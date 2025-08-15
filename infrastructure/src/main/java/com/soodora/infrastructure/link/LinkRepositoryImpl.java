@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -33,7 +34,7 @@ public class LinkRepositoryImpl implements LinkRepository {
     @Override
     @Transactional
     public LinkDTO save(CreateLinkCommand command, String userSlug) {
-        LinkPageEntity linkPage = linkPageRepository.findByUserSlug(userSlug)
+        LinkPageEntity linkPage = linkPageRepository.findByArtistUserSlug(userSlug)
                 .orElseThrow(() -> new UnknownSlugException("Link page not found for user slug: " + userSlug));
 
         LinkEntity entity = new LinkEntity();
@@ -54,18 +55,14 @@ public class LinkRepositoryImpl implements LinkRepository {
     public LinkDTO update(UpdateLinkCommand command, String slug) {
         LinkEntity existingLink = findLinkBySlugOrThrow(slug);
 
-        if (command.getTitle() != null && !command.getTitle().isBlank()
-                && !command.getTitle().equals(existingLink.getTitle()))
-            existingLink.setTitle(command.getTitle());
-        if (command.getDescription() != null && !command.getDescription().isBlank()
-                && !command.getDescription().equals(existingLink.getDescription()))
-            existingLink.setDescription(command.getDescription());
-        if (command.getUrl() != null && !command.getUrl().isBlank()
-                && !command.getUrl().equals(existingLink.getUrl()))
-            existingLink.setUrl(command.getUrl());
-        if (command.getIconUrl() != null && !command.getIconUrl().isBlank()
-                && !command.getIconUrl().equals(existingLink.getIconUrl()))
-            existingLink.setIconUrl(command.getIconUrl());
+        if (isNotNullOrBlank(command.title()))
+            existingLink.setTitle(command.title());
+        if (isNotNullOrBlank(command.description()))
+            existingLink.setDescription(command.description());
+        if (isNotNullOrBlank(command.url()))
+            existingLink.setUrl(command.url());
+        if (isNotNullOrBlank(command.iconUrl()))
+            existingLink.setIconUrl(command.iconUrl());
         return repository.save(existingLink).toDTO();
     }
 

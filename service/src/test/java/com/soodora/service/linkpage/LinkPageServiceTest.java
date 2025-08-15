@@ -1,11 +1,10 @@
 package com.soodora.service.linkpage;
 
+import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.LinkDTO;
 import com.soodora.domain.linkpage.*;
-import com.soodora.domain.user.IdentifierFactory;
 import com.soodora.domain.user.LinkPageNotFoundException;
-import com.soodora.domain.user.UserRepository;
 import com.soodora.service.link.LinkUnityException;
 import com.soodora.service.post.MissingUserSlugException;
 import com.soodora.service.user.UnknownUserException;
@@ -32,7 +31,7 @@ import static com.soodora.test.factory.LinkPageFactory.buildDefaultLinkPage;
 class LinkPageServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private ArtistRepository artistRepository;
 
     @Mock
     private LinkPageRepository linkPageRepository;
@@ -49,7 +48,7 @@ class LinkPageServiceTest {
 
     @BeforeEach
     void setUp() {
-        linkPageService = new LinkPageService(userRepository, linkPageRepository);
+        linkPageService = new LinkPageService(artistRepository, linkPageRepository);
     }
 
     @Test
@@ -82,14 +81,14 @@ class LinkPageServiceTest {
     void retrieveLinkPage_WithUserSlug_Success() {
         // GIVEN
         LinkPageFilter filter = new LinkPageFilter(Optional.of(USER.slug()));
-        when(userRepository.retrieveLinkPage(any())).thenReturn(LINKPAGE_1);
+        when(artistRepository.retrieveLinkPage(any())).thenReturn(LINKPAGE_1);
 
         // WHEN
         LinkPageDTO result = linkPageService.retrieveLinkPage(filter);
 
         // THEN
         assertEquals(LINKPAGE_1, result);
-        verify(userRepository).retrieveLinkPage(any());
+        verify(artistRepository).retrieveLinkPage(any());
     }
 
     @Test
@@ -109,8 +108,7 @@ class LinkPageServiceTest {
     void retrieveUserLinkPage_whenLinkPageDoesNotExist_throwsUnknownLinkPageException() {
         // GIVEN
         LinkPageFilter filter = new LinkPageFilter(Optional.of("slug"));
-        doThrow(LinkPageNotFoundException.class).when(userRepository).retrieveLinkPage(
-                IdentifierFactory.createFromSlug(filter.userSlug().get()));
+        doThrow(LinkPageNotFoundException.class).when(artistRepository).retrieveLinkPage(filter.userSlug().get());
 
         // WHEN
         Executable executable = () -> linkPageService.retrieveLinkPage(filter);

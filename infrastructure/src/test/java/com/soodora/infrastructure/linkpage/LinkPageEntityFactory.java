@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.linkpage;
 
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.link.LinkEntity;
-import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class LinkPageEntityFactory {
 
-    public LinkPageEntity buildDefaultLinkPageEntity(UserEntity user) {
+    public LinkPageEntity buildDefaultLinkPageEntity(ArtistEntity artist) {
         List<LinkEntity> links = new ArrayList<>();
 
         LinkPageEntity linkPageEntity = new LinkPageEntity(
@@ -18,7 +18,7 @@ public class LinkPageEntityFactory {
                 "slug",
                 "Post 1",
                 "Content",
-                user,
+                artist,
                 new ArrayList<>(),
                 new Date(),
                 new Date());

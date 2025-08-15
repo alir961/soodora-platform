@@ -18,10 +18,8 @@ public interface ProductJpaRepository
 
     Optional<ProductEntity> findBySlug(String slug);
 
-    Optional<ProductEntity> findByName(String name);
+    Optional<List<ProductEntity>> findProductsByArtistUserSlug(String slug);
 
-    Optional<List<ProductEntity>> findProductsByUserSlug(String slug);
-
-    Page<ProductEntity> findByUserSlug(String slug, Pageable pageable);
+    Page<ProductEntity> findByArtistUserSlug(String slug, Pageable pageable);
 
 }

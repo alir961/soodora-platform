@@ -2,7 +2,6 @@ package com.soodora.service.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.artist.CreateArtistCommand;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
@@ -20,8 +19,8 @@ public class ArtistService {
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
 
-    public void createArtist(CreateArtistCommand command, UserDTO user) {
-        artistRepository.save(command, user);
+    public void createArtist(UserDTO user) {
+        artistRepository.save(user);
     }
 
     public boolean isArtist(Identifier identifier) {

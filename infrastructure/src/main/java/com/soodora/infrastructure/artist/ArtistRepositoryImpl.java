@@ -2,24 +2,23 @@ package com.soodora.infrastructure.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.artist.CreateArtistCommand;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.user.UnknownEmailException;
-import com.soodora.domain.user.UnknownIdentifierException;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.linkpage.LinkPageDTO;
+import com.soodora.domain.user.*;
+import com.soodora.infrastructure.auth.RoleEntity;
+import com.soodora.infrastructure.auth.RoleJpaRepository;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
-
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,19 +26,23 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     private final ArtistJpaRepository repository;
     private final UserJpaRepository userRepository;
+    private final RoleJpaRepository roleRepository;
 
     @Override
     @Transactional
-    public ArtistDTO save(CreateArtistCommand command, UserDTO user) {
+    public ArtistDTO save(UserDTO user) {
         ArtistEntity entity = new ArtistEntity();
+        RoleEntity artistRole = roleRepository.findByName("ROLE_ARTIST");
         UserEntity userEntity = userRepository.findByEmail(user.email())
                 .orElseThrow(() -> new UnknownEmailException("Unable to find user '" + user.email() + "'"));
+        Set<RoleEntity> userRoles = userEntity.getRoles();
 
-        entity.setName(command.name());
-        entity.setDescription(command.description());
-        entity.setImageUrl(command.imageUrl());
-        entity.setSlug(generateUniqueSlug());
+        userRoles.add(artistRole);
+        userEntity.setRoles(userRoles);
+        userEntity = userRepository.save(userEntity);
+
         entity.setUser(userEntity);
+
         return repository.save(entity)
                 .toDTO();
     }
@@ -47,7 +50,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public ArtistDTO find(String slug) {
-        return findArtistBySlug(slug)
+        return findArtistByUserSlug(slug)
                 .toDTO();
     }
 
@@ -62,7 +65,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public void delete(String slug) {
-        ArtistEntity entity = findArtistBySlug(slug);
+        ArtistEntity entity = findArtistByUserSlug(slug);
 
         repository.delete(entity);
     }
@@ -70,23 +73,25 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public List<EventDTO> retrieveEvents(String slug) {
-        ArtistEntity entity = findArtistBySlug(slug);
+        ArtistEntity entity = findArtistByUserSlug(slug);
 
         return entity.getEvents().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
     }
 
-    private String generateUniqueSlug() {
-        String slug = generateSlug();
+    @Override
+    @Transactional
+    public LinkPageDTO retrieveLinkPage(String slug) throws LinkPageNotFoundException {
+        ArtistEntity artist = findArtistByUserSlug(slug);
 
-        while (repository.findBySlug(slug).isPresent())
-            slug = generateSlug();
-        return slug;
+        if (artist.getLinkPage() == null)
+            throw new LinkPageNotFoundException("Link Page not found for artist " + slug);
+        return artist.getLinkPage().toDTO();
     }
 
-    private ArtistEntity findArtistBySlug(String slug) throws UnknownIdentifierException {
-        return repository.findBySlug(slug)
+    private ArtistEntity findArtistByUserSlug(String slug) throws UnknownIdentifierException {
+        return repository.findByUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist '" + slug + "'"));
     }
 

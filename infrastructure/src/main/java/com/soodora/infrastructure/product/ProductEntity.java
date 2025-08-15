@@ -1,8 +1,8 @@
 package com.soodora.infrastructure.product;
 
 import com.soodora.domain.product.ProductDTO;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
-import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.Date;
 import java.util.UUID;
@@ -50,7 +50,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
 
     @ManyToOne
     @JoinColumn
-    private UserEntity user;
+    private ArtistEntity artist;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -70,7 +70,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
                 category,
                 price,
                 quantity,
-                user.toDTO().toPublic(),
+                artist.toDTO(),
                 createdAt);
     }
 

@@ -4,6 +4,8 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
+import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
@@ -34,19 +36,20 @@ public class PostRepositoryImpl implements PostRepository {
     private final UserJpaRepository userRepository;
     private final PostJpaRepository postRepository;
     private final CommentJpaRepository commentRepository;
+    private final ArtistJpaRepository artistsRepository;
 
     @Override
     @Transactional
     public PostDTO save(CreatePostCommand command, UserDTO user) {
         PostEntity entity = new PostEntity();
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.slug());
 
         entity.setTitle(command.title());
         entity.setContent(command.content());
         entity.setImageUrl(command.imageUrl());
         entity.setAudioUrl(command.audioUrl());
         entity.setSlug(generateUniqueSlug());
-        entity.setUser(userEntity);
+        entity.setArtist(artistEntity);
         entity.setLikes(emptySet());
         entity.setComments(emptySet());
         entity.setReposts(emptySet());
@@ -93,7 +96,8 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     @Transactional
     public Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByUserSlug(identifier.getValue(), pageable).map(PostEntity::toDTO);
+        return postRepository.findByArtistUserSlug(identifier.getValue(), pageable)
+                .map(PostEntity::toDTO);
     }
 
     @Override
@@ -105,7 +109,7 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     @Transactional
     public Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable) {
-        return postRepository.findByUserSlugAndAudioUrlIsNotNull(identifier.getValue(), pageable)
+        return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(identifier.getValue(), pageable)
                 .map(PostEntity::toDTO);
     }
 
@@ -266,13 +270,18 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     public Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable) {
-        return postRepository.findByUserSlugIn(followingSlugs, pageable)
+        return postRepository.findByArtistUserSlugIn(followingSlugs, pageable)
                 .map(PostEntity::toDTO);
     }
 
     protected UserEntity findUserBySlugOrThrow(String slug) {
         return userRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find user with slug: #" + slug));
+    }
+
+    protected ArtistEntity findArtistByUserSlugOrThrow(String slug) {
+        return artistsRepository.findByUserSlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug: #" + slug));
     }
 
     protected PostEntity findPostBySlugOrThrow(String slug) {

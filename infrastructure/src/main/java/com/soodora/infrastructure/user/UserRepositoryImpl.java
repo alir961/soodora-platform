@@ -2,11 +2,11 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
-import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.*;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntity;
 
@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -71,6 +72,15 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     @Transactional
     public UserDTO find(Identifier identifier) {
+        String slug = identifier.getValue();
+        Optional<ArtistEntity> artistEntity = artistRepository.findByUserSlug(slug);
+
+        if (artistEntity.isPresent()) {
+            ArtistEntity artist = artistEntity.get();
+            UserEntity user = artist.getUser();
+
+            return user.toDTO();
+        }
         return findUserByIdentifierOrThrows(identifier).toDTO();
     }
 
@@ -143,16 +153,6 @@ public class UserRepositoryImpl implements UserRepository {
         return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
                 .map(DomainEntity::toDTO)
                 .toList();
-    }
-
-    @Override
-    @Transactional
-    public LinkPageDTO retrieveLinkPage(Identifier identifier) throws LinkPageNotFoundException {
-        UserEntity user = findUserByIdentifierOrThrows(identifier);
-        if (user.getLinkPage() == null)
-            throw new LinkPageNotFoundException("Link Page not found for user " + identifier);
-
-        return user.getLinkPage().toDTO();
     }
 
     @Override
@@ -234,10 +234,6 @@ public class UserRepositoryImpl implements UserRepository {
         while (userRepository.findBySlug(slug).isPresent())
             slug = generateSlug();
         return slug;
-    }
-
-    private boolean isNotNullOrBlank(String input) {
-        return input != null && !input.isBlank();
     }
 
 }

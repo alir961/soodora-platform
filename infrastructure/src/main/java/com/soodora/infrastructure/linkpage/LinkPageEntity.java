@@ -1,15 +1,14 @@
 package com.soodora.infrastructure.linkpage;
 
 import com.soodora.domain.linkpage.LinkPageDTO;
+import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.link.LinkEntity;
-import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -42,7 +41,7 @@ public class LinkPageEntity implements DomainEntity<LinkPageDTO> {
 
     @OneToOne
     @JoinColumn
-    private UserEntity user;
+    private ArtistEntity artist;
 
     @OneToMany(mappedBy = "linkPage", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LinkEntity> links = new ArrayList<>();
@@ -61,8 +60,8 @@ public class LinkPageEntity implements DomainEntity<LinkPageDTO> {
                 slug,
                 title,
                 description,
-                links.stream().map(LinkEntity::toDTO).collect(Collectors.toList()),
-                user.toDTO());
+                links.stream().map(LinkEntity::toDTO).toList(),
+                artist.toDTO());
     }
 
 }

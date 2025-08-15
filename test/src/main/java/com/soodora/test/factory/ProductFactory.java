@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
+import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
 
 @NoArgsConstructor(access = PROTECTED)
 public class ProductFactory {
@@ -22,7 +22,7 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser().toPublic(),
+                buildArtistDTO("id"),
                 new Date());
     }
 
@@ -35,7 +35,7 @@ public class ProductFactory {
                 "category",
                 100,
                 10,
-                buildDefaultUser().toPublic(),
+                buildArtistDTO("id" + suffix),
                 new Date());
     }
 

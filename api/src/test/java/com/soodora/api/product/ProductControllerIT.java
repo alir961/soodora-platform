@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
+import static com.soodora.test.TestConstants.ARTIST_USER;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.ProductFactory.buildDefaultProduct;
 
@@ -50,7 +51,7 @@ class ProductControllerIT {
     private static final ProductDTO A_PRODUCT = buildDefaultProduct();
 
     @Test
-    void createProduct_Success() throws Exception {
+    void givenArtistUser_whenCreateProduct_thenSuccess() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest(
                 "Product Name",
@@ -60,19 +61,19 @@ class ProductControllerIT {
                 100,
                 10);
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doNothing().when(productService).createProduct(any(), eq(USER));
+        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        doNothing().when(productService).createProduct(any(), eq(ARTIST_USER));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                .with(user(new UserPrincipal(USER)))
+                .with(user(new UserPrincipal(ARTIST_USER)))
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(request)))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void createProduct_InvalidRequest() throws Exception {
+    void givenInvalidRequest_whenCreateProduct_thenInvalidRequest() throws Exception {
         // GIVEN
         CreateProductRequest request = new CreateProductRequest(
                 null,
@@ -82,20 +83,39 @@ class ProductControllerIT {
                 0,
                 0);
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(InvalidRequestException.class).when(productService)
-                .createProduct(any(), eq(USER));
+                .createProduct(any(), eq(ARTIST_USER));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
-                .with(user(new UserPrincipal(USER)))
+                .with(user(new UserPrincipal(ARTIST_USER)))
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(request)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void getProducts_Success() throws Exception {
+    void givenNoArtistUser_whenCreateProduct_thenForbidden() throws Exception {
+        // GIVEN
+        CreateProductRequest request = new CreateProductRequest(
+                "Product Name",
+                "Description",
+                "image-url",
+                "category",
+                100,
+                10);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/products")
+                .with(user(new UserPrincipal(USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(request)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidPage_whenGetProducts_thenSuccess() throws Exception {
         // GIVEN
         Page<ProductDTO> productsPage = new PageImpl<>(List.of(A_PRODUCT));
         when(productService.retrieveProducts(any(ProductFilter.class), any(Pageable.class))).thenReturn(productsPage);
@@ -112,20 +132,20 @@ class ProductControllerIT {
     }
 
     @Test
-    void getProduct_Success() throws Exception {
+    void givenValidSlug_whenGetProduct_thenSuccess() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        when(productService.retrieveProduct("product-slug")).thenReturn(A_PRODUCT);
+        when(productService.retrieveProduct("slug")).thenReturn(A_PRODUCT);
 
-        mockMvc.perform(get("/products/product-slug")
+        mockMvc.perform(get("/products/slug")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void updateProduct_Success() throws Exception {
+    void givenValidRequest_whenUpdateProduct_thenSuccess() throws Exception {
         // GIVEN
-        UpdateProductRequest updateProductRequest = new UpdateProductRequest(
+        UpdateProductRequest request = new UpdateProductRequest(
                 "Updated Product Name",
                 "Updated Description",
                 "image",
@@ -138,13 +158,13 @@ class ProductControllerIT {
         // WHEN & THEN
         mockMvc.perform(put("/products/productSlug1")
                 .contentType("application/json")
-                .content(asJsonString(updateProductRequest))
+                .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isAccepted());
     }
 
     @Test
-    void updateProduct_InvalidRequest() throws Exception {
+    void givenInvalidRequest_whenUpdateProduct_thenInvalidRequest() throws Exception {
         // GIVEN
         UpdateProductRequest updateProductRequest = new UpdateProductRequest(
                 "",
@@ -167,16 +187,16 @@ class ProductControllerIT {
     }
 
     @Test
-    void deleteProduct_Success() throws Exception {
+    void givenValidSlug_whenDeleteProduct_thenSuccess() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doNothing().when(productService).deleteProductBySlug("product-slug");
+        doNothing().when(productService).deleteProductBySlug("slug");
 
         // WHEN & THEN
-        mockMvc.perform(delete("/products/product-slug")
+        mockMvc.perform(delete("/products/slug")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(productService).deleteProductBySlug("product-slug");
+        verify(productService).deleteProductBySlug("slug");
     }
 
 }

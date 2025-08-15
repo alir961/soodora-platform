@@ -29,7 +29,7 @@ public class EventRepositoryImpl implements EventRepository {
     @Transactional
     public EventDTO save(CreateEventCommand command, String artistSlug) {
         EventEntity event = new EventEntity();
-        ArtistEntity artist = artistRepository.findBySlug(artistSlug)
+        ArtistEntity artist = artistRepository.findByUserSlug(artistSlug)
                 .orElseThrow(() -> new UnknownSlugException("Invalid artist slug: " + artistSlug));
 
         event.setSlug(generateUniqueSlug());
