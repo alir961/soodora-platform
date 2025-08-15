@@ -15,7 +15,7 @@ import {
 import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct, CreateProductRequest } from '@/client/productClient';
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
@@ -29,22 +29,27 @@ const hasLinkPage = ref(false);
 const checkUserLinkPage = async () => {
   const userSlug = authStore.getAuthenticatedUserSlug;
 
-  if (!userSlug) {
-    hasLinkPage.value = false;
-    return;
-  }
-  try {
-    const userPage = await getUserLinkPage(userSlug);
+  if (userSlug) {
+    try {
+      const userPage = await getUserLinkPage(userSlug);
 
-    hasLinkPage.value = !!userPage;
-  } catch (error) {
-    hasLinkPage.value = false;
-  }
+      hasLinkPage.value = !!userPage;
+    } catch (error) {
+      console.log('Unable to fetch artist link page', error);
+      hasLinkPage.value = false;
+    }
+  } else hasLinkPage.value = false;
 };
 
-onMounted(() => {
-  checkUserLinkPage();
-});
+watch(
+  () => authStore.getAuthenticatedUser,
+  (newUser) => {
+    if (newUser) {
+      checkUserLinkPage();
+    }
+  },
+  { immediate: true }
+);
 
 const goToLinkPages = async () => {
   const userSlug = authStore.getAuthenticatedUserSlug;
@@ -58,7 +63,7 @@ const goToLinkPages = async () => {
       return;
     }
   } catch (error) {
-    // error ignored, fallback to /linkpages
+    console.log('Unable to fetch artist link page', error);
   }
   await router.push('/linkpages');
 };
