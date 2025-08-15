@@ -106,7 +106,7 @@ public class WebSecurityConfiguration {
         config.addAllowedOrigin("http://localhost");
         config.addAllowedOrigin("capacitor://localhost");
         config.addAllowedOrigin("https://staging.soodora.com");
-        config.addAllowedOrigin("https://soodora.com");
+        config.addAllowedOrigin("https://app.soodora.com");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
         source.registerCorsConfiguration("/**", config);
