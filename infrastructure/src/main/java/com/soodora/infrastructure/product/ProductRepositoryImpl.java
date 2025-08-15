@@ -75,9 +75,8 @@ public class ProductRepositoryImpl implements ProductRepository {
     public void updateQuantity(String slug, long quantity) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
-        if (quantity != 0 && quantity != existingProduct.getQuantity())
+        if (quantity >= 0)
             existingProduct.setQuantity(quantity);
-
         repository.save(existingProduct).toDTO();
     }
 

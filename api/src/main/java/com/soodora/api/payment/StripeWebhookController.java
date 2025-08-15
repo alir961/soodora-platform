@@ -10,13 +10,14 @@ import org.springframework.web.bind.annotation.*;
 
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
-import com.stripe.net.Webhook;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.stripe.net.Webhook.constructEvent;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,15 +33,14 @@ public class StripeWebhookController {
     @PostMapping("/webhook")
     public ResponseEntity<JsonResponse> handleStripeWebhook(
             @RequestBody String payload,
-            @RequestHeader("Stripe-Signature") String sigHeader) {
-
+            @RequestHeader("Stripe-Signature") String signature) {
         try {
-            Event event = Webhook.constructEvent(payload, sigHeader, webhookSecret);
+            Event event = constructEvent(payload, signature, webhookSecret);
+
             stripePaymentService.handleStripeEvent(event);
-            return ResponseEntity.ok().build();
+            return ok().build();
         } catch (SignatureVerificationException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage() + ". Invalid Signature"), BAD_REQUEST);
-
         } catch (Exception e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }

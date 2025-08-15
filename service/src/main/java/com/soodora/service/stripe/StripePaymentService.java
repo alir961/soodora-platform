@@ -4,6 +4,7 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
+import com.soodora.domain.sale.ProductSaleException;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
 import com.soodora.domain.user.UserDTO;
@@ -54,19 +55,21 @@ public class StripePaymentService {
         String vendorSlug = session.getMetadata().get("vendorSlug");
         String buyerSlug = session.getMetadata().get("buyerSlug");
 
-        ProductDTO productDTO = ofNullable(productRepository.findBySlug(productSlug))
+        ProductDTO product = ofNullable(productRepository.findBySlug(productSlug))
                 .orElseThrow(() -> new UnknownProductException("Product not found: " + productSlug));
-        ArtistDTO artistDTO = ofNullable(artistRepository.find(vendorSlug))
+        ArtistDTO artist = ofNullable(artistRepository.find(vendorSlug))
                 .orElseThrow(() -> new UnknownArtistException("Artist not found: " + vendorSlug));
-        UserDTO userDTO = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
+        UserDTO user = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
                 .orElseThrow(() -> new UnknownUserException("User not found: " + buyerSlug));
 
-        productRepository.updateQuantity(productSlug, productDTO.quantity() - quantityBought);
+        if (product.quantity() > 0) {
+            BigDecimal amount = valueOf(product.price()).multiply(valueOf(quantityBought));
+            SaveSaleCommand sale = new SaveSaleCommand(product, artist, user, quantityBought, amount);
 
-        BigDecimal amount = valueOf(productDTO.price()).multiply(valueOf(quantityBought));
-        SaveSaleCommand saleCmd = new SaveSaleCommand(productDTO, artistDTO, userDTO, quantityBought, amount);
-
-        saleRepository.save(saleCmd);
+            productRepository.updateQuantity(productSlug, product.quantity() - quantityBought);
+            saleRepository.save(sale);
+        } else
+            throw new ProductSaleException("No product quantity remaining");
     }
 
 }

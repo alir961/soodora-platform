@@ -25,6 +25,7 @@ public class PaymentController {
     public CheckoutSessionResponse createCheckoutSession(
             @Valid @RequestBody CheckoutSessionRequest request) throws StripeException {
         Session session = stripeService.createCheckoutSession(request);
+
         return new CheckoutSessionResponse(session.getUrl());
     }
 
