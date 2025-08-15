@@ -11,8 +11,7 @@ import CommentView from '@/view/explore/CommentView.vue';
 import CreateView from '@/view/create/CreateView.vue';
 import LinkPageView from '@/view/create/LinkPageView.vue';
 import SearchView from '@/view/search/SearchView.vue';
-import PaymentSuccessView from '@/view/marketplace/PaymentSuccessView.vue';
-import PaymentCancelView from '@/view/marketplace/PaymentCancelView.vue';
+import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -78,12 +77,20 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/marketplace/payment/success',
     name: 'PaymentSuccess',
-    component: PaymentSuccessView,
+    component: PaymentResultView,
+    props: {
+      title: 'Your payment has been validated, you will soon receive a confirmation of your order.',
+      button: 'Back to marketplace',
+    },
   },
   {
     path: '/marketplace/payment/cancel',
     name: 'PaymentCancel',
-    component: PaymentCancelView,
+    component: PaymentResultView,
+    props: {
+      title: 'Your payment has been cancelled, you will not be charged.',
+      button: 'Back to marketplace',
+    },
   },
   {
     path: '/marketplace/mysales',
