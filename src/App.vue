@@ -28,10 +28,11 @@ const tabs: TabEntry[] = [
 const loadUser = async () => {
   if (authStore.isAuthenticated) {
     const user = authStore.getAuthenticatedUser;
+    const allowedRoles = ['ADMIN', 'ARTIST', 'PREMIUM'];
 
     if (user === null) return;
     try {
-      isAdminOrArtist.value = user.roles.includes('ADMIN') || user.roles.includes('ARTIST');
+      isAdminOrArtist.value = user.roles.some((role) => allowedRoles.includes(role));
     } catch (error) {
       console.error('Unable to load user data:', error);
       isAdminOrArtist.value = false;

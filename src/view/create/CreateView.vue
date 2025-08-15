@@ -15,7 +15,7 @@ import {
 import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct, CreateProductRequest } from '@/client/productClient';
-import { ref, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
@@ -27,37 +27,43 @@ const authStore = useAuthStore();
 const hasLinkPage = ref(false);
 
 const checkUserLinkPage = async () => {
-  const currentUser = authStore.getAuthenticatedUser;
-  if (currentUser) {
+  const userSlug = authStore.getAuthenticatedUserSlug;
+
+  if (userSlug) {
     try {
-      const userPage = await getUserLinkPage(currentUser.slug);
+      const userPage = await getUserLinkPage(userSlug);
+
       hasLinkPage.value = !!userPage;
     } catch (error) {
+      console.log('Unable to fetch artist link page', error);
       hasLinkPage.value = false;
     }
-  } else {
-    hasLinkPage.value = false;
-  }
+  } else hasLinkPage.value = false;
 };
 
-onMounted(() => {
-  checkUserLinkPage();
-});
+watch(
+  () => authStore.getAuthenticatedUser,
+  (newUser) => {
+    if (newUser) {
+      checkUserLinkPage();
+    }
+  },
+  { immediate: true }
+);
 
 const goToLinkPages = async () => {
-  const currentUser = authStore.getAuthenticatedUser;
+  const userSlug = authStore.getAuthenticatedUserSlug;
 
-  if (currentUser) {
-    try {
-      const userPage = await getUserLinkPage(currentUser.slug);
+  if (!userSlug) return;
+  try {
+    const userPage = await getUserLinkPage(userSlug);
 
-      if (userPage) {
-        await router.push(`/linkpages/${userPage.slug}`);
-        return;
-      }
-    } catch (error) {
-      // error ignored, fallback to /linkpages
+    if (userPage) {
+      await router.push(`/linkpages/${userPage.slug}`);
+      return;
     }
+  } catch (error) {
+    console.log('Unable to fetch artist link page', error);
   }
   await router.push('/linkpages');
 };
@@ -115,6 +121,10 @@ const publishProduct = async () => {
     await toast.present();
   }
 };
+
+const goToSalesPage = async () => {
+  await router.push('/marketplace/mysales');
+};
 </script>
 
 <template>
@@ -139,6 +149,10 @@ const publishProduct = async () => {
       <ion-button @click="goToLinkPages" expand="block" class="go-button" color="primary" fill="solid">
         {{ hasLinkPage ? 'Edit your LinkPage' : 'Create a LinkPage' }}
         <ion-icon :icon="linkOutline" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button expand="block" class="go-button" color="secondary" fill="solid" @click="goToSalesPage">
+        My Sales
       </ion-button>
 
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
@@ -193,7 +207,7 @@ const publishProduct = async () => {
               </ion-item>
             </div>
             <div class="post-actions">
-              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post </ion-button>
+              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post</ion-button>
             </div>
           </div>
         </ion-content>
@@ -263,7 +277,7 @@ const publishProduct = async () => {
               </ion-item>
             </div>
             <div class="post-actions">
-              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product </ion-button>
+              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product</ion-button>
             </div>
           </div>
         </ion-content>
@@ -384,5 +398,12 @@ ion-button.post-button::part(native) {
 .create-post {
   --background: var(--ion-color-primary);
   --color: rgb(255, 255, 255);
+}
+
+.go-button {
+  margin-top: 20px;
+  background: var(--ion-background-color);
+  border-radius: 12px;
+  padding: 10px 20px;
 }
 </style>

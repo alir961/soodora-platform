@@ -26,17 +26,18 @@ const lastname: Ref<string> = ref('');
 const login = async () => {
   try {
     const token = await callLogin({ email: email.value, password: password.value });
-
     await saveBearerToken(token);
+
+    const user = await retrieveAuthenticatedProfile();
+    authStore.authenticate(user);
+
     await router.push('/explore');
-    authStore.authenticate(await retrieveAuthenticatedProfile());
   } catch (error) {
     const toast = await toastController.create({
       message: 'Login Failed!',
       duration: 1500,
       position: 'top',
     });
-
     await toast.present();
   }
 };

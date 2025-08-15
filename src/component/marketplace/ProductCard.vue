@@ -14,6 +14,9 @@ import {
   IonAvatar,
   toastController,
   AlertInput,
+  IonInput,
+  IonLabel,
+  IonItem,
 } from '@ionic/vue';
 import { Product } from '@/entity/Product';
 import { PropType, ref } from 'vue';
@@ -25,6 +28,7 @@ import { callDeleteProduct } from '@/client/productClient';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
+import { createCheckoutSession } from '@/client/paymentClient';
 
 defineProps({
   product: {
@@ -39,17 +43,22 @@ const authStore = useAuthStore();
 const showImageModal = ref(false);
 const modalImageSrc = ref('');
 const modalBreakpoint = ref(0.5);
-const modalImageRef = ref<HTMLImageElement | null>(null);
 const addToCartBtnRef = ref<HTMLElement | null>(null);
 const productImageHeight = ref(0);
+
+const quantity = ref(1);
+const maxQuantity = ref(0);
 
 const onProductImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement;
   productImageHeight.value = img.clientHeight;
 };
 
-const openImageModal = (src: string) => {
+const openImageModal = (src: string, productQuantity: number | null) => {
   modalImageSrc.value = src;
+  maxQuantity.value = productQuantity ?? 1;
+  quantity.value = 1;
+
   const buttonAndPaddingHeight = 180;
   const scaledImageHeight = productImageHeight.value * 1.1;
   const totalHeightPx = scaledImageHeight + buttonAndPaddingHeight;
@@ -62,14 +71,52 @@ const closeImageModal = () => {
   showImageModal.value = false;
 };
 
-const showComingSoonToast = async () => {
-  const toast = await toastController.create({
-    message: 'This feature is coming soon!',
-    duration: 1500,
-    color: 'primary',
-    position: 'top',
-  });
-  await toast.present();
+const increaseQuantity = () => {
+  if (quantity.value < maxQuantity.value) quantity.value++;
+};
+
+const decreaseQuantity = () => {
+  if (quantity.value > 1) quantity.value--;
+};
+
+const quantityChanged = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  let val = parseInt(target.value);
+  if (isNaN(val) || val < 1) val = 1;
+  else if (val > maxQuantity.value) val = maxQuantity.value;
+  quantity.value = val;
+};
+
+const goToCheckout = async (product: Product) => {
+  if (product.price == null) {
+    console.error('Product has no price');
+    return;
+  }
+
+  let userSlug: string | null = null;
+  const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
+  if (authenticatedUserSlug === null) {
+    console.error('Artist slug is null');
+    return;
+  } else {
+    userSlug = authenticatedUserSlug;
+  }
+
+  try {
+    const response = await createCheckoutSession({
+      name: product.name,
+      amount: Math.round(product.price * 100),
+      imageUrl: product.imageUrl,
+      productSlug: product.slug,
+      vendorSlug: product.vendor.slug,
+      buyerSlug: userSlug,
+      quantity: quantity.value,
+    });
+
+    window.location.href = response.url;
+  } catch (err) {
+    console.error('Checkout error:', err);
+  }
 };
 
 const askDeleteProduct = async (slug: string) => {
@@ -147,7 +194,7 @@ const exportProduct = async (product: Product) => {
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
-    <ion-card @click="openImageModal(product.imageUrl)">
+    <ion-card @click="openImageModal(product.imageUrl, product.quantity)">
       <div class="product-image-wrapper">
         <img :src="product.imageUrl" :alt="`Product ${product.name}`" @load="onProductImageLoad" />
       </div>
@@ -203,9 +250,29 @@ const exportProduct = async (product: Product) => {
       :initial-breakpoint="modalBreakpoint"
       handle-behavior="cycle">
       <ion-content class="ion-padding modal-content">
-        <img ref="modalImageRef" :src="modalImageSrc" alt="Fullscreen product" class="modal-image" />
-        <ion-button ref="addToCartBtnRef" expand="block" @click="showComingSoonToast" class="buy-button">
-          Add to Cart
+        <ion-item lines="none" class="quantity-selector">
+          <ion-button size="small" @click="decreaseQuantity" :disabled="quantity <= 1">-</ion-button>
+
+          <ion-input
+            type="number"
+            min="1"
+            :max="maxQuantity"
+            v-model.number="quantity"
+            @ionChange="quantityChanged"
+            style="max-width: 60px; text-align: center">
+          </ion-input>
+
+          <ion-button size="small" @click="increaseQuantity" :disabled="quantity >= maxQuantity">+</ion-button>
+          <ion-label class="quantity-label"> Quantité: {{ quantity }} / {{ maxQuantity }} en stock </ion-label>
+        </ion-item>
+
+        <ion-button
+          ref="addToCartBtnRef"
+          expand="block"
+          @click="goToCheckout(product)"
+          class="buy-button"
+          :disabled="quantity < 1 || quantity > maxQuantity">
+          Buy
         </ion-button>
       </ion-content>
     </ion-modal>
@@ -288,10 +355,6 @@ ion-card-subtitle {
   overflow: hidden;
 }
 
-.modal-image {
-  border-radius: 15px;
-}
-
 .buy-button {
   margin-top: 1rem;
   --background: var(--ion-color-primary);
@@ -315,5 +378,17 @@ ion-card-subtitle {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.quantity-label {
+  font-weight: bold;
+  margin-left: 8px;
 }
 </style>

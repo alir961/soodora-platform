@@ -177,15 +177,17 @@ async function submitLinkDeletion(index: number) {
 
 async function checkIfUserHasLinkPage() {
   try {
-    const currentUser = authStore.getAuthenticatedUser;
-    if (!currentUser) {
+    const userSlug = authStore.getAuthenticatedUserSlug;
+
+    if (!userSlug) {
       isOwner.value = false;
       checkedOwnership.value = true;
       return;
     }
 
     if (!pageSlug.value) {
-      const userPage = await getUserLinkPage(currentUser.slug);
+      const userPage = await getUserLinkPage(userSlug);
+
       if (userPage) {
         await router.push(`/linkpages/${userPage.slug}`);
         checkedOwnership.value = true;
@@ -194,7 +196,8 @@ async function checkIfUserHasLinkPage() {
       isOwner.value = false;
     } else {
       const page = await getLinkPage(pageSlug.value);
-      isOwner.value = currentUser.slug === page.owner.slug;
+
+      isOwner.value = userSlug === page.owner.slug;
     }
     checkedOwnership.value = true;
   } catch (error) {
