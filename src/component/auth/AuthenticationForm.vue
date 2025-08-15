@@ -5,7 +5,7 @@ import { callLogin, callRegister, RegisterRequest } from '@/client/authenticatio
 import { saveBearerToken } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
-import { fetchLoggedArtist, retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 
 const { isLogin } = defineProps({
   isLogin: Boolean,
@@ -30,17 +30,6 @@ const login = async () => {
 
     const user = await retrieveAuthenticatedProfile();
     authStore.authenticate(user);
-
-    if (user.roles.includes('ARTIST')) {
-      const artist = await fetchLoggedArtist();
-      if (artist?.slug) {
-        authStore.setArtistSlug(artist.slug);
-      } else {
-        authStore.setArtistSlug(null);
-      }
-    } else {
-      authStore.setArtistSlug(null);
-    }
 
     await router.push('/explore');
   } catch (error) {

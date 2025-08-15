@@ -25,10 +25,6 @@ const props = defineProps({
     required: true,
     type: Object as PropType<User>,
   },
-  artistSlug: {
-    type: String as PropType<string | null>,
-    default: null,
-  },
 });
 
 const isLoading = ref(false);
@@ -78,9 +74,9 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
     let postPage: PostPage | null = null;
 
     isLoading.value = true;
-    if (props.artistSlug) {
-      if (filter === 'posts') postPage = await callRetrieveUserPosts(props.artistSlug, pageable);
-      if (filter === 'audios') postPage = await callRetrieveUserAudios(props.artistSlug, pageable);
+    if (props.user.slug) {
+      if (filter === 'posts') postPage = await callRetrieveUserPosts(props.user.slug, pageable);
+      if (filter === 'audios') postPage = await callRetrieveUserAudios(props.user.slug, pageable);
     }
 
     if (filter === 'reposts') postPage = await callRetrieveUserReposts(props.user, pageable);
@@ -108,10 +104,10 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
 };
 
 const loadProducts = async (reset: boolean) => {
-  if (props.artistSlug) {
+  if (props.user?.slug) {
     const page = reset ? 0 : currentPostPage.value;
     const pageable = { page, size: PAGE_SIZE };
-    const productPage = await callRetrieveUserProduct(props.artistSlug, pageable);
+    const productPage = await callRetrieveUserProduct(props.user.slug, pageable);
 
     if (reset) {
       products.value = productPage.content;

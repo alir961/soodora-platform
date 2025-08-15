@@ -27,15 +27,17 @@ const authStore = useAuthStore();
 const hasLinkPage = ref(false);
 
 const checkUserLinkPage = async () => {
-  const currentArtistSlug = authStore.getAuthenticatedArtistSlug;
-  if (currentArtistSlug) {
-    try {
-      const userPage = await getUserLinkPage(currentArtistSlug);
-      hasLinkPage.value = !!userPage;
-    } catch (error) {
-      hasLinkPage.value = false;
-    }
-  } else {
+  const userSlug = authStore.getAuthenticatedUserSlug;
+
+  if (!userSlug) {
+    hasLinkPage.value = false;
+    return;
+  }
+  try {
+    const userPage = await getUserLinkPage(userSlug);
+
+    hasLinkPage.value = !!userPage;
+  } catch (error) {
     hasLinkPage.value = false;
   }
 };
@@ -45,19 +47,18 @@ onMounted(() => {
 });
 
 const goToLinkPages = async () => {
-  const currentArtistSlug = authStore.getAuthenticatedArtistSlug;
+  const userSlug = authStore.getAuthenticatedUserSlug;
 
-  if (currentArtistSlug) {
-    try {
-      const userPage = await getUserLinkPage(currentArtistSlug);
+  if (!userSlug) return;
+  try {
+    const userPage = await getUserLinkPage(userSlug);
 
-      if (userPage) {
-        await router.push(`/linkpages/${userPage.slug}`);
-        return;
-      }
-    } catch (error) {
-      // error ignored, fallback to /linkpages
+    if (userPage) {
+      await router.push(`/linkpages/${userPage.slug}`);
+      return;
     }
+  } catch (error) {
+    // error ignored, fallback to /linkpages
   }
   await router.push('/linkpages');
 };
@@ -201,7 +202,7 @@ const goToSalesPage = async () => {
               </ion-item>
             </div>
             <div class="post-actions">
-              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post </ion-button>
+              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post</ion-button>
             </div>
           </div>
         </ion-content>
@@ -271,7 +272,7 @@ const goToSalesPage = async () => {
               </ion-item>
             </div>
             <div class="post-actions">
-              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product </ion-button>
+              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product</ion-button>
             </div>
           </div>
         </ion-content>

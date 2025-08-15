@@ -215,7 +215,7 @@ const exportProduct = async (product: Product) => {
             <ion-icon :src="customShareIcon" />
           </ion-button>
           <ion-button
-            v-if="product.vendor.slug === authStore.getAuthenticatedArtistSlug"
+            v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
             fill="clear"
             size="default"
             color="light"
