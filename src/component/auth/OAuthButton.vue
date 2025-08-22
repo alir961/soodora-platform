@@ -23,7 +23,6 @@ const props = defineProps({
     type: String as PropType<OAuthProvider>,
   },
   linked: Boolean,
-  disabled: Boolean,
 });
 const emit = defineEmits(['unlink']);
 
@@ -79,11 +78,7 @@ const clickButton = async () => {
 
 <template>
   <div style="display: flex; justify-content: center">
-    <div
-      @click="if (!disabled) clickButton();"
-      :class="['oauth-button', provider.provider, { disabled }]"
-      role="button"
-      tabindex="0">
+    <div @click="clickButton()" :class="['oauth-button', provider.provider]">
       <span class="wrapper">
         <ion-icon :icon="provider.icon" />
         {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
@@ -94,37 +89,29 @@ const clickButton = async () => {
 
 <style scoped>
 .oauth-button {
-  color: white;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.25);
   width: 70%;
-  margin: 0 auto;
-  border-radius: 15px;
+  margin: 0 auto 0.8rem;
+  padding: 0.4rem 1rem;
   background-color: var(--ion-color-primary);
-  padding: 0.4em 1em;
+  border-radius: 15px;
+  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.25);
   cursor: pointer;
   user-select: none;
   outline: none;
   transition: opacity 0.2s ease;
-  margin-bottom: 0.8em;
-}
 
-.oauth-button.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-  cursor: not-allowed;
-}
+  & .wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
 
-.wrapper {
-  font-weight: bold;
-  font-size: 1.2em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.wrapper ion-icon {
-  margin-right: 10px;
-  padding-bottom: 0.2em;
+    & ion-icon {
+      margin-right: 0.4em;
+    }
+  }
 }
 </style>

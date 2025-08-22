@@ -8,6 +8,7 @@ cache:
 
 variables:
   VITE_API_URL: 'https://staging.soodora.com/api'
+  VITE_ADMINISTRATION_URL: 'https://staging.soodora.com/administration'
 
 stages:
   - install
@@ -48,6 +49,7 @@ build:
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
         VITE_API_URL: 'https://app.soodora.com/api'
+        VITE_ADMINISTRATION_URL: 'https://app.soodora.com/administration'
     - when: always
 
 staging:

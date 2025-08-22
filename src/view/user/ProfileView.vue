@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IonButton, IonCardTitle, modalController, onIonViewWillEnter, toastController } from '@ionic/vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import { OAuthProvider, callRetrieveLinkedOAuthProviders, retrieveAuthenticatedProfile } from '@/client/profileClient';
@@ -9,6 +9,8 @@ import OAuthButton from '@/component/auth/OAuthButton.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import UserContentList from '@/component/user/UserContentList.vue';
 import EditProfileForm from '@/component/user/EditProfileForm.vue';
+import { User } from '@/entity/User';
+import { loadBearerToken } from '@/store/localStorage';
 
 const route = useRoute();
 const linkedProviders = ref<OAuthProvider[]>([]);
@@ -51,6 +53,21 @@ const openProfileEditionModal = async () => {
 const openFeedbackForm = () => {
   window.open('https://tally.so/r/wAYAVl', '_blank', 'noopener');
 };
+
+const openAdministrationPanel = async () => {
+  const panelUrl = import.meta.env.VITE_ADMINISTRATION_URL;
+  const token = await loadBearerToken();
+
+  if (!panelUrl) return;
+  window.open(`${panelUrl}?token=${token}`, '_blank', 'noopener');
+};
+
+const isAdministrator = computed(() => {
+  const user: User | null = authStore.getAuthenticatedUser;
+
+  if (!user) return false;
+  return user.roles.includes('ADMIN');
+});
 </script>
 
 <template>
@@ -61,6 +78,7 @@ const openFeedbackForm = () => {
         Edit Profile
       </ion-button>
     </div>
+
     <div v-if="!authStore.getAuthenticatedUser" class="loading">
       <p>Loading...</p>
     </div>
@@ -74,10 +92,14 @@ const openFeedbackForm = () => {
       :linked="linkedProviders.includes(provider)"
       @unlink="fetchUserData" />
 
-    <div class="feedback-button" @click="openFeedbackForm" style="cursor: pointer">Give Us Feedback</div>
+    <div class="button feedback-button" @click="openFeedbackForm"><span>Give Us Feedback</span></div>
+
+    <div v-if="isAdministrator" class="button administration-button" @click="openAdministrationPanel">
+      <span>Administration Panel</span>
+    </div>
 
     <div v-if="authStore.getAuthenticatedUser" class="post-list">
-      <UserContentList :user="authStore.getAuthenticatedUser" :artistSlug="authStore.getAuthenticatedUserSlug" />
+      <UserContentList :user="authStore.getAuthenticatedUser" />
     </div>
   </ApplicationViewport>
 </template>
@@ -87,50 +109,60 @@ const openFeedbackForm = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
-  padding-left: 1em;
-  padding-right: 1em;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+
+  & .profile-title {
+    font-size: 1.4rem;
+    font-weight: 200;
+    color: var(--ion-color-medium);
+  }
+
+  & .edit-button {
+    --color: var(--ion-color-medium);
+    font-size: 1rem;
+    --border-radius: 20px;
+    --border-color: var(--ion-color-medium);
+    --border-width: 1px;
+  }
 }
 
-.profile-title {
-  font-size: 1.5em;
-  font-weight: 200;
-  color: var(--ion-color-medium);
-}
+.button {
+  width: 70%;
+  margin: 0 auto;
+  padding: 0.4rem 1rem;
+  text-align: center;
+  border-radius: 15px;
+  font-weight: bold;
+  font-size: 1.2em;
+  color: #fff;
+  cursor: pointer;
 
-.edit-button {
-  --color: var(--ion-color-medium);
-  font-size: 0.9em;
-  --border-radius: 20px;
-  --border-color: var(--ion-color-medium);
-  --border-width: 1px;
+  & > span {
+    height: 24px;
+  }
 }
 
 .feedback-button {
-  width: 70%;
-  margin: 0 auto;
   background: linear-gradient(270deg, #6a11cb, #9425fc, #6a11cb, #9425fc);
   background-size: 400% 400%;
   animation: gradientFlow 6s ease-in-out infinite;
-  color: #fff;
-  text-align: center;
-  border-radius: 15px;
-  font-weight: 500;
-  padding: 0.2em 0;
-  font-size: 1.3em;
+}
+
+.administration-button {
+  background-color: red;
+  margin-top: 0.8rem;
 }
 
 @keyframes gradientFlow {
   0% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
   50% {
     background-position: 100% 50%;
   }
   100% {
-    background-position: 0% 50%;
+    background-position: 0 50%;
   }
 }
 
