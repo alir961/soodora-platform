@@ -35,8 +35,11 @@ public class WebSecurityConfiguration {
     private final PasswordEncoder passwordEncoder;
     private final UserService userService;
 
-    @Value("${frontURL:localhost}")
-    private String frontURL;
+    @Value("${application.url:localhost}")
+    private String applicationUrl;
+
+    @Value("${administration.url:localhost}")
+    private String administrationUrl;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -102,8 +105,8 @@ public class WebSecurityConfiguration {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
         config.setAllowCredentials(true);
-        config.addAllowedOrigin(frontURL);
-        config.addAllowedOrigin("http://localhost");
+        config.addAllowedOrigin(applicationUrl);
+        config.addAllowedOrigin(administrationUrl);
         config.addAllowedOrigin("capacitor://localhost");
         config.addAllowedOrigin("https://staging.soodora.com");
         config.addAllowedOrigin("https://app.soodora.com");

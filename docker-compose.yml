@@ -24,7 +24,8 @@ services:
     env_file:
       - .env
     environment:
-      FRONT_URL: http://localhost:5173
+      APPLICATION_URL: http://localhost:5173
+      ADMINISTRATION_URL: http://localhost:5174
       SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/database
     depends_on:
       - database

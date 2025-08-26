@@ -17,7 +17,7 @@ public class StripeService {
     @Value("${stripe.secret.key}")
     private String stripeSecretKey;
 
-    @Value("${frontURL:localhost}")
+    @Value("${application.url:localhost}")
     private String frontURL;
 
     public Session createCheckoutSession(CheckoutSessionRequest request) throws StripeException {

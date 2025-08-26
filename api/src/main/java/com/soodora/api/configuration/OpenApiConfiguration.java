@@ -13,8 +13,8 @@ import static io.swagger.v3.oas.annotations.enums.SecuritySchemeType.HTTP;
 @SecurityScheme(name = "bearerAuth", description = "JWT auth", scheme = "bearer", type = HTTP, bearerFormat = "JWT", in = HEADER)
 @OpenAPIDefinition(info = @Info(title = "Soodora API", description = "Epitech 2026 EIP Project"), servers = {
         @Server(url = "http://localhost:8080", description = "Localhost Development Server"),
-        @Server(url = "https://stating.soodora.com/api", description = "Staging Server"),
-        @Server(url = "https://soodora.com/api", description = "Production Server")
+        @Server(url = "https://staging.soodora.com/api", description = "Staging Server"),
+        @Server(url = "https://app.soodora.com/api", description = "Production Server")
 })
 public class OpenApiConfiguration {
 }

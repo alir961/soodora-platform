@@ -29,7 +29,7 @@ public class GoogleOAuthController {
 
     private final OAuthTokenService oauthTokenService;
 
-    @Value("${frontURL:localhost}")
+    @Value("${application.url:localhost}")
     private String frontUrl;
 
     @GetMapping

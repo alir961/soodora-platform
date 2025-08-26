@@ -26,7 +26,7 @@ import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
 @RequiredArgsConstructor
 public class OAuthTokenService {
 
-    @Value("${frontURL:localhost}")
+    @Value("${application.url:localhost}")
     private String frontUrl;
 
     private final OAuthTokenRepository oauthRepository;
