@@ -2,29 +2,36 @@ package com.soodora.infrastructure.product;
 
 import com.soodora.domain.product.ProductFilter;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.domain.Specification;
 
+import lombok.NoArgsConstructor;
+
+import static lombok.AccessLevel.PRIVATE;
+
+@NoArgsConstructor(access = PRIVATE)
 public class ProductSpecification {
 
     public static Specification<ProductEntity> build(ProductFilter filter) {
-        Specification<ProductEntity> spec = null;
+        Specification<ProductEntity> specification = null;
+        Optional<String> userSlugFilter = filter.userSlug();
+        Optional<String> nameFilter = filter.name();
+        Optional<String> descriptionFilter = filter.description();
+        Optional<String> categoryFilter = filter.category();
 
-        if (filter.userSlug().isPresent())
-            spec = appendSpec(spec, hasUserSlug(filter.userSlug().get()));
-
-        if (filter.name().isPresent())
-            spec = appendSpec(spec, hasName(filter.name().get()));
-
-        if (filter.description().isPresent())
-            spec = appendSpec(spec, hasDescription(filter.description().get()));
-
-        if (filter.category().isPresent())
-            spec = appendSpec(spec, hasCategory(filter.category().get()));
-
-        return spec;
+        if (userSlugFilter.isPresent())
+            specification = append(specification, hasUserSlug(userSlugFilter.get()));
+        if (nameFilter.isPresent())
+            specification = append(specification, hasName(nameFilter.get()));
+        if (descriptionFilter.isPresent())
+            specification = append(specification, hasDescription(descriptionFilter.get()));
+        if (categoryFilter.isPresent())
+            specification = append(specification, hasCategory(categoryFilter.get()));
+        return specification;
     }
 
-    private static Specification<ProductEntity> appendSpec(Specification<ProductEntity> base,
+    private static Specification<ProductEntity> append(Specification<ProductEntity> base,
             Specification<ProductEntity> addition) {
         return base == null ? addition : base.and(addition);
     }

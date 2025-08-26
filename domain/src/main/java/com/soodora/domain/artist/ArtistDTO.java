@@ -2,8 +2,8 @@ package com.soodora.domain.artist;
 
 public record ArtistDTO(
         String slug,
-        String name,
+        String username,
         String description,
-        String imageUrl) {
+        String avatarUrl) {
 
 }

@@ -82,8 +82,7 @@ public class PostEntity implements DomainEntity<PostDTO> {
         double timeDecay = pow(ageInHours + 2.0, DECAY_FACTOR);
 
         engagement += RECENTNESS_FACTOR / ageInHours;
-        UserEntity user = this.artist.getUser();
-        if (followers.contains(user))
+        if (followers.contains(artist.getUser()))
             engagement *= FOLLOW_FACTOR;
         return engagement / timeDecay;
     }

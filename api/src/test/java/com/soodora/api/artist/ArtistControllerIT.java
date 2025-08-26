@@ -133,7 +133,7 @@ class ArtistControllerIT {
         mockMvc.perform(get("/artists/" + ARTIST_A.slug())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("name").value(ARTIST_A.name()));
+                .andExpect(jsonPath("username").value(ARTIST_A.username()));
     }
 
     @Test
@@ -163,7 +163,7 @@ class ArtistControllerIT {
         mockMvc.perform(get("/artists/:me")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("name").value(ARTIST_A.name()));
+                .andExpect(jsonPath("username").value(ARTIST_A.username()));
     }
 
     @Test

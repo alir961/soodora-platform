@@ -68,7 +68,6 @@ public class PostController {
     }
 
     @GetMapping("/explore")
-    @SecurityRequirement(name = "bearerAuth")
     public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
         return postService.retrieveRecommendedPosts(user, pageable);
     }

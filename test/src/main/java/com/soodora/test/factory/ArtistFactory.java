@@ -12,9 +12,9 @@ public class ArtistFactory {
     public static ArtistDTO buildArtistDTO(String id) {
         return new ArtistDTO(
                 "slug" + id,
-                "name" + id,
+                "username" + id,
                 "description",
-                "imageUrl");
+                "avatarUrl");
     }
 
 }
