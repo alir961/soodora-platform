@@ -1,37 +1,24 @@
 <script setup lang="ts">
-import { PropType, computed } from 'vue';
+import { PropType } from 'vue';
 import { useRouter } from 'vue-router';
-import { User } from '@/entity/User';
-import { Artist } from '@/entity/Artist';
-
-type Vendor = User | Artist;
+import { UserProfile } from '@/entity/User';
 
 const props = defineProps({
   user: {
-    type: Object as PropType<Vendor>,
+    type: Object as PropType<UserProfile>,
     required: true,
   },
 });
 
 const router = useRouter();
 
-const isArtist = computed(() => {
-  return 'name' in props.user && !('username' in props.user);
-});
-
-const displayName = computed(() => {
-  if (isArtist.value) return (props.user as Artist).name;
-  return (props.user as User).username;
-});
-
 const redirectToProfile = async () => {
-  const baseRoute = isArtist.value ? 'artist' : 'user';
-  await router.push(`/${baseRoute}/${props.user.slug}`);
+  await router.push(`/user/${props.user.slug}`);
 };
 </script>
 
 <template>
-  <span class="username" @click.stop="redirectToProfile"> @{{ displayName }} </span>
+  <span class="username" @click.stop="redirectToProfile"> @{{ user.username }} </span>
 </template>
 
 <style scoped>

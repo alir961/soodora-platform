@@ -1,8 +1,10 @@
-interface Artist {
+import { UserProfile } from '@/entity/User';
+
+interface Artist extends UserProfile {
   slug: string;
-  name: string;
+  username: string;
   description: string;
-  imageUrl: string;
+  avatarUrl: string | null;
 }
 
 export type { Artist };

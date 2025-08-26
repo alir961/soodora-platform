@@ -145,7 +145,7 @@ async function createProductCanvas(product: Product, theme: ExportTheme): Promis
   const usernameSize = 80;
   const avatarWidth = 150;
   const authorAvatar = await FabricImage.fromURL(
-    product.vendor.imageUrl ?? '/assets/images/svg/avatar.svg',
+    product.vendor.avatarUrl ?? '/assets/images/svg/avatar.svg',
     { crossOrigin: 'anonymous' },
     {
       top: currentY,
@@ -156,7 +156,7 @@ async function createProductCanvas(product: Product, theme: ExportTheme): Promis
 
   authorAvatar.scaleToWidth(avatarWidth);
 
-  const authorUsername = new Textbox(product.vendor.name, {
+  const authorUsername = new Textbox(product.vendor.username, {
     top: currentY + avatarWidth - usernameSize,
     left: 75 + authorAvatar.getScaledWidth(),
     width: 980 - authorAvatar.getScaledWidth(),

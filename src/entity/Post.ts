@@ -1,4 +1,5 @@
 import { User } from '@/entity/User';
+import { Artist } from '@/entity/Artist';
 
 interface Post {
   slug: string;
@@ -6,17 +7,11 @@ interface Post {
   content: string;
   imageUrl: string;
   audioUrl: string;
-  owner: User;
+  owner: Artist;
   createdAt: Date;
   likeCount: number;
   repostCount: number;
   commentCount: number;
-}
-
-interface PostLike {
-  postSlug: string;
-  user: User;
-  likedAt: string;
 }
 
 interface Comment {
@@ -36,4 +31,4 @@ function populatePost(post: Post): Post {
 }
 
 export { populatePost };
-export type { Post, PostLike, Comment };
+export type { Post, Comment };

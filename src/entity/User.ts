@@ -1,6 +1,13 @@
 type Role = 'ADMIN' | 'ARTIST' | 'PREMIUM' | 'USER';
 
-interface User {
+interface UserProfile {
+  slug: string;
+  username: string;
+  description: string;
+  avatarUrl: string | null;
+}
+
+interface User extends UserProfile {
   slug: string;
   username: string;
   email: string;
@@ -11,4 +18,4 @@ interface User {
   roles: Role[];
 }
 
-export type { Role, User };
+export type { Role, UserProfile, User };

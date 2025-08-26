@@ -65,11 +65,6 @@ const routes: Array<RouteRecordRaw> = [
     component: UserProfileView,
   },
   {
-    path: '/artist/:slug',
-    name: 'User',
-    component: UserProfileView,
-  },
-  {
     path: '/marketplace',
     name: 'Marketplace',
     component: MarketPlaceView,
