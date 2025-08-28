@@ -143,7 +143,10 @@ onMounted(() => {
     <swiper-slide>
       <ion-grid>
         <ion-row>
-          <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+          <div
+            v-for="(post, index) in posts"
+            :key="post.slug"
+            :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
             <PostCard
               :post="post"
               @post-deleted="() => loadPosts('posts', true)"
@@ -162,7 +165,10 @@ onMounted(() => {
     <swiper-slide>
       <ion-grid>
         <ion-row>
-          <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+          <div
+            v-for="(post, index) in posts"
+            :key="post.slug"
+            :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
             <PostCard
               :post="post"
               @post-deleted="() => loadPosts('reposts', true)"
@@ -181,7 +187,10 @@ onMounted(() => {
     <swiper-slide>
       <ion-grid>
         <ion-row>
-          <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+          <div
+            v-for="(post, index) in posts"
+            :key="post.slug"
+            :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
             <PostCard
               :post="post"
               @post-deleted="() => loadPosts('audios', true)"
@@ -200,7 +209,10 @@ onMounted(() => {
     <swiper-slide>
       <ion-grid>
         <ion-row>
-          <div v-for="product in products" :key="product.slug" class="post-wrapper">
+          <div
+            v-for="(product, index) in products"
+            :key="product.slug"
+            :class="['post-wrapper', index === products.length - 1 ? 'last' : '']">
             <ProductCard :product="product" />
           </div>
         </ion-row>
@@ -222,6 +234,10 @@ ion-grid {
 .post-wrapper {
   width: 100%;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.post-wrapper.last {
+  border-bottom: none;
 }
 
 .postcard {

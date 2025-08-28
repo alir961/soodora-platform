@@ -13,7 +13,8 @@ import {
   IonAvatar,
   toastController,
 } from '@ionic/vue';
-import { PropType, Ref, ref, watch, computed, onMounted } from 'vue';
+import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { usePlayerStore } from '@/store/playerStore';
 import { Post } from '@/entity/Post';
 import {
   callPostUnlike,
@@ -52,11 +53,14 @@ const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repo
 
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
+const displayedLikeCount: Ref<number> = ref((props.post as any).likeCount || 0);
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const isPlaying = ref(false);
 const duration = ref(0);
 const currentTime = ref(0);
+const player = usePlayerStore();
+const instanceId = Math.random().toString(36).slice(2);
 
 const progressBackground = computed(() => {
   if (duration.value === 0) return '';
@@ -69,26 +73,72 @@ const togglePlay = () => {
   if (!audio) return;
   if (audio.paused) {
     audio.play();
-    isPlaying.value = true;
   } else {
     audio.pause();
-    isPlaying.value = false;
   }
 };
 
 const onLoadedMetadata = () => {
   const audio = audioRef.value;
   if (audio) duration.value = audio.duration;
+  if (audio && props.post.audioUrl) {
+    // Keep global duration in sync if this is the active track
+  if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
+      player.updateDuration(audio.duration || 0);
+    }
+  }
 };
 
 const onTimeUpdate = () => {
   const audio = audioRef.value;
   if (audio) currentTime.value = audio.currentTime;
+  if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
+    player.updateTime(currentTime.value);
+  }
 };
 
 const seekAudio = () => {
   const audio = audioRef.value;
   if (audio) audio.currentTime = currentTime.value;
+};
+
+const onAudioPlay = () => {
+  isPlaying.value = true;
+  // Announce globally that this post's audio started, so others can pause
+  document.dispatchEvent(
+    new CustomEvent('post-audio-play', { detail: { slug: props.post.slug, instanceId } })
+  );
+  // Set player store to this track
+  if (props.post.audioUrl) {
+    const isSameInstance = player.current?.slug === props.post.slug && player.current?.instanceId === instanceId;
+    if (!isSameInstance) {
+      player.setTrack({
+        slug: props.post.slug,
+        title: props.post.title,
+        artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
+        imageUrl: props.post.imageUrl || undefined,
+        audioUrl: props.post.audioUrl,
+        duration: duration.value || 0,
+        instanceId,
+        owner: props.post.owner,
+      });
+    }
+    player.isPlaying = true;
+  }
+};
+
+const onAudioPause = () => {
+  isPlaying.value = false;
+  if (player.current?.slug === props.post.slug) player.isPlaying = false;
+};
+
+const onEnded = () => {
+  isPlaying.value = false;
+  currentTime.value = 0;
+  if (player.current?.slug === props.post.slug) {
+    player.isPlaying = false;
+    player.updateTime(0);
+  }
 };
 
 const exportThemes = [
@@ -191,10 +241,12 @@ const toggleLikePost = async (postSlug: string) => {
       await callPostUnlike(postSlug);
       isLiked.value = false;
       emit('post-unlike');
+  document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug: postSlug } }));
     } else {
       await callPostLike(postSlug);
       isLiked.value = true;
       emit('post-like');
+  document.dispatchEvent(new CustomEvent('post-like', { detail: { slug: postSlug } }));
     }
   } catch (error) {
     console.error('Unable to update like', error);
@@ -234,11 +286,91 @@ watch(
   { immediate: true }
 );
 
+// Keep local counter in sync with prop updates from parent
+watch(
+  () => props.post.likeCount,
+  (newVal) => {
+    if (typeof newVal === 'number') displayedLikeCount.value = newVal;
+  }
+);
+
 onMounted(() => {
   const postSlug = props.post.slug;
 
   loadLikes(postSlug);
   loadReposts(postSlug);
+  // Listen for global play events to pause this audio if another post starts
+  const handleExternalPlay = (e: Event) => {
+  const detail = (e as CustomEvent).detail as { slug?: string; instanceId?: string } | undefined;
+  const otherSlug = detail?.slug;
+  const otherInstance = detail?.instanceId;
+  // Pause if another post (different slug) started OR the same slug but different instance (duplicate component)
+  if (otherSlug && (otherSlug !== props.post.slug || otherInstance !== instanceId)) {
+      const audio = audioRef.value;
+      if (audio && !audio.paused) {
+        audio.pause();
+      }
+    }
+  };
+  document.addEventListener('post-audio-play', handleExternalPlay as EventListener);
+
+  // Reflect external like/unlike events (e.g., from NowPlayingBar) immediately
+  const handleExternalLike = (e: Event) => {
+    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
+    if (detail?.slug === props.post.slug) {
+      isLiked.value = true;
+  // Increment local counter only for external events; parent will handle internal button clicks
+  displayedLikeCount.value = Math.max(0, displayedLikeCount.value) + 1;
+    }
+  };
+  const handleExternalUnlike = (e: Event) => {
+    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
+    if (detail?.slug === props.post.slug) {
+      isLiked.value = false;
+  displayedLikeCount.value = Math.max(0, displayedLikeCount.value - 1);
+    }
+  };
+  document.addEventListener('post-like', handleExternalLike as EventListener);
+  document.addEventListener('post-unlike', handleExternalUnlike as EventListener);
+
+  // Listen to global player control events (play/pause/seek)
+  const handlePlayerControl = (e: Event) => {
+    const { action, slug, time, instanceId: targetId } = (e as CustomEvent).detail || {};
+    const audio = audioRef.value;
+    if (!audio) return;
+    // Only react if slug matches this post
+    if (slug && slug !== props.post.slug) return;
+    // If store is pointing to a different instance of the same slug, adopt control to this instance
+    if (player.current?.slug === props.post.slug && player.current?.instanceId !== instanceId) {
+      player.current.instanceId = instanceId;
+    }
+
+    if (action === 'play') {
+      // Play this post's audio; onAudioPlay will broadcast and set store if needed
+      audio.play();
+    } else if (action === 'pause') {
+      if (!audio.paused) audio.pause();
+    } else if (action === 'seek' && typeof time === 'number') {
+      audio.currentTime = time;
+    } else if (action === 'stop') {
+      if (!audio.paused) audio.pause();
+      audio.currentTime = 0;
+    }
+  };
+  document.addEventListener('player-control', handlePlayerControl as EventListener);
+
+  // Cleanup listener on unmount
+  onUnmounted(() => {
+    document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
+  document.removeEventListener('post-like', handleExternalLike as EventListener);
+  document.removeEventListener('post-unlike', handleExternalUnlike as EventListener);
+  document.removeEventListener('player-control', handlePlayerControl as EventListener);
+    // Ensure audio is stopped if this component unmounts
+    const audio = audioRef.value;
+    if (audio && !audio.paused) {
+      audio.pause();
+    }
+  });
 });
 
 function formatCount(count: number): string {
@@ -280,17 +412,30 @@ const formatTime = (time: number) => {
         <p>{{ post.content }}</p>
         <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
         <div v-if="post.audioUrl" class="audio-content">
-          <audio :src="post.audioUrl" ref="audioRef" @loadedmetadata="onLoadedMetadata" @timeupdate="onTimeUpdate" />
+          <audio
+            :src="post.audioUrl"
+            ref="audioRef"
+            @loadedmetadata="onLoadedMetadata"
+            @timeupdate="onTimeUpdate"
+            @play="onAudioPlay"
+            @pause="onAudioPause"
+            @ended="onEnded"
+          />
           <div class="custom-audio-controls">
             <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
             <span class="audio-time">{{ formatTime(currentTime) }}</span>
             <input
+              class="slider swiper-no-swiping"
               type="range"
               min="0"
               :max="duration"
               step="0.1"
               v-model="currentTime"
               @input="seekAudio"
+              @touchstart.stop
+              @touchmove.stop
+              @touchend.stop
+              @mousedown.stop
               :style="progressBackground" />
             <span class="audio-duration">{{ formatTime(duration) }}</span>
           </div>
@@ -304,7 +449,7 @@ const formatTime = (time: number) => {
               @click.stop="toggleLikePost(post.slug)"
               :class="{ 'heart-active': isLiked }">
               <ion-icon :src="customLikeIcon" />
-              <ion-note v-if="formatCount(post.likeCount)">{{ formatCount(post.likeCount) }}</ion-note>
+              <ion-note v-if="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
             </ion-button>
 
             <ion-button

@@ -4,6 +4,7 @@ import { cartOutline, addCircleOutline, searchOutline, personOutline, planetOutl
 import { capitalize } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { ref, computed, watchEffect, onMounted } from 'vue';
+import NowPlayingBar from '@/component/player/NowPlayingBar.vue';
 
 interface TabEntry {
   name: string;
@@ -74,6 +75,7 @@ watchEffect(() => {
   <ion-app>
     <ion-tabs>
       <ion-router-outlet />
+      <NowPlayingBar />
       <ion-tab-bar v-if="!fullscreenRoutes.includes($route.path)" slot="bottom">
         <ion-tab-button v-for="tab in filteredTabs" :key="tab.name" :tab="tab.name" :href="`/${tab.name}`">
           <ion-icon :icon="tab.icon" />
