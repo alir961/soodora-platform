@@ -116,6 +116,8 @@ public class UserEntity implements DomainEntity<UserDTO> {
                 lastname,
                 description,
                 avatarUrl,
+                createdAt,
+                updatedAt,
                 rolesNames);
     }
 
