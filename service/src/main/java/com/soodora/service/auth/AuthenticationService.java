@@ -61,7 +61,7 @@ public class AuthenticationService {
 
     public String loginUser(LoginCommand command) {
         try {
-            Identifier identifier = createFromEmail(command.email());
+            Identifier identifier = command.identifier();
             UserDTO user = userRepository.find(identifier);
             String password = userRepository.retrieveEncodedPassword(identifier);
 

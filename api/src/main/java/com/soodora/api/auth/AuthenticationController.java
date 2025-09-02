@@ -25,10 +25,11 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentication Controller")
-public class AuthenticationController {
+public class AuthenticationController implements AuthenticationResource {
 
     private final AuthenticationService authenticationService;
 
+    @Override
     @PostMapping("/register")
     public ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request) {
         try {
@@ -39,6 +40,7 @@ public class AuthenticationController {
         }
     }
 
+    @Override
     @PostMapping("/login")
     public ResponseEntity<JsonResponse> loginUser(@RequestBody LoginRequest request) {
         try {

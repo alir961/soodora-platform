@@ -21,11 +21,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance;
 
 import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
+import static com.soodora.domain.user.IdentifierFactory.createFromUsername;
 import static com.soodora.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,7 +57,7 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void registerUser_Success() {
+    void givenValidRequest_whenRegisterUser_thenSuccess() {
         // GIVEN
         RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe",
                 "external");
@@ -72,12 +73,13 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void registerUser_NotUnique() {
+    void givenUsedEmail_whenRegisterUser_thenUnityException() {
         // GIVEN
-        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe",
+        Identifier identifier = createFromEmail(USER.email());
+        RegisterCommand command = new RegisterCommand("username", identifier.getValue(), "password", "John", "Doe",
                 "external");
 
-        when(userRepository.isUsed(any())).thenReturn(true);
+        when(userRepository.isUsed(identifier)).thenReturn(true);
 
         // WHEN
         Executable executable = () -> authenticationService.registerUser(command);
@@ -87,10 +89,29 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void loginUser_Success() {
+    void givenUsedUsername_whenRegisterUser_thenUserUnityException() {
         // GIVEN
-        LoginCommand command = new LoginCommand(USER.email(), "password");
+        Identifier emailIdentifier = createFromEmail(USER.email());
+        Identifier usernameIdentifier = createFromUsername(USER.username());
+        RegisterCommand command = new RegisterCommand(usernameIdentifier.getValue(), emailIdentifier.getValue(),
+                "password", "John", "Doe",
+                "external");
+
+        when(userRepository.isUsed(emailIdentifier)).thenReturn(false);
+        when(userRepository.isUsed(usernameIdentifier)).thenReturn(true);
+
+        // WHEN
+        Executable executable = () -> authenticationService.registerUser(command);
+
+        // THEN
+        assertThrows(UserUnityException.class, executable);
+    }
+
+    @Test
+    void givenValidEmailCredentials_whenLoginUser_thenSuccess() {
+        // GIVEN
         Identifier identifier = createFromEmail(USER.email());
+        LoginCommand command = new LoginCommand(identifier, "password");
 
         when(userRepository.find(identifier)).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
@@ -104,10 +125,27 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void loginUser_InvalidEmail() {
+    void givenValidUsernameCredentials_whenLoginUser_thenSuccess() {
+        // GIVEN
+        Identifier identifier = createFromEmail(USER.username());
+        LoginCommand command = new LoginCommand(identifier, "password");
+
+        when(userRepository.find(identifier)).thenReturn(USER);
+        when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
+        when(tokenRepository.generateToken(USER)).thenReturn("externalToken");
+
+        // WHEN
+        String token = authenticationService.loginUser(command);
+
+        // THEN
+        assertEquals("externalToken", token);
+    }
+
+    @Test
+    void givenInvalidEmail_whenLoginUser_thenUnknownUserException() {
         // GIVEN
         Identifier identifier = createFromEmail("unknown@example.com");
-        LoginCommand command = new LoginCommand("unknown@example.com", "password");
+        LoginCommand command = new LoginCommand(identifier, "password");
 
         when(userRepository.find(identifier)).thenThrow(UnknownIdentifierException.class);
 
@@ -119,10 +157,10 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void loginUser_InvalidPassword() {
+    void givenInvalidPassword_whenLoginUser_thenUnknownUserException() {
         // GIVEN
         Identifier identifier = createFromEmail(USER.email());
-        LoginCommand command = new LoginCommand(USER.email(), "unknown");
+        LoginCommand command = new LoginCommand(identifier, "unknown");
 
         when(userRepository.find(identifier)).thenReturn(USER);
         when(userRepository.retrieveEncodedPassword(identifier)).thenReturn("password");
