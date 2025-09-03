@@ -44,7 +44,7 @@ class MediaKitServiceTest {
     @Test
     void createMediaKit_returnsDto() {
         CreateMediaKitCommand command = new CreateMediaKitCommand("Title", "Short", "Long", "email", "phone");
-        MediaKitDTO expected = new MediaKitDTO("slug1", "Title", "Short", "Long", "email", "phone", null);
+        MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "Title", "Short", "Long", "email", "phone", null);
 
         when(mediaKitRepository.save(command, USER)).thenReturn(expected);
 
@@ -58,7 +58,7 @@ class MediaKitServiceTest {
     @Test
     void updateMediaKit_returnsDto() {
         UpdateMediaKitCommand command = new UpdateMediaKitCommand("NewTitle", "Short", "Long", "email", "phone");
-        MediaKitDTO expected = new MediaKitDTO("slug1", "NewTitle", "Short", "Long", "email", "phone", null);
+        MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "NewTitle", "Short", "Long", "email", "phone", null);
 
         when(mediaKitRepository.update(command, "slug1")).thenReturn(expected);
 
@@ -135,7 +135,7 @@ class MediaKitServiceTest {
     @Test
     void exportMediaKitToPdf_returnsPdfBytes() {
         String slug = "kit-slug";
-        MediaKitDTO mediaKit = new MediaKitDTO(slug, "Title", "Short", "Long", "email", "phone", null);
+        MediaKitDTO mediaKit = new MediaKitDTO(slug, "artist", "Title", "Short", "Long", "email", "phone", null);
         MediaKitItemDTO item = new MediaKitItemDTO("media-kit-slug", "item1", "image", "Title1", "url1");
 
         when(mediaKitRepository.findBySlug(slug)).thenReturn(mediaKit);

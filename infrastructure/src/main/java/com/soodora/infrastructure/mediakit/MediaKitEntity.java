@@ -66,6 +66,7 @@ public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
     public MediaKitDTO toDTO() {
         return new MediaKitDTO(
                 slug,
+                artist.getUser().getUsername(),
                 title,
                 shortBio,
                 longBio,

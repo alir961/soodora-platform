@@ -14,6 +14,7 @@ public class MediaKitFactory {
     public static MediaKitDTO buildMediaKitDTO() {
         return new MediaKitDTO(
                 "slug",
+                "artist",
                 "title",
                 "shortBio",
                 "longBio",
