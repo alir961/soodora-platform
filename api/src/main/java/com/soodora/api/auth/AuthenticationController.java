@@ -10,10 +10,7 @@ import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UserUnityException;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
@@ -34,10 +31,17 @@ public class AuthenticationController implements AuthenticationResource {
     public ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request) {
         try {
             authenticationService.registerUser(request.toCommand());
-            return new ResponseEntity<>(CREATED);
+            return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UserUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
+    }
+
+    @Override
+    @PostMapping("/confirm")
+    @ResponseStatus(code = CREATED)
+    public void confirmUser(@RequestParam String secret) {
+        authenticationService.confirmUserRegistration(secret);
     }
 
     @Override

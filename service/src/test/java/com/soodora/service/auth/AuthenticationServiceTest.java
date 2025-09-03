@@ -2,12 +2,13 @@ package com.soodora.service.auth;
 
 import com.soodora.domain.auth.LoginCommand;
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.auth.RegisterConfirmationRepository;
 import com.soodora.domain.auth.TokenRepository;
+import com.soodora.domain.mail.ConfirmationEmailSender;
 import com.soodora.domain.oauth.AuthorizationMapper;
 import com.soodora.domain.oauth.OAuthTokenRepository;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UnknownIdentifierException;
-import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UserUnityException;
@@ -19,9 +20,10 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance;
 
@@ -31,6 +33,8 @@ import static com.soodora.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceTest {
+
+    private static final String SECRET = "secret";
 
     @Mock
     private UserRepository userRepository;
@@ -42,7 +46,13 @@ class AuthenticationServiceTest {
     private OAuthTokenRepository oauthTokenRepository;
 
     @Mock
+    private RegisterConfirmationRepository registerConfirmationRepository;
+
+    @Mock
     private AuthorizationMapper authorizationMapper;
+
+    @Mock
+    private ConfirmationEmailSender emailSender;
 
     private AuthenticationService authenticationService;
 
@@ -53,7 +63,9 @@ class AuthenticationServiceTest {
                 userRepository,
                 tokenRepository,
                 oauthTokenRepository,
-                authorizationMapper);
+                registerConfirmationRepository,
+                authorizationMapper,
+                emailSender);
     }
 
     @Test
@@ -63,13 +75,12 @@ class AuthenticationServiceTest {
                 "external");
 
         when(userRepository.isUsed(any())).thenReturn(false);
-        when(userRepository.save(any())).thenReturn(USER);
 
         // WHEN
-        UserDTO user = authenticationService.registerUser(command);
+        authenticationService.registerUser(command);
 
         // THEN
-        assertEquals(USER, user);
+        verify(emailSender).sendEmail(eq(command.email()), any(), any());
     }
 
     @Test
@@ -85,7 +96,7 @@ class AuthenticationServiceTest {
         Executable executable = () -> authenticationService.registerUser(command);
 
         // THEN
-        assertThrows(UserUnityException.class, executable);
+        assertThrows(UserUnityException.class, executable, "Email is already used");
     }
 
     @Test
@@ -104,7 +115,36 @@ class AuthenticationServiceTest {
         Executable executable = () -> authenticationService.registerUser(command);
 
         // THEN
-        assertThrows(UserUnityException.class, executable);
+        assertThrows(UserUnityException.class, executable, "Username is already used");
+    }
+
+    @Test
+    void givenValidSecret_whenConfirmUser_thenSuccess() {
+        // GIVEN
+        RegisterCommand command = new RegisterCommand("username", "user@example.com", "password", "John", "Doe",
+                "external");
+
+        when(registerConfirmationRepository.hasConfirmation(SECRET)).thenReturn(true);
+        when(registerConfirmationRepository.popConfirmation(SECRET)).thenReturn(command);
+        when(userRepository.save(command)).thenReturn(USER);
+
+        // WHEN
+        Executable executable = () -> authenticationService.confirmUserRegistration(SECRET);
+
+        // THEN
+        assertDoesNotThrow(executable);
+    }
+
+    @Test
+    void givenInvalidSecret_whenConfirmUser_thenAuthenticationException() {
+        // GIVEN
+        when(registerConfirmationRepository.hasConfirmation(SECRET)).thenReturn(false);
+
+        // WHEN
+        Executable executable = () -> authenticationService.confirmUserRegistration(SECRET);
+
+        // THEN
+        assertThrows(AuthenticationException.class, executable, "Unable to confirm a registration for that secret");
     }
 
     @Test
@@ -153,7 +193,7 @@ class AuthenticationServiceTest {
         Executable executable = () -> authenticationService.loginUser(command);
 
         // THEN
-        assertThrows(UnknownUserException.class, executable);
+        assertThrows(UnknownUserException.class, executable, "Invalid credentials");
     }
 
     @Test
@@ -169,7 +209,7 @@ class AuthenticationServiceTest {
         Executable executable = () -> authenticationService.loginUser(command);
 
         // THEN
-        assertThrows(UnknownUserException.class, executable);
+        assertThrows(UnknownUserException.class, executable, "Invalid credentials");
     }
 
 }

@@ -1,5 +1,6 @@
 package com.soodora.api.auth;
 
+import com.soodora.service.auth.AuthenticationException;
 import com.soodora.service.auth.AuthenticationService;
 import com.soodora.service.auth.LoginRequest;
 import com.soodora.service.auth.RegisterRequest;
@@ -14,14 +15,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
-import static com.soodora.test.TestConstants.USER;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,7 +34,7 @@ class AuthenticationControllerIT {
     private AuthenticationService authenticationService;
 
     @Test
-    void registerUserSuccess() throws Exception {
+    void givenValidRequest_whenRegisterUser_thenOk() throws Exception {
         // GIVEN
         RegisterRequest request = new RegisterRequest(
                 "username",
@@ -44,17 +44,17 @@ class AuthenticationControllerIT {
                 "Doe",
                 "external");
 
-        when(authenticationService.registerUser(any())).thenReturn(USER);
+        doNothing().when(authenticationService).registerUser(any());
 
         // WHEN & THEN
         mockMvc.perform(post("/auth/register")
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(request)))
-                .andExpect(status().isCreated());
+                .andExpect(status().isOk());
     }
 
     @Test
-    void registerUserAlreadyExists() throws Exception {
+    void givenUsedUsernameOrEmail_whenRegisterUser_thenBadRequest() throws Exception {
         // GIVEN
         RegisterRequest request = new RegisterRequest(
                 "username",
@@ -64,7 +64,7 @@ class AuthenticationControllerIT {
                 "Doe",
                 "external");
 
-        when(authenticationService.registerUser(any())).thenThrow(UserUnityException.class);
+        doThrow(UserUnityException.class).when(authenticationService).registerUser(any());
 
         // WHEN & THEN
         mockMvc.perform(post("/auth/register")
@@ -74,7 +74,33 @@ class AuthenticationControllerIT {
     }
 
     @Test
-    void loginUserSuccess() throws Exception {
+    void givenValidSecret_whenValidUser_thenCreated() throws Exception {
+        // GIVEN
+        String validSecret = "validSecret";
+
+        doNothing().when(authenticationService).confirmUserRegistration(validSecret);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/confirm")
+                .param("secret", validSecret))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void givenInvalidSecret_whenValidUser_thenCreated() throws Exception {
+        // GIVEN
+        String invalidSecret = "invalidSecret";
+
+        doThrow(AuthenticationException.class).when(authenticationService).confirmUserRegistration(invalidSecret);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/confirm")
+                .param("secret", invalidSecret))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void givenValidCredentials_whenLoginUser_thenOk() throws Exception {
         // GIVEN
         LoginRequest request = new LoginRequest(
                 "user@example.com",
@@ -91,7 +117,7 @@ class AuthenticationControllerIT {
     }
 
     @Test
-    void loginUserBadCredentials() throws Exception {
+    void givenInvalidCredentials_whenLoginUser_thenBadRequest() throws Exception {
         // GIVEN
         LoginRequest request = new LoginRequest(
                 "user@example.com",
