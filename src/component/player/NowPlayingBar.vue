@@ -139,7 +139,7 @@ watch(
     </div>
 
     <div class="main-row">
-  <button class="play-btn" @click="toggle" aria-label="Play/Pause">
+    <button class="play-btn" @click="toggle" aria-label="Play/Pause">
     <ion-icon :icon="player.isPlaying ? pause : play" />
     </button>
       <div class="main-content">
@@ -200,7 +200,7 @@ watch(
 
 .main-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: stretch;
   gap: 10px;
 }
@@ -209,6 +209,7 @@ watch(
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  width: 100%;
 }
 .title {
   font-size: 14px;
@@ -220,7 +221,7 @@ watch(
 .artist-line {
   margin-top: 2px;
 }
-
+   
 .marquee {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -228,11 +229,10 @@ watch(
 }
 
 .slider-wrap {
-  position: relative;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
+  width: 100%;
 }
 
 .time {
@@ -241,6 +241,10 @@ watch(
   width: 36px;
   text-align: left;
   font-variant-numeric: tabular-nums;
+}
+
+.time.right {
+  text-align: right;
 }
 
 .slider {
@@ -254,7 +258,7 @@ watch(
 }
 .slider::-webkit-slider-runnable-track {
   height: 6px;
-  background: transparent; /* background applied inline via style */
+  background: transparent;
   border-radius: 999px;
 }
 .slider::-webkit-slider-thumb {
@@ -265,7 +269,7 @@ watch(
   background: #fff;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  margin-top: -5px; /* centers thumb on 6px track */
+  margin-top: -5px;
 }
 .slider::-moz-range-track {
   height: 6px;
@@ -324,7 +328,7 @@ watch(
 
 .aux-btn {
   position: absolute;
-  right: 58px; /* placed to the left of close button with small gap */
+  right: 58px;
   top: 10px;
   height: 28px;
   padding: 0 10px;
