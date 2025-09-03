@@ -28,7 +28,9 @@ const onSeek = (e: Event) => {
 const formatTime = (time: number) => {
   if (!isFinite(time)) return '0:00';
   const m = Math.floor(time / 60);
-  const s = Math.floor(time % 60).toString().padStart(2, '0');
+  const s = Math.floor(time % 60)
+    .toString()
+    .padStart(2, '0');
   return `${m}:${s}`;
 };
 
@@ -54,11 +56,11 @@ async function toggleLike() {
     if (isLiked.value) {
       await callPostUnlike(slug);
       isLiked.value = false;
-  document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug } }));
+      document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug } }));
     } else {
       await callPostLike(slug);
       isLiked.value = true;
-  document.dispatchEvent(new CustomEvent('post-like', { detail: { slug } }));
+      document.dispatchEvent(new CustomEvent('post-like', { detail: { slug } }));
     }
   } catch {
     // ignore API errors for UI responsiveness
@@ -139,9 +141,9 @@ watch(
     </div>
 
     <div class="main-row">
-    <button class="play-btn" @click="toggle" aria-label="Play/Pause">
-    <ion-icon :icon="player.isPlaying ? pause : play" />
-    </button>
+      <button class="play-btn" @click="toggle" aria-label="Play/Pause">
+        <ion-icon :icon="player.isPlaying ? pause : play" />
+      </button>
       <div class="main-content">
         <div class="title marquee">{{ player.current?.title }}</div>
         <div class="slider-wrap">
@@ -158,15 +160,12 @@ watch(
             @touchmove.stop
             @touchend.stop
             @mousedown.stop
-            :style="progressBackground"
-          />
+            :style="progressBackground" />
           <span class="time right">{{ formatTime(player.duration) }}</span>
         </div>
       </div>
-
     </div>
   </div>
-  
 </template>
 
 <style scoped>
@@ -180,12 +179,13 @@ watch(
   gap: 8px;
   padding: 10px 12px 12px 12px;
   /* subtle Soodora orange gradient overlay + glass backdrop */
-  background: 
-    linear-gradient(135deg,
+  background:
+    linear-gradient(
+      135deg,
       rgba(255, 140, 0, 0.09) 0%,
       rgba(255, 140, 0, 0.06) 35%,
       rgba(255, 140, 0, 0.03) 65%,
-      rgba(255, 255, 255, 0.00) 100%
+      rgba(255, 255, 255, 0) 100%
     ),
     rgba(18, 18, 18, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -196,7 +196,9 @@ watch(
   z-index: 2000;
 }
 
-.artist-row { padding-right: 60px; }
+.artist-row {
+  padding-right: 60px;
+}
 
 .main-row {
   display: grid;
@@ -221,7 +223,7 @@ watch(
 .artist-line {
   margin-top: 2px;
 }
-   
+
 .marquee {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -295,7 +297,9 @@ watch(
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
   color: #fff;
-  transition: transform 120ms ease, box-shadow 180ms ease;
+  transition:
+    transform 120ms ease,
+    box-shadow 180ms ease;
 }
 .play-btn ion-icon {
   font-size: 24px;
@@ -304,11 +308,17 @@ watch(
 }
 
 /* Subtle click/press feedback */
-.play-btn:active { transform: scale(0.965); }
+.play-btn:active {
+  transform: scale(0.965);
+}
 .close-btn,
-.aux-btn { transition: transform 120ms ease; }
+.aux-btn {
+  transition: transform 120ms ease;
+}
 .close-btn:active,
-.aux-btn:active { transform: scale(0.965); }
+.aux-btn:active {
+  transform: scale(0.965);
+}
 
 .close-btn {
   position: absolute;
@@ -324,7 +334,9 @@ watch(
   align-items: center;
   justify-content: center;
 }
-.close-btn ion-icon { font-size: 16px; }
+.close-btn ion-icon {
+  font-size: 16px;
+}
 
 .aux-btn {
   position: absolute;
@@ -340,7 +352,9 @@ watch(
   align-items: center;
   justify-content: center;
 }
-.aux-btn ion-icon { font-size: 16px; }
+.aux-btn ion-icon {
+  font-size: 16px;
+}
 .aux-btn.active {
   background: var(--ion-color-primary);
   border-color: var(--ion-color-primary);
@@ -348,8 +362,14 @@ watch(
 }
 
 @keyframes like-pop {
-  0% { transform: scale(0.94); }
-  60% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.94);
+  }
+  60% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 </style>

@@ -53,7 +53,7 @@ const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repo
 
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
-const displayedLikeCount: Ref<number> = ref((props.post as any).likeCount || 0);
+const displayedLikeCount: Ref<number> = ref(props.post.likeCount ?? 0);
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const isPlaying = ref(false);
@@ -83,7 +83,7 @@ const onLoadedMetadata = () => {
   if (audio) duration.value = audio.duration;
   if (audio && props.post.audioUrl) {
     // Keep global duration in sync if this is the active track
-  if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
+    if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
       player.updateDuration(audio.duration || 0);
     }
   }
@@ -105,9 +105,7 @@ const seekAudio = () => {
 const onAudioPlay = () => {
   isPlaying.value = true;
   // Announce globally that this post's audio started, so others can pause
-  document.dispatchEvent(
-    new CustomEvent('post-audio-play', { detail: { slug: props.post.slug, instanceId } })
-  );
+  document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug, instanceId } }));
   // Set player store to this track
   if (props.post.audioUrl) {
     const isSameInstance = player.current?.slug === props.post.slug && player.current?.instanceId === instanceId;
@@ -241,12 +239,12 @@ const toggleLikePost = async (postSlug: string) => {
       await callPostUnlike(postSlug);
       isLiked.value = false;
       emit('post-unlike');
-  document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug: postSlug } }));
+      document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug: postSlug } }));
     } else {
       await callPostLike(postSlug);
       isLiked.value = true;
       emit('post-like');
-  document.dispatchEvent(new CustomEvent('post-like', { detail: { slug: postSlug } }));
+      document.dispatchEvent(new CustomEvent('post-like', { detail: { slug: postSlug } }));
     }
   } catch (error) {
     console.error('Unable to update like', error);
@@ -301,11 +299,11 @@ onMounted(() => {
   loadReposts(postSlug);
   // Listen for global play events to pause this audio if another post starts
   const handleExternalPlay = (e: Event) => {
-  const detail = (e as CustomEvent).detail as { slug?: string; instanceId?: string } | undefined;
-  const otherSlug = detail?.slug;
-  const otherInstance = detail?.instanceId;
-  // Pause if another post (different slug) started OR the same slug but different instance (duplicate component)
-  if (otherSlug && (otherSlug !== props.post.slug || otherInstance !== instanceId)) {
+    const detail = (e as CustomEvent).detail as { slug?: string; instanceId?: string } | undefined;
+    const otherSlug = detail?.slug;
+    const otherInstance = detail?.instanceId;
+    // Pause if another post (different slug) started OR the same slug but different instance (duplicate component)
+    if (otherSlug && (otherSlug !== props.post.slug || otherInstance !== instanceId)) {
       const audio = audioRef.value;
       if (audio && !audio.paused) {
         audio.pause();
@@ -319,15 +317,15 @@ onMounted(() => {
     const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
     if (detail?.slug === props.post.slug) {
       isLiked.value = true;
-  // Increment local counter only for external events; parent will handle internal button clicks
-  displayedLikeCount.value = Math.max(0, displayedLikeCount.value) + 1;
+      // Increment local counter only for external events; parent will handle internal button clicks
+      displayedLikeCount.value = Math.max(0, displayedLikeCount.value) + 1;
     }
   };
   const handleExternalUnlike = (e: Event) => {
     const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
     if (detail?.slug === props.post.slug) {
       isLiked.value = false;
-  displayedLikeCount.value = Math.max(0, displayedLikeCount.value - 1);
+      displayedLikeCount.value = Math.max(0, displayedLikeCount.value - 1);
     }
   };
   document.addEventListener('post-like', handleExternalLike as EventListener);
@@ -335,7 +333,7 @@ onMounted(() => {
 
   // Listen to global player control events (play/pause/seek)
   const handlePlayerControl = (e: Event) => {
-    const { action, slug, time, instanceId: targetId } = (e as CustomEvent).detail || {};
+    const { action, slug, time } = (e as CustomEvent).detail || {};
     const audio = audioRef.value;
     if (!audio) return;
     // Only react if slug matches this post
@@ -362,9 +360,9 @@ onMounted(() => {
   // Cleanup listener on unmount
   onUnmounted(() => {
     document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
-  document.removeEventListener('post-like', handleExternalLike as EventListener);
-  document.removeEventListener('post-unlike', handleExternalUnlike as EventListener);
-  document.removeEventListener('player-control', handlePlayerControl as EventListener);
+    document.removeEventListener('post-like', handleExternalLike as EventListener);
+    document.removeEventListener('post-unlike', handleExternalUnlike as EventListener);
+    document.removeEventListener('player-control', handlePlayerControl as EventListener);
     // Ensure audio is stopped if this component unmounts
     const audio = audioRef.value;
     if (audio && !audio.paused) {
@@ -419,8 +417,7 @@ const formatTime = (time: number) => {
             @timeupdate="onTimeUpdate"
             @play="onAudioPlay"
             @pause="onAudioPause"
-            @ended="onEnded"
-          />
+            @ended="onEnded" />
           <div class="custom-audio-controls">
             <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
             <span class="audio-time">{{ formatTime(currentTime) }}</span>

@@ -18,7 +18,7 @@ const props = defineProps({
 });
 const authStore = useAuthStore();
 // In Ionic Vue, template refs on components point to the Vue wrapper; use $el to access the Web Component
-const contentRef = ref<any>(null);
+const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const bottomPadding = ref('0px'); // used only when styling the outer content
 let scrollEl: HTMLElement | null = null;
 let ro: ResizeObserver | null = null;
@@ -66,23 +66,28 @@ onMounted(async () => {
   // Setup scroll element and observers for conditional bottom padding
   await nextTick();
   try {
-  const host: any = contentRef.value?.$el ?? contentRef.value;
-  let targetEl: any = null;
+    const hostCandidate = (contentRef.value?.$el ?? contentRef.value) as unknown;
+    let host: HTMLElement | null = null;
+    if (hostCandidate instanceof HTMLElement) {
+      host = hostCandidate as HTMLElement;
+    }
+    let targetEl: HTMLElement | null = null;
     // Prefer a direct child ion-content from the slot (page-level content), not modal content
     if (host && host.children) {
       for (const child of Array.from(host.children)) {
         if ((child as HTMLElement).tagName === 'ION-CONTENT') {
-          targetEl = child;
+          targetEl = child as HTMLElement;
           break;
         }
       }
     }
-  hostEl = (host as HTMLElement) ?? null;
-  if (!targetEl) targetEl = host;
-  styleTargetEl = (targetEl as HTMLElement) ?? null;
-  const el: HTMLElement | null = targetEl && typeof targetEl.getScrollElement === 'function'
-      ? await targetEl.getScrollElement()
-      : null;
+    hostEl = host ?? null;
+    if (!targetEl) targetEl = host;
+    styleTargetEl = targetEl ?? null;
+    type IonContentEl = HTMLElement & { getScrollElement?: () => Promise<HTMLElement> };
+    const ionEl = (targetEl as IonContentEl) ?? null;
+    const el: HTMLElement | null =
+      ionEl && typeof ionEl.getScrollElement === 'function' ? await ionEl.getScrollElement() : null;
     scrollEl = el ?? null;
   } catch {
     scrollEl = null;
@@ -147,7 +152,7 @@ onUnmounted(() => {
         </div>
       </ion-toolbar>
     </ion-header>
-  <ion-content :fullscreen="true" ref="contentRef" :style="{ '--padding-bottom': bottomPadding }">
+    <ion-content :fullscreen="true" ref="contentRef" :style="{ '--padding-bottom': bottomPadding }">
       <slot></slot>
     </ion-content>
   </ion-page>
