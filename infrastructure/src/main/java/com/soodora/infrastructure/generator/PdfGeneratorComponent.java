@@ -1,21 +1,25 @@
-package com.soodora.service.shared;
+package com.soodora.infrastructure.generator;
 
 import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKitPdfExporter;
+import com.soodora.domain.mediakititem.InvalidUrlException;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
-@Service
-public class PdfGeneratorService {
+@Component
+@RequiredArgsConstructor
+public class PdfGeneratorComponent implements MediaKitPdfExporter {
 
     private static final BaseColor ORANGE = new BaseColor(0xFF, 0x91, 0x4D);
     private static final BaseColor FLORAL_WHITE = new BaseColor(0xFF, 0xFA, 0xF0);
@@ -26,8 +30,9 @@ public class PdfGeneratorService {
     private static final String OVERPASS_REGULAR = "service/src/main/resources/fonts/overpass/overpass-regular.otf";
     private static final String OVERPASS_SEMIBOLD = "service/src/main/resources/fonts/overpass/overpass-semibold.otf";
 
-    @SneakyThrows
-    public ByteArrayOutputStream generateMediaKitPdf(MediaKitDTO mediaKit, List<MediaKitItemDTO> items) {
+    @Override
+    public ByteArrayOutputStream generateMediaKitPdf(MediaKitDTO mediaKit, List<MediaKitItemDTO> items)
+            throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document document = new Document();
         PdfWriter writer = PdfWriter.getInstance(document, out);
@@ -88,8 +93,7 @@ public class PdfGeneratorService {
     }
 
     @SneakyThrows
-    private void addMediaKitItems(Document document, List<MediaKitItemDTO> items, Font boldFont, Font normalFont)
-            throws DocumentException {
+    private void addMediaKitItems(Document document, List<MediaKitItemDTO> items, Font boldFont, Font normalFont) {
         for (MediaKitItemDTO item : items) {
             document.add(new Paragraph("\n" + item.title(), boldFont));
             document.add(new Paragraph("Type: " + item.type(), normalFont));

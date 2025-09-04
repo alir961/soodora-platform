@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -48,14 +49,11 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
     public MediaKitItemDTO update(UpdateMediaKitItemCommand command, String slug) {
         MediaKitItemEntity existingMediaKitItem = findMediaKitItemBySlugOrThrow(slug);
 
-        if (command.title() != null && !command.title().isBlank()
-                && !command.title().equals(existingMediaKitItem.getTitle()))
+        if (isNotNullOrBlank(command.title()) && !command.title().equals(existingMediaKitItem.getTitle()))
             existingMediaKitItem.setTitle(command.title());
-        if (command.type() != null && !command.type().isBlank()
-                && !command.type().equals(existingMediaKitItem.getType()))
+        if (isNotNullOrBlank(command.type()) && !command.type().equals(existingMediaKitItem.getType()))
             existingMediaKitItem.setType(command.type());
-        if (command.content() != null && !command.content().isBlank()
-                && !command.content().equals(existingMediaKitItem.getContent()))
+        if (isNotNullOrBlank(command.content()) && !command.content().equals(existingMediaKitItem.getContent()))
             existingMediaKitItem.setContent(command.content());
 
         return repository.save(existingMediaKitItem).toDTO();

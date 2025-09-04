@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.mediakit;
 
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.link.LinkPageUnityException;
 import com.soodora.domain.mediakit.CreateMediaKitCommand;
 import com.soodora.domain.mediakit.MediaKitDTO;
 import com.soodora.domain.mediakit.MediaKitRepository;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
@@ -32,21 +34,21 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
     public MediaKitDTO save(CreateMediaKitCommand command, UserDTO user) {
         ArtistEntity artistEntity = artistsRepository.findByUserSlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug: #" + user.slug()));
+        Optional<MediaKitEntity> existingMediaKit = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
 
-        Optional<MediaKitEntity> existingLinkPage = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
-        if (existingLinkPage.isPresent())
-            throw new IllegalStateException("Artist with user slug #" + user.slug() + " already has a Media Kit.");
+        if (existingMediaKit.isEmpty()) {
+            MediaKitEntity entity = new MediaKitEntity();
+            entity.setTitle(command.title());
+            entity.setShortBio(command.shortBio());
+            entity.setLongBio(command.longBio());
+            entity.setContactEmail(command.contactEmail());
+            entity.setContactPhone(command.contactPhone());
+            entity.setSlug(generateUniqueSlug());
+            entity.setArtist(artistEntity);
 
-        MediaKitEntity entity = new MediaKitEntity();
-        entity.setTitle(command.title());
-        entity.setShortBio(command.shortBio());
-        entity.setLongBio(command.longBio());
-        entity.setContactEmail(command.contactEmail());
-        entity.setContactPhone(command.contactPhone());
-        entity.setSlug(generateUniqueSlug());
-        entity.setArtist(artistEntity);
-
-        return repository.save(entity).toDTO();
+            return repository.save(entity).toDTO();
+        }
+        throw new LinkPageUnityException("Artist with user slug #" + user.slug() + " already has a media kit.");
     }
 
     @Override
@@ -54,19 +56,16 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
     public MediaKitDTO update(UpdateMediaKitCommand command, String slug) {
         MediaKitEntity existingMediaKit = findMediaKitBySlugOrThrow(slug);
 
-        if (command.title() != null && !command.title().isBlank()
-                && !command.title().equals(existingMediaKit.getTitle()))
+        if (isNotNullOrBlank(command.title()) && !command.title().equals(existingMediaKit.getTitle()))
             existingMediaKit.setTitle(command.title());
-        if (command.shortBio() != null && !command.shortBio().isBlank()
-                && !command.shortBio().equals(existingMediaKit.getShortBio()))
+        if (isNotNullOrBlank(command.shortBio()) && !command.shortBio().equals(existingMediaKit.getShortBio()))
             existingMediaKit.setShortBio(command.shortBio());
-        if (command.longBio() != null && !command.longBio().isBlank()
-                && !command.longBio().equals(existingMediaKit.getLongBio()))
+        if (isNotNullOrBlank(command.longBio()) && !command.longBio().equals(existingMediaKit.getLongBio()))
             existingMediaKit.setLongBio(command.longBio());
-        if (command.contactEmail() != null && !command.contactEmail().isBlank()
+        if (isNotNullOrBlank(command.contactEmail())
                 && !command.contactEmail().equals(existingMediaKit.getContactEmail()))
             existingMediaKit.setContactEmail(command.contactEmail());
-        if (command.contactPhone() != null && !command.contactPhone().isBlank()
+        if (isNotNullOrBlank(command.contactPhone())
                 && !command.contactPhone().equals(existingMediaKit.getContactPhone()))
             existingMediaKit.setContactPhone(command.contactPhone());
 

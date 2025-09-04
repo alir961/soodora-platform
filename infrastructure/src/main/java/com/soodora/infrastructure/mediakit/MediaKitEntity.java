@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -19,6 +18,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import static jakarta.persistence.CascadeType.ALL;
+import static java.util.stream.Collectors.toList;
 
 @Getter
 @Setter
@@ -59,7 +61,7 @@ public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
     @UpdateTimestamp
     private Date updatedAt;
 
-    @OneToMany(mappedBy = "mediaKit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "mediaKit", cascade = ALL, orphanRemoval = true)
     private List<MediaKitItemEntity> items = new ArrayList<>();
 
     @Override
@@ -72,7 +74,7 @@ public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
                 longBio,
                 contactEmail,
                 contactPhone,
-                items.stream().map(MediaKitItemEntity::toDTO).collect(Collectors.toList()));
+                items.stream().map(MediaKitItemEntity::toDTO).collect(toList()));
 
     }
 }

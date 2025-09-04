@@ -4,9 +4,14 @@ import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
-public record CreateMediaKitItemRequest(String type,
-        String title,
-        String content) implements Request<CreateMediaKitItemCommand> {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record CreateMediaKitItemRequest(
+        @Schema(description = "Type of the item", example = "Image", defaultValue = "Image") String type,
+        @Schema(description = "Title of the item", example = "My Item", defaultValue = "My Item") String title,
+        @Schema(description = "Content of the item", example = "imageUrl", defaultValue = "imageUrl") String content)
+        implements
+            Request<CreateMediaKitItemCommand> {
 
     @Override
     public CreateMediaKitItemCommand toCommand() {

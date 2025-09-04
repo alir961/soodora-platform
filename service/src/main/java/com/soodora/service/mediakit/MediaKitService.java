@@ -4,7 +4,6 @@ import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.shared.PdfGeneratorService;
 
 import java.io.ByteArrayOutputStream;
 import java.util.List;
@@ -19,7 +18,7 @@ public class MediaKitService {
 
     private final MediaKitRepository mediaKitRepository;
     private final MediaKitItemRepository mediaKitItemRepository;
-    private final PdfGeneratorService pdfGeneratorService;
+    private final MediaKitPdfExporter mediaKitPdfExporter;
 
     public MediaKitDTO createMediaKit(CreateMediaKitCommand command, UserDTO user) {
         return mediaKitRepository.save(command, user);
@@ -92,7 +91,7 @@ public class MediaKitService {
                     .filter(i -> i.mediaKitSlug().equals(slug))
                     .toList();
 
-            ByteArrayOutputStream out = pdfGeneratorService.generateMediaKitPdf(mediaKit, items);
+            ByteArrayOutputStream out = mediaKitPdfExporter.generateMediaKitPdf(mediaKit, items);
             return out.toByteArray();
         } catch (Exception e) {
             throw new InvalidRequestException("Failed to export MediaKit to PDF: " + e.getMessage());
