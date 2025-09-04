@@ -4,6 +4,7 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.event.EventEntity;
 import com.soodora.infrastructure.linkpage.LinkPageEntity;
+import com.soodora.infrastructure.mediakit.MediaKitEntity;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.sale.SaleEntity;
@@ -44,6 +45,9 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
 
     @OneToOne(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
     private LinkPageEntity linkPage;
+
+    @OneToOne(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
+    private MediaKitEntity mediaKit;
 
     @ManyToMany
     @JoinTable(name = "artists_events", joinColumns = @JoinColumn(name = "artist_id"), inverseJoinColumns = @JoinColumn(name = "event_id"))
