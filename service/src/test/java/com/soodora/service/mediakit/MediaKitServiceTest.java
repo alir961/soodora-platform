@@ -2,11 +2,15 @@ package com.soodora.service.mediakit;
 
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
+import com.soodora.service.common.InvalidRequestException;
+
+import java.io.ByteArrayOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import static java.util.List.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -32,15 +36,15 @@ class MediaKitServiceTest {
     void setUp() {
         mediaKitRepository = mock(MediaKitRepository.class);
         mediaKitItemRepository = mock(MediaKitItemRepository.class);
+        mediaKitPdfExporter = mock(MediaKitPdfExporter.class);
         mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, mediaKitPdfExporter);
     }
 
     @Test
-    void createMediaKit_returnsDto() {
+    void givenCreateCommand_whenCreateMediaKit_thenReturnDto() {
         // GIVEN
         CreateMediaKitCommand command = new CreateMediaKitCommand("Title", "Short", "Long", "email", "phone");
         MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "Title", "Short", "Long", "email", "phone", null);
-
         when(mediaKitRepository.save(command, USER)).thenReturn(expected);
 
         // WHEN
@@ -53,11 +57,10 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void updateMediaKit_returnsDto() {
+    void givenUpdateCommand_whenUpdateMediaKit_thenReturnDto() {
         // GIVEN
         UpdateMediaKitCommand command = new UpdateMediaKitCommand("NewTitle", "Short", "Long", "email", "phone");
         MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "NewTitle", "Short", "Long", "email", "phone", null);
-
         when(mediaKitRepository.update(command, "slug1")).thenReturn(expected);
 
         // WHEN
@@ -69,10 +72,9 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void retrieveMediaKitBySlug_shouldReturnMediaKitDTO() {
+    void givenSlug_whenRetrieveMediaKitBySlug_thenReturnDto() {
         // GIVEN
         String slug = "test-slug";
-
         when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT_DTO);
 
         // WHEN
@@ -84,10 +86,9 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void retrieveMediaKitByArtistSlug_shouldReturnMediaKitDTO() {
+    void givenArtistSlug_whenRetrieveMediaKitByArtistSlug_thenReturnDto() {
         // GIVEN
         String artistSlug = "artist-slug";
-
         when(mediaKitRepository.findByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT_DTO);
 
         // WHEN
@@ -99,18 +100,19 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void deleteMediaKit_callsRepository() {
+    void givenSlug_whenDeleteMediaKit_thenRepositoryCalled() {
+        // WHEN
         mediaKitService.deleteMediaKit("slug1");
 
+        // THEN
         verify(mediaKitRepository).deleteBySlug("slug1");
     }
 
     @Test
-    void addMediaKitItem_returnsDto() {
+    void givenCreateItemCommand_whenAddMediaKitItem_thenReturnDto() {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-
         when(mediaKitItemRepository.save(command, "artist-slug")).thenReturn(expected);
 
         // WHEN
@@ -122,11 +124,10 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void updateMediaKitItem_returnsDto() {
+    void givenUpdateItemCommand_whenUpdateMediaKitItem_thenReturnDto() {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-
         when(mediaKitItemRepository.update(command, "item-slug")).thenReturn(expected);
 
         // WHEN
@@ -138,10 +139,51 @@ class MediaKitServiceTest {
     }
 
     @Test
-    void deleteMediaKitItem_callsRepository() {
+    void givenItemSlug_whenDeleteMediaKitItem_thenRepositoryCalled() {
+        // WHEN
         mediaKitService.deleteMediaKitItem("item-slug");
 
+        // THEN
         verify(mediaKitItemRepository).deleteBySlug("item-slug");
+    }
+
+    @Test
+    void givenSlug_whenExportMediaKitToPdf_thenReturnPdfBytes() throws Exception {
+        // GIVEN
+        String slug = "kit-slug";
+        MediaKitDTO mediaKit = new MediaKitDTO(slug, "artist", "Title", "Short", "Long", "email", "phone", null);
+        MediaKitItemDTO item = new MediaKitItemDTO(slug, "item1", "image", "Title1", "url1");
+
+        when(mediaKitRepository.findBySlug(slug)).thenReturn(mediaKit);
+        when(mediaKitItemRepository.findAll()).thenReturn(of(item));
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write("PDF".getBytes());
+        when(mediaKitPdfExporter.generateMediaKitPdf(mediaKit, of(item))).thenReturn(baos);
+
+        // WHEN
+        byte[] result = mediaKitService.exportMediaKitToPdf(slug);
+
+        // THEN
+        assertArrayEquals("PDF".getBytes(), result);
+        verify(mediaKitRepository).findBySlug(slug);
+        verify(mediaKitItemRepository).findAll();
+        verify(mediaKitPdfExporter).generateMediaKitPdf(mediaKit, of(item));
+    }
+
+    @Test
+    void givenNonExistingSlug_whenExportMediaKitToPdf_thenThrowInvalidRequestException() {
+        // GIVEN
+        String slug = "non-existing-slug";
+        when(mediaKitRepository.findBySlug(slug)).thenReturn(null);
+
+        // WHEN & THEN
+        InvalidRequestException exception = assertThrows(InvalidRequestException.class,
+                () -> mediaKitService.exportMediaKitToPdf(slug));
+
+        assertTrue(exception.getMessage().contains("MediaKit with slug 'non-existing-slug' not found"));
+        verify(mediaKitRepository).findBySlug(slug);
+        verifyNoInteractions(mediaKitPdfExporter);
     }
 
 }
