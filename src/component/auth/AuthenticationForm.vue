@@ -25,7 +25,7 @@ const lastname: Ref<string> = ref('');
 
 const login = async () => {
   try {
-    const token = await callLogin({ email: email.value, password: password.value });
+    const token = await callLogin({ identifier: email.value, password: password.value });
     await saveBearerToken(token);
 
     const user = await retrieveAuthenticatedProfile();

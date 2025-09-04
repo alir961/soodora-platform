@@ -3,7 +3,7 @@ import { loadBearerToken } from '@/store/localStorage';
 import { reject } from '@/utils';
 
 interface LoginRequest {
-  email: string;
+  identifier: string;
   password: string;
 }
 
