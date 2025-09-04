@@ -3,7 +3,7 @@ import { loadBearerToken } from '@/store/localStorage';
 import { reject } from '@/utils';
 
 interface LoginRequest {
-  email: string;
+  identifier: string;
   password: string;
 }
 
@@ -49,10 +49,17 @@ async function callRegister(request: RegisterRequest): Promise<void> {
   return axios
     .post('/auth/register', request)
     .then(() => {})
-    .catch((error) => {
-      return reject(error.response?.data?.reason);
-    });
+    .catch((error) => reject(error.response?.data?.reason));
+}
+
+async function callConfirmEmail(secret: string): Promise<void> {
+  return axios
+    .post('/auth/confirm', {}, { params: { secret } })
+    .then((response) => {
+      if (response.status !== 201) return reject('Invalid secret');
+    })
+    .catch((error) => reject(error.response?.data?.reason));
 }
 
 export type { LoginRequest, RegisterRequest };
-export { getAuthorizedHeader, checkStatus, callLogin, callRegister };
+export { getAuthorizedHeader, checkStatus, callLogin, callRegister, callConfirmEmail };

@@ -13,7 +13,6 @@ const { isLogin } = defineProps({
 
 const router: Router = useRouter();
 const route = useRoute();
-const emit = defineEmits(['toggle']);
 
 const authStore = useAuthStore();
 
@@ -25,12 +24,10 @@ const lastname: Ref<string> = ref('');
 
 const login = async () => {
   try {
-    const token = await callLogin({ email: email.value, password: password.value });
+    const token = await callLogin({ identifier: email.value, password: password.value });
+
     await saveBearerToken(token);
-
-    const user = await retrieveAuthenticatedProfile();
-    authStore.authenticate(user);
-
+    authStore.authenticate(await retrieveAuthenticatedProfile());
     await router.push('/explore');
   } catch (error) {
     const toast = await toastController.create({
@@ -38,11 +35,13 @@ const login = async () => {
       duration: 1500,
       position: 'top',
     });
+
     await toast.present();
+    console.warn(error);
   }
 };
 
-const signup = async () => {
+const register = async () => {
   try {
     const request: RegisterRequest = {
       username: username.value,
@@ -54,8 +53,7 @@ const signup = async () => {
     };
 
     await callRegister(request);
-    await router.push({ query: {} });
-    emit('toggle');
+    await router.push('/confirm');
   } catch (error: unknown) {
     let message: string = 'Sign up Failed!';
     if (error instanceof Error) message = error.message;
@@ -83,7 +81,7 @@ const passwordCriteria = computed(() => {
 </script>
 
 <template>
-  <div @keyup.enter="isLogin ? login() : signup()">
+  <div @keyup.enter="isLogin ? login() : register()">
     <div v-if="!isLogin">
       <ion-item>
         <ion-input placeholder="Username" type="text" v-model="username"></ion-input>
@@ -114,7 +112,7 @@ const passwordCriteria = computed(() => {
       <li :style="{ color: passwordCriteria.hasSpecial ? 'gray' : 'red' }">At least one special character</li>
     </ul>
 
-    <ion-button expand="block" @click="isLogin ? login() : signup()">
+    <ion-button expand="block" @click="isLogin ? login() : register()">
       {{ isLogin ? 'Log In' : 'Sign Up' }}
     </ion-button>
   </div>
