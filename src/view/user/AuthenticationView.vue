@@ -61,7 +61,7 @@ function redirectGoogleOAuth() {
       <strong>{{ isLogin ? 'Welcome Back!' : 'Create Your Account' }}</strong>
       <p>{{ isLogin ? 'Please log in to continue' : 'Sign up to get started' }}</p>
 
-      <AuthenticationForm :is-login="isLogin" @toggle="toggleAuth" />
+      <AuthenticationForm :is-login="isLogin" />
 
       <div v-if="!route.query.external">
         <div class="spacer" />

@@ -13,6 +13,7 @@ import LinkPageView from '@/view/create/LinkPageView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
+import ConfirmationView from '@/view/user/ConfirmationView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -53,6 +54,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/authentication',
     name: 'Authentication',
     component: AuthView,
+  },
+  {
+    path: '/confirm',
+    name: 'Email Confirmation',
+    component: ConfirmationView,
   },
   {
     path: '/profile',
