@@ -16,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.common.SlugGenerator.generateSlug;
 import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor
@@ -29,19 +29,19 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
     @Override
     @Transactional
     public MediaKitItemDTO save(CreateMediaKitItemCommand command, String artistSlug) {
-        MediaKitEntity existingMediaKit = mediaKitRepository.findByArtistUserSlug(artistSlug)
+        MediaKitEntity mediaKit = mediaKitRepository.findByArtistUserSlug(artistSlug)
                 .orElseThrow(() -> new UnknownSlugException("Media Kit not found for artist with slug #" + artistSlug));
+        MediaKitItemEntity mediaKitItem = new MediaKitItemEntity();
 
-        MediaKitItemEntity entity = new MediaKitItemEntity();
-        entity.setTitle(command.title());
-        entity.setType(command.type());
-        entity.setContent(command.content());
-        entity.setSlug(generateUniqueSlug());
-        entity.setMediaKit(existingMediaKit);
+        mediaKitItem.setTitle(command.title());
+        mediaKitItem.setType(command.type());
+        mediaKitItem.setContent(command.content());
+        mediaKitItem.setSlug(generateUniqueSlug());
+        mediaKitItem.setMediaKit(mediaKit);
 
-        existingMediaKit.getItems().add(entity);
+        mediaKit.getItems().add(mediaKitItem);
 
-        return repository.save(entity).toDTO();
+        return repository.save(mediaKitItem).toDTO();
     }
 
     @Override
@@ -49,13 +49,12 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
     public MediaKitItemDTO update(UpdateMediaKitItemCommand command, String slug) {
         MediaKitItemEntity existingMediaKitItem = findMediaKitItemBySlugOrThrow(slug);
 
-        if (isNotNullOrBlank(command.title()) && !command.title().equals(existingMediaKitItem.getTitle()))
+        if (isNotNullOrBlank(command.title()))
             existingMediaKitItem.setTitle(command.title());
-        if (isNotNullOrBlank(command.type()) && !command.type().equals(existingMediaKitItem.getType()))
+        if (isNotNullOrBlank(command.type()))
             existingMediaKitItem.setType(command.type());
-        if (isNotNullOrBlank(command.content()) && !command.content().equals(existingMediaKitItem.getContent()))
+        if (isNotNullOrBlank(command.content()))
             existingMediaKitItem.setContent(command.content());
-
         return repository.save(existingMediaKitItem).toDTO();
     }
 

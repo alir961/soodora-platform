@@ -24,7 +24,7 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "201", description = "Media kit created"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    ResponseEntity<?> createMediaKit(
+    ResponseEntity<JsonResponse> createMediaKit(
             @RequestBody(required = true) CreateMediaKitRequest request,
             UserDTO user);
 
@@ -32,7 +32,7 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "202", description = "Media kit updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    ResponseEntity<?> updateMediaKit(
+    ResponseEntity<JsonResponse> updateMediaKit(
             String slug,
             @RequestBody(required = true) UpdateMediaKitRequest request);
 
@@ -53,7 +53,7 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "202", description = "Item updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
-    ResponseEntity<?> updateItem(
+    ResponseEntity<JsonResponse> updateItem(
             String itemSlug,
             @RequestBody(required = true) UpdateMediaKitItemRequest request);
 

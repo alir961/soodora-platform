@@ -2,12 +2,12 @@ package com.soodora.service.mediakit;
 
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
-import com.soodora.service.common.InvalidRequestException;
 
 import java.io.ByteArrayOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 
 import static java.util.List.of;
@@ -26,7 +26,7 @@ class MediaKitServiceTest {
     private MediaKitItemRepository mediaKitItemRepository;
 
     @Mock
-    private MediaKitPdfExporter mediaKitPdfExporter;
+    private MediaKitExporter mediaKitExporter;
 
     private MediaKitService mediaKitService;
 
@@ -36,8 +36,8 @@ class MediaKitServiceTest {
     void setUp() {
         mediaKitRepository = mock(MediaKitRepository.class);
         mediaKitItemRepository = mock(MediaKitItemRepository.class);
-        mediaKitPdfExporter = mock(MediaKitPdfExporter.class);
-        mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, mediaKitPdfExporter);
+        mediaKitExporter = mock(MediaKitExporter.class);
+        mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, mediaKitExporter);
     }
 
     @Test
@@ -153,13 +153,13 @@ class MediaKitServiceTest {
         String slug = "kit-slug";
         MediaKitDTO mediaKit = new MediaKitDTO(slug, "artist", "Title", "Short", "Long", "email", "phone", null);
         MediaKitItemDTO item = new MediaKitItemDTO(slug, "item1", "image", "Title1", "url1");
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 
         when(mediaKitRepository.findBySlug(slug)).thenReturn(mediaKit);
         when(mediaKitItemRepository.findAll()).thenReturn(of(item));
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baos.write("PDF".getBytes());
-        when(mediaKitPdfExporter.generateMediaKitPdf(mediaKit, of(item))).thenReturn(baos);
+        byteArray.write("PDF".getBytes());
+        when(mediaKitExporter.exportMediaKit(mediaKit, of(item))).thenReturn(byteArray);
 
         // WHEN
         byte[] result = mediaKitService.exportMediaKitToPdf(slug);
@@ -168,22 +168,23 @@ class MediaKitServiceTest {
         assertArrayEquals("PDF".getBytes(), result);
         verify(mediaKitRepository).findBySlug(slug);
         verify(mediaKitItemRepository).findAll();
-        verify(mediaKitPdfExporter).generateMediaKitPdf(mediaKit, of(item));
+        verify(mediaKitExporter).exportMediaKit(mediaKit, of(item));
     }
 
     @Test
-    void givenNonExistingSlug_whenExportMediaKitToPdf_thenThrowInvalidRequestException() {
+    void givenInvalidSlug_whenExportMediaKitToPdf_thenThrowUnknownMediaKitException() {
         // GIVEN
-        String slug = "non-existing-slug";
-        when(mediaKitRepository.findBySlug(slug)).thenReturn(null);
+        String slug = "invalid-slug";
 
-        // WHEN & THEN
-        InvalidRequestException exception = assertThrows(InvalidRequestException.class,
-                () -> mediaKitService.exportMediaKitToPdf(slug));
+        when(mediaKitRepository.findBySlug(slug)).thenThrow(UnknownMediaKitException.class);
 
-        assertTrue(exception.getMessage().contains("MediaKit with slug 'non-existing-slug' not found"));
+        // WHEN
+        Executable executable = () -> mediaKitService.exportMediaKitToPdf(slug);
+
+        // THEN
+        assertThrows(UnknownMediaKitException.class, executable);
         verify(mediaKitRepository).findBySlug(slug);
-        verifyNoInteractions(mediaKitPdfExporter);
+        verifyNoInteractions(mediaKitExporter);
     }
 
 }

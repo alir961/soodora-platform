@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.MediaType.APPLICATION_PDF;
+import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
 @RequestMapping("/mediakits")
@@ -25,23 +26,25 @@ public class MediaKitController implements MediaKitResource {
     private final MediaKitService mediaKitService;
 
     @PostMapping
-    public ResponseEntity<?> createMediaKit(
+    public ResponseEntity<JsonResponse> createMediaKit(
             @RequestBody CreateMediaKitRequest request,
             @AuthenticationPrincipal UserDTO user) {
         try {
             MediaKitDTO mediaKitDTO = mediaKitService.createMediaKit(request.toCommand(), user);
-            return new ResponseEntity<>(mediaKitDTO, CREATED);
+
+            return new ResponseEntity<>(new MediaKitResponse(mediaKitDTO), CREATED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
     }
 
     @PutMapping("/{slug}")
-    public ResponseEntity<?> updateMediaKit(
+    public ResponseEntity<JsonResponse> updateMediaKit(
             @PathVariable String slug,
             @RequestBody UpdateMediaKitRequest request) {
         try {
             MediaKitDTO mediaKitDTO = mediaKitService.updateMediaKit(request.toCommand(), slug);
+
             return new ResponseEntity<>(new MediaKitResponse(mediaKitDTO), ACCEPTED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
@@ -65,7 +68,8 @@ public class MediaKitController implements MediaKitResource {
     }
 
     @PutMapping("/items/{itemSlug}")
-    public ResponseEntity<?> updateItem(@PathVariable String itemSlug, @RequestBody UpdateMediaKitItemRequest request) {
+    public ResponseEntity<JsonResponse> updateItem(@PathVariable String itemSlug,
+            @RequestBody UpdateMediaKitItemRequest request) {
         try {
             mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug);
             return new ResponseEntity<>(ACCEPTED);
@@ -93,7 +97,8 @@ public class MediaKitController implements MediaKitResource {
     public ResponseEntity<?> exportPdf(@PathVariable String slug) {
         try {
             byte[] pdfBytes = mediaKitService.exportMediaKitToPdf(slug);
-            return ResponseEntity.ok()
+
+            return ok()
                     .header(CONTENT_DISPOSITION, "attachment; filename=\"mediakit_" + slug + ".pdf\"")
                     .contentType(APPLICATION_PDF)
                     .body(pdfBytes);
