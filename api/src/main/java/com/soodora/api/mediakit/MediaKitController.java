@@ -3,6 +3,7 @@ package com.soodora.api.mediakit;
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.mediakit.*;
+import com.soodora.domain.mediakititem.MediaKitItemDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.mediakit.*;
@@ -60,8 +61,8 @@ public class MediaKitController implements MediaKitResource {
     public ResponseEntity<JsonResponse> addItem(@PathVariable String artistSlug,
             @RequestBody CreateMediaKitItemRequest request) {
         try {
-            mediaKitService.addMediaKitItem(request.toCommand(), artistSlug);
-            return new ResponseEntity<>(CREATED);
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug);
+            return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), CREATED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
@@ -71,8 +72,8 @@ public class MediaKitController implements MediaKitResource {
     public ResponseEntity<JsonResponse> updateItem(@PathVariable String itemSlug,
             @RequestBody UpdateMediaKitItemRequest request) {
         try {
-            mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug);
-            return new ResponseEntity<>(ACCEPTED);
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug);
+            return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), ACCEPTED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
