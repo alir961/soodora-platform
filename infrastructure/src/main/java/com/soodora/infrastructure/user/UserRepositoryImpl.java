@@ -25,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 
+import static com.soodora.domain.common.SlugGenerator.generateSlug;
 import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor

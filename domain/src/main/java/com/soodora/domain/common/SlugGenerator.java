@@ -1,7 +1,12 @@
-package com.soodora.infrastructure.common;
+package com.soodora.domain.common;
 
 import java.util.Random;
 
+import lombok.NoArgsConstructor;
+
+import static lombok.AccessLevel.PRIVATE;
+
+@NoArgsConstructor(access = PRIVATE)
 public class SlugGenerator {
 
     private static final int SLUG_LENGTH = 8;
@@ -9,10 +14,14 @@ public class SlugGenerator {
     private static final Random random = new Random();
 
     public static String generateSlug() {
+        return generateSlug(SLUG_LENGTH);
+    }
+
+    public static String generateSlug(int length) {
         StringBuilder builder = new StringBuilder();
 
-        while (builder.length() < SLUG_LENGTH) {
-            int index = (int) (random.nextFloat() * SLUG_CHARACTERS.length());
+        while (builder.length() < length) {
+            int index = random.nextInt(SLUG_CHARACTERS.length());
 
             builder.append(SLUG_CHARACTERS.charAt(index));
         }

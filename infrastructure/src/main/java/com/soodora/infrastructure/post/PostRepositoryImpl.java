@@ -27,7 +27,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.toIntExact;
 import static java.util.Collections.emptySet;
 
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
+import static com.soodora.domain.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor

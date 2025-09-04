@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
+import static com.soodora.domain.common.SlugGenerator.generateSlug;
 
 @Repository
 @RequiredArgsConstructor

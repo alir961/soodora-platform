@@ -1,5 +1,7 @@
 package com.soodora.domain.auth;
 
-public record LoginCommand(String email, String password) {
+import com.soodora.domain.user.Identifier;
+
+public record LoginCommand(Identifier identifier, String password) {
 
 }

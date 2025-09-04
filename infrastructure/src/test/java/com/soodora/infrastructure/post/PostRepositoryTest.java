@@ -27,7 +27,7 @@ import static java.util.stream.IntStream.range;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
-import static com.soodora.infrastructure.common.SlugGenerator.generateSlug;
+import static com.soodora.domain.common.SlugGenerator.generateSlug;
 import static com.soodora.infrastructure.user.UserEntityFactory.buildDefaultUserEntity;
 
 @ExtendWith(MockitoExtension.class)
