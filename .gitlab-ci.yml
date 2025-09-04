@@ -24,7 +24,11 @@ install_dependencies:
       - node_modules/
     expire_in: 1h
   rules:
-    - when: always
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never
 
 lint:
   stage: build
@@ -33,7 +37,11 @@ lint:
   needs:
     - install_dependencies
   rules:
-    - if: $CI_MERGE_REQUEST_ID || $CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "ci"
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/'
+      when: always
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: always
+    - when: never
 
 build:
   stage: build
@@ -46,11 +54,14 @@ build:
   needs:
     - install_dependencies
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/'
+      when: always
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
         VITE_API_URL: 'https://app.soodora.com/api'
         VITE_ADMINISTRATION_URL: 'https://app.soodora.com/administration'
-    - when: always
+      when: always
+    - when: never
 
 staging:
   stage: deploy
