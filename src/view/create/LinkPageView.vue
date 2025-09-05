@@ -22,7 +22,7 @@ import {
   IonSelect,
   IonSelectOption,
 } from '@ionic/vue';
-import { trashBin } from 'ionicons/icons';
+import { arrowBackOutline, trashBin } from 'ionicons/icons';
 import {
   createLinkPage,
   getLinkPage,
@@ -247,6 +247,10 @@ watch(
     <ion-content class="ion-padding">
       <!-- Show create UI immediately -->
       <div v-if="isCreateMode">
+        <IonButton class="inline-back-button" slot="start" fill="clear" @click="$router.back()">
+          <IonIcon :icon="arrowBackOutline" />
+          Back
+        </IonButton>
         <h2>Link Page creation</h2>
         <IonInput v-model="pageData.title" placeholder="Link Page title" class="form-group" />
         <IonTextarea v-model="pageData.description" placeholder="Link Page description" class="form-group" />
@@ -361,10 +365,6 @@ watch(
   margin-bottom: 6rem;
 }
 
-.buttons.single-button {
-  margin-bottom: 0;
-}
-
 ion-button[expand='block'] {
   margin-top: 10px;
 }
@@ -376,8 +376,10 @@ ion-button[expand='block'] {
   margin: 24px 0 12px;
 }
 
-.active-title {
-  font-size: 18px;
-  font-weight: bold;
+.inline-back-button {
+  font-size: 1.2em;
+  color: var(--ion-color-primary);
+  position: relative;
+  right: 1.5rem;
 }
 </style>

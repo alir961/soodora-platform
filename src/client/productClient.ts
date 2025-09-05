@@ -3,14 +3,12 @@ import { Product, ProductSearchParams } from '@/entity/Product';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 
-type CreateProductRequest = Omit<Omit<Product, 'slug'>, 'vendor'>;
-
 interface ProductPage {
   content: Product[];
   hasMore: boolean;
 }
 
-async function createProduct(product: CreateProductRequest): Promise<void> {
+async function createProduct(product: FormData): Promise<void> {
   return axios.post('/products', product, { headers: await getAuthorizedHeader() });
 }
 
@@ -37,5 +35,5 @@ async function callDeleteProduct(slug: string): Promise<void> {
     .catch(reject);
 }
 
-export type { CreateProductRequest, ProductPage };
+export type { ProductPage };
 export { callSearchProducts, createProduct, callDeleteProduct };

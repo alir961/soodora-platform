@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { arrowBackOutline, checkmarkOutline, logOutOutline, trashOutline } from 'ionicons/icons';
+import { arrowBackOutline, checkmarkOutline, cloudDownloadOutline, logOutOutline, trashOutline } from 'ionicons/icons';
 import {
   alertController,
   IonButton,
@@ -12,7 +12,7 @@ import {
   modalController,
   toastController,
 } from '@ionic/vue';
-import { callDeleteProfile, callDeleteUserAvatar, callUpdateProfile } from '@/client/profileClient';
+import { callDeleteProfile, callUpdateProfile } from '@/client/profileClient';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import { deleteBearerToken } from '@/store/localStorage';
 import { useRouter } from 'vue-router';
@@ -28,7 +28,7 @@ const usernameInput = ref('');
 const firstnameInput = ref('');
 const lastnameInput = ref('');
 const descriptionInput = ref('');
-const avatarUrlInput = ref('');
+const avatarFile = ref<File | null>(null);
 
 const saving = ref(false);
 
@@ -37,7 +37,6 @@ const originalData = ref({
   firstname: '',
   lastname: '',
   description: '',
-  avatarUrl: '',
 });
 
 const hasChanges = computed(() => {
@@ -46,7 +45,7 @@ const hasChanges = computed(() => {
     firstnameInput.value !== originalData.value.firstname ||
     lastnameInput.value !== originalData.value.lastname ||
     descriptionInput.value !== originalData.value.description ||
-    avatarUrlInput.value !== originalData.value.avatarUrl
+    avatarFile.value !== null
   );
 });
 
@@ -75,7 +74,6 @@ const deleteAccount = async () => {
               duration: 1500,
               position: 'top',
             });
-
             await toast.present();
           }
         },
@@ -92,12 +90,16 @@ const updateAccount = async () => {
       firstname: firstnameInput.value,
       lastname: lastnameInput.value,
       description: descriptionInput.value,
-      avatarUrl: avatarUrlInput.value || '',
     };
 
+    const formData = new FormData();
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    formData.append('data', blob);
+
+    if (avatarFile.value) formData.append('file', avatarFile.value);
+
     saving.value = true;
-    if (avatarUrlInput.value.trim() === '' && originalData.value.avatarUrl.trim() !== '') await callDeleteUserAvatar();
-    await callUpdateProfile(payload);
+    await callUpdateProfile(formData);
     await modalController.dismiss();
   } catch (error) {
     const toast = await toastController.create({
@@ -105,29 +107,31 @@ const updateAccount = async () => {
       duration: 1500,
       position: 'top',
     });
-
     await toast.present();
   } finally {
     saving.value = false;
   }
 };
 
+const onAvatarSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) avatarFile.value = target.files[0];
+};
+
 onMounted(() => {
   const user: User | null = authStore.getAuthenticatedUser;
-
   if (!user) return;
+
   usernameInput.value = user.username;
   firstnameInput.value = user.firstname;
   lastnameInput.value = user.lastname;
   descriptionInput.value = user.description;
-  avatarUrlInput.value = user.avatarUrl ?? '';
 
   originalData.value = {
     username: user.username,
     firstname: user.firstname,
     lastname: user.lastname,
     description: user.description,
-    avatarUrl: user.avatarUrl ?? '',
   };
 });
 </script>
@@ -176,16 +180,14 @@ onMounted(() => {
         <ion-textarea placeholder="Add a description" v-model="descriptionInput" auto-grow />
       </ion-item>
       <ion-item class="modal-item">
-        <div class="profile-picture-url-wrapper">
-          <div class="profile-picture-url-label-row">
-            <span>Profile Picture URL</span>
-            <ion-icon
-              v-if="avatarUrlInput"
-              :icon="trashOutline"
-              class="profile-picture-url-delete-icon"
-              @click="avatarUrlInput = ''" />
-          </div>
-          <ion-input placeholder="Add a profile picture URL" v-model="avatarUrlInput" />
+        <IonLabel position="stacked">Select Image</IonLabel>
+        <div class="file-upload-container">
+          <IonLabel class="file-upload-button">
+            <ion-icon :icon="cloudDownloadOutline" />
+            Choose File
+            <input type="file" @change="onAvatarSelected" accept="image/*" />
+          </IonLabel>
+          <span v-if="avatarFile" class="file-name">{{ avatarFile.name }}</span>
         </div>
       </ion-item>
     </div>
@@ -251,21 +253,6 @@ onMounted(() => {
   --color: white;
 }
 
-.profile-picture-url-wrapper {
-  margin-top: 12px;
-  width: 100%;
-}
-
-.profile-picture-url-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile-picture-url-delete-icon {
-  color: #db3030;
-}
-
 .floating-header {
   position: relative;
   display: flex;
@@ -310,5 +297,42 @@ onMounted(() => {
 
 .save-button-icon {
   color: #fff;
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.file-upload-button {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: var(--ion-color-secondary);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-upload-button input[type='file'] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
 }
 </style>

@@ -54,7 +54,10 @@ const editedMediaKit = ref<MediaKitDTO>({
 });
 
 const newItem = ref<{ type: string; title: string; content: string }>({ type: '', title: '', content: '' });
+const selectedFile = ref<File | null>(null);
+
 const editedItem = ref<MediaKitItemDTO | null>(null);
+const editedSelectedFile = ref<File | null>(null);
 
 const showToast = async (message: string, color: 'danger' | 'success' = 'danger') => {
   const toast = await toastController.create({ message, duration: 2000, color });
@@ -122,16 +125,36 @@ const downloadPdfHandler = async () => {
 
 const openAddItemModalHandler = () => {
   newItem.value = { type: '', title: '', content: '' };
+  selectedFile.value = null;
   showAddItemModal.value = true;
+};
+
+const onFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    selectedFile.value = target.files[0];
+    newItem.value.content = '';
+  } else {
+    selectedFile.value = null;
+  }
 };
 
 const saveNewItemHandler = async () => {
   const artistSlug = authStore.getAuthenticatedUserSlug;
   if (!mediaKit.value || !artistSlug) return;
+
   try {
-    const created = await addMediaKitItem(artistSlug, newItem.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newItem.value)], { type: 'application/json' }));
+
+    if (newItem.value.type === 'Image' && selectedFile.value) {
+      formData.append('file', selectedFile.value);
+    }
+
+    const created = await addMediaKitItem(artistSlug, formData);
     mediaKitItems.value.push(created);
     showAddItemModal.value = false;
+    selectedFile.value = null;
   } catch {
     await showToast('Failed to add item');
   }
@@ -139,16 +162,36 @@ const saveNewItemHandler = async () => {
 
 const openEditItemModalHandler = (item: MediaKitItemDTO) => {
   editedItem.value = { ...item };
+  editedSelectedFile.value = null;
   showEditItemModal.value = true;
+};
+
+const onEditedFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files.length > 0) {
+    editedSelectedFile.value = target.files[0];
+    if (editedItem.value) editedItem.value.content = '';
+  } else {
+    editedSelectedFile.value = null;
+  }
 };
 
 const saveEditedItemHandler = async () => {
   if (!editedItem.value) return;
+
   try {
-    const updated = await updateMediaKitItem(editedItem.value.slug, editedItem.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(editedItem.value)], { type: 'application/json' }));
+
+    if (editedItem.value.type === 'Image' && selectedFile.value) {
+      formData.append('file', selectedFile.value);
+    }
+
+    const updated = await updateMediaKitItem(editedItem.value.slug, formData);
     const index = mediaKitItems.value.findIndex((i) => i.slug === updated.slug);
     if (index >= 0) mediaKitItems.value[index] = updated;
     showEditItemModal.value = false;
+    selectedFile.value = null;
   } catch {
     await showToast('Failed to update item');
   }
@@ -231,13 +274,11 @@ watch(
 
       <IonModal :is-open="showEditMediaKitModal" @did-dismiss="showEditMediaKitModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showEditMediaKitModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Edit MediaKit</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showEditMediaKitModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Edit MediaKit</h2>
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="editedMediaKit.title" />
@@ -264,13 +305,11 @@ watch(
 
       <IonModal :is-open="showAddItemModal" @did-dismiss="showAddItemModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showAddItemModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Add New Item</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showAddItemModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Add New Item</h2>
           <IonItem>
             <IonLabel position="stacked">Type</IonLabel>
             <IonSelect v-model="newItem.type" placeholder="Select type">
@@ -280,13 +319,26 @@ watch(
               <IonSelectOption value="Text">Text</IonSelectOption>
             </IonSelect>
           </IonItem>
+
+          <IonItem v-if="newItem.type === 'Image'">
+            <IonLabel position="stacked">Select Image</IonLabel>
+            <div class="file-upload-container">
+              <IonLabel class="file-upload-button">
+                <ion-icon :icon="cloudDownloadOutline" />
+                Choose File
+                <input type="file" @change="onFileSelected" accept="image/*" />
+              </IonLabel>
+              <span v-if="selectedFile" class="file-name">{{ selectedFile.name }}</span>
+            </div>
+          </IonItem>
+
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="newItem.title" />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Content</IonLabel>
-            <IonTextarea v-model="newItem.content" :rows="5" />
+            <IonTextarea :disabled="selectedFile !== null" v-model="newItem.content" :rows="5" />
           </IonItem>
           <IonButton expand="block" color="primary" @click="saveNewItemHandler">Add Item</IonButton>
         </IonContent>
@@ -294,13 +346,11 @@ watch(
 
       <IonModal v-if="editedItem" :is-open="showEditItemModal" @did-dismiss="showEditItemModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showEditItemModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Edit Item</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showEditItemModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Edit Item</h2>
           <IonItem>
             <IonLabel position="stacked">Type</IonLabel>
             <IonSelect v-model="editedItem.type" placeholder="Select type">
@@ -310,13 +360,26 @@ watch(
               <IonSelectOption value="Text">Text</IonSelectOption>
             </IonSelect>
           </IonItem>
+
+          <IonItem v-if="editedItem.type === 'Image'">
+            <IonLabel position="stacked">Select Image</IonLabel>
+            <div class="file-upload-container">
+              <IonLabel class="file-upload-button">
+                <ion-icon :icon="cloudDownloadOutline" />
+                Choose File
+                <input type="file" @change="onEditedFileSelected" accept="image/*" />
+              </IonLabel>
+              <span v-if="editedSelectedFile" class="file-name">{{ editedSelectedFile.name }}</span>
+            </div>
+          </IonItem>
+
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="editedItem.title" />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Content</IonLabel>
-            <IonTextarea v-model="editedItem.content" :rows="5" />
+            <IonTextarea :disabled="editedSelectedFile !== null" v-model="editedItem.content" :rows="5" />
           </IonItem>
           <IonButton expand="block" color="primary" @click="saveEditedItemHandler">Save Item</IonButton>
         </IonContent>
@@ -324,3 +387,42 @@ watch(
     </IonContent>
   </ApplicationViewport>
 </template>
+
+<style scoped>
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.file-upload-button {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: var(--ion-color-secondary);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-upload-button input[type='file'] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
+}
+</style>

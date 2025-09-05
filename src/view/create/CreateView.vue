@@ -12,9 +12,16 @@ import {
   IonLabel,
 } from '@ionic/vue';
 
-import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
+import {
+  createOutline,
+  bagAddOutline,
+  linkOutline,
+  arrowBackOutline,
+  trashOutline,
+  cloudDownloadOutline,
+} from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
-import { createProduct, CreateProductRequest } from '@/client/productClient';
+import { createProduct } from '@/client/productClient';
 import { ref, watch } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
@@ -80,13 +87,19 @@ const newPost = ref<CreatePostRequest>({
   repostCount: 0,
   commentCount: 0,
 });
+const editedPostFile = ref<File | null>(null);
 
 const publishPost = async () => {
   try {
-    await callCreatePost(newPost.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newPost.value)], { type: 'application/json' }));
+
+    if (editedPostFile.value) formData.append('file', editedPostFile.value);
+
+    await callCreatePost(formData);
     showModal.value = false;
     await router.push('/explore');
-  } catch (error) {
+  } catch {
     const toast = await toastController.create({
       message: 'Error creating post',
       duration: 2000,
@@ -97,23 +110,20 @@ const publishPost = async () => {
 };
 
 const showProductModal = ref(false);
-
-const newProduct = ref<CreateProductRequest>({
-  name: '',
-  description: '',
-  imageUrl: '',
-  category: '',
-  price: null,
-  quantity: null,
-  createdAt: new Date(),
-});
+const newProduct = ref({ name: '', description: '', category: '', price: 0, quantity: 0 });
+const editedProductFile = ref<File | null>(null);
 
 const publishProduct = async () => {
   try {
-    await createProduct(newProduct.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newProduct.value)], { type: 'application/json' }));
+
+    if (editedProductFile.value) formData.append('file', editedProductFile.value);
+
+    await createProduct(formData);
     showProductModal.value = false;
     await router.push('/marketplace');
-  } catch (error) {
+  } catch {
     const toast = await toastController.create({
       message: 'Error creating product',
       duration: 2000,
@@ -133,11 +143,8 @@ const goToMediaKit = async () => {
 
   try {
     const userPage = await getMediaKitByArtistSlug(userSlug);
-    if (userPage) {
-      await router.push(`/mediakits/${userPage.slug}`);
-      return;
-    }
-  } catch (error) {
+    if (userPage) return router.push(`/mediakits/${userPage.slug}`);
+  } catch {
     const toast = await toastController.create({
       message: 'Unable to fetch Media Kit',
       duration: 2000,
@@ -147,6 +154,16 @@ const goToMediaKit = async () => {
   }
   await router.push('/mediakits/create');
 };
+
+const onPostFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) editedPostFile.value = target.files[0];
+};
+
+const onProductFileSelected = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files && target.files[0]) editedProductFile.value = target.files[0];
+};
 </script>
 
 <template>
@@ -154,20 +171,21 @@ const goToMediaKit = async () => {
     <div class="create-container ion-padding">
       <h1 class="page-title">Create</h1>
       <p class="page-description">
-        Create your world with Soodora.
-        <br />
-        Linkpages, posts, products and exports.
-        <br />
+        Create your world with Soodora.<br />
+        Linkpages, posts, products and exports.<br />
         All from here
       </p>
+
       <ion-button @click="showModal = true" expand="block" class="go-button" color="primary" fill="solid">
         Create a Post
         <ion-icon :icon="createOutline" slot="end"></ion-icon>
       </ion-button>
+
       <ion-button @click="showProductModal = true" expand="block" class="go-button" color="primary" fill="solid">
         Create a Product
         <ion-icon :icon="bagAddOutline" slot="end"></ion-icon>
       </ion-button>
+
       <ion-button @click="goToLinkPages" expand="block" class="go-button" color="primary" fill="solid">
         {{ hasLinkPage ? 'Edit your LinkPage' : 'Create a LinkPage' }}
         <ion-icon :icon="linkOutline" slot="end"></ion-icon>
@@ -186,40 +204,34 @@ const goToMediaKit = async () => {
         <ion-content>
           <div>
             <div class="floating-header">
-              <ion-button
-                class="inline-back-button"
-                fill="clear"
-                size="large"
-                @click="showModal = false"
-                aria-label="Back">
+              <ion-button class="inline-back-button" fill="clear" size="large" @click="showModal = false">
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
               </ion-button>
               <h2 class="floating-header-title">New Post</h2>
             </div>
+
             <div id="section-content">
               <ion-item class="modal-item">
                 <ion-label position="stacked">Title</ion-label>
                 <ion-input placeholder="Add a title" v-model="newPost.title"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Content</ion-label>
                 <ion-input placeholder="Add some content" v-model="newPost.content"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
-                <div class="url-wrapper">
-                  <div class="url-label-row">
-                    <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon
-                      v-if="newPost.imageUrl"
-                      :icon="trashOutline"
-                      class="url-delete-icon"
-                      @click="newPost.imageUrl = ''" />
-                  </div>
-                  <ion-input placeholder="Add an image URL" v-model="newPost.imageUrl" />
+                <IonLabel position="stacked">Select Image</IonLabel>
+                <div class="file-upload-container">
+                  <IonLabel class="file-upload-button">
+                    <ion-icon :icon="cloudDownloadOutline" />
+                    Choose File
+                    <input type="file" @change="onPostFileSelected" accept="image/*" />
+                  </IonLabel>
+                  <span v-if="editedPostFile" class="file-name">{{ editedPostFile.name }}</span>
                 </div>
-              </ion-item>
-              <ion-item class="modal-item">
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Audio URL</ion-label>
@@ -233,8 +245,9 @@ const goToMediaKit = async () => {
                 </div>
               </ion-item>
             </div>
+
             <div class="post-actions">
-              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post</ion-button>
+              <ion-button expand="block" @click="publishPost" class="create-post">Create Post</ion-button>
             </div>
           </div>
         </ion-content>
@@ -255,28 +268,30 @@ const goToMediaKit = async () => {
               </ion-button>
               <h2 class="floating-header-title">New Product</h2>
             </div>
+
             <div id="section-content">
               <ion-item class="modal-item">
                 <ion-label position="stacked">Name</ion-label>
                 <ion-input placeholder="Add a product name" v-model="newProduct.name"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Description</ion-label>
                 <ion-input placeholder="Add a product description" v-model="newProduct.description"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
-                <div class="url-wrapper">
-                  <div class="url-label-row">
-                    <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon
-                      v-if="newProduct.imageUrl"
-                      :icon="trashOutline"
-                      class="url-delete-icon"
-                      @click="newProduct.imageUrl = ''" />
-                  </div>
-                  <ion-input placeholder="Add an image URL" v-model="newProduct.imageUrl" />
+                <IonLabel position="stacked">Select Image</IonLabel>
+                <div class="file-upload-container">
+                  <IonLabel class="file-upload-button">
+                    <ion-icon :icon="cloudDownloadOutline" />
+                    Choose File
+                    <input type="file" @change="onProductFileSelected" accept="image/*" />
+                  </IonLabel>
+                  <span v-if="editedProductFile" class="file-name">{{ editedProductFile.name }}</span>
                 </div>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Category</ion-label>
                 <ion-select interface="action-sheet" placeholder="Select a category" v-model="newProduct.category">
@@ -289,22 +304,22 @@ const goToMediaKit = async () => {
                   <ion-select-option value="Posters">Posters</ion-select-option>
                 </ion-select>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Price</ion-label>
                 <ion-input type="number" placeholder="Add a price" v-model.number="newProduct.price">
                   <div slot="end">€</div>
                 </ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Quantity</ion-label>
-                <ion-input
-                  type="number"
-                  placeholder="Add how many you’ve got in stock"
-                  v-model.number="newProduct.quantity"></ion-input>
+                <ion-input type="number" placeholder="Add stock" v-model.number="newProduct.quantity"></ion-input>
               </ion-item>
             </div>
+
             <div class="post-actions">
-              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product</ion-button>
+              <ion-button expand="block" class="post-button" @click="publishProduct">Create Product</ion-button>
             </div>
           </div>
         </ion-content>
@@ -358,19 +373,10 @@ const goToMediaKit = async () => {
   --padding-start: 0;
 }
 
-.url-wrapper {
-  margin-top: 12px;
-  width: 100%;
-}
-
-.url-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.url-delete-icon {
-  color: #db3030;
+.file-name {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
 }
 
 .create-container {
@@ -432,5 +438,42 @@ ion-button.post-button::part(native) {
   background: var(--ion-background-color);
   border-radius: 12px;
   padding: 10px 20px;
+}
+
+.file-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.file-upload-button {
+  display: inline-block;
+  padding: 8px 15px;
+  background-color: var(--ion-color-secondary);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.file-upload-button input[type='file'] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.file-name {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #555;
 }
 </style>
