@@ -20,6 +20,7 @@ import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -127,7 +128,24 @@ const goToSalesPage = async () => {
 };
 
 const goToMediaKit = async () => {
-  await router.push('/mediakits');
+  const userSlug = authStore.getAuthenticatedUserSlug;
+  if (!userSlug) return;
+
+  try {
+    const userPage = await getMediaKitByArtistSlug(userSlug);
+    if (userPage) {
+      await router.push(`/mediakits/${userPage.slug}`);
+      return;
+    }
+  } catch (error) {
+    const toast = await toastController.create({
+      message: 'Unable to fetch Media Kit',
+      duration: 2000,
+      color: 'danger',
+    });
+    await toast.present();
+  }
+  await router.push('/mediakits/create');
 };
 </script>
 
