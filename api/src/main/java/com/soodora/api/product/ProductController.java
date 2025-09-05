@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,9 +39,10 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<JsonResponse> createProduct(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreateProductRequest createProductRequest) {
+            @RequestPart("data") CreateProductRequest createProductRequest,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            service.createProduct(createProductRequest.toCommand(), user);
+            service.createProduct(createProductRequest.toCommand(), user, imageFile);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -67,12 +69,14 @@ public class ProductController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updateProduct(@PathVariable String slug,
-            @RequestBody UpdateProductRequest request) {
+    public ResponseEntity<JsonResponse> updateProduct(
+            @PathVariable String slug,
+            @RequestPart("data") UpdateProductRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             UpdateProductCommand command = request.toCommand();
 
-            service.updateProduct(command, slug);
+            service.updateProduct(command, slug, imageFile);
             return new ResponseEntity<>(ACCEPTED);
         } catch (InvalidRequestException | UnknownProductException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

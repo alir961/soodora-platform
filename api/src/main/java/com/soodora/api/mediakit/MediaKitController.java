@@ -11,6 +11,7 @@ import com.soodora.service.mediakit.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,22 +58,28 @@ public class MediaKitController implements MediaKitResource {
         mediaKitService.deleteMediaKit(slug);
     }
 
-    @PostMapping("/{artistSlug}/items")
-    public ResponseEntity<JsonResponse> addItem(@PathVariable String artistSlug,
-            @RequestBody CreateMediaKitItemRequest request) {
+    @PostMapping(value = "/{artistSlug}/items", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> addItem(
+            @PathVariable String artistSlug,
+            @RequestPart("data") CreateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            MediaKitItemDTO mediaKitItemDTO = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug);
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug,
+                    imageFile);
             return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), CREATED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
     }
 
-    @PutMapping("/items/{itemSlug}")
-    public ResponseEntity<JsonResponse> updateItem(@PathVariable String itemSlug,
-            @RequestBody UpdateMediaKitItemRequest request) {
+    @PutMapping(value = "/items/{itemSlug}", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> updateItem(
+            @PathVariable String itemSlug,
+            @RequestPart("data") UpdateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug);
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug,
+                    imageFile);
             return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), ACCEPTED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);

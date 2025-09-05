@@ -9,6 +9,7 @@ import com.soodora.service.common.InvalidRequestException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,17 +57,18 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug) {
+    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug,
+            MultipartFile imageFile) {
         try {
-            return mediaKitItemRepository.save(command, artistSlug);
+            return mediaKitItemRepository.save(command, artistSlug, imageFile);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }
     }
 
-    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug) {
+    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, MultipartFile imageFile) {
         try {
-            return mediaKitItemRepository.update(command, slug);
+            return mediaKitItemRepository.update(command, slug, imageFile);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }

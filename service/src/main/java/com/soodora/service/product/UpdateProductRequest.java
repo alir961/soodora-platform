@@ -6,7 +6,6 @@ import com.soodora.service.common.Request;
 public record UpdateProductRequest(
         String name,
         String description,
-        String imageUrl,
         String category,
         Long price,
         Long quantity) implements Request<UpdateProductCommand> {
@@ -16,7 +15,6 @@ public record UpdateProductRequest(
         return new UpdateProductCommand(
                 name,
                 description,
-                imageUrl,
                 category,
                 price,
                 quantity);

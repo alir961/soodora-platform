@@ -5,11 +5,12 @@ import com.soodora.domain.user.UserDTO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ProductRepository {
 
-    ProductDTO save(CreateProductCommand command, UserDTO user);
-    ProductDTO update(UpdateProductCommand command, String slug);
+    ProductDTO save(CreateProductCommand command, UserDTO user, MultipartFile imageFile);
+    ProductDTO update(UpdateProductCommand command, String slug, MultipartFile imageFile);
     void updateQuantity(String slug, long quantity);
     ProductDTO findBySlug(String slug);
     Page<ProductDTO> findAll(Pageable pageable);

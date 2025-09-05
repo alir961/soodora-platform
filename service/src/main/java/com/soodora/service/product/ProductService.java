@@ -8,6 +8,7 @@ import com.soodora.service.user.UnknownUserException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,10 +18,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public void createProduct(CreateProductCommand command, UserDTO user) {
+    public void createProduct(CreateProductCommand command, UserDTO user, MultipartFile file) {
         if (productRepository.isProductNameUsedByUser(command.name(), user.slug()))
             throw new ProductUnityException("Name is already used");
-        productRepository.save(command, user);
+        productRepository.save(command, user, file);
     }
 
     public Page<ProductDTO> retrieveAllProducts(Pageable pageable) {
@@ -44,9 +45,9 @@ public class ProductService {
         }
     }
 
-    public ProductDTO updateProduct(UpdateProductCommand command, String slug) {
+    public ProductDTO updateProduct(UpdateProductCommand command, String slug, MultipartFile file) {
         try {
-            return productRepository.update(command, slug);
+            return productRepository.update(command, slug, file);
         } catch (UnknownSlugException exception) {
             throw new ProductUnityException(exception.getMessage());
         }

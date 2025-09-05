@@ -8,8 +8,7 @@ public record UpdateUserRequest(
         String username,
         String firstname,
         String lastname,
-        String description,
-        String avatarUrl) implements Request<UpdateUserCommand> {
+        String description) implements Request<UpdateUserCommand> {
 
     @Override
     public UpdateUserCommand toCommand() throws InvalidRequestException {
@@ -17,8 +16,7 @@ public record UpdateUserRequest(
                 username,
                 firstname,
                 lastname,
-                description,
-                avatarUrl);
+                description);
     }
 
 }

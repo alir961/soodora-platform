@@ -21,6 +21,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -65,11 +66,14 @@ public class UserController {
     @PutMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<JsonResponse> updateUser(
+            @PathVariable String slug,
+            @RequestPart("data") UpdateUserRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             UpdateUserCommand command = request.toCommand();
 
-            userService.updateUser(command, slug);
+            userService.updateUser(command, slug, imageFile);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

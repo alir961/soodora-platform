@@ -13,6 +13,7 @@ import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,8 +26,8 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public void createPost(CreatePostCommand command, UserDTO user) {
-        postRepository.save(command, user);
+    public void createPost(CreatePostCommand command, UserDTO user, MultipartFile imageFile) {
+        postRepository.save(command, user, imageFile);
     }
 
     public void likePost(String postSlug, UserDTO user) throws UnknownPostException {

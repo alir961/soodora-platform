@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,9 +47,10 @@ public class PostController {
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> createPost(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody CreatePostRequest createPostRequest) {
+            @RequestPart("data") CreatePostRequest createPostRequest,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            postService.createPost(createPostRequest.toCommand(), user);
+            postService.createPost(createPostRequest.toCommand(), user, imageFile);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

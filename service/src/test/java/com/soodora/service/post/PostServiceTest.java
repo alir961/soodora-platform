@@ -17,6 +17,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -49,7 +50,6 @@ class PostServiceTest {
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
     private static final List<PostDTO> POST_LIST = List.of(POST_1, POST_2, POST_3);
     private static final Page<PostDTO> POSTS = new PageImpl<>(POST_LIST, PAGEABLE, POST_LIST.size());
-    private static final Page<PostDTO> POSTS_EMPTY = new PageImpl<>(List.of(), PAGEABLE, 0);
 
     @BeforeEach
     void setUp() {
@@ -59,15 +59,20 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl");
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "audioUrl");
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
-        when(postRepository.save(any(), eq(USER))).thenReturn(POST_1);
+        when(postRepository.save(any(), eq(USER), eq(file))).thenReturn(POST_1);
 
         // WHEN
-        postService.createPost(command, USER);
+        postService.createPost(command, USER, file);
 
         // THEN
-        verify(postRepository).save(any(), eq(USER));
+        verify(postRepository).save(any(), eq(USER), eq(file));
     }
 
     @Test

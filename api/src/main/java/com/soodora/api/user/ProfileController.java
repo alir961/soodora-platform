@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,11 +47,12 @@ public class ProfileController {
     @PutMapping
     public ResponseEntity<JsonResponse> updateProfile(
             @AuthenticationPrincipal UserDTO user,
-            @RequestBody UpdateUserRequest request) {
+            @RequestPart("data") UpdateUserRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             UpdateUserCommand command = request.toCommand();
 
-            userService.updateUser(command, user.slug());
+            userService.updateUser(command, user.slug(), imageFile);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

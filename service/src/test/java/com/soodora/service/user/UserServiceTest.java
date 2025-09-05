@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -117,29 +118,39 @@ class UserServiceTest {
     void updateUser_Success() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "Description", "https//soodora.com/assets/avatar.png");
+                "Description");
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
-        when(userRepository.update(updateCommand, IDENTIFIER)).thenReturn(USER);
+        when(userRepository.update(updateCommand, IDENTIFIER, file)).thenReturn(USER);
 
         // WHEN
-        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug());
+        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug(), file);
 
         // THEN
         assertEquals(USER, updatedUser);
-        verify(userRepository).update(updateCommand, IDENTIFIER);
+        verify(userRepository).update(updateCommand, IDENTIFIER, file);
     }
 
     @Test
     void updateUser_UnknownIdentifier() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "Description", "https//soodora.com/assets/avatar.png");
+                "Description");
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
-        when(userRepository.update(updateCommand, IDENTIFIER))
+        when(userRepository.update(updateCommand, IDENTIFIER, file))
                 .thenThrow(new UnknownIdentifierException("Identifier not found"));
 
         // WHEN
-        Executable executable = () -> userService.updateUser(updateCommand, USER.slug());
+        Executable executable = () -> userService.updateUser(updateCommand, USER.slug(), file);
 
         // THEN
         assertThrows(UnknownIdentifierException.class, executable);

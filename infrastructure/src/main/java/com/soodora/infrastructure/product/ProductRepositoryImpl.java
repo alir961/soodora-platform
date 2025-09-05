@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.product;
 
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.CreateProductCommand;
 import com.soodora.domain.product.ProductDTO;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,10 +32,11 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     private final ProductJpaRepository repository;
     private final ArtistJpaRepository artistRepository;
+    private final ImageStorageUploader imageStorageUploader;
 
     @Override
     @Transactional
-    public ProductDTO save(CreateProductCommand command, UserDTO user) {
+    public ProductDTO save(CreateProductCommand command, UserDTO user, MultipartFile imageFile) {
         ProductEntity entity = new ProductEntity();
         ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
@@ -41,7 +44,10 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setName(command.name());
         entity.setPrice(command.price());
         entity.setDescription(command.description());
-        entity.setImageUrl(command.imageUrl());
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = imageStorageUploader.upload(imageFile);
+            entity.setImageUrl(imageUrl);
+        }
         entity.setCategory(command.category());
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
@@ -51,7 +57,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO update(UpdateProductCommand command, String slug) {
+    public ProductDTO update(UpdateProductCommand command, String slug, MultipartFile imageFile) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.name()))
@@ -60,8 +66,10 @@ public class ProductRepositoryImpl implements ProductRepository {
             existingProduct.setDescription(command.description());
         if (isNotNullOrBlank(command.category()))
             existingProduct.setCategory(command.category());
-        if (isNotNullOrBlank(command.imageUrl()))
-            existingProduct.setImageUrl(command.imageUrl());
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = imageStorageUploader.upload(imageFile);
+            existingProduct.setImageUrl(imageUrl);
+        }
         if (command.price() != 0)
             existingProduct.setPrice(command.price());
         if (command.quantity() != 0)

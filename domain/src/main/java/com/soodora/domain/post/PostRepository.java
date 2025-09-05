@@ -8,10 +8,11 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface PostRepository {
 
-    PostDTO save(CreatePostCommand command, UserDTO user);
+    PostDTO save(CreatePostCommand command, UserDTO user, MultipartFile imageFile);
     PostDTO find(String postSlug);
     Page<PostDTO> findAll(Pageable pageable);
     void likePost(String postSlug, UserDTO user);

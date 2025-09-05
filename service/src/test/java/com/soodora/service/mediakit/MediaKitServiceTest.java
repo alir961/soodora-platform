@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.List.of;
 import static org.junit.jupiter.api.Assertions.*;
@@ -113,14 +114,19 @@ class MediaKitServiceTest {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        when(mediaKitItemRepository.save(command, "artist-slug")).thenReturn(expected);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+        when(mediaKitItemRepository.save(command, "artist-slug", file)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug");
+        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug", file);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).save(command, "artist-slug");
+        verify(mediaKitItemRepository).save(command, "artist-slug", file);
     }
 
     @Test
@@ -128,14 +134,19 @@ class MediaKitServiceTest {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        when(mediaKitItemRepository.update(command, "item-slug")).thenReturn(expected);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+        when(mediaKitItemRepository.update(command, "item-slug", file)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug");
+        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug", file);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).update(command, "item-slug");
+        verify(mediaKitItemRepository).update(command, "item-slug", file);
     }
 
     @Test

@@ -18,6 +18,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -56,19 +57,30 @@ class ProductControllerIT {
         CreateProductRequest request = new CreateProductRequest(
                 "Product Name",
                 "Description",
-                "image-url",
                 "category",
                 100,
                 10);
 
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
-        doNothing().when(productService).createProduct(any(), eq(ARTIST_USER));
+        doNothing().when(productService).createProduct(any(), eq(ARTIST_USER), any());
 
         // WHEN & THEN
-        mockMvc.perform(post("/products")
-                .with(user(new UserPrincipal(ARTIST_USER)))
-                .contentType(APPLICATION_JSON)
-                .content(asJsonString(request)))
+        mockMvc.perform(multipart("/products")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
 
@@ -78,14 +90,18 @@ class ProductControllerIT {
         CreateProductRequest request = new CreateProductRequest(
                 null,
                 null,
-                "image-url",
                 "category",
                 0,
                 0);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(InvalidRequestException.class).when(productService)
-                .createProduct(any(), eq(ARTIST_USER));
+                .createProduct(any(), eq(ARTIST_USER), eq(file));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
@@ -101,16 +117,20 @@ class ProductControllerIT {
         CreateProductRequest request = new CreateProductRequest(
                 "Product Name",
                 "Description",
-                "image-url",
                 "category",
                 100,
                 10);
 
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
         // WHEN & THEN
-        mockMvc.perform(post("/products")
-                .with(user(new UserPrincipal(USER)))
-                .contentType(APPLICATION_JSON)
-                .content(asJsonString(request)))
+        mockMvc.perform(multipart("/products")
+                .file(dataPart)
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 
@@ -148,18 +168,33 @@ class ProductControllerIT {
         UpdateProductRequest request = new UpdateProductRequest(
                 "Updated Product Name",
                 "Updated Description",
-                "image",
                 "Updated Category",
                 10L,
                 20L);
 
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "updated-image.jpg",
+                "image/jpeg",
+                "dummy updated image".getBytes());
+
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(put("/products/productSlug1")
-                .contentType("application/json")
-                .content(asJsonString(request))
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(multipart("/products/productSlug1")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER)))
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                }))
                 .andExpect(status().isAccepted());
     }
 
@@ -170,18 +205,34 @@ class ProductControllerIT {
                 "",
                 "",
                 "",
-                "",
                 0L,
                 0L);
 
+        MockMultipartFile dataPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(updateProductRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))
-                .when(productService).updateProduct(any(), eq("productSlug1"));
+                .when(productService).updateProduct(any(), eq("productSlug1"), eq(filePart));
 
-        mockMvc.perform(put("/products/productSlug1")
-                .contentType("application/json")
-                .content(asJsonString(updateProductRequest))
-                .with(user(new UserPrincipal(USER))))
+        // WHEN & THEN
+        mockMvc.perform(multipart("/products/productSlug1")
+                .file(dataPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER)))
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                }))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid request"));
     }

@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -78,13 +79,21 @@ class ProfileControllerIT {
                 "newUsername",
                 "firstname",
                 "lastname",
-                "description",
-                "https//soodora.com/assets/avatar.png");
+                "description");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(updateUserRequest).getBytes());
 
         // WHEN & THEN
-        mockMvc.perform(put("/profile")
-                .contentType("application/json")
-                .content(asJsonString(updateUserRequest))
+        mockMvc.perform(multipart("/profile")
+                .file(jsonPart)
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }) // multipart est POST par défaut
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -92,15 +101,31 @@ class ProfileControllerIT {
     @Test
     void givenInvalidRequest_whenUpdateUser_thenBadRequest() throws Exception {
         // GIVEN
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(updateUserRequest).getBytes());
 
-        doThrow(new InvalidRequestException("Invalid Request")).when(userService)
-                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()));
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+
+        doThrow(new InvalidRequestException("Invalid Request"))
+                .when(userService)
+                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()), eq(filePart));
 
         // WHEN & THEN
-        mockMvc.perform(put("/profile")
-                .contentType("application/json")
-                .content(asJsonString(updateUserRequest))
+        mockMvc.perform(multipart("/profile")
+                .file(jsonPart)
+                .file(filePart)
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                })
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(jsonPath("$.reason").value("Invalid Request"))
                 .andExpect(status().isBadRequest());

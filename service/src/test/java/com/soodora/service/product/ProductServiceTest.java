@@ -13,6 +13,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
+import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -38,7 +39,7 @@ class ProductServiceTest {
     private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final Page<ProductDTO> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
-            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.imageUrl(), PRODUCT_1.category(), PRODUCT_1.price(),
+            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.category(), PRODUCT_1.price(),
             PRODUCT_1.quantity());
 
     @BeforeEach
@@ -106,17 +107,20 @@ class ProductServiceTest {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
                 "Updated Name",
                 "Updated Description",
-                "newImageUrl",
                 "newCategory",
                 150L,
                 5L);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+        when(productRepository.update(updateCommand, SLUG_1, file)).thenReturn(PRODUCT_1);
 
-        when(productRepository.update(updateCommand, SLUG_1)).thenReturn(PRODUCT_1);
-
-        ProductDTO updatedProduct = productService.updateProduct(updateCommand, SLUG_1);
+        ProductDTO updatedProduct = productService.updateProduct(updateCommand, SLUG_1, file);
 
         assertEquals(PRODUCT_1, updatedProduct);
-        verify(productRepository).update(any(UpdateProductCommand.class), eq(SLUG_1));
+        verify(productRepository).update(any(UpdateProductCommand.class), eq(SLUG_1), eq(file));
     }
 
     @Test
@@ -124,16 +128,18 @@ class ProductServiceTest {
         UpdateProductCommand updateCommand = new UpdateProductCommand(
                 "Updated Name",
                 "Updated Description",
-                "newImageUrl",
                 "newCategory",
                 150L,
                 5L);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+        when(productRepository.update(updateCommand, SLUG_1, file))
+                .thenThrow(new UnknownSlugException("Slug not found"));
 
-        when(productRepository.update(updateCommand, SLUG_1)).thenThrow(new UnknownSlugException("Slug not found"));
-
-        assertThrows(ProductUnityException.class, () -> {
-            productService.updateProduct(updateCommand, SLUG_1);
-        });
+        assertThrows(ProductUnityException.class, () -> productService.updateProduct(updateCommand, SLUG_1, file));
     }
 
     @Test
@@ -165,21 +171,31 @@ class ProductServiceTest {
     void createProduct_Success() {
         // GIVEN
         when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.slug())).thenReturn(false);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         // WHEN
-        Executable executable = () -> productService.createProduct(COMMAND, USER);
+        Executable executable = () -> productService.createProduct(COMMAND, USER, file);
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository).save(any(), eq(USER));
+        verify(productRepository).save(any(), eq(USER), eq(file));
     }
 
     @Test
     void createProduct_NameAlreadyUsed() {
         when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.slug())).thenReturn(true);
+        MockMultipartFile file = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         // WHEN
-        Executable executable = () -> productService.createProduct(COMMAND, USER);
+        Executable executable = () -> productService.createProduct(COMMAND, USER, file);
 
         // THEN
         assertThrows(ProductUnityException.class, executable);

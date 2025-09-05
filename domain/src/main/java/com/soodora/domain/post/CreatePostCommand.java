@@ -1,4 +1,4 @@
 package com.soodora.domain.post;
 
-public record CreatePostCommand(String title, String content, String imageUrl, String audioUrl) {
+public record CreatePostCommand(String title, String content, String audioUrl) {
 }

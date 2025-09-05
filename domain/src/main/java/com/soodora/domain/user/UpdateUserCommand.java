@@ -4,6 +4,5 @@ public record UpdateUserCommand(
         String username,
         String firstname,
         String lastname,
-        String description,
-        String avatarUrl) {
+        String description) {
 }

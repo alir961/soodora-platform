@@ -1,5 +1,5 @@
 package com.soodora.domain.product;
 
-public record UpdateProductCommand(String name, String description, String imageUrl, String category, long price,
+public record UpdateProductCommand(String name, String description, String category, long price,
         long quantity) {
 }
