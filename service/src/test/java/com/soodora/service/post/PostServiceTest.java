@@ -1,5 +1,6 @@
 package com.soodora.service.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
@@ -49,7 +50,6 @@ class PostServiceTest {
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
     private static final List<PostDTO> POST_LIST = List.of(POST_1, POST_2, POST_3);
     private static final Page<PostDTO> POSTS = new PageImpl<>(POST_LIST, PAGEABLE, POST_LIST.size());
-    private static final Page<PostDTO> POSTS_EMPTY = new PageImpl<>(List.of(), PAGEABLE, 0);
 
     @BeforeEach
     void setUp() {
@@ -59,15 +59,19 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "imageUrl", "audioUrl");
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "audioUrl");
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
 
-        when(postRepository.save(any(), eq(USER))).thenReturn(POST_1);
+        when(postRepository.save(any(), eq(USER), eq(fileData))).thenReturn(POST_1);
 
         // WHEN
-        postService.createPost(command, USER);
+        postService.createPost(command, USER, fileData);
 
         // THEN
-        verify(postRepository).save(any(), eq(USER));
+        verify(postRepository).save(any(), eq(USER), eq(fileData));
     }
 
     @Test

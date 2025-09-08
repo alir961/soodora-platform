@@ -1,5 +1,6 @@
 package com.soodora.api.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
@@ -20,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -68,15 +70,26 @@ class PostControllerIT {
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "Post 1",
                 "Content",
-                "imageUrl",
                 "audioUrl");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
 
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(createPostRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test.jpg",
+                "image/jpeg",
+                "fake image content".getBytes());
+
         // WHEN & THEN
-        mockMvc.perform(post("/posts")
-                .contentType("application/json")
-                .content(asJsonString(createPostRequest))
+        mockMvc.perform(multipart("/posts")
+                .file(jsonPart)
+                .file(filePart)
                 .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
@@ -87,12 +100,15 @@ class PostControllerIT {
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "",
                 "Description",
-                "imageUrl",
                 "audioUrl");
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)
-                .createPost(any(CreatePostCommand.class), any(UserDTO.class));
+                .createPost(any(CreatePostCommand.class), any(UserDTO.class), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(post("/posts")

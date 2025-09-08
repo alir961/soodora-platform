@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,8 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static com.soodora.api.JsonStringify.asJsonString;
@@ -69,13 +69,27 @@ class MediaKitControllerIT {
 
     @Test
     void shouldAddMediaKitItem() throws Exception {
+        // GIVEN
         CreateMediaKitItemRequest request = new CreateMediaKitItemRequest("image", "Title",
                 "https://example.com/img.jpg");
 
-        mockMvc.perform(post("/mediakits/artist-slug/items")
-                .with(user(new UserPrincipal(USER)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test.jpg",
+                "image/jpeg",
+                "fake image content".getBytes());
+
+        // WHEN + THEN
+        mockMvc.perform(multipart("/mediakits/artist-slug/items")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isCreated());
     }
 

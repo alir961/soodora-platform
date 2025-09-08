@@ -1,5 +1,6 @@
 package com.soodora.service.user;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostRepository;
@@ -53,9 +54,9 @@ public class UserService implements UserDetailsService {
         return userRepository.isUsed(identifier);
     }
 
-    public UserDTO updateUser(UpdateUserCommand command, String slug) {
+    public UserDTO updateUser(UpdateUserCommand command, String slug, FileData fileData) {
         try {
-            return userRepository.update(command, createFromSlug(slug));
+            return userRepository.update(command, createFromSlug(slug), fileData);
         } catch (UnknownSlugException exception) {
             throw new UserUnityException(exception.getMessage());
         }

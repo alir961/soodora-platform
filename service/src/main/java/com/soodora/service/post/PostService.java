@@ -1,5 +1,6 @@
 package com.soodora.service.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
@@ -25,8 +26,8 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public void createPost(CreatePostCommand command, UserDTO user) {
-        postRepository.save(command, user);
+    public void createPost(CreatePostCommand command, UserDTO user, FileData fileData) {
+        postRepository.save(command, user, fileData);
     }
 
     public void likePost(String postSlug, UserDTO user) throws UnknownPostException {

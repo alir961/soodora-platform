@@ -1,5 +1,6 @@
 package com.soodora.service.mediakit;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
@@ -56,17 +57,17 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug) {
+    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
         try {
-            return mediaKitItemRepository.save(command, artistSlug);
+            return mediaKitItemRepository.save(command, artistSlug, fileData);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }
     }
 
-    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug) {
+    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
         try {
-            return mediaKitItemRepository.update(command, slug);
+            return mediaKitItemRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }

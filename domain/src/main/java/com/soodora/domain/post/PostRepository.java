@@ -1,5 +1,6 @@
 package com.soodora.domain.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
 
@@ -11,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface PostRepository {
 
-    PostDTO save(CreatePostCommand command, UserDTO user);
+    PostDTO save(CreatePostCommand command, UserDTO user, FileData fileData);
     PostDTO find(String postSlug);
     Page<PostDTO> findAll(Pageable pageable);
     void likePost(String postSlug, UserDTO user);

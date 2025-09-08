@@ -19,8 +19,6 @@ public record CreateMediaKitItemRequest(
             throw new InvalidRequestException("type is not valid");
         if (title == null || title.isEmpty())
             throw new InvalidRequestException("Title is not valid");
-        if (content == null || content.isEmpty())
-            throw new InvalidRequestException("Content is not valid");
 
         return new CreateMediaKitItemCommand(type.trim(), title.trim(), content.trim());
     }

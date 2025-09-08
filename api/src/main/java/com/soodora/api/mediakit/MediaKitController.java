@@ -2,15 +2,18 @@ package com.soodora.api.mediakit;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.mediakit.*;
+import com.soodora.service.shared.FileDataService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,6 +28,7 @@ import static org.springframework.http.ResponseEntity.ok;
 public class MediaKitController implements MediaKitResource {
 
     private final MediaKitService mediaKitService;
+    private final FileDataService fileDataService;
 
     @PostMapping
     public ResponseEntity<JsonResponse> createMediaKit(
@@ -57,22 +61,32 @@ public class MediaKitController implements MediaKitResource {
         mediaKitService.deleteMediaKit(slug);
     }
 
-    @PostMapping("/{artistSlug}/items")
-    public ResponseEntity<JsonResponse> addItem(@PathVariable String artistSlug,
-            @RequestBody CreateMediaKitItemRequest request) {
+    @PostMapping(value = "/{artistSlug}/items", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> addItem(
+            @PathVariable String artistSlug,
+            @RequestPart("data") CreateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            MediaKitItemDTO mediaKitItemDTO = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug);
+            FileData fileData = fileDataService.toFileData(imageFile);
+
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug,
+                    fileData);
             return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), CREATED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
     }
 
-    @PutMapping("/items/{itemSlug}")
-    public ResponseEntity<JsonResponse> updateItem(@PathVariable String itemSlug,
-            @RequestBody UpdateMediaKitItemRequest request) {
+    @PutMapping(value = "/items/{itemSlug}", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> updateItem(
+            @PathVariable String itemSlug,
+            @RequestPart("data") UpdateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug);
+            FileData fileData = fileDataService.toFileData(imageFile);
+
+            MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug,
+                    fileData);
             return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), ACCEPTED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);

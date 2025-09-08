@@ -1,5 +1,7 @@
 package com.soodora.infrastructure.mediakititem;
 
+import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
@@ -25,17 +27,25 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
 
     private final MediaKitItemJpaRepository repository;
     private final MediaKitJpaRepository mediaKitRepository;
+    private final ImageStorageUploader imageStorageUploader;
 
     @Override
     @Transactional
-    public MediaKitItemDTO save(CreateMediaKitItemCommand command, String artistSlug) {
+    public MediaKitItemDTO save(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
         MediaKitEntity mediaKit = mediaKitRepository.findByArtistUserSlug(artistSlug)
                 .orElseThrow(() -> new UnknownSlugException("Media Kit not found for artist with slug #" + artistSlug));
         MediaKitItemEntity mediaKitItem = new MediaKitItemEntity();
 
         mediaKitItem.setTitle(command.title());
         mediaKitItem.setType(command.type());
-        mediaKitItem.setContent(command.content());
+
+        if ("IMAGE".equalsIgnoreCase(command.type()) && fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
+            mediaKitItem.setContent(imageUrl);
+        } else {
+            mediaKitItem.setContent(command.content());
+        }
+
         mediaKitItem.setSlug(generateUniqueSlug());
         mediaKitItem.setMediaKit(mediaKit);
 
@@ -46,7 +56,7 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
 
     @Override
     @Transactional
-    public MediaKitItemDTO update(UpdateMediaKitItemCommand command, String slug) {
+    public MediaKitItemDTO update(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
         MediaKitItemEntity existingMediaKitItem = findMediaKitItemBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
@@ -55,6 +65,12 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
             existingMediaKitItem.setType(command.type());
         if (isNotNullOrBlank(command.content()))
             existingMediaKitItem.setContent(command.content());
+        if ("IMAGE".equalsIgnoreCase(command.type()) && fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
+            existingMediaKitItem.setContent(imageUrl);
+        } else {
+            existingMediaKitItem.setContent(command.content());
+        }
         return repository.save(existingMediaKitItem).toDTO();
     }
 

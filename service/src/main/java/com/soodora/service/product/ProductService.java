@@ -1,5 +1,6 @@
 package com.soodora.service.product;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
 import com.soodora.domain.user.UserDTO;
@@ -17,10 +18,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public void createProduct(CreateProductCommand command, UserDTO user) {
+    public void createProduct(CreateProductCommand command, UserDTO user, FileData fileData) {
         if (productRepository.isProductNameUsedByUser(command.name(), user.slug()))
             throw new ProductUnityException("Name is already used");
-        productRepository.save(command, user);
+        productRepository.save(command, user, fileData);
     }
 
     public Page<ProductDTO> retrieveAllProducts(Pageable pageable) {
@@ -44,9 +45,9 @@ public class ProductService {
         }
     }
 
-    public ProductDTO updateProduct(UpdateProductCommand command, String slug) {
+    public ProductDTO updateProduct(UpdateProductCommand command, String slug, FileData fileData) {
         try {
-            return productRepository.update(command, slug);
+            return productRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {
             throw new ProductUnityException(exception.getMessage());
         }

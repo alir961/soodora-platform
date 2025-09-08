@@ -1,5 +1,6 @@
 package com.soodora.service.mediakit;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
 
@@ -113,14 +114,18 @@ class MediaKitServiceTest {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        when(mediaKitItemRepository.save(command, "artist-slug")).thenReturn(expected);
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
+        when(mediaKitItemRepository.save(command, "artist-slug", fileData)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug");
+        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug", fileData);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).save(command, "artist-slug");
+        verify(mediaKitItemRepository).save(command, "artist-slug", fileData);
     }
 
     @Test
@@ -128,14 +133,18 @@ class MediaKitServiceTest {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        when(mediaKitItemRepository.update(command, "item-slug")).thenReturn(expected);
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
+        when(mediaKitItemRepository.update(command, "item-slug", fileData)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug");
+        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug", fileData);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).update(command, "item-slug");
+        verify(mediaKitItemRepository).update(command, "item-slug", fileData);
     }
 
     @Test

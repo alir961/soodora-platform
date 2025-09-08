@@ -2,13 +2,14 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.PublicUserDTO;
-import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
+import com.soodora.service.shared.FileDataService;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
@@ -21,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,6 +41,7 @@ import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 public class UserController {
 
     private final UserService userService;
+    private final FileDataService fileDataService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -65,11 +68,14 @@ public class UserController {
     @PutMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<JsonResponse> updateUser(@PathVariable String slug, @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<JsonResponse> updateUser(
+            @PathVariable String slug,
+            @RequestPart("data") UpdateUserRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            UpdateUserCommand command = request.toCommand();
+            FileData fileData = fileDataService.toFileData(imageFile);
 
-            userService.updateUser(command, slug);
+            userService.updateUser(request.toCommand(), slug, fileData);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

@@ -7,7 +7,6 @@ import com.soodora.service.common.Request;
 public record CreatePostRequest(
         String title,
         String content,
-        String imageUrl,
         String audioUrl)
         implements
             Request<CreatePostCommand> {
@@ -19,7 +18,7 @@ public record CreatePostRequest(
         if (content == null || content.isEmpty())
             throw new InvalidRequestException("Content is not valid");
 
-        return new CreatePostCommand(title.trim(), content.trim(), imageUrl, audioUrl);
+        return new CreatePostCommand(title.trim(), content.trim(), audioUrl);
     }
 
 }

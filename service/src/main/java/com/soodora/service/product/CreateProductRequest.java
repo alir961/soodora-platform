@@ -7,7 +7,6 @@ import com.soodora.service.common.Request;
 public record CreateProductRequest(
         String name,
         String description,
-        String imageUrl,
         String category,
         long price,
         long quantity) implements Request<CreateProductCommand> {
@@ -23,7 +22,7 @@ public record CreateProductRequest(
         if (quantity == 0)
             throw new InvalidRequestException("Quantity is not valid");
 
-        return new CreateProductCommand(name.trim(), description.trim(), imageUrl, category, price, quantity);
+        return new CreateProductCommand(name.trim(), description.trim(), category, price, quantity);
     }
 
 }

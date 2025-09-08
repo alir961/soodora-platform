@@ -1,6 +1,8 @@
 package com.soodora.infrastructure.user;
 
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
@@ -29,12 +31,13 @@ class UserRepositoryImplTest {
     private UserJpaRepository userJpaRepository;
     private UserRepositoryImpl userRepository;
     private UserEntity validUser;
+    private ImageStorageUploader imageStorageUploader;
 
     @BeforeEach
     void setUp() {
         userJpaRepository = mock(UserJpaRepository.class);
         ArtistJpaRepository artistJpaRepository = mock(ArtistJpaRepository.class);
-        userRepository = new UserRepositoryImpl(userJpaRepository, artistJpaRepository);
+        userRepository = new UserRepositoryImpl(userJpaRepository, artistJpaRepository, imageStorageUploader);
         validUser = UserEntityFactory.buildDefaultUserEntity();
     }
 
@@ -55,13 +58,17 @@ class UserRepositoryImplTest {
     @Test
     void givenValidUpdateCommand_whenUpdate_thenUserIsUpdated() {
         // GIVEN
-        UpdateUserCommand command = new UpdateUserCommand("newUsername", null, "newLastname", "", null);
+        UpdateUserCommand command = new UpdateUserCommand("newUsername", null, "newLastname", "");
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
 
         when(userJpaRepository.findBySlug(validUser.getSlug())).thenReturn(Optional.of(validUser));
         when(userJpaRepository.save(any(UserEntity.class))).thenReturn(validUser);
 
         // WHEN
-        UserDTO result = userRepository.update(command, createFromSlug(validUser.getSlug()));
+        UserDTO result = userRepository.update(command, createFromSlug(validUser.getSlug()), eq(fileData));
 
         // THEN
         assertNotNull(result);

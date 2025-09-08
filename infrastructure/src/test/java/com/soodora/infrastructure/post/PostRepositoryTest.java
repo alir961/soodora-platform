@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.post;
 
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.infrastructure.artist.ArtistEntity;
@@ -49,12 +50,15 @@ class PostRepositoryTest {
     @Mock
     private CommentJpaRepository commentJpaRepository;
 
+    @Mock
+    private ImageStorageUploader imageStorageUploader;
+
     private PostRepository postRepository;
 
     @BeforeEach
     void setUp() {
         postRepository = new PostRepositoryImpl(userJpaRepository, postJpaRepository, commentJpaRepository,
-                artistJpaRepository);
+                artistJpaRepository, imageStorageUploader);
 
         when(userJpaRepository.findBySlug(currentUser.getSlug())).thenReturn(Optional.of(currentUser));
     }

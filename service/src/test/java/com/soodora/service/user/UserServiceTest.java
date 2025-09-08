@@ -1,5 +1,6 @@
 package com.soodora.service.user;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
@@ -117,29 +118,37 @@ class UserServiceTest {
     void updateUser_Success() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "Description", "https//soodora.com/assets/avatar.png");
+                "Description");
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
 
-        when(userRepository.update(updateCommand, IDENTIFIER)).thenReturn(USER);
+        when(userRepository.update(updateCommand, IDENTIFIER, fileData)).thenReturn(USER);
 
         // WHEN
-        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug());
+        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug(), fileData);
 
         // THEN
         assertEquals(USER, updatedUser);
-        verify(userRepository).update(updateCommand, IDENTIFIER);
+        verify(userRepository).update(updateCommand, IDENTIFIER, fileData);
     }
 
     @Test
     void updateUser_UnknownIdentifier() {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
-                "Description", "https//soodora.com/assets/avatar.png");
+                "Description");
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
+                "test-image.jpg",
+                "image/jpeg");
 
-        when(userRepository.update(updateCommand, IDENTIFIER))
+        when(userRepository.update(updateCommand, IDENTIFIER, fileData))
                 .thenThrow(new UnknownIdentifierException("Identifier not found"));
 
         // WHEN
-        Executable executable = () -> userService.updateUser(updateCommand, USER.slug());
+        Executable executable = () -> userService.updateUser(updateCommand, USER.slug(), fileData);
 
         // THEN
         assertThrows(UnknownIdentifierException.class, executable);

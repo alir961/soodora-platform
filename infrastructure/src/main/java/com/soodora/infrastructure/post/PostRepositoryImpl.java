@@ -1,5 +1,7 @@
 package com.soodora.infrastructure.post;
 
+import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
@@ -37,16 +39,20 @@ public class PostRepositoryImpl implements PostRepository {
     private final PostJpaRepository postRepository;
     private final CommentJpaRepository commentRepository;
     private final ArtistJpaRepository artistsRepository;
+    private final ImageStorageUploader imageStorageUploader;
 
     @Override
     @Transactional
-    public PostDTO save(CreatePostCommand command, UserDTO user) {
+    public PostDTO save(CreatePostCommand command, UserDTO user, FileData fileData) {
         PostEntity entity = new PostEntity();
         ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.slug());
 
         entity.setTitle(command.title());
         entity.setContent(command.content());
-        entity.setImageUrl(command.imageUrl());
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
+            entity.setImageUrl(imageUrl);
+        }
         entity.setAudioUrl(command.audioUrl());
         entity.setSlug(generateUniqueSlug());
         entity.setArtist(artistEntity);
