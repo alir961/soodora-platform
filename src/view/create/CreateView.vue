@@ -20,6 +20,7 @@ import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -125,6 +126,27 @@ const publishProduct = async () => {
 const goToSalesPage = async () => {
   await router.push('/marketplace/mysales');
 };
+
+const goToMediaKit = async () => {
+  const userSlug = authStore.getAuthenticatedUserSlug;
+  if (!userSlug) return;
+
+  try {
+    const userPage = await getMediaKitByArtistSlug(userSlug);
+    if (userPage) {
+      await router.push(`/mediakits/${userPage.slug}`);
+      return;
+    }
+  } catch (error) {
+    const toast = await toastController.create({
+      message: 'Unable to fetch Media Kit',
+      duration: 2000,
+      color: 'danger',
+    });
+    await toast.present();
+  }
+  await router.push('/mediakits/create');
+};
 </script>
 
 <template>
@@ -153,6 +175,11 @@ const goToSalesPage = async () => {
 
       <ion-button expand="block" class="go-button" color="secondary" fill="solid" @click="goToSalesPage">
         My Sales
+      </ion-button>
+
+      <ion-button @click="goToMediaKit" expand="block" class="go-button" color="primary" fill="solid">
+        Create MediaKit
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
       </ion-button>
 
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
