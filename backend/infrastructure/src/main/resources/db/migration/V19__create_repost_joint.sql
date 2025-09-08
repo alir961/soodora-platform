@@ -1,0 +1,9 @@
+CREATE TABLE posts_reposts
+(
+    post_id UUID NOT NULL,
+    user_id UUID NOT NULL
+);
+
+ALTER TABLE posts_reposts
+    ADD CONSTRAINT FK_POSTS_REPOSTS_ON_POST FOREIGN KEY (post_id) REFERENCES posts (id),
+    ADD CONSTRAINT FK_POSTS_REPOSTS_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
