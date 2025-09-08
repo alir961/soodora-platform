@@ -9,7 +9,11 @@ interface ProductPage {
 }
 
 async function createProduct(product: FormData): Promise<void> {
-  return axios.post('/products', product, { headers: await getAuthorizedHeader() });
+  try {
+    await axios.post('/products', product, { headers: await getAuthorizedHeader() });
+  } catch (error) {
+    if (axios.isAxiosError(error)) throw new Error(error.response?.data?.reason);
+  }
 }
 
 async function callSearchProducts(params: ProductSearchParams): Promise<ProductPage> {

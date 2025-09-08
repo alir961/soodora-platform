@@ -5,7 +5,6 @@ import {
   IonContent,
   IonItem,
   IonInput,
-  toastController,
   IonIcon,
   IonSelect,
   IonSelectOption,
@@ -28,6 +27,7 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
+import { showToast } from '@/utils';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -89,7 +89,14 @@ const newPost = ref<CreatePostRequest>({
 });
 const editedPostFile = ref<File | null>(null);
 
+const isValidAudioUrl = (url: string) => /\.mp3$/i.test(url);
+
 const publishPost = async () => {
+  if (newPost.value.audioUrl && !isValidAudioUrl(newPost.value.audioUrl)) {
+    await showToast('Only mp3 file URL are accepted', 'danger');
+    return;
+  }
+
   try {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(newPost.value)], { type: 'application/json' }));
@@ -98,14 +105,12 @@ const publishPost = async () => {
 
     await callCreatePost(formData);
     showModal.value = false;
+    await showToast('Succeed to publish post.');
     await router.push('/explore');
-  } catch {
-    const toast = await toastController.create({
-      message: 'Error creating post',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+  } catch (error: unknown) {
+    const message =
+      'Failed to create post, check all the form fields. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -123,13 +128,11 @@ const publishProduct = async () => {
     await createProduct(formData);
     showProductModal.value = false;
     await router.push('/marketplace');
-  } catch {
-    const toast = await toastController.create({
-      message: 'Error creating product',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+    await showToast('Succeed to publish product.');
+  } catch (error: unknown) {
+    const message =
+      'Failed to create product, check all the form fields. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -144,13 +147,10 @@ const goToMediaKit = async () => {
   try {
     const userPage = await getMediaKitByArtistSlug(userSlug);
     if (userPage) return router.push(`/mediakits/${userPage.slug}`);
-  } catch {
-    const toast = await toastController.create({
-      message: 'Unable to fetch Media Kit',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+  } catch (error: unknown) {
+    const message =
+      'Unable to fetch Media Kit, redirecting to creation form. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'warning');
   }
   await router.push('/mediakits/create');
 };

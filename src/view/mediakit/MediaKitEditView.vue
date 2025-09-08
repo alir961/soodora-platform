@@ -11,7 +11,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonTextarea,
-  toastController,
 } from '@ionic/vue';
 import { addOutline, arrowBackOutline, cloudDownloadOutline, trashOutline } from 'ionicons/icons';
 import { onMounted, ref, watch } from 'vue';
@@ -29,6 +28,7 @@ import {
 import { useAuthStore } from '@/store/reactiveStorage';
 import type { MediaKitDTO, MediaKitItemDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { showToast } from '@/utils';
 
 const route = useRoute();
 const router = useRouter();
@@ -59,19 +59,16 @@ const selectedFile = ref<File | null>(null);
 const editedItem = ref<MediaKitItemDTO | null>(null);
 const editedSelectedFile = ref<File | null>(null);
 
-const showToast = async (message: string, color: 'danger' | 'success' = 'danger') => {
-  const toast = await toastController.create({ message, duration: 2000, color });
-  await toast.present();
-};
-
 async function fetchMediaKit(slugToLoad: string) {
   isLoading.value = true;
   try {
     const mk = await getMediaKitBySlug(slugToLoad);
     mediaKit.value = mk;
     mediaKitItems.value = mk.items || [];
-  } catch {
-    await showToast('Failed to load MediaKit');
+    await showToast('Succeed to load MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to load MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
   }
@@ -89,8 +86,10 @@ const saveEditedMediaKit = async () => {
     mediaKit.value = await updateMediaKit(mediaKit.value.slug, editedMediaKit.value);
     showEditMediaKitModal.value = false;
     await router.push(`/mediakits/${mediaKit.value.slug}`);
-  } catch {
-    await showToast('Failed to save MediaKit');
+    await showToast('Succeed to save MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to save MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -102,8 +101,10 @@ const removeMediaKitHandler = async () => {
     mediaKitItems.value = [];
     editedItem.value = null;
     await router.push('/create');
-  } catch {
-    await showToast('Failed to delete MediaKit');
+    await showToast('Succeed to delete MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to delete MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -118,8 +119,10 @@ const downloadPdfHandler = async () => {
     });
     link.click();
     URL.revokeObjectURL(url);
-  } catch {
-    await showToast('Failed to download PDF');
+    await showToast('Succeed to download PDF');
+  } catch (error: unknown) {
+    const message = 'Failed to download PDF. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -155,8 +158,10 @@ const saveNewItemHandler = async () => {
     mediaKitItems.value.push(created);
     showAddItemModal.value = false;
     selectedFile.value = null;
-  } catch {
-    await showToast('Failed to add item');
+    await showToast('Succeed to add item');
+  } catch (error: unknown) {
+    const message = 'Failed to add item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -192,8 +197,10 @@ const saveEditedItemHandler = async () => {
     if (index >= 0) mediaKitItems.value[index] = updated;
     showEditItemModal.value = false;
     selectedFile.value = null;
-  } catch {
-    await showToast('Failed to update item');
+    await showToast('Succeed to update item');
+  } catch (error: unknown) {
+    const message = 'Failed to update item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -201,8 +208,10 @@ const removeItemHandler = async (slug: string) => {
   try {
     await deleteMediaKitItem(slug);
     mediaKitItems.value = mediaKitItems.value.filter((i) => i.slug !== slug);
-  } catch {
-    await showToast('Failed to delete item');
+    await showToast('Succeed to delete item');
+  } catch (error: unknown) {
+    const message = 'Failed to delete item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -214,8 +223,9 @@ onMounted(async () => {
     try {
       const existing = artistSlug ? await getMediaKitByArtistSlug(artistSlug) : null;
       if (existing) await router.replace(`/mediakits/${existing.slug}`);
-    } catch {
-      await showToast('Redirection to MediaKit failed');
+    } catch (error: unknown) {
+      const message = 'Redirection to MediaKit failed. ' + (error instanceof Error ? error.message : '');
+      await showToast(message, 'danger');
     }
   }
 });

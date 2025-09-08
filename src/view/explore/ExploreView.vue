@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { ref, Ref } from 'vue';
-import {
-  toastController,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
-  IonRow,
-  IonPage,
-  onIonViewWillEnter,
-} from '@ionic/vue';
+import { IonInfiniteScroll, IonInfiniteScrollContent, IonRow, IonPage, onIonViewWillEnter } from '@ionic/vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Swiper as SwiperClass } from 'swiper';
 import 'swiper/css';
@@ -15,6 +8,7 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { callRetrieveFollowingPosts, callRetrieveRecommendedPosts, PostPage } from '@/client/postClient';
+import { showToast } from '@/utils';
 
 const PAGE_SIZE = 10;
 
@@ -54,14 +48,9 @@ const loadPosts = async (tab: Tab, reset: boolean) => {
       currentPage.value++;
     }
     hasMore.value = postsPage.hasMore;
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to load feed!',
-      duration: 1500,
-      position: 'top',
-    });
-    console.error(error);
-    await toast.present();
+  } catch (error: unknown) {
+    const message = 'Failed to load feed. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
   }

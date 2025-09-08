@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // SVG icons for platforms
+import { showToast } from '@/utils';
+
 const platformIcons: Record<string, string> = {
   instagram: `<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" height="30" viewBox="0,0,256,256"style="fill:#FFFFFF;"><g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(10.66667,10.66667)"><path d="M8,3c-2.757,0 -5,2.243 -5,5v8c0,2.757 2.243,5 5,5h8c2.757,0 5,-2.243 5,-5v-8c0,-2.757 -2.243,-5 -5,-5zM8,5h8c1.654,0 3,1.346 3,3v8c0,1.654 -1.346,3 -3,3h-8c-1.654,0 -3,-1.346 -3,-3v-8c0,-1.654 1.346,-3 3,-3zM17,6c-0.55228,0 -1,0.44772 -1,1c0,0.55228 0.44772,1 1,1c0.55228,0 1,-0.44772 1,-1c0,-0.55228 -0.44772,-1 -1,-1zM12,7c-2.757,0 -5,2.243 -5,5c0,2.757 2.243,5 5,5c2.757,0 5,-2.243 5,-5c0,-2.757 -2.243,-5 -5,-5zM12,9c1.654,0 3,1.346 3,3c0,1.654 -1.346,3 -3,3c-1.654,0 -3,-1.346 -3,-3c0,-1.654 1.346,-3 3,-3z"></path></g></g></svg>`,
   x: `<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" height="30" viewBox="0,0,256,256"style="fill:#FFFFFF;"><g fill="#ffffff" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M5.91992,6l14.66211,21.375l-14.35156,16.625h3.17969l12.57617,-14.57812l10,14.57813h12.01367l-15.31836,-22.33008l13.51758,-15.66992h-3.16992l-11.75391,13.61719l-9.3418,-13.61719zM9.7168,8h7.16406l23.32227,34h-7.16406z"></path></g></g></svg>`,
@@ -21,6 +23,7 @@ import {
   IonLabel,
   IonSelect,
   IonSelectOption,
+  alertController,
 } from '@ionic/vue';
 import { arrowBackOutline, trashBin } from 'ionicons/icons';
 import {
@@ -98,9 +101,12 @@ async function submitCreate() {
       await createLink(created.slug, link);
     }
 
-    router.push(`/linkpages/${created.slug}`);
-  } catch (error) {
-    alert('Unable to create Link Page : ' + error);
+    await showToast('Succeed to create Link Page.');
+    await router.push(`/linkpages/${created.slug}`);
+  } catch (error: unknown) {
+    let message: string = 'Unable to create Link Page.';
+    if (error instanceof Error) message = error.message;
+    await showToast(message, 'danger');
   }
 }
 
@@ -121,8 +127,12 @@ async function loadPage() {
     }));
 
     isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
-  } catch (error) {
-    if (isOwner.value) alert('Unable to load the Link Page : ' + error);
+  } catch (error: unknown) {
+    if (isOwner.value) {
+      let message: string = 'Unable to load the Link Page.';
+      if (error instanceof Error) message = error.message;
+      await showToast(message, 'danger');
+    }
   }
 }
 
@@ -142,37 +152,76 @@ async function submitUpdate() {
       }
     }
 
-    alert('Link Page updated');
-  } catch (error) {
-    alert('Unable to update the Link Page : ' + error);
+    await showToast('Succeed to update Link Page.');
+  } catch (error: unknown) {
+    let message: string = 'Unable to update the Link Page.';
+    if (error instanceof Error) message = error.message;
+    await showToast(message, 'danger');
   }
 }
 
 async function deletePage() {
   if (!pageSlug.value) return;
-  if (confirm('Confirm Link Page deletion ?')) {
-    try {
-      await deleteLinkPage(pageSlug.value);
-      await router.push('/linkpages');
-    } catch (error) {
-      alert('Unable to delete the Link Page : ' + error);
-    }
-  }
+
+  const alert = await alertController.create({
+    header: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this Link Page ?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Delete',
+        role: 'destructive',
+        handler: async () => {
+          try {
+            await deleteLinkPage(pageSlug.value!);
+            await router.push('/linkpages');
+          } catch (error: unknown) {
+            let message = 'Unable to delete the Link Page.';
+            if (error instanceof Error) message = error.message;
+            await showToast(message, 'danger');
+          }
+        },
+      },
+    ],
+  });
+
+  await alert.present();
 }
 
 async function submitLinkDeletion(index: number) {
   const link = links.value[index];
 
-  if (confirm('Confirm the link deletion ?')) {
-    try {
-      if (pageSlug.value && link.slug) {
-        await deleteLink(pageSlug.value, link.slug);
-      }
-      links.value.splice(index, 1);
-    } catch (error) {
-      alert('Unable to delete the link : ' + error);
-    }
-  }
+  const alert = await alertController.create({
+    header: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this link ?',
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel',
+      },
+      {
+        text: 'Delete',
+        role: 'destructive',
+        handler: async () => {
+          try {
+            if (pageSlug.value && link.slug) {
+              await deleteLink(pageSlug.value, link.slug);
+            }
+            links.value.splice(index, 1);
+          } catch (error: unknown) {
+            let message = 'Unable to delete the Link.';
+            if (error instanceof Error) message = error.message;
+            await showToast(message, 'danger');
+          }
+        },
+      },
+    ],
+  });
+
+  await alert.present();
 }
 
 async function checkIfUserHasLinkPage() {

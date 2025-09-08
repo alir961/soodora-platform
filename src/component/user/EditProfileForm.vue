@@ -10,7 +10,6 @@ import {
   IonLabel,
   IonTextarea,
   modalController,
-  toastController,
 } from '@ionic/vue';
 import { callDeleteProfile, callUpdateProfile } from '@/client/profileClient';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
@@ -19,6 +18,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { computed, onMounted, ref } from 'vue';
 import { User } from '@/entity/User';
+import { showToast } from '@/utils';
 
 const router = useRouter();
 
@@ -64,17 +64,14 @@ const deleteAccount = async () => {
       { text: 'Cancel', role: 'cancel' },
       {
         text: 'Delete',
+        role: 'destructive',
         handler: async () => {
           try {
             await callDeleteProfile();
             await logout();
-          } catch (error) {
-            const toast = await toastController.create({
-              message: 'Failed to delete account.',
-              duration: 1500,
-              position: 'top',
-            });
-            await toast.present();
+          } catch (error: unknown) {
+            const message = 'Failed to delete your account. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
@@ -101,13 +98,10 @@ const updateAccount = async () => {
     saving.value = true;
     await callUpdateProfile(formData);
     await modalController.dismiss();
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to update account.',
-      duration: 1500,
-      position: 'top',
-    });
-    await toast.present();
+    await showToast('Succeed to update your profile');
+  } catch (error: unknown) {
+    const message = 'Failed to update your profile. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     saving.value = false;
   }

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { IonButton, IonInput, IonItem, toastController } from '@ionic/vue';
+import { IonButton, IonInput, IonItem } from '@ionic/vue';
 import { computed, ref, Ref } from 'vue';
 import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
 import { saveBearerToken } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { showToast } from '@/utils';
 
 const { isLogin } = defineProps({
   isLogin: Boolean,
@@ -29,14 +30,9 @@ const login = async () => {
     await saveBearerToken(token);
     authStore.authenticate(await retrieveAuthenticatedProfile());
     await router.push('/explore');
+    await showToast('Login Succeed.');
   } catch (error) {
-    const toast = await toastController.create({
-      message: 'Login Failed!',
-      duration: 1500,
-      position: 'top',
-    });
-
-    await toast.present();
+    await showToast('Login Failed : Invalid Credentials !', 'danger');
     console.warn(error);
   }
 };
@@ -54,17 +50,11 @@ const register = async () => {
 
     await callRegister(request);
     await router.push('/confirm');
+    await showToast('Sign up Succeeded !');
   } catch (error: unknown) {
     let message: string = 'Sign up Failed!';
     if (error instanceof Error) message = error.message;
-
-    const toast = await toastController.create({
-      message: message,
-      duration: 1500,
-      position: 'top',
-    });
-
-    await toast.present();
+    await showToast(message, 'danger');
   }
 };
 

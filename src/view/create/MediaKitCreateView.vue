@@ -4,7 +4,8 @@ import { useRouter } from 'vue-router';
 import { createMediaKit } from '@/client/mediaKitClient';
 import type { MediaKitDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { toastController, IonButton, IonItem, IonInput, IonTextarea, IonLabel } from '@ionic/vue';
+import { IonButton, IonItem, IonInput, IonTextarea, IonLabel } from '@ionic/vue';
+import { showToast } from '@/utils';
 
 const router = useRouter();
 
@@ -18,17 +19,14 @@ const newMediaKit = ref<MediaKitDTO>({
   items: [],
 });
 
-const showToast = async (message: string, color: 'danger' | 'success' = 'danger') => {
-  const toast = await toastController.create({ message, duration: 2000, color });
-  await toast.present();
-};
-
 const saveNewMediaKit = async () => {
   try {
     const created = await createMediaKit(newMediaKit.value);
     await router.push(`/mediakits/${created.slug}`);
-  } catch {
-    await showToast('Failed to create MediaKit');
+    await showToast('Succeed to create MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to create MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 </script>
