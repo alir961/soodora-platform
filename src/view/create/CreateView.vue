@@ -11,14 +11,7 @@ import {
   IonLabel,
 } from '@ionic/vue';
 
-import {
-  createOutline,
-  bagAddOutline,
-  linkOutline,
-  arrowBackOutline,
-  trashOutline,
-  cloudDownloadOutline,
-} from 'ionicons/icons';
+import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct } from '@/client/productClient';
 import { ref, watch } from 'vue';
@@ -28,6 +21,8 @@ import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
 import { showToast } from '@/utils';
+import { ProductCreationData } from '@/entity/Product';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -115,7 +110,13 @@ const publishPost = async () => {
 };
 
 const showProductModal = ref(false);
-const newProduct = ref({ name: '', description: '', category: '', price: 0, quantity: 0 });
+const newProduct = ref<ProductCreationData>({
+  name: '',
+  description: '',
+  category: '',
+  price: 0,
+  quantity: 0,
+});
 const editedProductFile = ref<File | null>(null);
 
 const publishProduct = async () => {
@@ -155,14 +156,12 @@ const goToMediaKit = async () => {
   await router.push('/mediakits/create');
 };
 
-const onPostFileSelected = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) editedPostFile.value = target.files[0];
+const onPostFileSelected = (file: File) => {
+  editedPostFile.value = file;
 };
 
-const onProductFileSelected = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) editedProductFile.value = target.files[0];
+const onProductFileSelected = (file: File) => {
+  editedProductFile.value = file;
 };
 </script>
 
@@ -223,15 +222,12 @@ const onProductFileSelected = (event: Event) => {
               </ion-item>
 
               <ion-item class="modal-item">
-                <IonLabel position="stacked">Select Image</IonLabel>
-                <div class="file-upload-container">
-                  <IonLabel class="file-upload-button">
-                    <ion-icon :icon="cloudDownloadOutline" />
-                    Choose File
-                    <input type="file" @change="onPostFileSelected" accept="image/*" />
-                  </IonLabel>
-                  <span v-if="editedPostFile" class="file-name">{{ editedPostFile.name }}</span>
-                </div>
+                <FileUpload
+                  fieldLabel="Select Image"
+                  label="Choose File"
+                  accept="image/*"
+                  @file-selected="onPostFileSelected" />
+
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Audio URL</ion-label>
@@ -281,15 +277,11 @@ const onProductFileSelected = (event: Event) => {
               </ion-item>
 
               <ion-item class="modal-item">
-                <IonLabel position="stacked">Select Image</IonLabel>
-                <div class="file-upload-container">
-                  <IonLabel class="file-upload-button">
-                    <ion-icon :icon="cloudDownloadOutline" />
-                    Choose File
-                    <input type="file" @change="onProductFileSelected" accept="image/*" />
-                  </IonLabel>
-                  <span v-if="editedProductFile" class="file-name">{{ editedProductFile.name }}</span>
-                </div>
+                <FileUpload
+                  fieldLabel="Select Image"
+                  label="Choose File"
+                  accept="image/*"
+                  @file-selected="onProductFileSelected" />
               </ion-item>
 
               <ion-item class="modal-item">
@@ -373,12 +365,6 @@ const onProductFileSelected = (event: Event) => {
   --padding-start: 0;
 }
 
-.file-name {
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #555;
-}
-
 .create-container {
   display: flex;
   flex-direction: column;
@@ -389,7 +375,7 @@ const onProductFileSelected = (event: Event) => {
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .page-description {
@@ -438,42 +424,5 @@ ion-button.post-button::part(native) {
   background: var(--ion-background-color);
   border-radius: 12px;
   padding: 10px 20px;
-}
-
-.file-upload-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.file-upload-button {
-  display: inline-block;
-  padding: 8px 15px;
-  background-color: var(--ion-color-secondary);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.file-upload-button input[type='file'] {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.file-name {
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #555;
 }
 </style>

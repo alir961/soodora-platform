@@ -31,8 +31,9 @@ const login = async () => {
     authStore.authenticate(await retrieveAuthenticatedProfile());
     await router.push('/explore');
     await showToast('Login Succeed.');
-  } catch (error) {
-    await showToast('Login Failed : Invalid Credentials !', 'danger');
+  } catch (error: unknown) {
+    const message = 'Login Failed, invalid credentials !' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
     console.warn(error);
   }
 };
@@ -52,8 +53,7 @@ const register = async () => {
     await router.push('/confirm');
     await showToast('Sign up Succeeded !');
   } catch (error: unknown) {
-    let message: string = 'Sign up Failed!';
-    if (error instanceof Error) message = error.message;
+    const message = 'Sign up Failed. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   }
 };

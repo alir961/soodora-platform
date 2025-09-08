@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { arrowBackOutline, checkmarkOutline, cloudDownloadOutline, logOutOutline, trashOutline } from 'ionicons/icons';
+import { arrowBackOutline, checkmarkOutline, logOutOutline, trashOutline } from 'ionicons/icons';
 import {
   alertController,
   IonButton,
@@ -19,6 +19,7 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { computed, onMounted, ref } from 'vue';
 import { User } from '@/entity/User';
 import { showToast } from '@/utils';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const router = useRouter();
 
@@ -107,9 +108,8 @@ const updateAccount = async () => {
   }
 };
 
-const onAvatarSelected = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files[0]) avatarFile.value = target.files[0];
+const onAvatarSelected = (file: File) => {
+  avatarFile.value = file;
 };
 
 onMounted(() => {
@@ -174,15 +174,7 @@ onMounted(() => {
         <ion-textarea placeholder="Add a description" v-model="descriptionInput" auto-grow />
       </ion-item>
       <ion-item class="modal-item">
-        <IonLabel position="stacked">Select Image</IonLabel>
-        <div class="file-upload-container">
-          <IonLabel class="file-upload-button">
-            <ion-icon :icon="cloudDownloadOutline" />
-            Choose File
-            <input type="file" @change="onAvatarSelected" accept="image/*" />
-          </IonLabel>
-          <span v-if="avatarFile" class="file-name">{{ avatarFile.name }}</span>
-        </div>
+        <FileUpload fieldLabel="Select Image" label="Choose File" accept="image/*" @file-selected="onAvatarSelected" />
       </ion-item>
     </div>
     <div class="settings-actions">
@@ -291,42 +283,5 @@ onMounted(() => {
 
 .save-button-icon {
   color: #fff;
-}
-
-.file-upload-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.file-upload-button {
-  display: inline-block;
-  padding: 8px 15px;
-  background-color: var(--ion-color-secondary);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.file-upload-button input[type='file'] {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.file-name {
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #555;
 }
 </style>

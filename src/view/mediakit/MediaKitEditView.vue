@@ -29,10 +29,12 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import type { MediaKitDTO, MediaKitItemDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { showToast } from '@/utils';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const IMAGE = 'Image';
 
 const slug = ref<string | undefined>(route.params.slug as string | undefined);
 const mediaKit = ref<MediaKitDTO | null>(null);
@@ -132,14 +134,9 @@ const openAddItemModalHandler = () => {
   showAddItemModal.value = true;
 };
 
-const onFileSelected = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    selectedFile.value = target.files[0];
-    newItem.value.content = '';
-  } else {
-    selectedFile.value = null;
-  }
+const onFileSelected = (file: File | null) => {
+  selectedFile.value = file;
+  if (file) newItem.value.content = '';
 };
 
 const saveNewItemHandler = async () => {
@@ -150,7 +147,7 @@ const saveNewItemHandler = async () => {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(newItem.value)], { type: 'application/json' }));
 
-    if (newItem.value.type === 'Image' && selectedFile.value) {
+    if (newItem.value.type === IMAGE && selectedFile.value) {
       formData.append('file', selectedFile.value);
     }
 
@@ -171,13 +168,10 @@ const openEditItemModalHandler = (item: MediaKitItemDTO) => {
   showEditItemModal.value = true;
 };
 
-const onEditedFileSelected = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files && target.files.length > 0) {
-    editedSelectedFile.value = target.files[0];
-    if (editedItem.value) editedItem.value.content = '';
-  } else {
-    editedSelectedFile.value = null;
+const onEditedFileSelected = (file: File | null) => {
+  editedSelectedFile.value = file;
+  if (file && editedItem.value) {
+    editedItem.value.content = '';
   }
 };
 
@@ -188,7 +182,7 @@ const saveEditedItemHandler = async () => {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(editedItem.value)], { type: 'application/json' }));
 
-    if (editedItem.value.type === 'Image' && selectedFile.value) {
+    if (editedItem.value.type === IMAGE && selectedFile.value) {
       formData.append('file', selectedFile.value);
     }
 
@@ -330,16 +324,8 @@ watch(
             </IonSelect>
           </IonItem>
 
-          <IonItem v-if="newItem.type === 'Image'">
-            <IonLabel position="stacked">Select Image</IonLabel>
-            <div class="file-upload-container">
-              <IonLabel class="file-upload-button">
-                <ion-icon :icon="cloudDownloadOutline" />
-                Choose File
-                <input type="file" @change="onFileSelected" accept="image/*" />
-              </IonLabel>
-              <span v-if="selectedFile" class="file-name">{{ selectedFile.name }}</span>
-            </div>
+          <IonItem v-if="newItem.type === IMAGE">
+            <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onFileSelected" />
           </IonItem>
 
           <IonItem>
@@ -371,16 +357,10 @@ watch(
             </IonSelect>
           </IonItem>
 
-          <IonItem v-if="editedItem.type === 'Image'">
-            <IonLabel position="stacked">Select Image</IonLabel>
-            <div class="file-upload-container">
-              <IonLabel class="file-upload-button">
-                <ion-icon :icon="cloudDownloadOutline" />
-                Choose File
-                <input type="file" @change="onEditedFileSelected" accept="image/*" />
-              </IonLabel>
-              <span v-if="editedSelectedFile" class="file-name">{{ editedSelectedFile.name }}</span>
-            </div>
+          <IonItem v-if="editedItem.type === IMAGE">
+            <IonItem v-if="editedItem.type === IMAGE">
+              <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onEditedFileSelected" />
+            </IonItem>
           </IonItem>
 
           <IonItem>
@@ -397,42 +377,3 @@ watch(
     </IonContent>
   </ApplicationViewport>
 </template>
-
-<style scoped>
-.file-upload-container {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.file-upload-button {
-  display: inline-block;
-  padding: 8px 15px;
-  background-color: var(--ion-color-secondary);
-  color: white;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.file-upload-button input[type='file'] {
-  position: absolute;
-  left: 0;
-  top: 0;
-  opacity: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.file-name {
-  margin-top: 5px;
-  font-size: 0.9em;
-  color: #555;
-}
-</style>

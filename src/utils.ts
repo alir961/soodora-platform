@@ -20,7 +20,9 @@ function capitalize(value: string): string {
   return value[0].toUpperCase() + value.slice(1).toLowerCase();
 }
 
-const showToast = async (message: string, color: 'success' | 'danger' | 'warning' = 'success') => {
+export type ToastStatus = 'success' | 'danger' | 'warning';
+
+const showToast = async (message: string, color: ToastStatus = 'success') => {
   const toast = await toastController.create({
     message,
     duration: 2000,
