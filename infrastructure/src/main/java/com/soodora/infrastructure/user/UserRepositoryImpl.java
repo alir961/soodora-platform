@@ -2,6 +2,7 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,7 +56,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     @Transactional
-    public UserDTO update(UpdateUserCommand command, Identifier identifier, MultipartFile imageFile) {
+    public UserDTO update(UpdateUserCommand command, Identifier identifier, FileData fileData) {
         UserEntity existingUser = findUserByIdentifierOrThrows(identifier);
 
         if (isNotNullOrBlank(command.username()))
@@ -67,8 +67,8 @@ public class UserRepositoryImpl implements UserRepository {
             existingUser.setLastname(command.lastname());
         if (isNotNullOrBlank(command.description()))
             existingUser.setDescription(command.description());
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = imageStorageUploader.upload(imageFile);
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
             existingUser.setAvatarUrl(imageUrl);
         }
         return userRepository.save(existingUser).toDTO();

@@ -2,11 +2,12 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
-import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.PostService;
+import com.soodora.service.shared.FileDataService;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
@@ -38,6 +39,7 @@ public class ProfileController {
 
     private final UserService userService;
     private final PostService postService;
+    private final FileDataService fileDataService;
 
     @GetMapping
     public UserDTO getLoggedUser(@AuthenticationPrincipal UserDTO user) {
@@ -50,9 +52,9 @@ public class ProfileController {
             @RequestPart("data") UpdateUserRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            UpdateUserCommand command = request.toCommand();
+            FileData fileData = fileDataService.toFileData(imageFile);
 
-            userService.updateUser(command, user.slug(), imageFile);
+            userService.updateUser(request.toCommand(), user.slug(), fileData);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

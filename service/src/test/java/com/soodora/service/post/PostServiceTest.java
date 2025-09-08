@@ -1,5 +1,6 @@
 package com.soodora.service.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
@@ -17,7 +18,6 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
-import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -60,19 +60,18 @@ class PostServiceTest {
     void createPost_Success() {
         // GIVEN
         CreatePostCommand command = new CreatePostCommand("New Post", "Content", "audioUrl");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
-        when(postRepository.save(any(), eq(USER), eq(file))).thenReturn(POST_1);
+        when(postRepository.save(any(), eq(USER), eq(fileData))).thenReturn(POST_1);
 
         // WHEN
-        postService.createPost(command, USER, file);
+        postService.createPost(command, USER, fileData);
 
         // THEN
-        verify(postRepository).save(any(), eq(USER), eq(file));
+        verify(postRepository).save(any(), eq(USER), eq(fileData));
     }
 
     @Test

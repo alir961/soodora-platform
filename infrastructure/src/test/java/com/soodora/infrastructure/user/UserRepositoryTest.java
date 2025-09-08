@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.user;
 
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UpdateUserCommand;
@@ -11,7 +12,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockMultipartFile;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -59,17 +59,16 @@ class UserRepositoryImplTest {
     void givenValidUpdateCommand_whenUpdate_thenUserIsUpdated() {
         // GIVEN
         UpdateUserCommand command = new UpdateUserCommand("newUsername", null, "newLastname", "");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
         when(userJpaRepository.findBySlug(validUser.getSlug())).thenReturn(Optional.of(validUser));
         when(userJpaRepository.save(any(UserEntity.class))).thenReturn(validUser);
 
         // WHEN
-        UserDTO result = userRepository.update(command, createFromSlug(validUser.getSlug()), eq(file));
+        UserDTO result = userRepository.update(command, createFromSlug(validUser.getSlug()), eq(fileData));
 
         // THEN
         assertNotNull(result);

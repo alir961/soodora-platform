@@ -1,5 +1,6 @@
 package com.soodora.api.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
@@ -100,15 +101,14 @@ class PostControllerIT {
                 "",
                 "Description",
                 "audioUrl");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)
-                .createPost(any(CreatePostCommand.class), any(UserDTO.class), eq(file));
+                .createPost(any(CreatePostCommand.class), any(UserDTO.class), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(post("/posts")

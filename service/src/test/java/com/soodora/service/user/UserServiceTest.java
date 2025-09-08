@@ -1,5 +1,6 @@
 package com.soodora.service.user;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -119,20 +119,19 @@ class UserServiceTest {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
                 "Description");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
-        when(userRepository.update(updateCommand, IDENTIFIER, file)).thenReturn(USER);
+        when(userRepository.update(updateCommand, IDENTIFIER, fileData)).thenReturn(USER);
 
         // WHEN
-        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug(), file);
+        UserDTO updatedUser = userService.updateUser(updateCommand, USER.slug(), fileData);
 
         // THEN
         assertEquals(USER, updatedUser);
-        verify(userRepository).update(updateCommand, IDENTIFIER, file);
+        verify(userRepository).update(updateCommand, IDENTIFIER, fileData);
     }
 
     @Test
@@ -140,17 +139,16 @@ class UserServiceTest {
         // GIVEN
         UpdateUserCommand updateCommand = new UpdateUserCommand("New Name", "Name", "lastName",
                 "Description");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
-        when(userRepository.update(updateCommand, IDENTIFIER, file))
+        when(userRepository.update(updateCommand, IDENTIFIER, fileData))
                 .thenThrow(new UnknownIdentifierException("Identifier not found"));
 
         // WHEN
-        Executable executable = () -> userService.updateUser(updateCommand, USER.slug(), file);
+        Executable executable = () -> userService.updateUser(updateCommand, USER.slug(), fileData);
 
         // THEN
         assertThrows(UnknownIdentifierException.class, executable);

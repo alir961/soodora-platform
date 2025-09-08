@@ -1,5 +1,6 @@
 package com.soodora.api.product;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductFilter;
 import com.soodora.domain.user.UserRepository;
@@ -93,15 +94,14 @@ class ProductControllerIT {
                 "category",
                 0,
                 0);
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
+                "image/jpeg");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
         doThrow(InvalidRequestException.class).when(productService)
-                .createProduct(any(), eq(ARTIST_USER), eq(file));
+                .createProduct(any(), eq(ARTIST_USER), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
@@ -142,7 +142,7 @@ class ProductControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/products/search")
-                .with(user(new UserPrincipal(USER))) // if your endpoint requires auth like /posts example
+                .with(user(new UserPrincipal(USER)))
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -220,9 +220,12 @@ class ProductControllerIT {
                 "image/jpeg",
                 "dummy image content".getBytes());
 
+        FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
+                filePart.getContentType());
+
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))
-                .when(productService).updateProduct(any(), eq("productSlug1"), eq(filePart));
+                .when(productService).updateProduct(any(), eq("productSlug1"), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(multipart("/products/productSlug1")

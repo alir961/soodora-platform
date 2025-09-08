@@ -2,13 +2,14 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.PublicUserDTO;
-import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
+import com.soodora.service.shared.FileDataService;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
@@ -40,6 +41,7 @@ import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 public class UserController {
 
     private final UserService userService;
+    private final FileDataService fileDataService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -71,9 +73,9 @@ public class UserController {
             @RequestPart("data") UpdateUserRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            UpdateUserCommand command = request.toCommand();
+            FileData fileData = fileDataService.toFileData(imageFile);
 
-            userService.updateUser(command, slug, imageFile);
+            userService.updateUser(request.toCommand(), slug, fileData);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

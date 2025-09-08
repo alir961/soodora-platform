@@ -1,5 +1,6 @@
 package com.soodora.service.mediakit;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
 
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
-import org.springframework.mock.web.MockMultipartFile;
 
 import static java.util.List.of;
 import static org.junit.jupiter.api.Assertions.*;
@@ -114,19 +114,18 @@ class MediaKitServiceTest {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
-        when(mediaKitItemRepository.save(command, "artist-slug", file)).thenReturn(expected);
+                "image/jpeg");
+        when(mediaKitItemRepository.save(command, "artist-slug", fileData)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug", file);
+        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug", fileData);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).save(command, "artist-slug", file);
+        verify(mediaKitItemRepository).save(command, "artist-slug", fileData);
     }
 
     @Test
@@ -134,19 +133,18 @@ class MediaKitServiceTest {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
         MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        MockMultipartFile file = new MockMultipartFile(
-                "file",
+        FileData fileData = new FileData(
+                "dummy image content".getBytes(),
                 "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
-        when(mediaKitItemRepository.update(command, "item-slug", file)).thenReturn(expected);
+                "image/jpeg");
+        when(mediaKitItemRepository.update(command, "item-slug", fileData)).thenReturn(expected);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug", file);
+        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug", fileData);
 
         // THEN
         assertEquals("item-slug", result.slug());
-        verify(mediaKitItemRepository).update(command, "item-slug", file);
+        verify(mediaKitItemRepository).update(command, "item-slug", fileData);
     }
 
     @Test

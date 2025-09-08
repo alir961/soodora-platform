@@ -1,5 +1,6 @@
 package com.soodora.service.mediakit;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
@@ -9,7 +10,6 @@ import com.soodora.service.common.InvalidRequestException;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -57,18 +57,17 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug,
-            MultipartFile imageFile) {
+    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
         try {
-            return mediaKitItemRepository.save(command, artistSlug, imageFile);
+            return mediaKitItemRepository.save(command, artistSlug, fileData);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }
     }
 
-    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, MultipartFile imageFile) {
+    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
         try {
-            return mediaKitItemRepository.update(command, slug, imageFile);
+            return mediaKitItemRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {
             throw new UnknownMediaKitException(exception.getMessage());
         }

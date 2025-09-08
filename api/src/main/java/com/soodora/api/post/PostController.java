@@ -2,6 +2,7 @@ package com.soodora.api.post;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.post.PostDTO;
@@ -10,6 +11,7 @@ import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
 import com.soodora.service.post.PostService;
+import com.soodora.service.shared.FileDataService;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +43,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class PostController {
 
     private final PostService postService;
+    private final FileDataService fileDataService;
 
     @PostMapping
     @PreAuthorize("hasRole('ARTIST')")
@@ -50,7 +53,9 @@ public class PostController {
             @RequestPart("data") CreatePostRequest createPostRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            postService.createPost(createPostRequest.toCommand(), user, imageFile);
+            FileData fileData = fileDataService.toFileData(imageFile);
+
+            postService.createPost(createPostRequest.toCommand(), user, fileData);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.product;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.CreateProductCommand;
@@ -19,7 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +36,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO save(CreateProductCommand command, UserDTO user, MultipartFile imageFile) {
+    public ProductDTO save(CreateProductCommand command, UserDTO user, FileData fileData) {
         ProductEntity entity = new ProductEntity();
         ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
@@ -44,8 +44,8 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setName(command.name());
         entity.setPrice(command.price());
         entity.setDescription(command.description());
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = imageStorageUploader.upload(imageFile);
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
             entity.setImageUrl(imageUrl);
         }
         entity.setCategory(command.category());
@@ -57,7 +57,7 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO update(UpdateProductCommand command, String slug, MultipartFile imageFile) {
+    public ProductDTO update(UpdateProductCommand command, String slug, FileData fileData) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.name()))
@@ -66,8 +66,8 @@ public class ProductRepositoryImpl implements ProductRepository {
             existingProduct.setDescription(command.description());
         if (isNotNullOrBlank(command.category()))
             existingProduct.setCategory(command.category());
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = imageStorageUploader.upload(imageFile);
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
             existingProduct.setImageUrl(imageUrl);
         }
         if (command.price() != 0)

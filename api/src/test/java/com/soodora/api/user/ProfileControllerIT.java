@@ -1,5 +1,6 @@
 package com.soodora.api.user;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UpdateUserCommand;
@@ -87,13 +88,20 @@ class ProfileControllerIT {
                 "application/json",
                 asJsonString(updateUserRequest).getBytes());
 
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "profile.png",
+                "image/png",
+                "fake-image".getBytes());
+
         // WHEN & THEN
         mockMvc.perform(multipart("/profile")
                 .file(jsonPart)
+                .file(filePart)
                 .with(request -> {
                     request.setMethod("PUT");
                     return request;
-                }) // multipart est POST par défaut
+                })
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -114,9 +122,12 @@ class ProfileControllerIT {
                 "image/jpeg",
                 "dummy image content".getBytes());
 
+        FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
+                filePart.getContentType());
+
         doThrow(new InvalidRequestException("Invalid Request"))
                 .when(userService)
-                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()), eq(filePart));
+                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(multipart("/profile")

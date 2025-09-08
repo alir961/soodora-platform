@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.post;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
@@ -20,7 +21,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 
@@ -43,14 +43,14 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public PostDTO save(CreatePostCommand command, UserDTO user, MultipartFile imageFile) {
+    public PostDTO save(CreatePostCommand command, UserDTO user, FileData fileData) {
         PostEntity entity = new PostEntity();
         ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.slug());
 
         entity.setTitle(command.title());
         entity.setContent(command.content());
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String imageUrl = imageStorageUploader.upload(imageFile);
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
             entity.setImageUrl(imageUrl);
         }
         entity.setAudioUrl(command.audioUrl());

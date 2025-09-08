@@ -1,5 +1,6 @@
 package com.soodora.service.user;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostRepository;
@@ -17,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,9 +54,9 @@ public class UserService implements UserDetailsService {
         return userRepository.isUsed(identifier);
     }
 
-    public UserDTO updateUser(UpdateUserCommand command, String slug, MultipartFile imageFile) {
+    public UserDTO updateUser(UpdateUserCommand command, String slug, FileData fileData) {
         try {
-            return userRepository.update(command, createFromSlug(slug), imageFile);
+            return userRepository.update(command, createFromSlug(slug), fileData);
         } catch (UnknownSlugException exception) {
             throw new UserUnityException(exception.getMessage());
         }

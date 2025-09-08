@@ -2,6 +2,7 @@ package com.soodora.domain.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
@@ -12,12 +13,11 @@ import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface UserRepository {
 
     UserDTO save(RegisterCommand command);
-    UserDTO update(UpdateUserCommand command, Identifier identifier, MultipartFile imageFile);
+    UserDTO update(UpdateUserCommand command, Identifier identifier, FileData fileData);
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
     Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);

@@ -2,12 +2,13 @@ package com.soodora.api.product;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductFilter;
-import com.soodora.domain.product.UpdateProductCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.product.*;
+import com.soodora.service.shared.FileDataService;
 
 import java.util.Optional;
 
@@ -33,6 +34,7 @@ import static org.springframework.http.HttpStatus.*;
 public class ProductController {
 
     private final ProductService service;
+    private final FileDataService fileDataService;
 
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasRole('ARTIST')")
@@ -42,7 +44,9 @@ public class ProductController {
             @RequestPart("data") CreateProductRequest createProductRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            service.createProduct(createProductRequest.toCommand(), user, imageFile);
+            FileData fileData = fileDataService.toFileData(imageFile);
+
+            service.createProduct(createProductRequest.toCommand(), user, fileData);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException | ProductUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -74,9 +78,9 @@ public class ProductController {
             @RequestPart("data") UpdateProductRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            UpdateProductCommand command = request.toCommand();
+            FileData fileData = fileDataService.toFileData(imageFile);
 
-            service.updateProduct(command, slug, imageFile);
+            service.updateProduct(request.toCommand(), slug, fileData);
             return new ResponseEntity<>(ACCEPTED);
         } catch (InvalidRequestException | UnknownProductException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
