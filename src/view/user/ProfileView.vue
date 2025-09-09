@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonButton, IonCardTitle, modalController, onIonViewWillEnter, toastController } from '@ionic/vue';
+import { IonButton, IonCardTitle, modalController, onIonViewWillEnter } from '@ionic/vue';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
@@ -11,6 +11,7 @@ import UserContentList from '@/component/user/UserContentList.vue';
 import EditProfileForm from '@/component/user/EditProfileForm.vue';
 import { User } from '@/entity/User';
 import { loadBearerToken } from '@/store/localStorage';
+import { showToast } from '@/utils';
 
 const route = useRoute();
 const linkedProviders = ref<OAuthProvider[]>([]);
@@ -19,12 +20,7 @@ const authStore = useAuthStore();
 
 onIonViewWillEnter(async () => {
   if (route.query.error === 'oauth') {
-    const toast = await toastController.create({
-      message: 'Unable to connect to OAuth provider!',
-      duration: 1500,
-      position: 'top',
-    });
-    await toast.present();
+    await showToast('Unable to connect to OAuth provider!', 'danger');
   }
   await fetchUserData();
 });

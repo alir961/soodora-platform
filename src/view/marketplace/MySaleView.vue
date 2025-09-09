@@ -4,7 +4,6 @@ import { useRouter } from 'vue-router';
 import { getMySales } from '@/client/saleClient';
 import { Sale } from '@/entity/Sale';
 import {
-  toastController,
   IonButton,
   IonIcon,
   IonInfiniteScroll,
@@ -16,6 +15,7 @@ import {
 } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { showToast } from '@/utils';
 
 const router = useRouter();
 
@@ -34,13 +34,9 @@ const fetchSales = async (pageNumber: number) => {
       hasMore.value = false;
     }
     sales.value.push(...newSales);
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Error loading sales',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+  } catch (error: unknown) {
+    const message = 'Failed to load your sales. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
     hasMore.value = false;
   }
 };
@@ -48,7 +44,7 @@ const fetchSales = async (pageNumber: number) => {
 const loadMore = async (event: CustomEvent<void>) => {
   page.value++;
   await fetchSales(page.value);
-  (event.target as HTMLIonInfiniteScrollElement).complete();
+  await (event.target as HTMLIonInfiniteScrollElement).complete();
 
   if (!hasMore.value) {
     (event.target as HTMLIonInfiniteScrollElement).disabled = true;

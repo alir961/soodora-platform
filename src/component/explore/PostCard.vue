@@ -11,7 +11,6 @@ import {
   IonImg,
   IonNote,
   IonAvatar,
-  toastController,
 } from '@ionic/vue';
 import { PropType, Ref, ref, watch, computed, onMounted } from 'vue';
 import { Post } from '@/entity/Post';
@@ -37,6 +36,7 @@ import customPauseIcon from '@/assets/icons/pause.svg';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
+import { showToast } from '@/utils';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -126,8 +126,10 @@ const exportPost = async (post: Post) => {
             const canvas = await createPostCanvas(post, selectedTheme as ExportTheme);
 
             downloadCanvas(canvas);
-          } catch (err) {
-            console.error('Export failed:', err);
+            await showToast('Succeed to export post.');
+          } catch (error: unknown) {
+            const message = 'Failed to export post. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
@@ -144,17 +146,15 @@ const askDeletePost = async (slug: string) => {
       { text: 'Cancel', role: 'cancel' },
       {
         text: 'Delete',
+        role: 'destructive',
         handler: async () => {
           try {
             await callDeletePost(slug);
             emit('post-deleted', slug);
-          } catch (error) {
-            const toast = await toastController.create({
-              message: 'Failed to delete post.',
-              duration: 1500,
-              position: 'top',
-            });
-            await toast.present();
+            await showToast('Succeed to delete post.');
+          } catch (error: unknown) {
+            const message = 'Failed to delete post. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
@@ -196,8 +196,9 @@ const toggleLikePost = async (postSlug: string) => {
       isLiked.value = true;
       emit('post-like');
     }
-  } catch (error) {
-    console.error('Unable to update like', error);
+  } catch (error: unknown) {
+    const message = 'Unable to like the post. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -207,13 +208,16 @@ const toggleRepostPost = async (postSlug: string) => {
       await callPostUnrepost(postSlug);
       isReposted.value = false;
       emit('post-unrepost');
+      await showToast('Succeed to unrepost post.');
     } else {
       await callPostRepost(postSlug);
       isReposted.value = true;
       emit('post-repost');
+      await showToast('Succeed to repost post.');
     }
-  } catch (error) {
-    console.error('Unable to update repost', error);
+  } catch (error: unknown) {
+    const message = 'Unable to update repost. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 

@@ -11,7 +11,6 @@ import {
   IonSelect,
   IonSelectOption,
   IonTextarea,
-  toastController,
 } from '@ionic/vue';
 import { addOutline, arrowBackOutline, cloudDownloadOutline, trashOutline } from 'ionicons/icons';
 import { onMounted, ref, watch } from 'vue';
@@ -29,10 +28,13 @@ import {
 import { useAuthStore } from '@/store/reactiveStorage';
 import type { MediaKitDTO, MediaKitItemDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { showToast } from '@/utils';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
+const IMAGE = 'Image';
 
 const slug = ref<string | undefined>(route.params.slug as string | undefined);
 const mediaKit = ref<MediaKitDTO | null>(null);
@@ -54,12 +56,10 @@ const editedMediaKit = ref<MediaKitDTO>({
 });
 
 const newItem = ref<{ type: string; title: string; content: string }>({ type: '', title: '', content: '' });
-const editedItem = ref<MediaKitItemDTO | null>(null);
+const selectedFile = ref<File | null>(null);
 
-const showToast = async (message: string, color: 'danger' | 'success' = 'danger') => {
-  const toast = await toastController.create({ message, duration: 2000, color });
-  await toast.present();
-};
+const editedItem = ref<MediaKitItemDTO | null>(null);
+const editedSelectedFile = ref<File | null>(null);
 
 async function fetchMediaKit(slugToLoad: string) {
   isLoading.value = true;
@@ -67,8 +67,10 @@ async function fetchMediaKit(slugToLoad: string) {
     const mk = await getMediaKitBySlug(slugToLoad);
     mediaKit.value = mk;
     mediaKitItems.value = mk.items || [];
-  } catch {
-    await showToast('Failed to load MediaKit');
+    await showToast('Succeed to load MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to load MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
   }
@@ -86,8 +88,10 @@ const saveEditedMediaKit = async () => {
     mediaKit.value = await updateMediaKit(mediaKit.value.slug, editedMediaKit.value);
     showEditMediaKitModal.value = false;
     await router.push(`/mediakits/${mediaKit.value.slug}`);
-  } catch {
-    await showToast('Failed to save MediaKit');
+    await showToast('Succeed to save MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to save MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -99,8 +103,10 @@ const removeMediaKitHandler = async () => {
     mediaKitItems.value = [];
     editedItem.value = null;
     await router.push('/create');
-  } catch {
-    await showToast('Failed to delete MediaKit');
+    await showToast('Succeed to delete MediaKit');
+  } catch (error: unknown) {
+    const message = 'Failed to delete MediaKit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -115,42 +121,80 @@ const downloadPdfHandler = async () => {
     });
     link.click();
     URL.revokeObjectURL(url);
-  } catch {
-    await showToast('Failed to download PDF');
+    await showToast('Succeed to download PDF');
+  } catch (error: unknown) {
+    const message = 'Failed to download PDF. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
 const openAddItemModalHandler = () => {
   newItem.value = { type: '', title: '', content: '' };
+  selectedFile.value = null;
   showAddItemModal.value = true;
+};
+
+const onFileSelected = (file: File | null) => {
+  selectedFile.value = file;
+  if (file) newItem.value.content = '';
 };
 
 const saveNewItemHandler = async () => {
   const artistSlug = authStore.getAuthenticatedUserSlug;
   if (!mediaKit.value || !artistSlug) return;
+
   try {
-    const created = await addMediaKitItem(artistSlug, newItem.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newItem.value)], { type: 'application/json' }));
+
+    if (newItem.value.type === IMAGE && selectedFile.value) {
+      formData.append('file', selectedFile.value);
+    }
+
+    const created = await addMediaKitItem(artistSlug, formData);
     mediaKitItems.value.push(created);
     showAddItemModal.value = false;
-  } catch {
-    await showToast('Failed to add item');
+    selectedFile.value = null;
+    await showToast('Succeed to add item');
+  } catch (error: unknown) {
+    const message = 'Failed to add item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
 const openEditItemModalHandler = (item: MediaKitItemDTO) => {
   editedItem.value = { ...item };
+  editedSelectedFile.value = null;
   showEditItemModal.value = true;
+};
+
+const onEditedFileSelected = (file: File | null) => {
+  editedSelectedFile.value = file;
+  if (file && editedItem.value) {
+    editedItem.value.content = '';
+  }
 };
 
 const saveEditedItemHandler = async () => {
   if (!editedItem.value) return;
+
   try {
-    const updated = await updateMediaKitItem(editedItem.value.slug, editedItem.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(editedItem.value)], { type: 'application/json' }));
+
+    if (editedItem.value.type === IMAGE && selectedFile.value) {
+      formData.append('file', selectedFile.value);
+    }
+
+    const updated = await updateMediaKitItem(editedItem.value.slug, formData);
     const index = mediaKitItems.value.findIndex((i) => i.slug === updated.slug);
     if (index >= 0) mediaKitItems.value[index] = updated;
     showEditItemModal.value = false;
-  } catch {
-    await showToast('Failed to update item');
+    selectedFile.value = null;
+    await showToast('Succeed to update item');
+  } catch (error: unknown) {
+    const message = 'Failed to update item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -158,8 +202,10 @@ const removeItemHandler = async (slug: string) => {
   try {
     await deleteMediaKitItem(slug);
     mediaKitItems.value = mediaKitItems.value.filter((i) => i.slug !== slug);
-  } catch {
-    await showToast('Failed to delete item');
+    await showToast('Succeed to delete item');
+  } catch (error: unknown) {
+    const message = 'Failed to delete item. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -171,8 +217,9 @@ onMounted(async () => {
     try {
       const existing = artistSlug ? await getMediaKitByArtistSlug(artistSlug) : null;
       if (existing) await router.replace(`/mediakits/${existing.slug}`);
-    } catch {
-      await showToast('Redirection to MediaKit failed');
+    } catch (error: unknown) {
+      const message = 'Redirection to MediaKit failed. ' + (error instanceof Error ? error.message : '');
+      await showToast(message, 'danger');
     }
   }
 });
@@ -231,13 +278,11 @@ watch(
 
       <IonModal :is-open="showEditMediaKitModal" @did-dismiss="showEditMediaKitModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showEditMediaKitModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Edit MediaKit</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showEditMediaKitModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Edit MediaKit</h2>
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="editedMediaKit.title" />
@@ -264,13 +309,11 @@ watch(
 
       <IonModal :is-open="showAddItemModal" @did-dismiss="showAddItemModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showAddItemModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Add New Item</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showAddItemModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Add New Item</h2>
           <IonItem>
             <IonLabel position="stacked">Type</IonLabel>
             <IonSelect v-model="newItem.type" placeholder="Select type">
@@ -280,13 +323,18 @@ watch(
               <IonSelectOption value="Text">Text</IonSelectOption>
             </IonSelect>
           </IonItem>
+
+          <IonItem v-if="newItem.type === IMAGE">
+            <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onFileSelected" />
+          </IonItem>
+
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="newItem.title" />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Content</IonLabel>
-            <IonTextarea v-model="newItem.content" :rows="5" />
+            <IonTextarea :disabled="selectedFile !== null" v-model="newItem.content" :rows="5" />
           </IonItem>
           <IonButton expand="block" color="primary" @click="saveNewItemHandler">Add Item</IonButton>
         </IonContent>
@@ -294,13 +342,11 @@ watch(
 
       <IonModal v-if="editedItem" :is-open="showEditItemModal" @did-dismiss="showEditItemModal = false">
         <IonContent class="ion-padding">
-          <div class="floating-header">
-            <IonButton fill="clear" size="large" @click="showEditItemModal = false">
-              <IonIcon :icon="arrowBackOutline" />
-              Back
-            </IonButton>
-            <h2>Edit Item</h2>
-          </div>
+          <IonButton fill="clear" size="large" @click="showEditItemModal = false">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+          <h2>Edit Item</h2>
           <IonItem>
             <IonLabel position="stacked">Type</IonLabel>
             <IonSelect v-model="editedItem.type" placeholder="Select type">
@@ -310,13 +356,20 @@ watch(
               <IonSelectOption value="Text">Text</IonSelectOption>
             </IonSelect>
           </IonItem>
+
+          <IonItem v-if="editedItem.type === IMAGE">
+            <IonItem v-if="editedItem.type === IMAGE">
+              <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onEditedFileSelected" />
+            </IonItem>
+          </IonItem>
+
           <IonItem>
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="editedItem.title" />
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">Content</IonLabel>
-            <IonTextarea v-model="editedItem.content" :rows="5" />
+            <IonTextarea :disabled="editedSelectedFile !== null" v-model="editedItem.content" :rows="5" />
           </IonItem>
           <IonButton expand="block" color="primary" @click="saveEditedItemHandler">Save Item</IonButton>
         </IonContent>

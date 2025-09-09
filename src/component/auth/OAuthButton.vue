@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { PropType } from 'vue';
-import { alertController, IonIcon, toastController } from '@ionic/vue';
+import { alertController, IonIcon } from '@ionic/vue';
 import { logoGoogle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
 import { loadBearerToken } from '@/store/localStorage';
-import { redirectLogin } from '@/utils';
+import { redirectLogin, showToast } from '@/utils';
 import { OAuthProvider } from '@/client/profileClient';
 import { callDeleteProvider } from '@/client/oauthClient';
 
@@ -30,13 +30,7 @@ const providers: ProviderData[] = [{ provider: 'google', icon: logoGoogle, name:
 const provider: ProviderData = providers.find((provider) => provider.provider === props.provider) || providers[0];
 
 const notifyUnlink = async () => {
-  const toast = await toastController.create({
-    message: `You have unlinked ${provider.name}!`,
-    duration: 1500,
-    position: 'top',
-  });
-
-  await toast.present();
+  await showToast(`You have unlinked ${provider.name}!`, 'danger');
   emit('unlink');
 };
 

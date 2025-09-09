@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonButton, onIonViewWillEnter, IonIcon, toastController } from '@ionic/vue';
+import { IonButton, onIonViewWillEnter, IonIcon } from '@ionic/vue';
 import { saveBearerToken, loadBearerToken, deleteBearerToken } from '@/store/localStorage';
 import { Ref, ref } from 'vue';
 import { Router, useRouter, useRoute } from 'vue-router';
@@ -8,6 +8,7 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { logoGoogle } from 'ionicons/icons';
 import AuthenticationForm from '@/component/auth/AuthenticationForm.vue';
 import { redirectToUrl } from '@/axiosConfiguration';
+import { showToast } from '@/utils';
 
 const isLogin: Ref<boolean> = ref(true);
 const router: Router = useRouter();
@@ -31,13 +32,7 @@ onIonViewWillEnter(async () => {
   if (token) await saveBearerToken(token);
   if (error) {
     const message = error === 'oauth' ? errorMessages.oauth : errorMessages.invalid;
-    const toast = await toastController.create({
-      message: message,
-      duration: 1500,
-      position: 'top',
-    });
-
-    await toast.present();
+    await showToast(message, 'danger');
   }
 
   try {

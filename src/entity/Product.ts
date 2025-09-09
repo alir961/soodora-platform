@@ -22,4 +22,12 @@ interface Product {
   createdAt: Date;
 }
 
-export type { Product, ProductSearchParams };
+interface ProductCreationData {
+  name: string;
+  description: string;
+  category: string;
+  price: number;
+  quantity: number;
+}
+
+export type { Product, ProductSearchParams, ProductCreationData };

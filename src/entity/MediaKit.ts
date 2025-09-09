@@ -24,11 +24,3 @@ export interface CreateMediaKitRequest {
 }
 
 export interface UpdateMediaKitRequest extends CreateMediaKitRequest {}
-
-export interface CreateMediaKitItemRequest {
-  type: string;
-  title: string;
-  content: string;
-}
-
-export interface UpdateMediaKitItemRequest extends CreateMediaKitItemRequest {}

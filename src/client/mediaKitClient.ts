@@ -1,13 +1,6 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import {
-  CreateMediaKitItemRequest,
-  CreateMediaKitRequest,
-  MediaKitDTO,
-  MediaKitItemDTO,
-  UpdateMediaKitItemRequest,
-  UpdateMediaKitRequest,
-} from '@/entity/MediaKit';
+import { CreateMediaKitRequest, MediaKitDTO, MediaKitItemDTO, UpdateMediaKitRequest } from '@/entity/MediaKit';
 import { reject } from '@/utils';
 
 const BASE = '/mediakits';
@@ -62,10 +55,7 @@ export async function deleteMediaKit(slug: string): Promise<void> {
     .catch(reject);
 }
 
-export async function addMediaKitItem(
-  artistSlug: string,
-  request: CreateMediaKitItemRequest
-): Promise<MediaKitItemDTO> {
+export async function addMediaKitItem(artistSlug: string, request: FormData): Promise<MediaKitItemDTO> {
   return axios
     .post(`${BASE}/${artistSlug}/items`, request, { headers: await getAuthorizedHeader() })
     .then((res) => {
@@ -75,10 +65,7 @@ export async function addMediaKitItem(
     .catch(reject);
 }
 
-export async function updateMediaKitItem(
-  itemSlug: string,
-  request: UpdateMediaKitItemRequest
-): Promise<MediaKitItemDTO> {
+export async function updateMediaKitItem(itemSlug: string, request: FormData): Promise<MediaKitItemDTO> {
   return axios
     .put(`${BASE}/items/${itemSlug}`, request, { headers: await getAuthorizedHeader() })
     .then((res) => {

@@ -12,7 +12,7 @@ interface PostPage {
   hasMore: boolean;
 }
 
-async function callCreatePost(post: CreatePostRequest): Promise<void> {
+async function callCreatePost(post: FormData): Promise<void> {
   return axios
     .post('/posts', post, { headers: await getAuthorizedHeader() })
     .then((response) => {

@@ -12,7 +12,6 @@ import {
   IonModal,
   IonContent,
   IonAvatar,
-  toastController,
   AlertInput,
   IonInput,
   IonLabel,
@@ -29,6 +28,7 @@ import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { createCheckoutSession } from '@/client/paymentClient';
+import { showToast } from '@/utils';
 
 defineProps({
   product: {
@@ -127,17 +127,15 @@ const askDeleteProduct = async (slug: string) => {
       { text: 'Cancel', role: 'cancel' },
       {
         text: 'Delete',
+        role: 'destructive',
         handler: async () => {
           try {
             await callDeleteProduct(slug);
             emit('product-deleted', slug);
-          } catch (error) {
-            const toast = await toastController.create({
-              message: 'Failed to delete post.',
-              duration: 1500,
-              position: 'top',
-            });
-            await toast.present();
+            await showToast('Succeed to delete your product');
+          } catch (error: unknown) {
+            const message = 'Failed to delete your product. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
@@ -181,8 +179,10 @@ const exportProduct = async (product: Product) => {
             const canvas = await createProductCanvas(product, selectedTheme as ExportTheme);
 
             downloadCanvas(canvas);
-          } catch (err) {
-            console.error('Export failed:', err);
+            await showToast('Succeed to export product');
+          } catch (error: unknown) {
+            const message = 'Failed to export product. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
