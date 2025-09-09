@@ -17,10 +17,7 @@ import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue
 import { usePlayerStore } from '@/store/playerStore';
 import { Post } from '@/entity/Post';
 import {
-  callPostUnlike,
   callDeletePost,
-  callGetPostLikes,
-  callPostLike,
   callPostUnrepost,
   callPostRepost,
   callGetPostReposts,
@@ -38,6 +35,7 @@ import customPauseIcon from '@/assets/icons/pause.svg';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
+import { useLikeStore } from '@/store/likeStore';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -51,16 +49,20 @@ const props = defineProps({
 
 const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repost', 'post-unrepost']);
 
+const likeStore = useLikeStore();
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
-const displayedLikeCount: Ref<number> = ref(props.post.likeCount ?? 0);
+const displayedLikeCount = computed(() => likeStore.likeCount(props.post.slug));
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const isPlaying = ref(false);
 const duration = ref(0);
 const currentTime = ref(0);
 const player = usePlayerStore();
-const instanceId = Math.random().toString(36).slice(2);
+
+function isCurrentTrack(): boolean {
+  return !!player.current && player.current.slug === props.post.slug;
+}
 
 const progressBackground = computed(() => {
   if (duration.value === 0) return '';
@@ -80,19 +82,19 @@ const togglePlay = () => {
 
 const onLoadedMetadata = () => {
   const audio = audioRef.value;
-  if (audio) duration.value = audio.duration;
-  if (audio && props.post.audioUrl) {
-    // Keep global duration in sync if this is the active track
-    if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
-      player.updateDuration(audio.duration || 0);
-    }
+  if (!audio) return;
+  duration.value = audio.duration;
+  if (!props.post.audioUrl) return;
+  if (isCurrentTrack()) {
+    player.updateDuration(audio.duration || 0);
   }
 };
 
 const onTimeUpdate = () => {
   const audio = audioRef.value;
-  if (audio) currentTime.value = audio.currentTime;
-  if (player.current?.slug === props.post.slug && player.current?.instanceId === instanceId) {
+  if (!audio) return;
+  currentTime.value = audio.currentTime;
+  if (isCurrentTrack()) {
     player.updateTime(currentTime.value);
   }
 };
@@ -104,36 +106,31 @@ const seekAudio = () => {
 
 const onAudioPlay = () => {
   isPlaying.value = true;
-  // Announce globally that this post's audio started, so others can pause
-  document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug, instanceId } }));
-  // Set player store to this track
-  if (props.post.audioUrl) {
-    const isSameInstance = player.current?.slug === props.post.slug && player.current?.instanceId === instanceId;
-    if (!isSameInstance) {
-      player.setTrack({
-        slug: props.post.slug,
-        title: props.post.title,
-        artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
-        imageUrl: props.post.imageUrl || undefined,
-        audioUrl: props.post.audioUrl,
-        duration: duration.value || 0,
-        instanceId,
-        owner: props.post.owner,
-      });
-    }
-    player.isPlaying = true;
+  document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug } }));
+  if (!props.post.audioUrl) return;
+  if (!isCurrentTrack()) {
+    player.setTrack({
+      slug: props.post.slug,
+      title: props.post.title,
+      artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
+      imageUrl: props.post.imageUrl || undefined,
+      audioUrl: props.post.audioUrl,
+      duration: duration.value || 0,
+      owner: props.post.owner,
+    });
   }
+  player.isPlaying = true;
 };
 
 const onAudioPause = () => {
   isPlaying.value = false;
-  if (player.current?.slug === props.post.slug) player.isPlaying = false;
+  if (isCurrentTrack()) player.isPlaying = false;
 };
 
 const onEnded = () => {
   isPlaying.value = false;
   currentTime.value = 0;
-  if (player.current?.slug === props.post.slug) {
+  if (isCurrentTrack()) {
     player.isPlaying = false;
     player.updateTime(0);
   }
@@ -212,14 +209,9 @@ const askDeletePost = async (slug: string) => {
 };
 
 const loadLikes = async (postSlug: string) => {
-  try {
-    const likes = await callGetPostLikes(postSlug);
-    const userSlug = authStore.getAuthenticatedUserSlug;
-
-    if (likes.some((like) => like === userSlug)) isLiked.value = true;
-  } catch (error) {
-    console.error('Unable to load likes', error);
-  }
+  likeStore.initFromPost(props.post);
+  await likeStore.ensureLikedLoaded(postSlug);
+  isLiked.value = likeStore.isLiked(postSlug);
 };
 
 const loadReposts = async (postSlug: string) => {
@@ -234,21 +226,9 @@ const loadReposts = async (postSlug: string) => {
 };
 
 const toggleLikePost = async (postSlug: string) => {
-  try {
-    if (isLiked.value && props.post) {
-      await callPostUnlike(postSlug);
-      isLiked.value = false;
-      emit('post-unlike');
-      document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug: postSlug } }));
-    } else {
-      await callPostLike(postSlug);
-      isLiked.value = true;
-      emit('post-like');
-      document.dispatchEvent(new CustomEvent('post-like', { detail: { slug: postSlug } }));
-    }
-  } catch (error) {
-    console.error('Unable to update like', error);
-  }
+  await likeStore.toggle(postSlug);
+  isLiked.value = likeStore.isLiked(postSlug);
+  emit(isLiked.value ? 'post-like' : 'post-unlike');
 };
 
 const toggleRepostPost = async (postSlug: string) => {
@@ -284,26 +264,16 @@ watch(
   { immediate: true }
 );
 
-// Keep local counter in sync with prop updates from parent
-watch(
-  () => props.post.likeCount,
-  (newVal) => {
-    if (typeof newVal === 'number') displayedLikeCount.value = newVal;
-  }
-);
 
 onMounted(() => {
   const postSlug = props.post.slug;
 
   loadLikes(postSlug);
   loadReposts(postSlug);
-  // Listen for global play events to pause this audio if another post starts
   const handleExternalPlay = (e: Event) => {
-    const detail = (e as CustomEvent).detail as { slug?: string; instanceId?: string } | undefined;
-    const otherSlug = detail?.slug;
-    const otherInstance = detail?.instanceId;
-    // Pause if another post (different slug) started OR the same slug but different instance (duplicate component)
-    if (otherSlug && (otherSlug !== props.post.slug || otherInstance !== instanceId)) {
+  const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
+  const otherSlug = detail?.slug;
+  if (otherSlug && otherSlug !== props.post.slug) {
       const audio = audioRef.value;
       if (audio && !audio.paused) {
         audio.pause();
@@ -312,39 +282,20 @@ onMounted(() => {
   };
   document.addEventListener('post-audio-play', handleExternalPlay as EventListener);
 
-  // Reflect external like/unlike events (e.g., from NowPlayingBar) immediately
-  const handleExternalLike = (e: Event) => {
-    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-    if (detail?.slug === props.post.slug) {
-      isLiked.value = true;
-      // Increment local counter only for external events; parent will handle internal button clicks
-      displayedLikeCount.value = Math.max(0, displayedLikeCount.value) + 1;
+  const stopWatch = watch(
+    () => [likeStore.liked[props.post.slug], likeStore.counts[props.post.slug]],
+    () => {
+      isLiked.value = likeStore.isLiked(props.post.slug);
     }
-  };
-  const handleExternalUnlike = (e: Event) => {
-    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-    if (detail?.slug === props.post.slug) {
-      isLiked.value = false;
-      displayedLikeCount.value = Math.max(0, displayedLikeCount.value - 1);
-    }
-  };
-  document.addEventListener('post-like', handleExternalLike as EventListener);
-  document.addEventListener('post-unlike', handleExternalUnlike as EventListener);
+  );
 
-  // Listen to global player control events (play/pause/seek)
   const handlePlayerControl = (e: Event) => {
-    const { action, slug, time } = (e as CustomEvent).detail || {};
+  const { action, slug, time } = (e as CustomEvent).detail || {};
     const audio = audioRef.value;
     if (!audio) return;
-    // Only react if slug matches this post
     if (slug && slug !== props.post.slug) return;
-    // If store is pointing to a different instance of the same slug, adopt control to this instance
-    if (player.current?.slug === props.post.slug && player.current?.instanceId !== instanceId) {
-      player.current.instanceId = instanceId;
-    }
 
     if (action === 'play') {
-      // Play this post's audio; onAudioPlay will broadcast and set store if needed
       audio.play();
     } else if (action === 'pause') {
       if (!audio.paused) audio.pause();
@@ -357,13 +308,10 @@ onMounted(() => {
   };
   document.addEventListener('player-control', handlePlayerControl as EventListener);
 
-  // Cleanup listener on unmount
   onUnmounted(() => {
     document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
-    document.removeEventListener('post-like', handleExternalLike as EventListener);
-    document.removeEventListener('post-unlike', handleExternalUnlike as EventListener);
+  stopWatch();
     document.removeEventListener('player-control', handlePlayerControl as EventListener);
-    // Ensure audio is stopped if this component unmounts
     const audio = audioRef.value;
     if (audio && !audio.paused) {
       audio.pause();

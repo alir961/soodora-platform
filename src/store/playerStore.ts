@@ -9,7 +9,6 @@ export interface NowPlaying {
   imageUrl?: string;
   audioUrl: string;
   duration: number;
-  instanceId?: string;
   owner?: User | Artist;
 }
 
@@ -39,7 +38,7 @@ export const usePlayerStore = defineStore('player', {
       this.isPlaying = true;
       document.dispatchEvent(
         new CustomEvent('player-control', {
-          detail: { action: 'play', slug: this.current?.slug, instanceId: this.current?.instanceId },
+          detail: { action: 'play', slug: this.current?.slug },
         })
       );
     },
@@ -47,7 +46,7 @@ export const usePlayerStore = defineStore('player', {
       this.isPlaying = false;
       document.dispatchEvent(
         new CustomEvent('player-control', {
-          detail: { action: 'pause', slug: this.current?.slug, instanceId: this.current?.instanceId },
+          detail: { action: 'pause', slug: this.current?.slug },
         })
       );
     },
@@ -55,7 +54,7 @@ export const usePlayerStore = defineStore('player', {
       this.currentTime = time;
       document.dispatchEvent(
         new CustomEvent('player-control', {
-          detail: { action: 'seek', time, slug: this.current?.slug, instanceId: this.current?.instanceId },
+          detail: { action: 'seek', time, slug: this.current?.slug },
         })
       );
     },

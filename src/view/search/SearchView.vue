@@ -77,11 +77,9 @@ const fetchUsers = async (reset = false) => {
     if (searchMode.value === 'artist') {
       artists.value.push(...content.filter(isArtist));
     } else if (searchMode.value === '') {
-      // Default mode: separate users and artists
       artists.value.push(...content.filter(isArtist));
       users.value.push(...content.filter((user) => !isArtist(user)));
     } else {
-      // 'user' mode: only non-artists
       users.value.push(...content.filter((user) => !isArtist(user)));
       artists.value = [];
     }

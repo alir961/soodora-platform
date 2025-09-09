@@ -17,29 +17,26 @@ const props = defineProps({
   backButton: Boolean,
 });
 const authStore = useAuthStore();
-// In Ionic Vue, template refs on components point to the Vue wrapper; use $el to access the Web Component
 const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
-const bottomPadding = ref('0px'); // used only when styling the outer content
+const bottomPadding = ref('0px');
 let scrollEl: HTMLElement | null = null;
 let ro: ResizeObserver | null = null;
 let mo: MutationObserver | null = null;
 let rafId: number | null = null;
 let nowPlayingOffset = 0;
-let styleTargetEl: HTMLElement | null = null; // the IonContent element to style (inner if present)
-let hostEl: HTMLElement | null = null; // the outer wrapper ion-content element
+let styleTargetEl: HTMLElement | null = null;
+let hostEl: HTMLElement | null = null;
 
-// Compute and apply padding only when content scrolls and the player is visible
+
 const updatePadding = () => {
   if (!scrollEl) return;
   const isScrollable = scrollEl.scrollHeight > scrollEl.clientHeight + 1;
-  const extra = 8; // small visual gap so last item never kisses the bar
+  const extra = 8;
   const pxVal = nowPlayingOffset > 0 && isScrollable ? Math.ceil(nowPlayingOffset + extra) : 0;
-  // If we're styling the inner content, don't also pad the outer
   if (styleTargetEl && hostEl && styleTargetEl !== hostEl) {
     bottomPadding.value = '0px';
     styleTargetEl.style.setProperty('--padding-bottom', `${pxVal}px`);
   } else {
-    // Style outer wrapper
     bottomPadding.value = `${pxVal}px`;
     if (hostEl) hostEl.style.setProperty('--padding-bottom', `${pxVal}px`);
   }
@@ -63,7 +60,6 @@ onMounted(async () => {
     authStore.logout();
   }
 
-  // Setup scroll element and observers for conditional bottom padding
   await nextTick();
   try {
     const hostCandidate = (contentRef.value?.$el ?? contentRef.value) as unknown;
@@ -72,7 +68,6 @@ onMounted(async () => {
       host = hostCandidate as HTMLElement;
     }
     let targetEl: HTMLElement | null = null;
-    // Prefer a direct child ion-content from the slot (page-level content), not modal content
     if (host && host.children) {
       for (const child of Array.from(host.children)) {
         if ((child as HTMLElement).tagName === 'ION-CONTENT') {
@@ -100,7 +95,6 @@ onMounted(async () => {
     ro = new ResizeObserver(updatePadding);
     ro.observe(scrollEl);
   }
-  // Observe DOM mutations (children added/removed) to react when content changes scrollability
   if (typeof MutationObserver !== 'undefined' && (styleTargetEl || hostEl)) {
     const observeEl = styleTargetEl ?? hostEl!;
     mo = new MutationObserver(() => {
@@ -112,7 +106,6 @@ onMounted(async () => {
     });
     mo.observe(observeEl, { childList: true, subtree: true });
   }
-  // Initial calculation: if a NowPlaying bar already exists, measure it and apply immediately
   const bar = document.querySelector('.now-playing') as HTMLElement | null;
   nowPlayingOffset = bar ? bar.getBoundingClientRect().height : 0;
   updatePadding();
@@ -131,7 +124,6 @@ onUnmounted(() => {
     cancelAnimationFrame(rafId);
     rafId = null;
   }
-  // Clear style on target
   if (styleTargetEl) styleTargetEl.style.setProperty('--padding-bottom', '0px');
   if (hostEl) hostEl.style.setProperty('--padding-bottom', '0px');
 });

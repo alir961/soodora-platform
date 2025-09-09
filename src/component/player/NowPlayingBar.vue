@@ -4,11 +4,13 @@ import { play, pause, closeOutline, heart, heartOutline } from 'ionicons/icons';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { usePlayerStore } from '@/store/playerStore';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import { callGetPostLikes, callPostLike, callPostUnlike } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
+import { toastController } from '@ionic/vue';
+import { useLikeStore } from '@/store/likeStore';
 
 const player = usePlayerStore();
 const auth = useAuthStore();
+const likeStore = useLikeStore();
 const isLiked = ref(false);
 const barEl = ref<HTMLElement | null>(null);
 let ro: ResizeObserver | null = null;
@@ -36,35 +38,24 @@ const formatTime = (time: number) => {
 
 async function loadLiked() {
   const slug = player.current?.slug;
-  const userSlug = auth.getAuthenticatedUserSlug;
-  if (!slug || !userSlug) {
+  if (!slug) {
     isLiked.value = false;
     return;
   }
-  try {
-    const likes = await callGetPostLikes(slug);
-    isLiked.value = likes.some((l) => l === userSlug);
-  } catch {
-    isLiked.value = false;
-  }
+  likeStore.initFromPost({
+    slug,
+    title: player.current?.title || '',
+    likeCount: player.duration ? Math.round(player.duration) : 0,
+  } as any);
+  await likeStore.ensureLikedLoaded(slug);
+  isLiked.value = likeStore.isLiked(slug);
 }
 
 async function toggleLike() {
   const slug = player.current?.slug;
   if (!slug) return;
-  try {
-    if (isLiked.value) {
-      await callPostUnlike(slug);
-      isLiked.value = false;
-      document.dispatchEvent(new CustomEvent('post-unlike', { detail: { slug } }));
-    } else {
-      await callPostLike(slug);
-      isLiked.value = true;
-      document.dispatchEvent(new CustomEvent('post-like', { detail: { slug } }));
-    }
-  } catch {
-    // ignore API errors for UI responsiveness
-  }
+  await likeStore.toggle(slug);
+  isLiked.value = likeStore.isLiked(slug);
 }
 
 watch(
@@ -75,23 +66,14 @@ watch(
   { immediate: true }
 );
 
-// Reflect external likes from PostCard or elsewhere
-function handleExternalLike(e: Event) {
-  const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-  if (detail?.slug && detail.slug === player.current?.slug) isLiked.value = true;
-}
-function handleExternalUnlike(e: Event) {
-  const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-  if (detail?.slug && detail.slug === player.current?.slug) isLiked.value = false;
-}
+watch(
+  () => player.current?.slug && likeStore.liked[player.current.slug],
+  () => {
+    const slug = player.current?.slug;
+    if (slug) isLiked.value = likeStore.isLiked(slug);
+  }
+);
 
-// Register listeners
-if (typeof document !== 'undefined') {
-  document.addEventListener('post-like', handleExternalLike as EventListener);
-  document.addEventListener('post-unlike', handleExternalUnlike as EventListener);
-}
-
-// Publish bar height so pages can adjust only when needed
 function publishOffset(px: number) {
   if (typeof document === 'undefined') return;
   document.dispatchEvent(new CustomEvent('now-playing-offset', { detail: { px } }));
@@ -178,7 +160,6 @@ watch(
   flex-direction: column;
   gap: 8px;
   padding: 10px 12px 12px 12px;
-  /* subtle Soodora orange gradient overlay + glass backdrop */
   background:
     linear-gradient(
       135deg,
@@ -307,7 +288,6 @@ watch(
   color: var(--ion-color-primary);
 }
 
-/* Subtle click/press feedback */
 .play-btn:active {
   transform: scale(0.965);
 }
