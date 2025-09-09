@@ -27,7 +27,6 @@ let nowPlayingOffset = 0;
 let styleTargetEl: HTMLElement | null = null;
 let hostEl: HTMLElement | null = null;
 
-
 const updatePadding = () => {
   if (!scrollEl) return;
   const isScrollable = scrollEl.scrollHeight > scrollEl.clientHeight + 1;

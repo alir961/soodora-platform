@@ -16,12 +16,7 @@ import {
 import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue';
 import { usePlayerStore } from '@/store/playerStore';
 import { Post } from '@/entity/Post';
-import {
-  callDeletePost,
-  callPostUnrepost,
-  callPostRepost,
-  callGetPostReposts,
-} from '@/client/postClient';
+import { callDeletePost, callPostUnrepost, callPostRepost, callGetPostReposts } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
@@ -108,6 +103,16 @@ const onAudioPlay = () => {
   isPlaying.value = true;
   document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug } }));
   if (!props.post.audioUrl) return;
+  const currentEl = audioRef.value;
+  document.querySelectorAll<HTMLAudioElement>('audio[data-post-slug]').forEach((el) => {
+    if (el !== currentEl && !el.paused) {
+      try {
+        el.pause();
+      } catch {
+        /* ignore */
+      }
+    }
+  });
   if (!isCurrentTrack()) {
     player.setTrack({
       slug: props.post.slug,
@@ -264,16 +269,15 @@ watch(
   { immediate: true }
 );
 
-
 onMounted(() => {
   const postSlug = props.post.slug;
 
   loadLikes(postSlug);
   loadReposts(postSlug);
   const handleExternalPlay = (e: Event) => {
-  const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-  const otherSlug = detail?.slug;
-  if (otherSlug && otherSlug !== props.post.slug) {
+    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
+    const otherSlug = detail?.slug;
+    if (otherSlug && otherSlug !== props.post.slug) {
       const audio = audioRef.value;
       if (audio && !audio.paused) {
         audio.pause();
@@ -290,7 +294,7 @@ onMounted(() => {
   );
 
   const handlePlayerControl = (e: Event) => {
-  const { action, slug, time } = (e as CustomEvent).detail || {};
+    const { action, slug, time } = (e as CustomEvent).detail || {};
     const audio = audioRef.value;
     if (!audio) return;
     if (slug && slug !== props.post.slug) return;
@@ -310,7 +314,7 @@ onMounted(() => {
 
   onUnmounted(() => {
     document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
-  stopWatch();
+    stopWatch();
     document.removeEventListener('player-control', handlePlayerControl as EventListener);
     const audio = audioRef.value;
     if (audio && !audio.paused) {
@@ -361,6 +365,7 @@ const formatTime = (time: number) => {
           <audio
             :src="post.audioUrl"
             ref="audioRef"
+            :data-post-slug="post.slug"
             @loadedmetadata="onLoadedMetadata"
             @timeupdate="onTimeUpdate"
             @play="onAudioPlay"

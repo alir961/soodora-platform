@@ -4,12 +4,9 @@ import { play, pause, closeOutline, heart, heartOutline } from 'ionicons/icons';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { usePlayerStore } from '@/store/playerStore';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import { useAuthStore } from '@/store/reactiveStorage';
-import { toastController } from '@ionic/vue';
 import { useLikeStore } from '@/store/likeStore';
 
 const player = usePlayerStore();
-const auth = useAuthStore();
 const likeStore = useLikeStore();
 const isLiked = ref(false);
 const barEl = ref<HTMLElement | null>(null);
@@ -42,11 +39,7 @@ async function loadLiked() {
     isLiked.value = false;
     return;
   }
-  likeStore.initFromPost({
-    slug,
-    title: player.current?.title || '',
-    likeCount: player.duration ? Math.round(player.duration) : 0,
-  } as any);
+  likeStore.initFromPost({ slug });
   await likeStore.ensureLikedLoaded(slug);
   isLiked.value = likeStore.isLiked(slug);
 }
@@ -62,6 +55,18 @@ watch(
   () => player.current?.slug,
   () => {
     loadLiked();
+    const slug = player.current?.slug;
+    if (!slug) return;
+    document.querySelectorAll<HTMLAudioElement>('audio[data-post-slug]').forEach((el) => {
+      const elSlug = el.getAttribute('data-post-slug');
+      if (elSlug && elSlug !== slug && !el.paused) {
+        try {
+          el.pause();
+        } catch {
+          /* ignore */
+        }
+      }
+    });
   },
   { immediate: true }
 );

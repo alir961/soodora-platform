@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-import type { Post } from '@/entity/Post';
 import { callPostLike, callPostUnlike, callGetPostLikes } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 
@@ -20,7 +19,7 @@ export const useLikeStore = defineStore('likes', {
     likeCount: (state) => (slug: string) => state.counts[slug] ?? 0,
   },
   actions: {
-    initFromPost(post: Post) {
+    initFromPost(post: { slug: string; likeCount?: number }) {
       if (this.counts[post.slug] === undefined && typeof post.likeCount === 'number') {
         this.counts[post.slug] = post.likeCount;
       }
