@@ -93,7 +93,10 @@ onIonViewWillEnter(() => {
       <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
         <swiper-slide>
           <ion-row no-bounce>
-            <div v-for="post in posts" :key="post.slug" class="post-wrapper">
+            <div
+              v-for="(post, index) in posts"
+              :key="post.slug"
+              :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
               <PostCard
                 :post="post"
                 @post-deleted="() => loadPosts('for-you', true)"
@@ -111,7 +114,10 @@ onIonViewWillEnter(() => {
 
         <swiper-slide>
           <ion-row no-bounce>
-            <div v-for="post in followingPosts" :key="post.slug" class="post-wrapper">
+            <div
+              v-for="(post, index) in followingPosts"
+              :key="post.slug"
+              :class="['post-wrapper', index === followingPosts.length - 1 ? 'last' : '']">
               <PostCard
                 :post="post"
                 @post-deleted="() => loadPosts('following', true)"
@@ -165,6 +171,10 @@ onIonViewWillEnter(() => {
     padding: 0;
     margin: 0;
   }
+}
+
+.post-wrapper.last {
+  border-bottom: none;
 }
 
 .no-content {

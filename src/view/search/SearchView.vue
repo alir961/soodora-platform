@@ -77,11 +77,9 @@ const fetchUsers = async (reset = false) => {
     if (searchMode.value === 'artist') {
       artists.value.push(...content.filter(isArtist));
     } else if (searchMode.value === '') {
-      // Default mode: separate users and artists
       artists.value.push(...content.filter(isArtist));
       users.value.push(...content.filter((user) => !isArtist(user)));
     } else {
-      // 'user' mode: only non-artists
       users.value.push(...content.filter((user) => !isArtist(user)));
       artists.value = [];
     }
@@ -267,8 +265,11 @@ const searchPlaceholder = computed(() => {
         <h2 class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
         <ion-list v-if="posts.length > 0">
           <ion-row>
-            <div v-for="post in posts" :key="post.slug" class="post-wrapper">
-              <div class="post-separator"></div>
+            <div
+              v-for="(post, index) in posts"
+              :key="post.slug"
+              :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
+              <div class="post-separator" v-if="index !== posts.length - 1"></div>
               <PostCard
                 :post="post"
                 @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"

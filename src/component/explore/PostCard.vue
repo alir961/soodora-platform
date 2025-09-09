@@ -12,17 +12,10 @@ import {
   IonNote,
   IonAvatar,
 } from '@ionic/vue';
-import { PropType, Ref, ref, watch, computed, onMounted } from 'vue';
+import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { usePlayerStore } from '@/store/playerStore';
 import { Post } from '@/entity/Post';
-import {
-  callPostUnlike,
-  callDeletePost,
-  callGetPostLikes,
-  callPostLike,
-  callPostUnrepost,
-  callPostRepost,
-  callGetPostReposts,
-} from '@/client/postClient';
+import { callDeletePost, callPostUnrepost, callPostRepost, callGetPostReposts } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
@@ -37,6 +30,7 @@ import UsernameTag from '@/component/user/UsernameTag.vue';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { showToast } from '@/utils';
+import { useLikeStore } from '@/store/likeStore';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -50,13 +44,20 @@ const props = defineProps({
 
 const emit = defineEmits(['post-deleted', 'post-like', 'post-unlike', 'post-repost', 'post-unrepost']);
 
+const likeStore = useLikeStore();
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
+const displayedLikeCount = computed(() => likeStore.likeCount(props.post.slug));
 
 const audioRef = ref<HTMLAudioElement | null>(null);
 const isPlaying = ref(false);
 const duration = ref(0);
 const currentTime = ref(0);
+const player = usePlayerStore();
+
+function isCurrentTrack(): boolean {
+  return !!player.current && player.current.slug === props.post.slug;
+}
 
 const progressBackground = computed(() => {
   if (duration.value === 0) return '';
@@ -69,26 +70,75 @@ const togglePlay = () => {
   if (!audio) return;
   if (audio.paused) {
     audio.play();
-    isPlaying.value = true;
   } else {
     audio.pause();
-    isPlaying.value = false;
   }
 };
 
 const onLoadedMetadata = () => {
   const audio = audioRef.value;
-  if (audio) duration.value = audio.duration;
+  if (!audio) return;
+  duration.value = audio.duration;
+  if (!props.post.audioUrl) return;
+  if (isCurrentTrack()) {
+    player.updateDuration(audio.duration || 0);
+  }
 };
 
 const onTimeUpdate = () => {
   const audio = audioRef.value;
-  if (audio) currentTime.value = audio.currentTime;
+  if (!audio) return;
+  currentTime.value = audio.currentTime;
+  if (isCurrentTrack()) {
+    player.updateTime(currentTime.value);
+  }
 };
 
 const seekAudio = () => {
   const audio = audioRef.value;
   if (audio) audio.currentTime = currentTime.value;
+};
+
+const onAudioPlay = () => {
+  isPlaying.value = true;
+  document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug } }));
+  if (!props.post.audioUrl) return;
+  const currentEl = audioRef.value;
+  document.querySelectorAll<HTMLAudioElement>('audio[data-post-slug]').forEach((el) => {
+    if (el !== currentEl && !el.paused) {
+      try {
+        el.pause();
+      } catch {
+        /* ignore */
+      }
+    }
+  });
+  if (!isCurrentTrack()) {
+    player.setTrack({
+      slug: props.post.slug,
+      title: props.post.title,
+      artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
+      imageUrl: props.post.imageUrl || undefined,
+      audioUrl: props.post.audioUrl,
+      duration: duration.value || 0,
+      owner: props.post.owner,
+    });
+  }
+  player.isPlaying = true;
+};
+
+const onAudioPause = () => {
+  isPlaying.value = false;
+  if (isCurrentTrack()) player.isPlaying = false;
+};
+
+const onEnded = () => {
+  isPlaying.value = false;
+  currentTime.value = 0;
+  if (isCurrentTrack()) {
+    player.isPlaying = false;
+    player.updateTime(0);
+  }
 };
 
 const exportThemes = [
@@ -164,14 +214,9 @@ const askDeletePost = async (slug: string) => {
 };
 
 const loadLikes = async (postSlug: string) => {
-  try {
-    const likes = await callGetPostLikes(postSlug);
-    const userSlug = authStore.getAuthenticatedUserSlug;
-
-    if (likes.some((like) => like === userSlug)) isLiked.value = true;
-  } catch (error) {
-    console.error('Unable to load likes', error);
-  }
+  likeStore.initFromPost(props.post);
+  await likeStore.ensureLikedLoaded(postSlug);
+  isLiked.value = likeStore.isLiked(postSlug);
 };
 
 const loadReposts = async (postSlug: string) => {
@@ -186,20 +231,9 @@ const loadReposts = async (postSlug: string) => {
 };
 
 const toggleLikePost = async (postSlug: string) => {
-  try {
-    if (isLiked.value && props.post) {
-      await callPostUnlike(postSlug);
-      isLiked.value = false;
-      emit('post-unlike');
-    } else {
-      await callPostLike(postSlug);
-      isLiked.value = true;
-      emit('post-like');
-    }
-  } catch (error: unknown) {
-    const message = 'Unable to like the post. ' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
-  }
+  await likeStore.toggle(postSlug);
+  isLiked.value = likeStore.isLiked(postSlug);
+  emit(isLiked.value ? 'post-like' : 'post-unlike');
 };
 
 const toggleRepostPost = async (postSlug: string) => {
@@ -243,6 +277,53 @@ onMounted(() => {
 
   loadLikes(postSlug);
   loadReposts(postSlug);
+  const handleExternalPlay = (e: Event) => {
+    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
+    const otherSlug = detail?.slug;
+    if (otherSlug && otherSlug !== props.post.slug) {
+      const audio = audioRef.value;
+      if (audio && !audio.paused) {
+        audio.pause();
+      }
+    }
+  };
+  document.addEventListener('post-audio-play', handleExternalPlay as EventListener);
+
+  const stopWatch = watch(
+    () => [likeStore.liked[props.post.slug], likeStore.counts[props.post.slug]],
+    () => {
+      isLiked.value = likeStore.isLiked(props.post.slug);
+    }
+  );
+
+  const handlePlayerControl = (e: Event) => {
+    const { action, slug, time } = (e as CustomEvent).detail || {};
+    const audio = audioRef.value;
+    if (!audio) return;
+    if (slug && slug !== props.post.slug) return;
+
+    if (action === 'play') {
+      audio.play();
+    } else if (action === 'pause') {
+      if (!audio.paused) audio.pause();
+    } else if (action === 'seek' && typeof time === 'number') {
+      audio.currentTime = time;
+    } else if (action === 'stop') {
+      if (!audio.paused) audio.pause();
+      audio.currentTime = 0;
+    }
+  };
+  document.addEventListener('player-control', handlePlayerControl as EventListener);
+
+  onUnmounted(() => {
+    document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
+    stopWatch();
+    document.removeEventListener('player-control', handlePlayerControl as EventListener);
+    const audio = audioRef.value;
+    if (audio && !audio.paused) {
+      audio.pause();
+    }
+  });
 });
 
 function formatCount(count: number): string {
@@ -284,17 +365,30 @@ const formatTime = (time: number) => {
         <p>{{ post.content }}</p>
         <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
         <div v-if="post.audioUrl" class="audio-content">
-          <audio :src="post.audioUrl" ref="audioRef" @loadedmetadata="onLoadedMetadata" @timeupdate="onTimeUpdate" />
+          <audio
+            :src="post.audioUrl"
+            ref="audioRef"
+            :data-post-slug="post.slug"
+            @loadedmetadata="onLoadedMetadata"
+            @timeupdate="onTimeUpdate"
+            @play="onAudioPlay"
+            @pause="onAudioPause"
+            @ended="onEnded" />
           <div class="custom-audio-controls">
             <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
             <span class="audio-time">{{ formatTime(currentTime) }}</span>
             <input
+              class="slider swiper-no-swiping"
               type="range"
               min="0"
               :max="duration"
               step="0.1"
               v-model="currentTime"
               @input="seekAudio"
+              @touchstart.stop
+              @touchmove.stop
+              @touchend.stop
+              @mousedown.stop
               :style="progressBackground" />
             <span class="audio-duration">{{ formatTime(duration) }}</span>
           </div>
@@ -308,7 +402,7 @@ const formatTime = (time: number) => {
               @click.stop="toggleLikePost(post.slug)"
               :class="{ 'heart-active': isLiked }">
               <ion-icon :src="customLikeIcon" />
-              <ion-note v-if="formatCount(post.likeCount)">{{ formatCount(post.likeCount) }}</ion-note>
+              <ion-note v-if="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
             </ion-button>
 
             <ion-button
