@@ -182,3 +182,11 @@ ion-header {
   padding: calc(env(safe-area-inset-top) - 10px) 0px 0px;
 }
 </style>
+
+<style>
+ion-content::part(scroll)::before,
+ion-content::part(scroll)::after {
+  display: none !important;
+  content: none !important;
+}
+</style>

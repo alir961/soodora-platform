@@ -3,7 +3,6 @@ interface UserUpdatePayload {
   firstname: string;
   lastname: string;
   description: string;
-  avatarUrl: string;
 }
 
 export type { UserUpdatePayload };

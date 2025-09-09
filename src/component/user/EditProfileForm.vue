@@ -10,15 +10,16 @@ import {
   IonLabel,
   IonTextarea,
   modalController,
-  toastController,
 } from '@ionic/vue';
-import { callDeleteProfile, callDeleteUserAvatar, callUpdateProfile } from '@/client/profileClient';
+import { callDeleteProfile, callUpdateProfile } from '@/client/profileClient';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import { deleteBearerToken } from '@/store/localStorage';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { computed, onMounted, ref } from 'vue';
 import { User } from '@/entity/User';
+import { showToast } from '@/utils';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const router = useRouter();
 
@@ -28,7 +29,7 @@ const usernameInput = ref('');
 const firstnameInput = ref('');
 const lastnameInput = ref('');
 const descriptionInput = ref('');
-const avatarUrlInput = ref('');
+const avatarFile = ref<File | null>(null);
 
 const saving = ref(false);
 
@@ -37,7 +38,6 @@ const originalData = ref({
   firstname: '',
   lastname: '',
   description: '',
-  avatarUrl: '',
 });
 
 const hasChanges = computed(() => {
@@ -46,7 +46,7 @@ const hasChanges = computed(() => {
     firstnameInput.value !== originalData.value.firstname ||
     lastnameInput.value !== originalData.value.lastname ||
     descriptionInput.value !== originalData.value.description ||
-    avatarUrlInput.value !== originalData.value.avatarUrl
+    avatarFile.value !== null
   );
 });
 
@@ -65,18 +65,14 @@ const deleteAccount = async () => {
       { text: 'Cancel', role: 'cancel' },
       {
         text: 'Delete',
+        role: 'destructive',
         handler: async () => {
           try {
             await callDeleteProfile();
             await logout();
-          } catch (error) {
-            const toast = await toastController.create({
-              message: 'Failed to delete account.',
-              duration: 1500,
-              position: 'top',
-            });
-
-            await toast.present();
+          } catch (error: unknown) {
+            const message = 'Failed to delete your account. ' + (error instanceof Error ? error.message : '');
+            await showToast(message, 'danger');
           }
         },
       },
@@ -92,42 +88,44 @@ const updateAccount = async () => {
       firstname: firstnameInput.value,
       lastname: lastnameInput.value,
       description: descriptionInput.value,
-      avatarUrl: avatarUrlInput.value || '',
     };
 
-    saving.value = true;
-    if (avatarUrlInput.value.trim() === '' && originalData.value.avatarUrl.trim() !== '') await callDeleteUserAvatar();
-    await callUpdateProfile(payload);
-    await modalController.dismiss();
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to update account.',
-      duration: 1500,
-      position: 'top',
-    });
+    const formData = new FormData();
+    const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+    formData.append('data', blob);
 
-    await toast.present();
+    if (avatarFile.value) formData.append('file', avatarFile.value);
+
+    saving.value = true;
+    await callUpdateProfile(formData);
+    await modalController.dismiss();
+    await showToast('Succeed to update your profile');
+  } catch (error: unknown) {
+    const message = 'Failed to update your profile. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     saving.value = false;
   }
 };
 
+const onAvatarSelected = (file: File) => {
+  avatarFile.value = file;
+};
+
 onMounted(() => {
   const user: User | null = authStore.getAuthenticatedUser;
-
   if (!user) return;
+
   usernameInput.value = user.username;
   firstnameInput.value = user.firstname;
   lastnameInput.value = user.lastname;
   descriptionInput.value = user.description;
-  avatarUrlInput.value = user.avatarUrl ?? '';
 
   originalData.value = {
     username: user.username,
     firstname: user.firstname,
     lastname: user.lastname,
     description: user.description,
-    avatarUrl: user.avatarUrl ?? '',
   };
 });
 </script>
@@ -176,17 +174,7 @@ onMounted(() => {
         <ion-textarea placeholder="Add a description" v-model="descriptionInput" auto-grow />
       </ion-item>
       <ion-item class="modal-item">
-        <div class="profile-picture-url-wrapper">
-          <div class="profile-picture-url-label-row">
-            <span>Profile Picture URL</span>
-            <ion-icon
-              v-if="avatarUrlInput"
-              :icon="trashOutline"
-              class="profile-picture-url-delete-icon"
-              @click="avatarUrlInput = ''" />
-          </div>
-          <ion-input placeholder="Add a profile picture URL" v-model="avatarUrlInput" />
-        </div>
+        <FileUpload fieldLabel="Select Image" label="Choose File" accept="image/*" @file-selected="onAvatarSelected" />
       </ion-item>
     </div>
     <div class="settings-actions">
@@ -249,21 +237,6 @@ onMounted(() => {
 .settings-delete-account {
   --background: #db3030;
   --color: white;
-}
-
-.profile-picture-url-wrapper {
-  margin-top: 12px;
-  width: 100%;
-}
-
-.profile-picture-url-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.profile-picture-url-delete-icon {
-  color: #db3030;
 }
 
 .floating-header {

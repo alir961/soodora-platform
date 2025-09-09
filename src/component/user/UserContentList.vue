@@ -2,7 +2,7 @@
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { onMounted, PropType, Ref, ref } from 'vue';
 import { Swiper as SwiperClass } from 'swiper';
-import { IonGrid, IonInfiniteScroll, IonInfiniteScrollContent, IonRow, toastController } from '@ionic/vue';
+import { IonGrid, IonInfiniteScroll, IonInfiniteScrollContent, IonRow } from '@ionic/vue';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import {
@@ -15,6 +15,7 @@ import { User } from '@/entity/User';
 import { PostPage } from '@/client/postClient';
 import { Product } from '@/entity/Product';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
+import { showToast } from '@/utils';
 
 type Tab = 'posts' | 'reposts' | 'audios' | 'products';
 
@@ -90,14 +91,9 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
       currentPostPage.value++;
     }
     hasMorePost.value = postPage.hasMore;
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Failed to load user posts!',
-      duration: 1500,
-      position: 'top',
-    });
-    console.error(error);
-    await toast.present();
+  } catch (error: unknown) {
+    const message = 'Failed to load user posts. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
   }

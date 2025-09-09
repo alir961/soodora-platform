@@ -5,7 +5,6 @@ import {
   IonContent,
   IonItem,
   IonInput,
-  toastController,
   IonIcon,
   IonSelect,
   IonSelectOption,
@@ -14,12 +13,16 @@ import {
 
 import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
-import { createProduct, CreateProductRequest } from '@/client/productClient';
+import { createProduct } from '@/client/productClient';
 import { ref, watch } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
+import { showToast } from '@/utils';
+import { ProductCreationData } from '@/entity/Product';
+import FileUpload from '@/component/file/FileUpload.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -79,51 +82,86 @@ const newPost = ref<CreatePostRequest>({
   repostCount: 0,
   commentCount: 0,
 });
+const editedPostFile = ref<File | null>(null);
+
+const isValidAudioUrl = (url: string) => /\.mp3$/i.test(url);
 
 const publishPost = async () => {
+  if (newPost.value.audioUrl && !isValidAudioUrl(newPost.value.audioUrl)) {
+    await showToast('Only mp3 file URL are accepted', 'danger');
+    return;
+  }
+
   try {
-    await callCreatePost(newPost.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newPost.value)], { type: 'application/json' }));
+
+    if (editedPostFile.value) formData.append('file', editedPostFile.value);
+
+    await callCreatePost(formData);
     showModal.value = false;
+    await showToast('Succeed to publish post.');
     await router.push('/explore');
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Error creating post',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+  } catch (error: unknown) {
+    const message =
+      'Failed to create post, check all the form fields. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
 const showProductModal = ref(false);
-
-const newProduct = ref<CreateProductRequest>({
+const newProduct = ref<ProductCreationData>({
   name: '',
   description: '',
-  imageUrl: '',
   category: '',
-  price: null,
-  quantity: null,
-  createdAt: new Date(),
+  price: 0,
+  quantity: 0,
 });
+const editedProductFile = ref<File | null>(null);
 
 const publishProduct = async () => {
   try {
-    await createProduct(newProduct.value);
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(newProduct.value)], { type: 'application/json' }));
+
+    if (editedProductFile.value) formData.append('file', editedProductFile.value);
+
+    await createProduct(formData);
     showProductModal.value = false;
     await router.push('/marketplace');
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Error creating product',
-      duration: 2000,
-      color: 'danger',
-    });
-    await toast.present();
+    await showToast('Succeed to publish product.');
+  } catch (error: unknown) {
+    const message =
+      'Failed to create product, check all the form fields. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
 const goToSalesPage = async () => {
   await router.push('/marketplace/mysales');
+};
+
+const goToMediaKit = async () => {
+  const userSlug = authStore.getAuthenticatedUserSlug;
+  if (!userSlug) return;
+
+  try {
+    const userPage = await getMediaKitByArtistSlug(userSlug);
+    if (userPage) return router.push(`/mediakits/${userPage.slug}`);
+  } catch (error: unknown) {
+    const message =
+      'Unable to fetch Media Kit, redirecting to creation form. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'warning');
+  }
+  await router.push('/mediakits/create');
+};
+
+const onPostFileSelected = (file: File) => {
+  editedPostFile.value = file;
+};
+
+const onProductFileSelected = (file: File) => {
+  editedProductFile.value = file;
 };
 </script>
 
@@ -132,20 +170,21 @@ const goToSalesPage = async () => {
     <div class="create-container ion-padding">
       <h1 class="page-title">Create</h1>
       <p class="page-description">
-        Create your world with Soodora.
-        <br />
-        Linkpages, posts, products and exports.
-        <br />
+        Create your world with Soodora.<br />
+        Linkpages, posts, products and exports.<br />
         All from here
       </p>
+
       <ion-button @click="showModal = true" expand="block" class="go-button" color="primary" fill="solid">
         Create a Post
         <ion-icon :icon="createOutline" slot="end"></ion-icon>
       </ion-button>
+
       <ion-button @click="showProductModal = true" expand="block" class="go-button" color="primary" fill="solid">
         Create a Product
         <ion-icon :icon="bagAddOutline" slot="end"></ion-icon>
       </ion-button>
+
       <ion-button @click="goToLinkPages" expand="block" class="go-button" color="primary" fill="solid">
         {{ hasLinkPage ? 'Edit your LinkPage' : 'Create a LinkPage' }}
         <ion-icon :icon="linkOutline" slot="end"></ion-icon>
@@ -155,44 +194,40 @@ const goToSalesPage = async () => {
         My Sales
       </ion-button>
 
+      <ion-button @click="goToMediaKit" expand="block" class="go-button" color="primary" fill="solid">
+        Create MediaKit
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
+      </ion-button>
+
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
         <ion-content>
           <div>
             <div class="floating-header">
-              <ion-button
-                class="inline-back-button"
-                fill="clear"
-                size="large"
-                @click="showModal = false"
-                aria-label="Back">
+              <ion-button class="inline-back-button" fill="clear" size="large" @click="showModal = false">
                 <ion-icon :icon="arrowBackOutline" class="back-icon" />
                 <span>Back</span>
               </ion-button>
               <h2 class="floating-header-title">New Post</h2>
             </div>
+
             <div id="section-content">
               <ion-item class="modal-item">
                 <ion-label position="stacked">Title</ion-label>
                 <ion-input placeholder="Add a title" v-model="newPost.title"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Content</ion-label>
                 <ion-input placeholder="Add some content" v-model="newPost.content"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
-                <div class="url-wrapper">
-                  <div class="url-label-row">
-                    <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon
-                      v-if="newPost.imageUrl"
-                      :icon="trashOutline"
-                      class="url-delete-icon"
-                      @click="newPost.imageUrl = ''" />
-                  </div>
-                  <ion-input placeholder="Add an image URL" v-model="newPost.imageUrl" />
-                </div>
-              </ion-item>
-              <ion-item class="modal-item">
+                <FileUpload
+                  fieldLabel="Select Image"
+                  label="Choose File"
+                  accept="image/*"
+                  @file-selected="onPostFileSelected" />
+
                 <div class="url-wrapper">
                   <div class="url-label-row">
                     <ion-label position="stacked">Audio URL</ion-label>
@@ -206,8 +241,9 @@ const goToSalesPage = async () => {
                 </div>
               </ion-item>
             </div>
+
             <div class="post-actions">
-              <ion-button expand="block" @click="publishPost" class="create-post"> Create Post</ion-button>
+              <ion-button expand="block" @click="publishPost" class="create-post">Create Post</ion-button>
             </div>
           </div>
         </ion-content>
@@ -228,28 +264,26 @@ const goToSalesPage = async () => {
               </ion-button>
               <h2 class="floating-header-title">New Product</h2>
             </div>
+
             <div id="section-content">
               <ion-item class="modal-item">
                 <ion-label position="stacked">Name</ion-label>
                 <ion-input placeholder="Add a product name" v-model="newProduct.name"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Description</ion-label>
                 <ion-input placeholder="Add a product description" v-model="newProduct.description"></ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
-                <div class="url-wrapper">
-                  <div class="url-label-row">
-                    <ion-label position="stacked">Image URL</ion-label>
-                    <ion-icon
-                      v-if="newProduct.imageUrl"
-                      :icon="trashOutline"
-                      class="url-delete-icon"
-                      @click="newProduct.imageUrl = ''" />
-                  </div>
-                  <ion-input placeholder="Add an image URL" v-model="newProduct.imageUrl" />
-                </div>
+                <FileUpload
+                  fieldLabel="Select Image"
+                  label="Choose File"
+                  accept="image/*"
+                  @file-selected="onProductFileSelected" />
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Category</ion-label>
                 <ion-select interface="action-sheet" placeholder="Select a category" v-model="newProduct.category">
@@ -262,22 +296,22 @@ const goToSalesPage = async () => {
                   <ion-select-option value="Posters">Posters</ion-select-option>
                 </ion-select>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Price</ion-label>
                 <ion-input type="number" placeholder="Add a price" v-model.number="newProduct.price">
                   <div slot="end">€</div>
                 </ion-input>
               </ion-item>
+
               <ion-item class="modal-item">
                 <ion-label position="stacked">Quantity</ion-label>
-                <ion-input
-                  type="number"
-                  placeholder="Add how many you’ve got in stock"
-                  v-model.number="newProduct.quantity"></ion-input>
+                <ion-input type="number" placeholder="Add stock" v-model.number="newProduct.quantity"></ion-input>
               </ion-item>
             </div>
+
             <div class="post-actions">
-              <ion-button expand="block" class="post-button" @click="publishProduct"> Create Product</ion-button>
+              <ion-button expand="block" class="post-button" @click="publishProduct">Create Product</ion-button>
             </div>
           </div>
         </ion-content>
@@ -331,21 +365,6 @@ const goToSalesPage = async () => {
   --padding-start: 0;
 }
 
-.url-wrapper {
-  margin-top: 12px;
-  width: 100%;
-}
-
-.url-label-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.url-delete-icon {
-  color: #db3030;
-}
-
 .create-container {
   display: flex;
   flex-direction: column;
@@ -356,7 +375,7 @@ const goToSalesPage = async () => {
 .page-title {
   font-size: 24px;
   font-weight: 700;
-  margin-bottom: 0px;
+  margin-bottom: 0;
 }
 
 .page-description {

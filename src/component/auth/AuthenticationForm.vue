@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { IonButton, IonInput, IonItem, toastController } from '@ionic/vue';
+import { IonButton, IonInput, IonItem } from '@ionic/vue';
 import { computed, ref, Ref } from 'vue';
 import { callLogin, callRegister, RegisterRequest } from '@/client/authenticationClient';
 import { saveBearerToken } from '@/store/localStorage';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { showToast } from '@/utils';
 
 const { isLogin } = defineProps({
   isLogin: Boolean,
@@ -13,7 +14,6 @@ const { isLogin } = defineProps({
 
 const router: Router = useRouter();
 const route = useRoute();
-const emit = defineEmits(['toggle']);
 
 const authStore = useAuthStore();
 
@@ -25,24 +25,20 @@ const lastname: Ref<string> = ref('');
 
 const login = async () => {
   try {
-    const token = await callLogin({ email: email.value, password: password.value });
+    const token = await callLogin({ identifier: email.value, password: password.value });
+
     await saveBearerToken(token);
-
-    const user = await retrieveAuthenticatedProfile();
-    authStore.authenticate(user);
-
+    authStore.authenticate(await retrieveAuthenticatedProfile());
     await router.push('/explore');
-  } catch (error) {
-    const toast = await toastController.create({
-      message: 'Login Failed!',
-      duration: 1500,
-      position: 'top',
-    });
-    await toast.present();
+    await showToast('Login Succeed.');
+  } catch (error: unknown) {
+    const message = 'Login Failed, invalid credentials !' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
+    console.warn(error);
   }
 };
 
-const signup = async () => {
+const register = async () => {
   try {
     const request: RegisterRequest = {
       username: username.value,
@@ -54,19 +50,11 @@ const signup = async () => {
     };
 
     await callRegister(request);
-    await router.push({ query: {} });
-    emit('toggle');
+    await router.push('/confirm');
+    await showToast('Sign up Succeeded !');
   } catch (error: unknown) {
-    let message: string = 'Sign up Failed!';
-    if (error instanceof Error) message = error.message;
-
-    const toast = await toastController.create({
-      message: message,
-      duration: 1500,
-      position: 'top',
-    });
-
-    await toast.present();
+    const message = 'Sign up Failed. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -83,7 +71,7 @@ const passwordCriteria = computed(() => {
 </script>
 
 <template>
-  <div @keyup.enter="isLogin ? login() : signup()">
+  <div @keyup.enter="isLogin ? login() : register()">
     <div v-if="!isLogin">
       <ion-item>
         <ion-input placeholder="Username" type="text" v-model="username"></ion-input>
@@ -114,7 +102,7 @@ const passwordCriteria = computed(() => {
       <li :style="{ color: passwordCriteria.hasSpecial ? 'gray' : 'red' }">At least one special character</li>
     </ul>
 
-    <ion-button expand="block" @click="isLogin ? login() : signup()">
+    <ion-button expand="block" @click="isLogin ? login() : register()">
       {{ isLogin ? 'Log In' : 'Sign Up' }}
     </ion-button>
   </div>

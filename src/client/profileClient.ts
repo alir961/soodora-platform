@@ -2,7 +2,6 @@ import axios from 'axios';
 import { reject } from '@/utils';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { User } from '@/entity/User';
-import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 
 type OAuthProvider = 'google';
 
@@ -22,7 +21,7 @@ async function retrieveAuthenticatedProfile(): Promise<User> {
     .catch(reject);
 }
 
-async function callUpdateProfile(payload: UserUpdatePayload): Promise<void> {
+async function callUpdateProfile(payload: FormData): Promise<void> {
   return axios
     .put('/profile', payload, { headers: await getAuthorizedHeader() })
     .then((response) => {

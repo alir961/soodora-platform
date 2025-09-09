@@ -7,6 +7,7 @@ import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { callCreateComment, callGetComments } from '@/client/postClient';
 import { Comment } from '@/entity/Post';
 import CommentCard from '@/component/explore/CommentCard.vue';
+import { showToast } from '@/utils';
 
 const route = useRoute();
 const postSlug = route.params.slug as string;
@@ -25,13 +26,17 @@ const loadComments = async () => {
 const createComment = async () => {
   const content = commentInput.value.trim();
 
-  if (!content) return;
+  if (!content) {
+    await showToast("Comment can't be empty.", 'warning');
+    return;
+  }
   try {
     await callCreateComment(postSlug, content);
     commentInput.value = '';
     await loadComments();
-  } catch (error) {
-    console.error(error);
+  } catch (error: unknown) {
+    const message = 'Failed to drop your comment. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -113,15 +118,5 @@ onMounted(() => {
   padding: 1em;
   box-sizing: border-box;
   transition: bottom 0.3s ease;
-}
-
-.keyboard-backdrop {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background-color: rgb(201, 23, 23);
-  z-index: 90;
 }
 </style>
