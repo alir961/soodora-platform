@@ -182,8 +182,8 @@ const saveEditedItemHandler = async () => {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(editedItem.value)], { type: 'application/json' }));
 
-    if (editedItem.value.type === IMAGE && selectedFile.value) {
-      formData.append('file', selectedFile.value);
+    if (editedItem.value.type === IMAGE && editedSelectedFile.value) {
+      formData.append('file', editedSelectedFile.value);
     }
 
     const updated = await updateMediaKitItem(editedItem.value.slug, formData);
@@ -358,9 +358,7 @@ watch(
           </IonItem>
 
           <IonItem v-if="editedItem.type === IMAGE">
-            <IonItem v-if="editedItem.type === IMAGE">
-              <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onEditedFileSelected" />
-            </IonItem>
+            <FileUpload fieldLabel="Select Image" accept="image/*" @file-selected="onEditedFileSelected" />
           </IonItem>
 
           <IonItem>
