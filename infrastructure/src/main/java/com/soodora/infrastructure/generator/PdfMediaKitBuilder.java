@@ -5,6 +5,7 @@ import com.soodora.domain.mediakit.MediaKitGenerationException;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -18,13 +19,12 @@ import static com.itextpdf.text.BaseColor.BLACK;
 import static com.itextpdf.text.Element.ALIGN_CENTER;
 import static com.itextpdf.text.Font.BOLD;
 import static com.itextpdf.text.Font.NORMAL;
-import static com.itextpdf.text.pdf.BaseFont.*;
 
 @Slf4j
 public class PdfMediaKitBuilder {
 
-    private static final String OVERPASS_REGULAR = "service/src/main/resources/fonts/overpass/overpass-regular.otf";
-    private static final String OVERPASS_SEMIBOLD = "service/src/main/resources/fonts/overpass/overpass-semibold.otf";
+    private static final String OVERPASS_REGULAR = "/fonts/overpass/overpass-regular.otf";
+    private static final String OVERPASS_SEMIBOLD = "/fonts/overpass/overpass-semibold.otf";
 
     private final Document document;
     private final Font titleFont;
@@ -34,9 +34,9 @@ public class PdfMediaKitBuilder {
     public PdfMediaKitBuilder(Document document) {
         this.document = document;
 
-        titleFont = loadFont(OVERPASS_SEMIBOLD, 24, BOLD, BLACK);
-        boldFont = loadFont(OVERPASS_SEMIBOLD, 14, BOLD, BLACK);
-        normalFont = loadFont(OVERPASS_REGULAR, 12, NORMAL, BLACK);
+        titleFont = loadFontFromResources(OVERPASS_SEMIBOLD, 24, BOLD, BLACK);
+        boldFont = loadFontFromResources(OVERPASS_SEMIBOLD, 14, BOLD, BLACK);
+        normalFont = loadFontFromResources(OVERPASS_REGULAR, 12, NORMAL, BLACK);
     }
 
     public PdfMediaKitBuilder addBanner(String url) {
@@ -123,14 +123,25 @@ public class PdfMediaKitBuilder {
         }
     }
 
-    private Font loadFont(String path, int size, int style, BaseColor color) {
-        try {
-            BaseFont baseFont = createFont(path, IDENTITY_H, EMBEDDED);
+    private Font loadFontFromResources(String resourcePath, int size, int style, BaseColor color) {
+        try (InputStream inputStream = getClass().getResourceAsStream(resourcePath)) {
+            if (inputStream == null)
+                throw new MediaKitGenerationException("Font not found: " + resourcePath);
+
+            byte[] fontBytes = inputStream.readAllBytes();
+
+            BaseFont baseFont = BaseFont.createFont(
+                    resourcePath,
+                    BaseFont.IDENTITY_H,
+                    BaseFont.EMBEDDED,
+                    true,
+                    fontBytes,
+                    null);
 
             return new Font(baseFont, size, style, color);
-        } catch (IOException | DocumentException exception) {
-            log.error("Unable to load font for pdf: {}", exception.getMessage());
-            throw new MediaKitGenerationException("Unable to load font");
+        } catch (Exception e) {
+            log.error("Unable to load font {}: {}", resourcePath, e.getMessage());
+            throw new MediaKitGenerationException("Unable to load font " + resourcePath);
         }
     }
 
