@@ -68,8 +68,6 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
         if ("IMAGE".equalsIgnoreCase(command.type()) && fileData != null && fileData.content() != null) {
             String imageUrl = imageStorageUploader.upload(fileData);
             existingMediaKitItem.setContent(imageUrl);
-        } else {
-            existingMediaKitItem.setContent(command.content());
         }
         return repository.save(existingMediaKitItem).toDTO();
     }
