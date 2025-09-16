@@ -1,8 +1,11 @@
 package com.soodora.api.playlist;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.playlist.CreatePlaylistCommand;
 import com.soodora.domain.playlist.PlaylistDTO;
+import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.UpdatePlaylistCommand;
+import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
@@ -13,10 +16,15 @@ import com.soodora.service.playlist.PlaylistUnityException;
 import com.soodora.service.playlist.UpdatePlaylistRequest;
 import com.soodora.service.user.UnknownUserException;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,7 +40,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import static com.soodora.api.JsonStringify.asJsonString;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPlaylist;
+import static com.soodora.test.factory.PlaylistFactory.*;
+import static com.soodora.test.factory.PostFactory.buildDefaultPost;
+import static com.soodora.test.factory.PostFactory.buildPostsPage;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -50,6 +60,7 @@ class PlaylistControllerIT {
     private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("playlistSlug2", "Playlist 2");
     private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("playlistSlug3", "Playlist 3");
+    private static final PlaylistFullDTO PLAYLIST_4 = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
 
     @Test
     void createPlaylist_Success() throws Exception {
@@ -57,18 +68,32 @@ class PlaylistControllerIT {
         CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest(
                 "Playlist Name",
                 "Description",
-                0,
-                "PUBLIC",
-                "");
+                "PUBLIC");
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(createPlaylistRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
+
+        PlaylistDTO mockedPlaylistDTO = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
+
+        // MOCK service
+        when(playlistService.createPlaylist(any(), any(), any())).thenReturn(mockedPlaylistDTO);
 
         // WHEN & THEN
-        mockMvc.perform(post("/playlists")
-                .contentType("application/json")
-                .content(asJsonString(createPlaylistRequest))
+        mockMvc.perform(multipart("/playlists")
+                .file(jsonPart)
+                .file(filePart)
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.slug").value("playlistSlug1"));
     }
 
     @Test
@@ -77,13 +102,11 @@ class PlaylistControllerIT {
         CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest(
                 "",
                 "Description",
-                0,
-                "",
                 "");
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
-                .createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class));
+                .createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class), any(FileData.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists")
@@ -99,18 +122,28 @@ class PlaylistControllerIT {
         CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest(
                 "Playlist Name",
                 "Description",
-                0,
-                "PUBLIC",
-                "");
+                "PUBLIC");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(createPlaylistRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new PlaylistUnityException("Name is already used"))
-                .when(playlistService).createPlaylist(any(), eq(USER));
+                .when(playlistService).createPlaylist(any(), eq(USER), any());
 
         // WHEN & THEN
-        mockMvc.perform(post("/playlists")
-                .contentType("application/json")
-                .content(asJsonString(createPlaylistRequest))
+        mockMvc.perform(multipart("/playlists")
+                .file(jsonPart)
+                .file(filePart)
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Name is already used"));
@@ -122,17 +155,31 @@ class PlaylistControllerIT {
         UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
                 "Updated Playlist Name",
                 "Updated Description",
-                0,
-                "PUBLIC",
-                "");
+                "PUBLIC");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(updatePlaylistRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(put("/playlists/playlistSlug1")
-                .contentType("application/json")
-                .content(asJsonString(updatePlaylistRequest))
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(multipart("/playlists/playlistSlug1")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
                 .andExpect(status().isAccepted());
     }
 
@@ -142,20 +189,34 @@ class PlaylistControllerIT {
         UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest(
                 "",
                 "",
-                0,
-                "PUBLIC",
-                "");
+                "PUBLIC");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(updatePlaylistRequest).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test-image.jpg",
+                "image/jpeg",
+                "dummy image content".getBytes());
 
         when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))
                 .when(playlistService)
-                .updatePlaylist(any(UpdatePlaylistCommand.class), eq("playlistSlug1"));
+                .updatePlaylist(any(UpdatePlaylistCommand.class), eq("playlistSlug1"), any());
 
         // WHEN & THEN
-        mockMvc.perform(put("/playlists/playlistSlug1")
-                .contentType("application/json")
-                .content(asJsonString(updatePlaylistRequest))
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(multipart("/playlists/playlistSlug1")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Invalid request"));
     }
@@ -167,7 +228,7 @@ class PlaylistControllerIT {
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(get("/playlists")
+        mockMvc.perform(get("/playlists/search")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -179,7 +240,7 @@ class PlaylistControllerIT {
         when(userRepository.find(USER.identifier())).thenReturn(USER);
 
         // WHEN & THEN
-        mockMvc.perform(get("/playlists")
+        mockMvc.perform(get("/playlists/search")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -192,24 +253,25 @@ class PlaylistControllerIT {
     }
 
     @Test
-    void retrievePlaylist_Success() throws Exception {
+    void retrievePlaylistWithPosts_Success() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(playlistService.retrievePlaylistBySlug(eq("playlistSlug4"), any(Pageable.class)))
+                .thenReturn(PLAYLIST_4);
 
         // WHEN & THEN
-        mockMvc.perform(get("/playlists/playlistSlug1")
+        mockMvc.perform(get("/playlists/playlistSlug4")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.slug").value("playlistSlug1"))
-                .andExpect(jsonPath("$.name").value("Playlist 1"));
+                .andExpect(jsonPath("$.playlistSimpleDTO.slug").value("playlistSlug4"))
+                .andExpect(jsonPath("$.postDTO.content").isArray());
     }
 
     @Test
-    void retrievePlaylist_Unknown() throws Exception {
+    void retrievePlaylistWithPosts_Unknown() throws Exception {
         // GIVEN
         when(userRepository.find(USER.identifier())).thenReturn(USER);
-        doThrow(UnknownUserException.class).when(playlistService).retrievePlaylistBySlug(anyString());
+        doThrow(UnknownUserException.class).when(playlistService).retrievePlaylistBySlug(anyString(),
+                any(Pageable.class));
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/unknown")
@@ -222,6 +284,75 @@ class PlaylistControllerIT {
         // WHEN & THEN
         mockMvc.perform(get("/playlists/playlistSlug1"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void addPostToPlaylist_Success() throws Exception {
+        // GIVEN
+        PlaylistFullDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
+        Page<PostDTO> postsAfter = buildPostsPage(asList(
+                buildDefaultPost("postSlug1", "Post 1"),
+                buildDefaultPost("postSlug2", "Post 2")));
+        PlaylistFullDTO playlistAfterAdd = new PlaylistFullDTO(
+                playlistBefore.playlistSimpleDTO(),
+                postsAfter);
+
+        when(playlistService.addPostToPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
+                .thenReturn(playlistAfterAdd);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/playlists/playlistSlug4/posts/postSlug1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.slug").value("playlistSlug4"))
+                .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.name").value("Playlist 4"))
+                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content").isArray())
+                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content.length()").value(2));
+    }
+
+    @Test
+    void removePostFromPlaylist_Success() throws Exception {
+        // GIVEN
+        PlaylistFullDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
+        Page<PostDTO> postsAfter = buildPostsPage(List.of(
+                buildDefaultPost("postSlug2", "Post 2")));
+        PlaylistFullDTO playlistAfterRemove = new PlaylistFullDTO(
+                playlistBefore.playlistSimpleDTO(),
+                postsAfter);
+
+        when(playlistService.removePostFromPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
+                .thenReturn(playlistAfterRemove);
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/playlists/playlistSlug4/posts/postSlug1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.slug").value("playlistSlug4"))
+                .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.name").value("Playlist 4"))
+                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content").isArray())
+                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content.length()").value(1));
+    }
+
+    @Test
+    void addPostToPlaylist_UnknownPlaylist() throws Exception {
+        doThrow(new PlaylistUnityException("Playlist not found"))
+                .when(playlistService).addPostToPlaylist(anyString(), anyString(), any(Pageable.class));
+
+        mockMvc.perform(post("/playlists/unknown/posts/postSlug1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("Playlist not found"));
+    }
+
+    @Test
+    void removePostFromPlaylist_UnknownPost() throws Exception {
+        doThrow(new PlaylistUnityException("Post not found"))
+                .when(playlistService).removePostFromPlaylist(anyString(), anyString(), any(Pageable.class));
+
+        mockMvc.perform(delete("/playlists/playlistSlug1/posts/unknown")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("Post not found"));
     }
 
     @Test

@@ -19,8 +19,8 @@ public class PlaylistEntityFactory extends PlaylistFactory {
                 "Description",
                 PUBLIC,
                 "imageUrl",
-                0,
                 user,
+                null,
                 new Date(),
                 new Date());
     }

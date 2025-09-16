@@ -3,6 +3,10 @@ package com.soodora.test.factory;
 import com.soodora.domain.post.PostDTO;
 
 import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import lombok.NoArgsConstructor;
 
@@ -19,6 +23,7 @@ public class PostFactory {
                 title,
                 "Content",
                 "imageUrl",
+                "my audio",
                 "audioUrl",
                 buildArtistDTO("id"),
                 0,
@@ -34,11 +39,16 @@ public class PostFactory {
                 "Content",
                 "imageUrl",
                 null,
+                null,
                 buildArtistDTO("id"),
                 0,
                 0,
                 0,
                 new Date());
+    }
+
+    public static Page<PostDTO> buildPostsPage(List<PostDTO> posts) {
+        return new PageImpl<>(posts);
     }
 
 }

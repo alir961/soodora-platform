@@ -4,7 +4,6 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
-import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.*;
@@ -150,14 +149,6 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
         return ofNullable(findUserByIdentifierOrThrows(identifier).getArtist())
                 .map(DomainEntity::toDTO);
-    }
-
-    @Override
-    @Transactional
-    public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
-        return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
-                .map(DomainEntity::toDTO)
-                .toList();
     }
 
     @Override

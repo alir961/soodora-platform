@@ -12,11 +12,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import static java.util.stream.Collectors.joining;
 
 public record UpdatePlaylistRequest(
-        String name,
-        String description,
-        int numberOfTracks,
-        @Schema(description = "Playlist privacy in the following format: PUBLIC, PRIVATE, PROTECTED", example = "PUBLIC") String privacy,
-        String imageUrl) implements Request<UpdatePlaylistCommand> {
+        @Schema(description = "Playlist name", example = "My playlist") String name,
+        @Schema(description = "Playlist description", example = "My description") String description,
+        @Schema(description = "Playlist privacy in the following format: PUBLIC, PRIVATE, PROTECTED", example = "PUBLIC") String privacy)
+        implements
+            Request<UpdatePlaylistCommand> {
 
     static String privacyValues = Stream.of(PlaylistPrivacy.values())
             .map(Enum::toString)
@@ -29,8 +29,6 @@ public record UpdatePlaylistRequest(
         return new UpdatePlaylistCommand(
                 name,
                 description,
-                imageUrl,
-                numberOfTracks,
                 privacyState);
     }
 
