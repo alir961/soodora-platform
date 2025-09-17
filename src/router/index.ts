@@ -16,6 +16,9 @@ import MySaleView from '@/view/marketplace/MySaleView.vue';
 import ConfirmationView from '@/view/user/ConfirmationView.vue';
 import MediaKitCreateView from '@/view/create/MediaKitCreateView.vue';
 import MediaKitEditView from '@/view/mediakit/MediaKitEditView.vue';
+import PlaylistView from '@/view/playlist/PlaylistView.vue';
+import PlaylistCreateView from '@/view/create/PlaylistCreateView.vue';
+import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -109,6 +112,21 @@ const routes: Array<RouteRecordRaw> = [
     path: '/mediakits/:slug',
     name: 'MediaKitEdit',
     component: MediaKitEditView,
+  },
+  {
+    path: '/playlists/create',
+    name: 'PlaylistCreateView',
+    component: PlaylistCreateView,
+  },
+  {
+    path: '/playlists/:slug',
+    name: 'PlaylistDetailsView',
+    component: PlaylistDetailsView,
+  },
+  {
+    path: '/playlists/me',
+    name: 'PlaylistView',
+    component: PlaylistView,
   },
   {
     path: '/maintenance',

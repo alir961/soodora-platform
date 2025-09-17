@@ -59,7 +59,7 @@ export async function addMediaKitItem(artistSlug: string, request: FormData): Pr
   return axios
     .post(`${BASE}/${artistSlug}/items`, request, { headers: await getAuthorizedHeader() })
     .then((res) => {
-      if (res && res.status === 201 && res.data?.mediaKitItemDTO) return res.data as MediaKitItemDTO;
+      if (res && res.status === 201 && res.data?.mediaKitItemDTO) return res.data.mediaKitItemDTO as MediaKitItemDTO;
       return reject('Failed to add MediaKit item');
     })
     .catch(reject);
@@ -69,7 +69,7 @@ export async function updateMediaKitItem(itemSlug: string, request: FormData): P
   return axios
     .put(`${BASE}/items/${itemSlug}`, request, { headers: await getAuthorizedHeader() })
     .then((res) => {
-      if (res && res.status === 202 && res.data?.mediaKitItemDTO) return res.data as MediaKitItemDTO;
+      if (res && res.status === 202 && res.data?.mediaKitItemDTO) return res.data.mediaKitItemDTO as MediaKitItemDTO;
       return reject('Failed to update MediaKit item');
     })
     .catch(reject);

@@ -57,7 +57,7 @@ const loadProducts = async (reset = false) => {
       products.value.push(...response.content);
       currentPage.value++;
     }
-    hasMore.value = response.content.length === PAGE_SIZE;
+    hasMore.value = response.hasMore;
   } catch (error) {
     console.error('Error loading products:', error);
     hasMore.value = false;
@@ -139,12 +139,6 @@ const handleFilterModalClose = () => {
 </template>
 
 <style scoped>
-.sort-select {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
 .filter-modal {
   display: flex;
   flex-direction: column;
