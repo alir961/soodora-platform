@@ -1,15 +1,18 @@
 package com.soodora.infrastructure.playlist;
 
 import com.soodora.domain.playlist.PlaylistDTO;
+import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.PlaylistPrivacy;
+import com.soodora.domain.post.PostDTO;
 import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.domain.Page;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,12 +46,13 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
     @Column(length = 5000)
     private String imageUrl;
 
-    @Column
-    private int numberOfTracks;
-
     @ManyToOne
     @JoinColumn
     private UserEntity user;
+
+    @ManyToMany
+    @JoinTable(name = "playlists_posts", joinColumns = @JoinColumn(name = "playlist_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
+    private List<PostEntity> posts = new ArrayList<>();
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -58,16 +62,36 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
     @Column
     private Date updatedAt;
 
+    public void addPost(PostEntity post) {
+        if (!posts.contains(post)) {
+            posts.add(post);
+        }
+    }
+
+    public void removePost(PostEntity post) {
+        posts.remove(post);
+    }
+
+    public void clearPosts() {
+        posts.clear();
+    }
+
     @Override
     public PlaylistDTO toDTO() {
         return new PlaylistDTO(
                 slug,
                 name,
                 description,
-                numberOfTracks,
+                posts.size(),
                 privacy,
                 imageUrl,
-                user.toDTO());
+                user.toDTO(),
+                createdAt,
+                updatedAt);
+    }
+
+    public PlaylistFullDTO toFullDTO(Page<PostDTO> postsPage) {
+        return new PlaylistFullDTO(toDTO(), postsPage);
     }
 
 }

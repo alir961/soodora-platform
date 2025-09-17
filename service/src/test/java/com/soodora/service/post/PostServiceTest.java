@@ -59,7 +59,7 @@ class PostServiceTest {
     @Test
     void createPost_Success() {
         // GIVEN
-        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "audioUrl");
+        CreatePostCommand command = new CreatePostCommand("New Post", "Content", "My audio", "audioUrl");
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),
                 "test-image.jpg",

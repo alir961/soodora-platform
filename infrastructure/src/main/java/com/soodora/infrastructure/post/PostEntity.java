@@ -3,6 +3,7 @@ package com.soodora.infrastructure.post;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.playlist.PlaylistEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.*;
@@ -50,6 +51,9 @@ public class PostEntity implements DomainEntity<PostDTO> {
     @Column(length = 5000)
     private String imageUrl;
 
+    @Column
+    private String audioTitle;
+
     @Column(length = 5000)
     private String audioUrl;
 
@@ -66,6 +70,9 @@ public class PostEntity implements DomainEntity<PostDTO> {
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "posts_reposts", joinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     private Set<UserEntity> reposts;
+
+    @ManyToMany(mappedBy = "posts")
+    private Set<PlaylistEntity> playlists = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -94,6 +101,7 @@ public class PostEntity implements DomainEntity<PostDTO> {
                 title,
                 content,
                 imageUrl,
+                audioTitle,
                 audioUrl,
                 artist.toDTO(),
                 likes.size(),

@@ -3,7 +3,6 @@ package com.soodora.domain.user;
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 
@@ -26,7 +25,6 @@ public interface UserRepository {
     boolean isUsed(Identifier identifier);
     String retrieveEncodedPassword(Identifier identifier);
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
-    List<PlaylistDTO> retrievePlaylists(Identifier identifier);
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
     void follow(Identifier follower, Identifier following);

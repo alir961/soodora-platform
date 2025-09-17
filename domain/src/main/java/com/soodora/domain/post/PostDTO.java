@@ -9,6 +9,7 @@ public record PostDTO(
         String title,
         String content,
         String imageUrl,
+        String audioTitle,
         String audioUrl,
         ArtistDTO owner,
         int likeCount,

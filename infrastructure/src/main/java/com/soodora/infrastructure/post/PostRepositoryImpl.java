@@ -53,6 +53,7 @@ public class PostRepositoryImpl implements PostRepository {
             String imageUrl = imageStorageUploader.upload(fileData);
             entity.setImageUrl(imageUrl);
         }
+        entity.setAudioTitle(command.audioTitle());
         entity.setAudioUrl(command.audioUrl());
         entity.setSlug(generateUniqueSlug());
         entity.setArtist(artistEntity);

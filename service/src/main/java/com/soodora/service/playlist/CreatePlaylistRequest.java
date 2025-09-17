@@ -12,11 +12,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import static java.util.stream.Collectors.joining;
 
 public record CreatePlaylistRequest(
-        String name,
-        String description,
-        int numberOfTracks,
-        @Schema(description = "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, PROTECTED", example = "PUBLIC") String privacy,
-        String imageUrl) implements Request<CreatePlaylistCommand> {
+        @Schema(description = "Playlist name", example = "My playlist") String name,
+        @Schema(description = "Playlist description", example = "My description") String description,
+        @Schema(description = "Playlist privacy privacy in the following format: PUBLIC, PRIVATE, UNLISTED", example = "PUBLIC") String privacy)
+        implements
+            Request<CreatePlaylistCommand> {
 
     static String privacyValues = Stream.of(PlaylistPrivacy.values())
             .map(Enum::toString)
@@ -32,7 +32,7 @@ public record CreatePlaylistRequest(
             throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
         PlaylistPrivacy privacyState = PlaylistPrivacy.valueOf(privacy.toUpperCase());
 
-        return new CreatePlaylistCommand(name.trim(), description.trim(), numberOfTracks, privacyState, imageUrl);
+        return new CreatePlaylistCommand(name.trim(), description.trim(), privacyState);
     }
 
     private boolean isValidPrivacyState(String state) {

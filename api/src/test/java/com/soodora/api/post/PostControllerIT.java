@@ -70,6 +70,7 @@ class PostControllerIT {
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "Post 1",
                 "Content",
+                "My audio",
                 "audioUrl");
 
         when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
@@ -100,6 +101,7 @@ class PostControllerIT {
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "",
                 "Description",
+                "My audio",
                 "audioUrl");
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),

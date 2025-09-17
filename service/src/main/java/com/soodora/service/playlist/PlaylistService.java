@@ -1,48 +1,47 @@
 package com.soodora.service.playlist;
 
+import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
 import com.soodora.domain.user.UserDTO;
-import com.soodora.domain.user.UserRepository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 
 @Service
 @RequiredArgsConstructor
 public class PlaylistService {
 
-    private final UserRepository userRepository;
     private final PlaylistRepository playlistRepository;
 
-    public void createPlaylist(CreatePlaylistCommand command, UserDTO user) throws PlaylistUnityException {
+    public PlaylistDTO createPlaylist(CreatePlaylistCommand command, UserDTO user, FileData imageFile)
+            throws PlaylistUnityException {
         if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.slug()))
             throw new PlaylistUnityException("Name is already used");
-        playlistRepository.save(command, user);
+        return playlistRepository.save(command, user, imageFile);
     }
 
     public List<PlaylistDTO> retrieveAllPlaylists() {
         return playlistRepository.findAll();
     }
 
-    public List<PlaylistDTO> retrievePlaylists(PlaylistFilter filter) {
-        if (filter.userSlug().isPresent())
-            return userRepository.retrievePlaylists(createFromSlug(filter.userSlug().get()));
-        return retrieveAllPlaylists();
+    public Page<PlaylistDTO> retrievePlaylists(PlaylistFilter filter, Pageable pageable) {
+        return playlistRepository.findByFilter(filter, pageable);
     }
 
-    public PlaylistDTO retrievePlaylistBySlug(String slug) {
-        return playlistRepository.findBySlug(slug);
+    public PlaylistFullDTO retrievePlaylistBySlug(String slug, Pageable pageableAudioPosts) {
+        return playlistRepository.findBySlug(slug, pageableAudioPosts);
     }
 
-    public PlaylistDTO updatePlaylist(UpdatePlaylistCommand command, String slug) {
+    public PlaylistDTO updatePlaylist(UpdatePlaylistCommand command, String slug, FileData imageFile)
+            throws PlaylistUnityException {
         try {
-            return playlistRepository.update(command, slug);
+            return playlistRepository.update(command, slug, imageFile);
         } catch (UnknownSlugException exception) {
             throw new PlaylistUnityException(exception.getMessage());
         }
@@ -50,9 +49,25 @@ public class PlaylistService {
 
     public void deletePlaylistBySlug(String slug) throws UnknownPlaylistException {
         try {
-            playlistRepository.deletePlaylistBySlug(slug);
+            playlistRepository.deletePlaylistAndUnlinkPosts(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPlaylistException(exception.getMessage());
+        }
+    }
+
+    public PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+        try {
+            return playlistRepository.addPostToPlaylist(playlistSlug, postSlug, pageableAudioPosts);
+        } catch (UnknownSlugException exception) {
+            throw new PlaylistUnityException(exception.getMessage());
+        }
+    }
+
+    public PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+        try {
+            return playlistRepository.removePostFromPlaylist(playlistSlug, postSlug, pageableAudioPosts);
+        } catch (UnknownSlugException exception) {
+            throw new PlaylistUnityException(exception.getMessage());
         }
     }
 
