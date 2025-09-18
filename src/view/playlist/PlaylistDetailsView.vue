@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   deletePlaylistBySlug,
@@ -35,6 +35,7 @@ import PostCard from '@/component/explore/PostCard.vue';
 import FileUpload from '@/component/file/FileUpload.vue';
 import { Post } from '@/entity/Post';
 import { showToast } from '@/utils';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const route = useRoute();
 const router = useRouter();
@@ -50,6 +51,11 @@ const showEditModal = ref(false);
 const editName = ref('');
 const editDescription = ref('');
 const editPrivacy = ref<PlaylistPrivacy>('PUBLIC');
+
+const authStore = useAuthStore();
+const isOwner = computed(() => {
+  return playlist.value?.playlistSimpleDTO.owner.slug === authStore.getAuthenticatedUserSlug;
+});
 
 const loadPlaylist = async (slug: string, page = 0) => {
   loading.value = true;
@@ -163,7 +169,7 @@ watch(
           </IonButton>
         </IonButtons>
 
-        <IonButtons slot="end">
+        <IonButtons slot="end" v-if="isOwner">
           <IonButton fill="clear" @click="openEditModal">
             <IonIcon :icon="createOutline" />
           </IonButton>

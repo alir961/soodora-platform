@@ -2,10 +2,12 @@ import { Playlist } from '@/entity/Playlist';
 
 export interface PlaylistSearchParams {
   userSlug?: string;
-  title?: string;
+  name?: string;
   description?: string;
+  privacy?: string;
   page: number;
   size: number;
+  sort: string;
 }
 
 export interface PlaylistSearchResponse {

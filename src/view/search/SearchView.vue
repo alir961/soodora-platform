@@ -22,8 +22,12 @@ import PostCard from '@/component/explore/PostCard.vue';
 import { callSearchUsers } from '@/client/userClient';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
 import UserListItem from '@/component/user/UserListItem.vue';
+import { Playlist } from '@/entity/Playlist';
+import { searchPlaylists } from '@/client/playlistClient';
+import { PlaylistSearchParams } from '@/entity/PlaylistSearch';
+import PlaylistItem from '@/component/playlist/PlaylistItem.vue';
 
-type SearchMode = '' | 'user' | 'artist' | 'post' | 'music';
+type SearchMode = '' | 'user' | 'artist' | 'post' | 'music' | 'playlist';
 
 const PAGE_SIZE = 10;
 
@@ -33,6 +37,7 @@ const searchMode = ref<SearchMode>('');
 const artists = ref<User[]>([]);
 const users = ref<User[]>([]);
 const posts = ref<Post[]>([]);
+const playlists = ref<Playlist[]>([]);
 
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
 
@@ -43,6 +48,10 @@ const isLoadingUsers = ref(false);
 const currentPagePosts = ref(0);
 const hasMorePosts = ref(true);
 const isLoadingPosts = ref(false);
+
+const currentPagePlaylists = ref(0);
+const hasMorePlaylists = ref(true);
+const isLoadingPlaylists = ref(false);
 
 const showFilterModal = ref(false);
 
@@ -147,13 +156,55 @@ const fetchPosts = async (reset = false) => {
   }
 };
 
+const fetchPlaylists = async (reset = false) => {
+  if (!searchInput.value.trim()) {
+    playlists.value = [];
+    currentPagePlaylists.value = 0;
+    hasMorePlaylists.value = true;
+    return;
+  }
+
+  if (isLoadingPlaylists.value || (!hasMorePlaylists.value && !reset)) return;
+
+  if (reset) {
+    playlists.value = [];
+    currentPagePlaylists.value = 0;
+    hasMorePlaylists.value = true;
+  }
+
+  isLoadingPlaylists.value = true;
+
+  try {
+    const params: PlaylistSearchParams = {
+      page: currentPagePlaylists.value,
+      size: PAGE_SIZE,
+      sort: 'createdAt,desc',
+      name: searchInput.value.trim(),
+    };
+
+    const response = await searchPlaylists(undefined, params.name, undefined, params.page, params.size, params.sort);
+
+    playlists.value.push(...response.content);
+
+    hasMorePlaylists.value = response.content.length === PAGE_SIZE;
+    if (hasMorePlaylists.value) currentPagePlaylists.value++;
+  } catch (error) {
+    console.error('Search playlists failed:', error);
+    hasMorePlaylists.value = false;
+  } finally {
+    isLoadingPlaylists.value = false;
+  }
+};
+
 const fetchResults = async (reset = false) => {
   if (searchMode.value === '' || searchMode.value === null) {
-    await Promise.all([fetchUsers(reset), fetchPosts(reset)]);
+    await Promise.all([fetchUsers(reset), fetchPosts(reset), fetchPlaylists(reset)]);
   } else if (searchMode.value === 'user' || searchMode.value === 'artist') {
     await fetchUsers(reset);
   } else if (searchMode.value === 'post' || searchMode.value === 'music') {
     await fetchPosts(reset);
+  } else if (searchMode.value === 'playlist') {
+    await fetchPlaylists(reset);
   }
 };
 
@@ -184,6 +235,8 @@ const searchPlaceholder = computed(() => {
       return 'Search for posts...';
     case 'music':
       return 'Search for music...';
+    case 'playlist':
+      return 'Search for playlist...';
     default:
       return 'Search for anything...';
   }
@@ -209,6 +262,7 @@ const searchPlaceholder = computed(() => {
               <ion-select-option value="user">Users</ion-select-option>
               <ion-select-option value="post">Posts</ion-select-option>
               <ion-select-option value="music">Music</ion-select-option>
+              <ion-select-option value="playlist">Playlists</ion-select-option>
             </ion-select>
             <ion-button expand="block" @click="showFilterModal = false">Apply</ion-button>
           </div>
@@ -226,7 +280,7 @@ const searchPlaceholder = computed(() => {
           <ion-label class="search-info-label-glow">
             Begin your search adventure!<br />
             Find users, artists, posts, <br />
-            or tunes here.
+            playlists or tunes here.
           </ion-label>
           <div class="search-info-icon">🔍</div>
         </div>
@@ -285,10 +339,29 @@ const searchPlaceholder = computed(() => {
           <ion-label class="no-results-label">No matching posts found</ion-label>
         </ion-list>
       </template>
+
+      <template v-if="(searchMode === '' || searchMode === 'playlist') && searchInput.trim().length > 0">
+        <h2 class="section-title">Playlists</h2>
+        <ion-list v-if="playlists.length > 0" class="name-list">
+          <PlaylistItem v-for="pl in playlists" :key="pl.slug" :playlist="pl" />
+        </ion-list>
+        <ion-list v-else>
+          <ion-label class="no-results-label">No matching playlists found</ion-label>
+        </ion-list>
+      </template>
+
       <ion-infinite-scroll
         @ionInfinite="loadMore"
         threshold="100px"
-        :disabled="searchMode === 'user' ? !hasMoreUsers : !hasMorePosts">
+        :disabled="
+          searchMode === 'user'
+            ? !hasMoreUsers
+            : searchMode === 'post' || searchMode === 'music'
+              ? !hasMorePosts
+              : searchMode === 'playlist'
+                ? !hasMorePlaylists
+                : !hasMoreUsers && !hasMorePosts && !hasMorePlaylists
+        ">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </ion-content>

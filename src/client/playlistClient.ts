@@ -75,14 +75,15 @@ export const removePostFromPlaylist = async (playlistSlug: string, postSlug: str
 
 export const searchPlaylists = async (
   userSlug?: string,
-  title?: string,
+  name?: string,
   description?: string,
   page = 0,
-  size = 20
+  size = 20,
+  sort = 'createdAt,desc'
 ): Promise<PlaylistSearchResponse> => {
-  const params: PlaylistSearchParams = { page, size };
+  const params: PlaylistSearchParams = { page, size, sort };
   if (userSlug) params.userSlug = userSlug;
-  if (title) params.title = title;
+  if (name) params.name = name;
   if (description) params.description = description;
 
   return axios
