@@ -195,7 +195,7 @@ class ProductControllerIT {
                     requestPostProcessor.setMethod("PUT");
                     return requestPostProcessor;
                 }))
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     @Test

@@ -1,11 +1,10 @@
 package com.soodora.api.mediakit;
 
 import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakititem.MediaKitItemDTO;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.mediakit.CreateMediaKitItemRequest;
-import com.soodora.service.mediakit.CreateMediaKitRequest;
-import com.soodora.service.mediakit.MediaKitService;
+import com.soodora.service.mediakit.*;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,29 +67,32 @@ class MediaKitControllerIT {
     }
 
     @Test
-    void shouldAddMediaKitItem() throws Exception {
-        // GIVEN
-        CreateMediaKitItemRequest request = new CreateMediaKitItemRequest("image", "Title",
-                "https://example.com/img.jpg");
+    void shouldUpdateMediaKit() throws Exception {
+        String slug = "slug1";
+        UpdateMediaKitRequest request = new UpdateMediaKitRequest("New Title", "New Short", "New Long",
+                "new@example.com", "+11111111");
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
+        when(mediaKitService.updateMediaKit(any(), any())).thenReturn(MEDIA_KIT_DTO);
 
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                "fake image content".getBytes());
+        mockMvc.perform(put("/mediakits/" + slug)
+                .with(user(new UserPrincipal(USER)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+                .andExpect(status().isOk());
+    }
 
-        // WHEN + THEN
-        mockMvc.perform(multipart("/mediakits/artist-slug/items")
-                .file(jsonPart)
-                .file(filePart)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isCreated());
+    @Test
+    void shouldReturnBadRequestOnInvalidUpdateMediaKit() throws Exception {
+        String slug = "slug1";
+        UpdateMediaKitRequest request = new UpdateMediaKitRequest("", "", "", "", "");
+
+        when(mediaKitService.updateMediaKit(any(), any())).thenThrow(new InvalidRequestException("Invalid update"));
+
+        mockMvc.perform(put("/mediakits/" + slug)
+                .with(user(new UserPrincipal(USER)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(asJsonString(request)))
+                .andExpect(status().isBadRequest());
     }
 
     @Test
@@ -124,6 +126,111 @@ class MediaKitControllerIT {
     }
 
     @Test
+    void shouldDeleteMediaKit() throws Exception {
+        String slug = "slug1";
+
+        mockMvc.perform(delete("/mediakits/" + slug)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+
+        verify(mediaKitService).deleteMediaKit(slug);
+    }
+
+    @Test
+    void shouldAddMediaKitItem() throws Exception {
+        // GIVEN
+        CreateMediaKitItemRequest request = new CreateMediaKitItemRequest("image", "Title",
+                "https://example.com/img.jpg");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "test.jpg",
+                "image/jpeg",
+                "fake image content".getBytes());
+
+        // WHEN + THEN
+        mockMvc.perform(multipart("/mediakits/artist-slug/items")
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void shouldUpdateMediaKitItem() throws Exception {
+        String itemSlug = "item-slug";
+        UpdateMediaKitItemRequest request = new UpdateMediaKitItemRequest("Image", "Updated Title",
+                "https://example.com/img2.jpg");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        MockMultipartFile filePart = new MockMultipartFile(
+                "file",
+                "update.jpg",
+                "image/jpeg",
+                "updated image".getBytes());
+
+        when(mediaKitService.updateMediaKitItem(any(), any(), any()))
+                .thenReturn(new MediaKitItemDTO("mediaKitSlug", "slug", "image", "title", "content"));
+
+        mockMvc.perform(multipart("/mediakits/items/" + itemSlug)
+                .file(jsonPart)
+                .file(filePart)
+                .with(user(new UserPrincipal(USER)))
+                .with(request1 -> {
+                    request1.setMethod("PUT");
+                    return request1;
+                })) // force PUT for multipart
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldReturnBadRequestOnInvalidUpdateItem() throws Exception {
+        String itemSlug = "item-slug";
+        UpdateMediaKitItemRequest request = new UpdateMediaKitItemRequest("Image", "Updated Title",
+                "https://example.com/img2.jpg");
+
+        MockMultipartFile jsonPart = new MockMultipartFile(
+                "data",
+                "",
+                "application/json",
+                asJsonString(request).getBytes());
+
+        when(mediaKitService.updateMediaKitItem(any(), any(), any()))
+                .thenThrow(new InvalidRequestException("Invalid update item"));
+
+        mockMvc.perform(multipart("/mediakits/items/" + itemSlug)
+                .file(jsonPart)
+                .with(user(new UserPrincipal(USER)))
+                .with(request1 -> {
+                    request1.setMethod("PUT");
+                    return request1;
+                }))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldDeleteMediaKitItem() throws Exception {
+        String itemSlug = "item-slug";
+
+        mockMvc.perform(delete("/mediakits/items/" + itemSlug)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+
+        verify(mediaKitService).deleteMediaKitItem(itemSlug);
+    }
+
+    @Test
     void shouldExportPdf() throws Exception {
         byte[] pdfData = "PDFDATA".getBytes();
         when(mediaKitService.exportMediaKitToPdf("slug1"))
@@ -151,6 +258,17 @@ class MediaKitControllerIT {
     void shouldReturnForbiddenWithoutAuthOnExport() throws Exception {
         mockMvc.perform(get("/mediakits/slug1/export/pdf"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorOnPdfExportFailure() throws Exception {
+        when(mediaKitService.exportMediaKitToPdf("slug1"))
+                .thenThrow(new RuntimeException("PDF generation failed"));
+
+        mockMvc.perform(get("/mediakits/slug1/export/pdf")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
     }
 
 }

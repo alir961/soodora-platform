@@ -180,7 +180,7 @@ class PlaylistControllerIT {
                     request.setMethod("PUT");
                     return request;
                 }))
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -303,7 +303,7 @@ class PlaylistControllerIT {
         // WHEN & THEN
         mockMvc.perform(post("/playlists/playlistSlug4/posts/postSlug1")
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.slug").value("playlistSlug4"))
                 .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.name").value("Playlist 4"))
                 .andExpect(jsonPath("$.playlistFullDTO.postDTO.content").isArray())
@@ -326,7 +326,7 @@ class PlaylistControllerIT {
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug4/posts/postSlug1")
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isAccepted())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.slug").value("playlistSlug4"))
                 .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.name").value("Playlist 4"))
                 .andExpect(jsonPath("$.playlistFullDTO.postDTO.content").isArray())

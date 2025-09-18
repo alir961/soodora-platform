@@ -50,7 +50,7 @@ public class MediaKitController implements MediaKitResource {
         try {
             MediaKitDTO mediaKitDTO = mediaKitService.updateMediaKit(request.toCommand(), slug);
 
-            return new ResponseEntity<>(new MediaKitResponse(mediaKitDTO), ACCEPTED);
+            return new ResponseEntity<>(new MediaKitResponse(mediaKitDTO), OK);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
@@ -87,7 +87,7 @@ public class MediaKitController implements MediaKitResource {
 
             MediaKitItemDTO mediaKitItemDTO = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug,
                     fileData);
-            return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), ACCEPTED);
+            return new ResponseEntity<>(new MediaKitItemResponse(mediaKitItemDTO), OK);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }

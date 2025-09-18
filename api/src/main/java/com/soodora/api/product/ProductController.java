@@ -31,7 +31,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequestMapping("/products")
 @RequiredArgsConstructor
 @Tag(name = "Product Controller")
-public class ProductController {
+public class ProductController implements ProductResource {
 
     private final ProductService service;
     private final FileDataService fileDataService;
@@ -80,8 +80,8 @@ public class ProductController {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
 
-            service.updateProduct(request.toCommand(), slug, fileData);
-            return new ResponseEntity<>(ACCEPTED);
+            ProductDTO productDTO = service.updateProduct(request.toCommand(), slug, fileData);
+            return new ResponseEntity<>(new ProductResponse(productDTO), OK);
         } catch (InvalidRequestException | UnknownProductException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
