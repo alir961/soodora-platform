@@ -56,10 +56,10 @@ public class PlaylistController implements PlaylistResource {
     @GetMapping("/search")
     public Page<PlaylistDTO> searchPlaylists(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
-            @RequestParam(value = "title") Optional<String> title,
+            @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
             Pageable pageable) {
-        PlaylistFilter filter = new PlaylistFilter(userSlug, title, description);
+        PlaylistFilter filter = new PlaylistFilter(userSlug, name, description);
 
         return playlistService.retrievePlaylists(filter, pageable);
     }

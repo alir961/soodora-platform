@@ -12,8 +12,8 @@ public class PlaylistSpecification {
         if (filter.userSlug().isPresent())
             spec = appendSpec(spec, hasUserSlug(filter.userSlug().get()));
 
-        if (filter.title().isPresent())
-            spec = appendSpec(spec, hasTitle(filter.title().get()));
+        if (filter.name().isPresent())
+            spec = appendSpec(spec, hasName(filter.name().get()));
 
         if (filter.description().isPresent())
             spec = appendSpec(spec, hasDescription(filter.description().get()));
@@ -33,12 +33,12 @@ public class PlaylistSpecification {
         return (root, query, cb) -> cb.equal(root.get("user").get("slug"), slug);
     }
 
-    private static Specification<PlaylistEntity> hasTitle(String title) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%");
+    private static Specification<PlaylistEntity> hasName(String name) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
     }
 
     private static Specification<PlaylistEntity> hasDescription(String description) {
-        return (root, query, cb) -> cb.like(cb.lower(root.get("content")), "%" + description.toLowerCase() + "%");
+        return (root, query, cb) -> cb.like(cb.lower(root.get("description")), "%" + description.toLowerCase() + "%");
     }
 
 }
