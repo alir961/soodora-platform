@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {
   alertController,
+  AlertInput,
+  IonAvatar,
   IonButton,
   IonCard,
   IonCardContent,
@@ -8,14 +10,14 @@ import {
   IonCardSubtitle,
   IonCardTitle,
   IonCol,
-  IonIcon,
-  IonModal,
   IonContent,
-  IonAvatar,
-  AlertInput,
+  IonIcon,
   IonInput,
-  IonLabel,
   IonItem,
+  IonLabel,
+  IonModal,
+  IonSelect,
+  IonSelectOption,
 } from '@ionic/vue';
 import { Product } from '@/entity/Product';
 import { PropType, ref } from 'vue';
@@ -23,14 +25,17 @@ import UsernameTag from '@/component/user/UsernameTag.vue';
 import customTrashIcon from '@/assets/icons/trash.svg';
 import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { callDeleteProduct } from '@/client/productClient';
+import { callDeleteProduct, updateProduct } from '@/client/productClient';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { createCheckoutSession } from '@/client/paymentClient';
 import { showToast } from '@/utils';
+import { arrowBackOutline, pencil } from 'ionicons/icons';
+import FileUpload from '@/component/file/FileUpload.vue';
+import { Artist } from '@/entity/Artist';
 
-defineProps({
+const props = defineProps({
   product: {
     required: true,
     type: Object as PropType<Product>,
@@ -38,16 +43,37 @@ defineProps({
 });
 
 const emit = defineEmits(['product-deleted']);
-
 const authStore = useAuthStore();
+
 const showImageModal = ref(false);
 const modalImageSrc = ref('');
 const modalBreakpoint = ref(0.5);
 const addToCartBtnRef = ref<HTMLElement | null>(null);
 const productImageHeight = ref(0);
+const localProduct = ref<Product>({ ...props.product });
 
 const quantity = ref(1);
 const maxQuantity = ref(0);
+
+const editModalOpen = ref(false);
+const emptyArtist: Artist = {
+  slug: '',
+  username: '',
+  description: '',
+  avatarUrl: '',
+};
+const editedProduct = ref<Product>({
+  slug: '',
+  name: '',
+  description: '',
+  imageUrl: '',
+  category: '',
+  price: 0,
+  quantity: 0,
+  vendor: emptyArtist,
+  createdAt: new Date(),
+});
+const selectedFile = ref<File | null>(null);
 
 const onProductImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement;
@@ -93,13 +119,10 @@ const goToCheckout = async (product: Product) => {
     return;
   }
 
-  let userSlug: string | null = null;
   const authenticatedUserSlug = authStore.getAuthenticatedUserSlug;
-  if (authenticatedUserSlug === null) {
+  if (!authenticatedUserSlug) {
     console.error('Artist slug is null');
     return;
-  } else {
-    userSlug = authenticatedUserSlug;
   }
 
   try {
@@ -109,13 +132,13 @@ const goToCheckout = async (product: Product) => {
       imageUrl: product.imageUrl,
       productSlug: product.slug,
       vendorSlug: product.vendor.slug,
-      buyerSlug: userSlug,
+      buyerSlug: authenticatedUserSlug,
       quantity: quantity.value,
     });
-
     window.location.href = response.url;
-  } catch (err) {
-    console.error('Checkout error:', err);
+  } catch (error: unknown) {
+    const message = 'Checkout Failed. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
   }
 };
 
@@ -145,21 +168,9 @@ const askDeleteProduct = async (slug: string) => {
 };
 
 const exportThemes = [
-  {
-    label: 'Black',
-    type: 'radio',
-    value: 'black',
-  },
-  {
-    label: 'White',
-    type: 'radio',
-    value: 'white',
-  },
-  {
-    label: 'Transparent',
-    type: 'radio',
-    value: 'transparent',
-  },
+  { label: 'Black', type: 'radio', value: 'black' },
+  { label: 'White', type: 'radio', value: 'white' },
+  { label: 'Transparent', type: 'radio', value: 'transparent' },
 ] as AlertInput[];
 
 const exportProduct = async (product: Product) => {
@@ -167,17 +178,13 @@ const exportProduct = async (product: Product) => {
     header: 'Select theme for export',
     inputs: exportThemes,
     buttons: [
-      {
-        text: 'Cancel',
-        role: 'cancel',
-      },
+      { text: 'Cancel', role: 'cancel' },
       {
         text: 'Export',
         handler: async (selectedTheme: string) => {
           if (!selectedTheme) return;
           try {
             const canvas = await createProductCanvas(product, selectedTheme as ExportTheme);
-
             downloadCanvas(canvas);
             await showToast('Succeed to export product');
           } catch (error: unknown) {
@@ -190,20 +197,59 @@ const exportProduct = async (product: Product) => {
   });
   await alert.present();
 };
+
+const openEditModal = () => {
+  editedProduct.value = { ...localProduct.value };
+  editModalOpen.value = true;
+};
+
+const submitEdit = async () => {
+  const formData = new FormData();
+  formData.append(
+    'data',
+    new Blob(
+      [
+        JSON.stringify({
+          name: editedProduct.value.name,
+          description: editedProduct.value.description,
+          category: editedProduct.value.category,
+          price: editedProduct.value.price,
+          quantity: editedProduct.value.quantity,
+        }),
+      ],
+      { type: 'application/json' }
+    )
+  );
+  if (selectedFile.value) formData.append('file', selectedFile.value);
+
+  try {
+    localProduct.value = await updateProduct(localProduct.value.slug, formData);
+    editModalOpen.value = false;
+    selectedFile.value = null;
+    await showToast('Product updated successfully');
+  } catch (error: unknown) {
+    const message = 'Failed to update your product. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
+  }
+};
+
+const onFileSelected = (file: File | null) => {
+  selectedFile.value = file;
+};
 </script>
 
 <template>
   <ion-col size="12" size-md="6" size-lg="4">
-    <ion-card @click="openImageModal(product.imageUrl, product.quantity)">
+    <ion-card @click="openImageModal(localProduct.imageUrl, localProduct.quantity)">
       <div class="product-image-wrapper">
-        <img :src="product.imageUrl" :alt="`Product ${product.name}`" @load="onProductImageLoad" />
+        <img :src="localProduct.imageUrl" :alt="`Product ${localProduct.name}`" @load="onProductImageLoad" />
       </div>
       <div class="product-meta">
         <div class="vendor-info">
           <ion-avatar>
-            <Avatar :user="product.vendor" @click.stop />
+            <Avatar :user="localProduct.vendor" @click.stop />
           </ion-avatar>
-          <UsernameTag :user="product.vendor" @click.stop />
+          <UsernameTag :user="localProduct.vendor" @click.stop />
         </div>
         <div class="product-buttons">
           <ion-button
@@ -211,37 +257,47 @@ const exportProduct = async (product: Product) => {
             size="default"
             color="light"
             class="delete-button"
-            @click.stop="exportProduct(product)">
+            @click.stop="exportProduct(localProduct)">
             <ion-icon :src="customShareIcon" />
           </ion-button>
           <ion-button
-            v-if="product.vendor.slug === authStore.getAuthenticatedUserSlug"
+            v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
+            fill="clear"
+            size="default"
+            color="light"
+            class="edit-button"
+            @click.stop="openEditModal">
+            <ion-icon :src="pencil" />
+          </ion-button>
+          <ion-button
+            v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
             fill="clear"
             size="default"
             color="light"
             class="delete-button"
-            @click.stop="askDeleteProduct(product.slug)">
+            @click.stop="askDeleteProduct(localProduct.slug)">
             <ion-icon :src="customTrashIcon" />
           </ion-button>
         </div>
       </div>
       <ion-card-header>
-        <ion-card-title class="product-title">{{ product.name }}</ion-card-title>
+        <ion-card-title class="product-title">{{ localProduct.name }}</ion-card-title>
         <div class="category-date-row">
-          <ion-card-subtitle>{{ product.category }}</ion-card-subtitle>
-          <DateDisplay :date="product.createdAt" class="product-date" />
+          <ion-card-subtitle>{{ localProduct.category }}</ion-card-subtitle>
+          <DateDisplay :date="localProduct.createdAt" class="product-date" />
         </div>
       </ion-card-header>
       <ion-card-content>
-        <p class="product-description">{{ product.description }}</p>
+        <p class="product-description">{{ localProduct.description }}</p>
         <div class="price-quantity-row">
           <h3 class="product-price">
-            {{ product.price !== null ? product.price.toFixed(2) + '€' : 'No price' }}
+            {{ localProduct.price !== null ? localProduct.price.toFixed(2) + '€' : 'No price' }}
           </h3>
-          <p class="product-quantity">In Stock: {{ product.quantity !== null ? product.quantity : 'N/A' }}</p>
+          <p class="product-quantity">In Stock: {{ localProduct.quantity !== null ? localProduct.quantity : 'N/A' }}</p>
         </div>
       </ion-card-content>
     </ion-card>
+
     <ion-modal
       :is-open="showImageModal"
       @did-dismiss="closeImageModal"
@@ -252,7 +308,6 @@ const exportProduct = async (product: Product) => {
       <ion-content class="ion-padding modal-content">
         <ion-item lines="none" class="quantity-selector">
           <ion-button size="small" @click="decreaseQuantity" :disabled="quantity <= 1">-</ion-button>
-
           <ion-input
             type="number"
             min="1"
@@ -261,19 +316,63 @@ const exportProduct = async (product: Product) => {
             @ionChange="quantityChanged"
             style="max-width: 60px; text-align: center">
           </ion-input>
-
           <ion-button size="small" @click="increaseQuantity" :disabled="quantity >= maxQuantity">+</ion-button>
           <ion-label class="quantity-label"> Quantité: {{ quantity }} / {{ maxQuantity }} en stock </ion-label>
         </ion-item>
-
         <ion-button
           ref="addToCartBtnRef"
           expand="block"
-          @click="goToCheckout(product)"
+          @click="goToCheckout(localProduct)"
           class="buy-button"
           :disabled="quantity < 1 || quantity > maxQuantity">
           Buy
         </ion-button>
+      </ion-content>
+    </ion-modal>
+
+    <ion-modal :is-open="editModalOpen" @did-dismiss="editModalOpen = false">
+      <ion-content class="ion-padding">
+        <div class="modal-header">
+          <h2>Edit Product</h2>
+          <IonButton class="inline-back-button" slot="start" fill="clear" @click="$router.back()">
+            <IonIcon :icon="arrowBackOutline" />
+            Back
+          </IonButton>
+        </div>
+
+        <ion-item>
+          <IonLabel position="stacked">Name</IonLabel>
+          <IonInput v-model="editedProduct.name" />
+        </ion-item>
+        <ion-item>
+          <IonLabel position="stacked">Description</IonLabel>
+          <IonInput v-model="editedProduct.description" />
+        </ion-item>
+        <ion-item>
+          <ion-label position="stacked">Category</ion-label>
+          <ion-select interface="action-sheet" placeholder="Select a category" v-model="editedProduct.category">
+            <ion-select-option value="Vinyl">Vinyl</ion-select-option>
+            <ion-select-option value="CD">CD</ion-select-option>
+            <ion-select-option value="Clothing">Clothing</ion-select-option>
+            <ion-select-option value="Concert Tickets">Concert Tickets</ion-select-option>
+            <ion-select-option value="Digital Downloads">Digital Downloads</ion-select-option>
+            <ion-select-option value="Accessories">Accessories</ion-select-option>
+            <ion-select-option value="Posters">Posters</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ion-item>
+          <IonLabel position="stacked">Price</IonLabel>
+          <IonInput type="number" v-model.number="editedProduct.price" />
+        </ion-item>
+        <ion-item>
+          <IonLabel position="stacked">Quantity</IonLabel>
+          <IonInput type="number" v-model.number="editedProduct.quantity" />
+        </ion-item>
+        <ion-item>
+          <FileUpload fieldLabel="Select Image" label="Choose File" accept="image/*" @file-selected="onFileSelected" />
+        </ion-item>
+
+        <ion-button expand="block" @click="submitEdit">Save</ion-button>
       </ion-content>
     </ion-modal>
   </ion-col>

@@ -18,27 +18,39 @@ async function createProduct(product: FormData): Promise<void> {
 }
 
 async function callSearchProducts(params: ProductSearchParams): Promise<ProductPage> {
-  const response = await axios.get('/products/search', {
-    params: {
-      ...params,
-    },
-  });
+  return axios
+    .get('/products/search', { params: { ...params } })
+    .then((response) => {
+      if (!response || response.status !== 200 || !response.data) return reject('Unable to search products');
 
-  const hasMore = !response.data.empty && response.data.content.length === params.size;
-  return {
-    content: response.data.content,
-    hasMore,
-  };
+      const hasMore = !response.data.empty && response.data.content.length === params.size;
+      return {
+        content: response.data.content,
+        hasMore,
+      };
+    })
+    .catch(reject);
+}
+
+async function updateProduct(slug: string, formData: FormData): Promise<Product> {
+  return axios
+    .put(`/products/${slug}`, formData, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response.status === 200 && response.data) return response.data.productDTO;
+      return reject('Unable to update product');
+    })
+    .catch(reject);
 }
 
 async function callDeleteProduct(slug: string): Promise<void> {
   return axios
     .delete(`/products/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (!response || response.status !== 200) return reject('Unable to call API');
+      if (response.status === 200) return;
+      return reject('Unable to delete product');
     })
     .catch(reject);
 }
 
 export type { ProductPage };
-export { callSearchProducts, createProduct, callDeleteProduct };
+export { callSearchProducts, createProduct, callDeleteProduct, updateProduct };
