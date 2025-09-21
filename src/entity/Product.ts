@@ -1,15 +1,5 @@
 import { Artist } from '@/entity/Artist';
 
-interface ProductSearchParams {
-  name?: string;
-  description?: string;
-  category?: string;
-  userSlug?: string;
-  page: number;
-  size: number;
-  sort: string;
-}
-
 interface Product {
   slug: string;
   name: string;
@@ -30,4 +20,4 @@ interface ProductCreationData {
   quantity: number;
 }
 
-export type { Product, ProductSearchParams, ProductCreationData };
+export type { Product, ProductCreationData };

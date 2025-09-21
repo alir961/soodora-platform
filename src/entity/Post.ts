@@ -6,6 +6,7 @@ interface Post {
   title: string;
   content: string;
   imageUrl: string;
+  audioTitle: string;
   audioUrl: string;
   owner: Artist;
   createdAt: Date;

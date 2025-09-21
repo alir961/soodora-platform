@@ -1,7 +1,8 @@
 import axios from 'axios';
-import { Product, ProductSearchParams } from '@/entity/Product';
+import { Product } from '@/entity/Product';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
+import { ProductSearchParams } from '@/entity/ProductSearch';
 
 interface ProductPage {
   content: Product[];

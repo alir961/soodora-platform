@@ -11,7 +11,7 @@ import {
   IonLabel,
 } from '@ionic/vue';
 
-import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline } from 'ionicons/icons';
+import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline, playCircle } from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct } from '@/client/productClient';
 import { ref, watch } from 'vue';
@@ -76,6 +76,7 @@ const newPost = ref<CreatePostRequest>({
   title: '',
   content: '',
   imageUrl: '',
+  audioTitle: '',
   audioUrl: '',
   createdAt: new Date(),
   likeCount: 0,
@@ -156,6 +157,14 @@ const goToMediaKit = async () => {
   await router.push('/mediakits/create');
 };
 
+const goToPlaylists = async () => {
+  return router.push(`/playlists/create`);
+};
+
+const goToMyPlaylists = async () => {
+  return router.push(`/playlists/me`);
+};
+
 const onPostFileSelected = (file: File) => {
   editedPostFile.value = file;
 };
@@ -199,6 +208,16 @@ const onProductFileSelected = (file: File) => {
         <ion-icon :icon="createOutline" slot="end"></ion-icon>
       </ion-button>
 
+      <ion-button @click="goToPlaylists" expand="block" class="go-button" color="primary" fill="solid">
+        Create Playlists
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button @click="goToMyPlaylists" expand="block" class="go-button" color="secondary" fill="solid">
+        My Playlists
+        <ion-icon :icon="playCircle" slot="end"></ion-icon>
+      </ion-button>
+
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
         <ion-content>
           <div>
@@ -230,6 +249,18 @@ const onProductFileSelected = (file: File) => {
 
                 <div class="url-wrapper">
                   <div class="url-label-row">
+                    <ion-label position="stacked">Audio Title</ion-label>
+                    <ion-icon
+                      v-if="newPost.audioTitle"
+                      :icon="trashOutline"
+                      class="url-delete-icon"
+                      @click="newPost.audioTitle = ''" />
+                  </div>
+                  <ion-input placeholder="Add a track title" v-model="newPost.audioTitle"></ion-input>
+                </div>
+
+                <div class="url-wrapper">
+                  <div class="url-label-row">
                     <ion-label position="stacked">Audio URL</ion-label>
                     <ion-icon
                       v-if="newPost.audioUrl"
@@ -238,12 +269,19 @@ const onProductFileSelected = (file: File) => {
                       @click="newPost.audioUrl = ''" />
                   </div>
                   <ion-input placeholder="Add an audio URL" v-model="newPost.audioUrl" />
+                  <p v-if="newPost.audioUrl && !newPost.audioTitle" class="error-msg">Please enter an audio title</p>
                 </div>
               </ion-item>
             </div>
 
             <div class="post-actions">
-              <ion-button expand="block" @click="publishPost" class="create-post">Create Post</ion-button>
+              <ion-button
+                expand="block"
+                @disabled="newPost.audioUrl && !newPost.audioTitle"
+                @click="publishPost"
+                class="create-post"
+                >Create Post</ion-button
+              >
             </div>
           </div>
         </ion-content>
@@ -424,5 +462,11 @@ ion-button.post-button::part(native) {
   background: var(--ion-background-color);
   border-radius: 12px;
   padding: 10px 20px;
+}
+
+.error-msg {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 4px;
 }
 </style>

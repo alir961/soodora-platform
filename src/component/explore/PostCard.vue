@@ -31,6 +31,7 @@ import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { showToast } from '@/utils';
 import { useLikeStore } from '@/store/likeStore';
+import SaveTrackButton from '@/component/playlist/SaveTrackButton.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -39,6 +40,10 @@ const props = defineProps({
   post: {
     required: true,
     type: Object as PropType<Post>,
+  },
+  currentPlaylistSlug: {
+    required: false,
+    type: String,
   },
 });
 
@@ -393,6 +398,7 @@ const formatTime = (time: number) => {
             <span class="audio-duration">{{ formatTime(duration) }}</span>
           </div>
         </div>
+        <p>{{ post.audioTitle }}</p>
         <div class="settings-container">
           <div class="post-actions">
             <ion-button
@@ -427,7 +433,14 @@ const formatTime = (time: number) => {
             <ion-button fill="clear" size="default" @click.stop="exportPost(post)">
               <ion-icon :src="customShareIcon" />
             </ion-button>
+
+            <SaveTrackButton
+              :postSlug="post.slug"
+              :audioTitle="post.audioTitle"
+              :audioUrl="post.audioUrl"
+              :currentPlaylistSlug="currentPlaylistSlug" />
           </div>
+
           <ion-button
             v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
             fill="clear"
