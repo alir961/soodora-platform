@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router';
 import { createMediaKit } from '@/client/mediaKitClient';
 import type { MediaKitDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { IonButton, IonItem, IonInput, IonTextarea, IonLabel } from '@ionic/vue';
+import { IonButton, IonItem, IonInput, IonTextarea, IonLabel, IonIcon } from '@ionic/vue';
 import { showToast } from '@/utils';
+import { arrowBackOutline } from 'ionicons/icons';
 
 const router = useRouter();
 
@@ -33,7 +34,15 @@ const saveNewMediaKit = async () => {
 
 <template>
   <ApplicationViewport title="Create Media Kit">
-    <h2>Create New MediaKit</h2>
+    <IonHeader>
+      <IonButton class="inline-back-button" slot="start" fill="clear" @click="$router.back()">
+        <IonIcon :icon="arrowBackOutline" />
+        Back
+      </IonButton>
+      <IonToolbar>
+        <IonTitle>Create MediaKit</IonTitle>
+      </IonToolbar>
+    </IonHeader>
     <IonItem>
       <IonLabel position="stacked">Title</IonLabel>
       <IonInput v-model="newMediaKit.title" />

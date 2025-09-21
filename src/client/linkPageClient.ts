@@ -10,11 +10,11 @@ export type UpdateLinkPageRequest = Partial<CreateLinkPageRequest>;
 export type CreateLinkRequest = Omit<Link, 'slug'>;
 export type UpdateLinkRequest = Partial<CreateLinkRequest>;
 
-export async function createLinkPage(command: CreateLinkPageRequest): Promise<LinkPage> {
+export async function createLinkPage(command: CreateLinkPageRequest): Promise<string> {
   return axios
     .post('/linkpages', command, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 201 && response.data) return response.data as LinkPage;
+      if (response && response.status === 201 && response.data) return response.data.slug;
       return reject('Unable to create link page');
     })
     .catch(reject);
@@ -44,7 +44,7 @@ export async function updateLinkPage(slug: string, command: UpdateLinkPageReques
   return axios
     .put(`/linkpages/${slug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 202) return;
+      if (response && response.status === 200) return;
       return reject('Unable to update link page');
     })
     .catch(reject);
@@ -59,11 +59,11 @@ export async function deleteLinkPage(slug: string): Promise<void> {
     .catch(reject);
 }
 
-export async function createLink(linkPageSlug: string, command: CreateLinkRequest): Promise<Link> {
+export async function createLink(linkPageSlug: string, command: CreateLinkRequest): Promise<string> {
   return axios
     .post(`/linkpages/${linkPageSlug}/links`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 201 && response.data) return response.data as Link;
+      if (response && response.status === 201 && response.data) return response.data.slug;
       return reject('Unable to create link');
     })
     .catch(reject);
@@ -73,7 +73,7 @@ export async function updateLink(linkPageSlug: string, linkSlug: string, command
   return axios
     .put(`/linkpages/${linkPageSlug}/links/${linkSlug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 202) return;
+      if (response && response.status === 200) return;
       return reject('Unable to update link');
     })
     .catch(reject);

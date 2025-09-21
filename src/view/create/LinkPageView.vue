@@ -100,14 +100,14 @@ async function submitCreate() {
       title: pageData.value.title,
       description: pageData.value.description,
     };
-    const created = await createLinkPage(pageCommand);
+    const createdLinkPageSlug = await createLinkPage(pageCommand);
 
     for (const link of links.value) {
-      await createLink(created.slug, link);
+      await createLink(createdLinkPageSlug, link);
     }
 
     await showToast('Succeed to create Link Page.');
-    await router.push(`/linkpages/${created.slug}`);
+    await router.push(`/linkpages/${createdLinkPageSlug}`);
   } catch (error: unknown) {
     const message = 'Unable to create Link Page. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
