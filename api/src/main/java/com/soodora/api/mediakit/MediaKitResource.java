@@ -31,7 +31,7 @@ public interface MediaKitResource {
             UserDTO user);
 
     @Operation(summary = "Update media kit", responses = {
-            @ApiResponse(responseCode = "202", description = "Media kit updated"),
+            @ApiResponse(responseCode = "200", description = "Media kit updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     ResponseEntity<JsonResponse> updateMediaKit(
@@ -53,7 +53,7 @@ public interface MediaKitResource {
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
     @Operation(summary = "Update item in media kit", responses = {
-            @ApiResponse(responseCode = "202", description = "Item updated"),
+            @ApiResponse(responseCode = "200", description = "Item updated"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     ResponseEntity<JsonResponse> updateItem(

@@ -99,7 +99,7 @@ class LinkPageControllerIT {
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -194,7 +194,7 @@ class LinkPageControllerIT {
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isAccepted());
+                .andExpect(status().isOk());
     }
 
     @Test

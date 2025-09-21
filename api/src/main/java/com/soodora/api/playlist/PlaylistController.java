@@ -78,7 +78,7 @@ public class PlaylistController implements PlaylistResource {
             FileData fileData = fileDataService.toFileData(imageFile);
 
             PlaylistDTO playlistDTO = playlistService.updatePlaylist(command, slug, fileData);
-            return new ResponseEntity<>(new PlaylistResponse(playlistDTO), ACCEPTED);
+            return new ResponseEntity<>(new PlaylistResponse(playlistDTO), OK);
         } catch (InvalidRequestException | UnknownPlaylistException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -97,7 +97,7 @@ public class PlaylistController implements PlaylistResource {
         try {
             PlaylistFullDTO playlistFullDTO = playlistService.addPostToPlaylist(playlistSlug, postSlug,
                     pageableAudioPosts);
-            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), ACCEPTED);
+            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), OK);
         } catch (PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -111,7 +111,7 @@ public class PlaylistController implements PlaylistResource {
         try {
             PlaylistFullDTO playlistFullDTO = playlistService.removePostFromPlaylist(playlistSlug, postSlug,
                     pageableAudioPosts);
-            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), ACCEPTED);
+            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), OK);
         } catch (PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }

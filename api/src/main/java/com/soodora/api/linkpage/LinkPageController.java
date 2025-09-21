@@ -44,7 +44,7 @@ public class LinkPageController {
             @RequestBody CreateLinkPageRequest request) {
         try {
             String slug = linkPageService.createLinkPage(request.toCommand(), user);
-            return new ResponseEntity<>(new LinkPageResponse(slug), CREATED);
+            return new ResponseEntity<>(new LinkPageSlugResponse(slug), CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -57,7 +57,7 @@ public class LinkPageController {
             @RequestBody UpdateLinkPageRequest request) {
         try {
             linkPageService.updateLinkPage(request.toCommand(), slug);
-            return new ResponseEntity<>(ACCEPTED);
+            return new ResponseEntity<>(OK);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -96,7 +96,7 @@ public class LinkPageController {
             @RequestBody CreateLinkRequest request) {
         try {
             String slug = linkService.createLink(request.toCommand(), user.slug());
-            return new ResponseEntity<>(new LinkResponse(slug), CREATED);
+            return new ResponseEntity<>(new LinkSlugResponse(slug), CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -110,7 +110,7 @@ public class LinkPageController {
             @RequestBody UpdateLinkRequest request) {
         try {
             linkService.updateLink(request.toCommand(), linkSlug);
-            return new ResponseEntity<>(ACCEPTED);
+            return new ResponseEntity<>(OK);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
