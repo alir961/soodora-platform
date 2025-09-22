@@ -1,9 +1,12 @@
 package com.soodora.service.mediakit;
 
 import com.soodora.domain.mediakit.UpdateMediaKitCommand;
+import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import static com.soodora.service.validation.ValidationUtils.isStringValid;
 
 public record UpdateMediaKitRequest(
         @Schema(description = "Title of the media kit", example = "My MediaKit", defaultValue = "My MediaKit") String title,
@@ -16,11 +19,14 @@ public record UpdateMediaKitRequest(
 
     @Override
     public UpdateMediaKitCommand toCommand() {
-        return new UpdateMediaKitCommand(
-                title,
-                shortBio,
-                longBio,
-                contactEmail,
-                contactPhone);
+        if (!isStringValid(title, 255))
+            throw new InvalidRequestException("Title cannot exceed 255 characters");
+        if (!isStringValid(contactEmail, 255))
+            throw new InvalidRequestException("Contact Email cannot exceed 255 characters");
+        if (!isStringValid(contactPhone, 50))
+            throw new InvalidRequestException("Contact Phone cannot exceed 50 characters");
+
+        return new UpdateMediaKitCommand(title.trim(), shortBio.trim(), longBio.trim(), contactEmail.trim(),
+                contactPhone.trim());
     }
 }

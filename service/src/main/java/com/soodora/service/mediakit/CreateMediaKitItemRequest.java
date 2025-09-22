@@ -1,10 +1,11 @@
 package com.soodora.service.mediakit;
 
 import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
-import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+
+import static com.soodora.service.validation.ValidationUtils.validateMediaKitItem;
 
 public record CreateMediaKitItemRequest(
         @Schema(description = "Type of the item", example = "Image", defaultValue = "Image") String type,
@@ -15,10 +16,7 @@ public record CreateMediaKitItemRequest(
 
     @Override
     public CreateMediaKitItemCommand toCommand() {
-        if (type == null || type.isEmpty())
-            throw new InvalidRequestException("type is not valid");
-        if (title == null || title.isEmpty())
-            throw new InvalidRequestException("Title is not valid");
+        validateMediaKitItem(type, title, content);
 
         return new CreateMediaKitItemCommand(type.trim(), title.trim(), content.trim());
     }

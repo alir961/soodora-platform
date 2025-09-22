@@ -6,11 +6,13 @@ import com.soodora.service.common.Request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import jakarta.validation.constraints.Email;
+
 import static java.lang.Character.*;
 
 public record RegisterRequest(
         @Schema(description = "Username of the account", example = "Username", defaultValue = "Username") String username,
-        @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com") String email,
+        @Schema(description = "Email of the account", example = "user@example.com", defaultValue = "user@example.com") @Email String email,
         @Schema(description = "Password of the account", example = "passwordPassword#!9", defaultValue = "passwordPassword#!9") String password,
         @Schema(description = "Firstname of the account", example = "John", defaultValue = "John") String firstname,
         @Schema(description = "Lastname of account", example = "Doe", defaultValue = "Doe") String lastname,
@@ -20,7 +22,7 @@ public record RegisterRequest(
 
     @Override
     public RegisterCommand toCommand() throws InvalidRequestException {
-        if (username == null || username.isBlank())
+        if (username == null || username.isBlank() || username.length() > 50)
             throw new InvalidRequestException("Username is not valid");
         if (email == null || !email.contains("@"))
             throw new InvalidRequestException("Email is not valid");

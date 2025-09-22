@@ -16,12 +16,12 @@ public record CreatePostRequest(
 
     @Override
     public CreatePostCommand toCommand() {
-        if (title == null || title.isEmpty())
+        if (title == null || title.isEmpty() || title.length() > 255)
             throw new InvalidRequestException("Title is not valid");
-        if (content == null || content.isEmpty())
+        if (content == null || content.isEmpty() || content.length() > 5000)
             throw new InvalidRequestException("Content is not valid");
         if (audioUrl != null && !audioUrl.isEmpty())
-            if (audioTitle == null || audioTitle.isEmpty())
+            if (audioTitle == null || audioTitle.isEmpty() || audioTitle.length() > 255)
                 throw new InvalidRequestException("Audio Title is not valid");
 
         return new CreatePostCommand(title.trim(), content.trim(), audioTitle.trim(), audioUrl);
