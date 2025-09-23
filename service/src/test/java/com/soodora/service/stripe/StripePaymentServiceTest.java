@@ -2,6 +2,8 @@ package com.soodora.service.stripe;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
+import com.soodora.domain.common.Currency;
+import com.soodora.domain.common.MoneyDTO;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
@@ -63,7 +65,7 @@ class StripePaymentServiceTest {
         String productSlug = "product-slug";
         String vendorSlug = "vendor-slug";
         String buyerSlug = "buyer-slug";
-        int quantity = 3;
+        long quantity = 3;
 
         Map<String, String> metadata = Map.of(
                 "productSlug", productSlug,
@@ -81,7 +83,8 @@ class StripePaymentServiceTest {
         when(event.getType()).thenReturn("checkout.session.completed");
         when(event.getDataObjectDeserializer()).thenReturn(deserializer);
 
-        ProductDTO productDTO = new ProductDTO(productSlug, "name", "desc", "image", "cd", 10, 20,
+        ProductDTO productDTO = new ProductDTO(productSlug, "name", "desc", "image", "cd",
+                new MoneyDTO(BigDecimal.valueOf(149.99), Currency.EUR, Currency.EUR.getSymbol()), 20,
                 new ArtistDTO("artist-slug", "Artist Name", null, null), new Date());
         ArtistDTO artistDTO = new ArtistDTO(vendorSlug, "Artist Name", null, null);
         UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com", null, null, null, null,
@@ -105,7 +108,7 @@ class StripePaymentServiceTest {
         assertEquals(artistDTO, savedCmd.artist());
         assertEquals(userDTO, savedCmd.buyer());
         assertEquals(quantity, savedCmd.quantitySold());
-        assertEquals(BigDecimal.valueOf(productDTO.price() * quantity), savedCmd.amount());
+        assertEquals(productDTO.price().amount().multiply(BigDecimal.valueOf(quantity)), savedCmd.amount().amount());
     }
 
     @Test

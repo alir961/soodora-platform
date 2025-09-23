@@ -1,6 +1,7 @@
 package com.soodora.api.product;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.common.Currency;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductFilter;
 import com.soodora.domain.user.UserRepository;
@@ -59,7 +60,8 @@ class ProductControllerIT {
                 "Product Name",
                 "Description",
                 "category",
-                100,
+                100.99,
+                Currency.EUR,
                 10);
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -92,8 +94,10 @@ class ProductControllerIT {
                 null,
                 null,
                 "category",
-                0,
+                0.0,
+                Currency.EUR,
                 0);
+
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),
                 "test-image.jpg",
@@ -118,7 +122,8 @@ class ProductControllerIT {
                 "Product Name",
                 "Description",
                 "category",
-                100,
+                100.99,
+                Currency.EUR,
                 10);
 
         MockMultipartFile dataPart = new MockMultipartFile(
@@ -169,7 +174,8 @@ class ProductControllerIT {
                 "Updated Product Name",
                 "Updated Description",
                 "Updated Category",
-                10L,
+                10.99,
+                Currency.EUR,
                 20L);
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -205,7 +211,8 @@ class ProductControllerIT {
                 "",
                 "",
                 "",
-                0L,
+                100.99,
+                Currency.EUR,
                 0L);
 
         MockMultipartFile dataPart = new MockMultipartFile(

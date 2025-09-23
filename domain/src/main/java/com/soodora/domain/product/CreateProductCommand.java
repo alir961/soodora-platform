@@ -1,5 +1,7 @@
 package com.soodora.domain.product;
 
-public record CreateProductCommand(String name, String description, String category, long price,
+import com.soodora.domain.common.Currency;
+
+public record CreateProductCommand(String name, String description, String category, double price, Currency currency,
         long quantity) {
 }

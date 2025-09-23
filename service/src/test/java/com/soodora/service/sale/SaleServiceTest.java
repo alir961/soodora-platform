@@ -1,5 +1,7 @@
 package com.soodora.service.sale;
 
+import com.soodora.domain.common.Currency;
+import com.soodora.domain.common.MoneyDTO;
 import com.soodora.domain.sale.SaleDTO;
 import com.soodora.domain.sale.SaleRepository;
 
@@ -32,7 +34,8 @@ class SaleServiceTest {
     @Test
     void getAllSales_returnsPage() {
         // GIVEN
-        SaleDTO saleDTO = new SaleDTO("slug1", null, null, null, 1L, BigDecimal.valueOf(10.0), new Date());
+        SaleDTO saleDTO = new SaleDTO("slug1", null, null, null, 1L,
+                new MoneyDTO(BigDecimal.valueOf(149.99), Currency.EUR, Currency.EUR.getSymbol()), new Date());
         Page<SaleDTO> page = new PageImpl<>(List.of(saleDTO));
         Pageable pageable = PageRequest.of(0, 10);
 
@@ -64,7 +67,8 @@ class SaleServiceTest {
     void getUserSales_returnsPage() {
         // GIVEN
         String userSlug = "user-slug";
-        SaleDTO saleDTO = new SaleDTO("slug2", null, null, null, 2L, BigDecimal.valueOf(20.0), new Date());
+        SaleDTO saleDTO = new SaleDTO("slug2", null, null, null, 2L,
+                new MoneyDTO(BigDecimal.valueOf(149.99), Currency.EUR, Currency.EUR.getSymbol()), new Date());
         Page<SaleDTO> page = new PageImpl<>(List.of(saleDTO));
         Pageable pageable = PageRequest.of(0, 10);
 

@@ -1,6 +1,8 @@
 package com.soodora.infrastructure.product;
 
+import com.soodora.domain.common.Currency;
 import com.soodora.infrastructure.artist.ArtistEntity;
+import com.soodora.infrastructure.common.Money;
 import com.soodora.test.factory.ProductFactory;
 
 import java.util.Date;
@@ -17,7 +19,7 @@ public class ProductEntityFactory extends ProductFactory {
                 "Description",
                 "imageUrl",
                 "category",
-                100,
+                Money.of(100.99, Currency.EUR),
                 10,
                 artist,
                 new Date(),

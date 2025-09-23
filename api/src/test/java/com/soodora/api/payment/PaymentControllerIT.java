@@ -1,5 +1,6 @@
 package com.soodora.api.payment;
 
+import com.soodora.domain.common.Currency;
 import com.soodora.service.stripe.CheckoutSessionRequest;
 import com.soodora.service.stripe.StripeService;
 
@@ -46,7 +47,8 @@ public class PaymentControllerIT {
 
         CheckoutSessionRequest request = new CheckoutSessionRequest(
                 "Produit test",
-                1500L,
+                1499.99,
+                Currency.EUR,
                 "https://image.url/test.jpg",
                 "product-slug",
                 "vendor-slug",

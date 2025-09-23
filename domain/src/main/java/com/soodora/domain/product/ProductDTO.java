@@ -1,6 +1,7 @@
 package com.soodora.domain.product;
 
 import com.soodora.domain.artist.ArtistDTO;
+import com.soodora.domain.common.MoneyDTO;
 
 import java.util.Date;
 
@@ -10,7 +11,7 @@ public record ProductDTO(
         String description,
         String imageUrl,
         String category,
-        long price,
+        MoneyDTO price,
         long quantity,
         ArtistDTO vendor,
         Date createdAt) {

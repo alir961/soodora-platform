@@ -1,5 +1,7 @@
 package com.soodora.api.sale;
 
+import com.soodora.domain.common.Currency;
+import com.soodora.domain.common.MoneyDTO;
 import com.soodora.domain.sale.SaleDTO;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.sale.SaleService;
@@ -48,7 +50,7 @@ class SaleControllerIT {
                 null,
                 null,
                 2L,
-                BigDecimal.valueOf(20.0),
+                new MoneyDTO(BigDecimal.valueOf(20.99), Currency.EUR, Currency.EUR.getSymbol()),
                 new Date());
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
@@ -74,7 +76,7 @@ class SaleControllerIT {
                 null,
                 null,
                 1L,
-                BigDecimal.valueOf(15.0),
+                new MoneyDTO(BigDecimal.valueOf(20.99), Currency.EUR, Currency.EUR.getSymbol()),
                 new Date());
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
@@ -100,7 +102,7 @@ class SaleControllerIT {
                 null,
                 null,
                 5L,
-                BigDecimal.valueOf(50.0),
+                new MoneyDTO(BigDecimal.valueOf(20.99), Currency.EUR, Currency.EUR.getSymbol()),
                 new Date());
 
         Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);

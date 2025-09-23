@@ -1,6 +1,8 @@
 package com.soodora.infrastructure.sale;
 
-import java.math.BigDecimal;
+import com.soodora.domain.common.Currency;
+import com.soodora.infrastructure.common.Money;
+
 import java.util.Date;
 
 import static java.util.UUID.randomUUID;
@@ -19,7 +21,7 @@ public class SaleEntityFactory {
                 buildDefaultArtistEntity(),
                 buildDefaultUserEntity(),
                 100,
-                new BigDecimal(10),
+                Money.of(100.99, Currency.EUR),
                 new Date(),
                 new Date());
     }
