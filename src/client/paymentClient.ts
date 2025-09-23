@@ -3,6 +3,7 @@ import axios from 'axios';
 export interface CheckoutSessionRequest {
   name: string;
   amount: number;
+  currency: string;
   imageUrl?: string | null;
   productSlug: string;
   vendorSlug: string;

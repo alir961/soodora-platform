@@ -1,6 +1,7 @@
 import { User } from '@/entity/User';
 import { Product } from '@/entity/Product';
 import { Artist } from '@/entity/Artist';
+import { Money } from '@/entity/Money';
 
 interface Sale {
   slug: string;
@@ -8,7 +9,7 @@ interface Sale {
   user: Artist;
   buyer: User;
   quantitySold: number;
-  amount: number;
+  amount: Money;
   createdAt: string;
 }
 

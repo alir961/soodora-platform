@@ -68,7 +68,11 @@ const editedProduct = ref<Product>({
   description: '',
   imageUrl: '',
   category: '',
-  price: 0,
+  price: {
+    amount: 0,
+    currency: 'EUR',
+    symbol: '€',
+  },
   quantity: 0,
   vendor: emptyArtist,
   createdAt: new Date(),
@@ -128,7 +132,8 @@ const goToCheckout = async (product: Product) => {
   try {
     const response = await createCheckoutSession({
       name: product.name,
-      amount: Math.round(product.price * 100),
+      amount: product.price.amount,
+      currency: product.price.currency,
       imageUrl: product.imageUrl,
       productSlug: product.slug,
       vendorSlug: product.vendor.slug,
@@ -213,7 +218,8 @@ const submitEdit = async () => {
           name: editedProduct.value.name,
           description: editedProduct.value.description,
           category: editedProduct.value.category,
-          price: editedProduct.value.price,
+          price: editedProduct.value.price.amount,
+          currency: editedProduct.value.price.currency,
           quantity: editedProduct.value.quantity,
         }),
       ],
@@ -291,7 +297,11 @@ const onFileSelected = (file: File | null) => {
         <p class="product-description">{{ localProduct.description }}</p>
         <div class="price-quantity-row">
           <h3 class="product-price">
-            {{ localProduct.price !== null ? localProduct.price.toFixed(2) + '€' : 'No price' }}
+            {{
+              localProduct.price !== null
+                ? localProduct.price.amount.toFixed(2) + ' ' + localProduct.price.currency + localProduct.price.symbol
+                : 'No price'
+            }}
           </h3>
           <p class="product-quantity">In Stock: {{ localProduct.quantity !== null ? localProduct.quantity : 'N/A' }}</p>
         </div>
@@ -360,9 +370,16 @@ const onFileSelected = (file: File | null) => {
             <ion-select-option value="Posters">Posters</ion-select-option>
           </ion-select>
         </ion-item>
-        <ion-item>
-          <IonLabel position="stacked">Price</IonLabel>
-          <IonInput type="number" v-model.number="editedProduct.price" />
+        <ion-item class="modal-item">
+          <ion-label position="stacked">Price</ion-label>
+          <ion-input type="number" placeholder="Add a price" v-model.number="editedProduct.price.amount">
+            <ion-select interface="action-sheet" placeholder="Select a currency" v-model="editedProduct.price.currency">
+              <ion-select-option value="EUR">€</ion-select-option>
+              <ion-select-option value="USD">$</ion-select-option>
+              <ion-select-option value="CAD">C$</ion-select-option>
+              <ion-select-option value="GBP">£</ion-select-option>
+            </ion-select>
+          </ion-input>
         </ion-item>
         <ion-item>
           <IonLabel position="stacked">Quantity</IonLabel>

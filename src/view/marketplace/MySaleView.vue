@@ -88,11 +88,19 @@ onMounted(async () => {
           <div class="sale-date">{{ sale.buyer.username + ' ' + sale.buyer.email }}</div>
           <div class="sale-price">
             Unit price:
-            {{ sale.product.price !== null ? sale.product.price.toFixed(2) + '€' : 'No price' }}
+            {{
+              sale.product.price !== null
+                ? sale.product.price.amount.toFixed(2) + ' ' + sale.product.price.currency + sale.product.price.symbol
+                : 'No price'
+            }}
           </div>
           <div class="sale-total">
             Total:
-            {{ sale.product.price !== null ? sale.amount.toFixed(2) + '€' : 'No total' }}
+            {{
+              sale.product.price !== null
+                ? sale.amount.amount.toFixed(2) + ' ' + sale.product.price.currency + sale.product.price.symbol
+                : 'No total'
+            }}
           </div>
         </div>
       </div>

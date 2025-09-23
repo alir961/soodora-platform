@@ -116,16 +116,17 @@ const newProduct = ref<ProductCreationData>({
   description: '',
   category: '',
   price: 0,
+  currency: 'EUR',
   quantity: 0,
 });
-const editedProductFile = ref<File | null>(null);
+const productFile = ref<File | null>(null);
 
 const publishProduct = async () => {
   try {
     const formData = new FormData();
     formData.append('data', new Blob([JSON.stringify(newProduct.value)], { type: 'application/json' }));
 
-    if (editedProductFile.value) formData.append('file', editedProductFile.value);
+    if (productFile.value) formData.append('file', productFile.value);
 
     await createProduct(formData);
     showProductModal.value = false;
@@ -170,7 +171,7 @@ const onPostFileSelected = (file: File) => {
 };
 
 const onProductFileSelected = (file: File) => {
-  editedProductFile.value = file;
+  productFile.value = file;
 };
 </script>
 
@@ -338,7 +339,12 @@ const onProductFileSelected = (file: File) => {
               <ion-item class="modal-item">
                 <ion-label position="stacked">Price</ion-label>
                 <ion-input type="number" placeholder="Add a price" v-model.number="newProduct.price">
-                  <div slot="end">€</div>
+                  <ion-select interface="action-sheet" placeholder="Select a currency" v-model="newProduct.currency">
+                    <ion-select-option value="EUR">€</ion-select-option>
+                    <ion-select-option value="USD">$</ion-select-option>
+                    <ion-select-option value="CAD">C$</ion-select-option>
+                    <ion-select-option value="GBP">£</ion-select-option>
+                  </ion-select>
                 </ion-input>
               </ion-item>
 
