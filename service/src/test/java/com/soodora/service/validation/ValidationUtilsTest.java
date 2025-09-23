@@ -1,7 +1,10 @@
 package com.soodora.service.validation;
 
+import com.soodora.domain.common.Currency;
 import com.soodora.domain.playlist.PlaylistPrivacy;
 import com.soodora.service.common.InvalidRequestException;
+
+import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
@@ -94,7 +97,7 @@ public class ValidationUtilsTest {
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
                 () -> ValidationUtils.validateMediaKit(title, shortBio, longBio, email, phone));
-        assertEquals("Short Bio is not valid", ex.getMessage());
+        assertEquals("Short Bio is required", ex.getMessage());
     }
 
     @Test
@@ -118,7 +121,7 @@ public class ValidationUtilsTest {
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
                 () -> ValidationUtils.validateMediaKitItem(type, title, content));
-        assertEquals("Content cannot exceed 5000 characters or be empty", ex.getMessage());
+        assertEquals("Content cannot be empty or exceed 5000 characters", ex.getMessage());
     }
 
     @Test
@@ -153,11 +156,14 @@ public class ValidationUtilsTest {
         // GIVEN
         String name = "Product";
         String description = "Desc";
-        long price = 500;
+        String category = "Category";
+        Double price = 100.0;
+        Currency currency = Currency.USD;
         long quantity = 10;
 
         // WHEN / THEN
-        assertDoesNotThrow(() -> ValidationUtils.validateProduct(name, description, price, quantity));
+        assertDoesNotThrow(
+                () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
     }
 
     @Test
@@ -165,13 +171,15 @@ public class ValidationUtilsTest {
         // GIVEN
         String name = "Product";
         String description = "Desc";
-        long price = 0;
+        String category = "Category";
+        Double price = 0.0;
+        Currency currency = Currency.USD;
         long quantity = 10;
 
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
-                () -> ValidationUtils.validateProduct(name, description, price, quantity));
-        assertEquals("Price cannot exceed 100 000 or be 0", ex.getMessage());
+                () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
+        assertEquals("Price must be greater than 0 and cannot exceed 100,000", ex.getMessage());
     }
 
     @Test
@@ -179,13 +187,129 @@ public class ValidationUtilsTest {
         // GIVEN
         String name = "Product";
         String description = "Desc";
-        long price = 100;
+        String category = "Category";
+        Double price = 100.0;
+        Currency currency = Currency.USD;
         long quantity = 100001;
 
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
-                () -> ValidationUtils.validateProduct(name, description, price, quantity));
-        assertEquals("Quantity cannot exceed 100 000 or be 0", ex.getMessage());
+                () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
+        assertEquals("Quantity cannot exceed 100,000 or be 0", ex.getMessage());
+    }
+
+    @Test
+    void givenNullCurrency_whenValidateProduct_thenThrowsException() {
+        // GIVEN
+        String name = "Product";
+        String description = "Desc";
+        String category = "Category";
+        Double price = 100.0;
+        Currency currency = null;
+        long quantity = 10;
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
+        assertTrue(ex.getMessage().contains("Currency must be a valid value"));
+    }
+
+    @Test
+    void givenValidQuote_whenValidateQuote_thenNoException() {
+        // GIVEN
+        String name = "Quote";
+        String clientName = "Client";
+        String clientEmail = "client@example.com";
+        String clientAddress = "Address";
+        String clientPhone = "123456";
+        String description = "Description";
+
+        // WHEN / THEN
+        assertDoesNotThrow(() -> ValidationUtils.validateQuote(name, clientName, clientEmail, clientAddress,
+                clientPhone, description));
+    }
+
+    @Test
+    void givenEmptyQuoteName_whenValidateQuote_thenThrowsException() {
+        // GIVEN
+        String name = "";
+        String clientName = "Client";
+        String clientEmail = "client@example.com";
+        String clientAddress = "Address";
+        String clientPhone = "123456";
+        String description = "Description";
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateQuote(name, clientName, clientEmail, clientAddress, clientPhone,
+                        description));
+        assertEquals("Quote name cannot be empty or exceed 255 characters", ex.getMessage());
+    }
+
+    @Test
+    void givenValidQuoteArticle_whenValidateQuoteArticle_thenNoException() {
+        // GIVEN
+        String quoteSlug = "quote-slug";
+        String description = "Description";
+        int quantity = 10;
+        Double price = 100.0;
+        Currency currency = Currency.USD;
+        BigDecimal vatPercent = BigDecimal.valueOf(20);
+
+        // WHEN / THEN
+        assertDoesNotThrow(() -> ValidationUtils.validateQuoteArticle(quoteSlug, description, quantity, price, currency,
+                vatPercent));
+    }
+
+    @Test
+    void givenInvalidQuantity_whenValidateQuoteArticle_thenThrowsException() {
+        // GIVEN
+        String quoteSlug = "quote-slug";
+        String description = "Description";
+        int quantity = 0;
+        Double price = 100.0;
+        Currency currency = Currency.USD;
+        BigDecimal vatPercent = BigDecimal.valueOf(20);
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateQuoteArticle(quoteSlug, description, quantity, price, currency,
+                        vatPercent));
+        assertEquals("Quantity cannot exceed 100,000 or be 0", ex.getMessage());
+    }
+
+    @Test
+    void givenZeroVAT_whenValidateQuoteArticle_thenThrowsException() {
+        // GIVEN
+        String quoteSlug = "quote-slug";
+        String description = "Description";
+        int quantity = 10;
+        Double price = 100.0;
+        Currency currency = Currency.USD;
+        BigDecimal vatPercent = BigDecimal.ZERO;
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateQuoteArticle(quoteSlug, description, quantity, price, currency,
+                        vatPercent));
+        assertEquals("VAT must be greater than 0", ex.getMessage());
+    }
+
+    @Test
+    void givenNullVAT_whenValidateQuoteArticle_thenThrowsException() {
+        // GIVEN
+        String quoteSlug = "quote-slug";
+        String description = "Description";
+        int quantity = 10;
+        Double price = 100.0;
+        Currency currency = Currency.USD;
+        BigDecimal vatPercent = null;
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateQuoteArticle(quoteSlug, description, quantity, price, currency,
+                        vatPercent));
+        assertEquals("VAT must be greater than 0", ex.getMessage());
     }
 
 }

@@ -2,35 +2,28 @@ package com.soodora.service.quote;
 
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
-import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
 import java.math.BigDecimal;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import static com.soodora.service.validation.ValidationUtils.validateQuoteArticle;
+
 public record CreateQuoteArticleRequest(
-        String quoteSlug,
-        String description,
-        int quantity,
-        Double price,
-        Currency currency,
-        BigDecimal vatPercent)
+        @Schema(description = "Quote slug", example = "quoteSlug") String quoteSlug,
+        @Schema(description = "Quote Article description", example = "My Article") String description,
+        @Schema(description = "Quote Article quantity", example = "3") int quantity,
+        @Schema(description = "Quote Article price", example = "49.99") Double price,
+        @Schema(description = "Quote Article currency", example = "USD", allowableValues = {
+                "USD", "EUR", "CAD", "GBP"}) Currency currency,
+        @Schema(description = "Quote Article TAX Percent", example = "20%") BigDecimal vatPercent)
         implements
-            Request<CreateQuoteArticleCommand> {
+            Request<CreateQuoteArticleCommand>{
 
     @Override
     public CreateQuoteArticleCommand toCommand() {
-        if (quoteSlug == null || quoteSlug.isEmpty())
-            throw new InvalidRequestException("Quote slug is not valid");
-        if (description == null || description.isEmpty())
-            throw new InvalidRequestException("Description is not valid");
-        if (quantity == 0)
-            throw new InvalidRequestException("Quantity is not valid");
-        if (price == null || price <= 0)
-            throw new InvalidRequestException("Price is not valid");
-        if (currency == null)
-            throw new InvalidRequestException("Currency is not valid");
-        if (vatPercent == null || vatPercent.equals(BigDecimal.ZERO))
-            throw new InvalidRequestException("VAT is not valid");
+        validateQuoteArticle(quoteSlug, description, quantity, price, currency, vatPercent);
 
         return new CreateQuoteArticleCommand(quoteSlug, description.trim(), quantity, price, currency, vatPercent);
     }

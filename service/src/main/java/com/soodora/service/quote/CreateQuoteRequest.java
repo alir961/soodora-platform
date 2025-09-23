@@ -1,32 +1,29 @@
 package com.soodora.service.quote;
 
-import com.soodora.domain.common.Currency;
 import com.soodora.domain.quote.CreateQuoteCommand;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import static com.soodora.service.validation.ValidationUtils.validateQuote;
+
 public record CreateQuoteRequest(
-        String name,
-        String clientName,
-        String clientEmail,
-        String clientAddress,
-        String clientPhone,
-        String description,
-        Double price,
-        Currency currency) implements Request<CreateQuoteCommand> {
+        @Schema(description = "Quote name", example = "Quote for Company") String name,
+        @Schema(description = "Quote Client Name", example = "Company") String clientName,
+        @Schema(description = "Quote Client Email", example = "company@example.com") String clientEmail,
+        @Schema(description = "Quote Client Address", example = "123 2Pac Road Los Angeles CA") String clientAddress,
+        @Schema(description = "Quote Client Phone", example = "+1234567889") String clientPhone,
+        @Schema(description = "Quote description", example = "My Service") String description)
+        implements
+            Request<CreateQuoteCommand> {
 
     @Override
     public CreateQuoteCommand toCommand() throws InvalidRequestException {
-        if (name == null || name.isBlank())
-            throw new InvalidRequestException("Quote name is required");
-        if (clientName == null || clientName.isBlank())
-            throw new InvalidRequestException("Client name is required");
-        if (price == null || price <= 0)
-            throw new InvalidRequestException("Price is not valid");
-        if (currency == null)
-            throw new InvalidRequestException("Currency is not valid");
+        validateQuote(name, clientName, clientEmail, clientAddress, clientPhone, description);
 
-        return new CreateQuoteCommand(name, clientName, clientEmail, clientAddress, clientPhone, description);
+        return new CreateQuoteCommand(name.trim(), clientName.trim(), clientEmail.trim(), clientAddress.trim(),
+                clientPhone.trim(), description.trim());
     }
 
 }
