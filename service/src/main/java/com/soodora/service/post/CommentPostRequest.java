@@ -4,7 +4,11 @@ import com.soodora.domain.post.CommentPostCommand;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.common.Request;
 
-public record CommentPostRequest(String content) implements Request<CommentPostCommand> {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record CommentPostRequest(@Schema(description = "Comment content", example = "My comment") String content)
+        implements
+            Request<CommentPostCommand> {
 
     @Override
     public CommentPostCommand toCommand() {

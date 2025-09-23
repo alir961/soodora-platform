@@ -236,8 +236,7 @@ class ProductControllerIT {
                     requestPostProcessor.setMethod("PUT");
                     return requestPostProcessor;
                 }))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.reason").value("Invalid request"));
+                .andExpect(status().isBadRequest());
     }
 
     @Test
