@@ -44,6 +44,10 @@ public class Money {
         }
     }
 
+    public static Money zero() {
+        return new Money(BigDecimal.ZERO, Currency.UNDEFINED);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)

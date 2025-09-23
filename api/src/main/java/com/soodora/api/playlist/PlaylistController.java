@@ -17,6 +17,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,7 @@ public class PlaylistController implements PlaylistResource {
     private final FileDataService fileDataService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ARTIST')")
     public ResponseEntity<JsonResponse> createPlaylist(
             @AuthenticationPrincipal UserDTO user,
             @RequestPart("data") CreatePlaylistRequest createPlaylistRequest,
