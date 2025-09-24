@@ -21,11 +21,12 @@ const password: Ref<string> = ref('');
 const username: Ref<string> = ref('');
 const firstname: Ref<string> = ref('');
 const lastname: Ref<string> = ref('');
+const identifier: Ref<string> = ref('');
 const showPassword: Ref<boolean> = ref(false);
 
 const login = async () => {
   try {
-    const token = await callLogin({ identifier: email.value, password: password.value });
+    const token = await callLogin({ identifier: identifier.value, password: password.value });
 
     await saveBearerToken(token);
     authStore.authenticate(await retrieveAuthenticatedProfile());
@@ -121,7 +122,7 @@ const strengthLabel = computed(() => {
     </div>
     <div v-else class="field">
       <label>Username or Email</label>
-      <input placeholder="MarcusLee.wav" type="text" v-model="username" autocomplete="username" />
+      <input placeholder="MarcusLee.wav" type="text" v-model="identifier" autocomplete="username" />
     </div>
 
     <div class="field">

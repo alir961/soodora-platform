@@ -27,6 +27,10 @@ const props = defineProps({
     type: String as PropType<'auth' | 'link'>,
     default: 'link',
   },
+  fluid: {
+    type: Boolean,
+    default: false,
+  },
 });
 const emit = defineEmits(['unlink']);
 
@@ -85,22 +89,20 @@ const clickButton = async () => {
 </script>
 
 <template>
-  <div style="display: flex; justify-content: center">
-    <div @click="clickButton()" :class="['oauth-button', provider.provider]">
-      <span class="wrapper">
-        <ion-icon :icon="provider.icon" />
-        {{ buttonText }}
-      </span>
-    </div>
+  <div @click="clickButton()" :class="['oauth-button', provider.provider, { fluid: props.fluid }]">
+    <span class="wrapper">
+      <ion-icon :icon="provider.icon" />
+      {{ buttonText }}
+    </span>
   </div>
 </template>
 
 <style scoped>
 .oauth-button {
-  width: 100%;
-  margin: 0 auto 0.8rem;
-  padding-top: 0.8em;
-  padding-bottom: 0.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 46px;
   background-color: var(--ion-color-step-150, #1a1a1a);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
@@ -118,10 +120,11 @@ const clickButton = async () => {
     align-items: center;
     justify-content: center;
     gap: 10px;
-    width: 100%;
+    width: auto;
     color: white;
     font-weight: 700;
     font-size: 1.1rem;
+    line-height: 1;
 
     & ion-icon {
       margin: 0;
@@ -131,6 +134,11 @@ const clickButton = async () => {
     }
   }
 }
+
+.oauth-button.fluid {
+  width: 100%;
+}
+
 .oauth-button:hover {
   filter: saturate(110%);
   transform: translateY(-1px);

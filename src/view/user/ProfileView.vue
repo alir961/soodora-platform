@@ -82,6 +82,7 @@ const isAdministrator = computed(() => {
     <ProfileComponent v-else :profile="authStore.getAuthenticatedUser" />
 
     <OAuthButton
+      class="button google-button"
       v-for="provider in providers"
       :key="provider"
       :provider="provider"
@@ -120,11 +121,15 @@ const isAdministrator = computed(() => {
     --border-radius: 20px;
     --border-color: var(--ion-color-medium);
     --border-width: 1px;
+    --background-activated: rgb(93, 99, 108);
+    --color-activated: rgba(0, 0, 0, 0.87);
   }
 }
 
-.button {
-  width: 70%;
+.google-button,
+.feedback-button,
+.administration-button {
+  width: 80%;
   margin: 0 auto;
   padding: 0.4rem 1rem;
   text-align: center;
@@ -133,20 +138,38 @@ const isAdministrator = computed(() => {
   font-size: 1.2em;
   color: #fff;
   cursor: pointer;
-
-  & > span {
-    height: 24px;
-  }
 }
 
-.feedback-button {
-  background: linear-gradient(270deg, #6a11cb, #9425fc, #6a11cb, #9425fc);
+.feedback-button > span,
+.administration-button > span {
+  height: 24px;
+}
+
+.google-button {
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  line-height: 1;
+  background: linear-gradient(270deg, #232a36 0%, #273042 25%, #32405a 50%, #273042 75%, #232a36 100%);
   background-size: 400% 400%;
   animation: gradientFlow 6s ease-in-out infinite;
 }
 
+.feedback-button {
+  background: linear-gradient(270deg, #1b406b 0%, #235080 25%, #2e6fb2 50%, #235080 75%, #1b406b 100%);
+  background-size: 400% 400%;
+  animation: gradientFlow 6s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  margin-top: 0.8rem;
+}
+
 .administration-button {
-  background-color: red;
+  background: linear-gradient(270deg, #6b2323 0%, #7a2929 25%, #b23a3a 50%, #7a2929 75%, #6b2323 100%);
+  background-size: 400% 400%;
+  animation: gradientFlow 6s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   margin-top: 0.8rem;
 }
 

@@ -82,7 +82,7 @@ onIonViewWillEnter(async () => {
           </div>
 
           <div v-if="!route.query.external" class="oauth">
-            <OAuthButton provider="google" mode="auth" />
+            <OAuthButton class="google-button" provider="google" mode="auth" :fluid="true" />
           </div>
 
           <p v-if="!route.query.external" class="switch">
