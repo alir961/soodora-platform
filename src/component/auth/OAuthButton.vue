@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType } from 'vue';
+import { PropType, computed } from 'vue';
 import { alertController, IonIcon } from '@ionic/vue';
 import { logoGoogle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
@@ -23,6 +23,10 @@ const props = defineProps({
     type: String as PropType<OAuthProvider>,
   },
   linked: Boolean,
+  mode: {
+    type: String as PropType<'auth' | 'link'>,
+    default: 'link',
+  },
 });
 const emit = defineEmits(['unlink']);
 
@@ -50,8 +54,18 @@ const alertButtons = [
   },
 ];
 
+const buttonText = computed(() => {
+  if (props.mode === 'auth') return `Sign in with ${provider.name}`;
+  return (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name;
+});
+
 const clickButton = async () => {
   if (!provider) return;
+
+  if (props.mode === 'auth') {
+    redirectToUrl(`${import.meta.env.VITE_API_URL}/auth/${provider.provider}`);
+    return;
+  }
 
   if (props.linked) {
     const alert = await alertController.create({
@@ -75,7 +89,7 @@ const clickButton = async () => {
     <div @click="clickButton()" :class="['oauth-button', provider.provider]">
       <span class="wrapper">
         <ion-icon :icon="provider.icon" />
-        {{ (props.linked ? 'Disconnect from ' : 'Connect with ') + provider.name }}
+        {{ buttonText }}
       </span>
     </div>
   </div>
@@ -83,29 +97,42 @@ const clickButton = async () => {
 
 <style scoped>
 .oauth-button {
-  width: 70%;
+  width: 100%;
   margin: 0 auto 0.8rem;
-  padding: 0.4rem 1rem;
-  background-color: var(--ion-color-primary);
-  border-radius: 15px;
-  box-shadow: 0 2px 6px 0 rgba(0, 0, 0, 0.25);
+  padding-top: 0.8em;
+  padding-bottom: 0.5em;
+  background-color: var(--ion-color-step-150, #1a1a1a);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   user-select: none;
   outline: none;
-  transition: opacity 0.2s ease;
+  transition:
+    transform 0.08s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
 
   & .wrapper {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 10px;
     width: 100%;
     color: white;
-    font-weight: bold;
-    font-size: 1.2em;
+    font-weight: 700;
+    font-size: 1.1rem;
 
     & ion-icon {
-      margin-right: 0.4em;
+      margin: 0;
+      font-size: 1.1em;
+      line-height: 1;
+      vertical-align: middle;
     }
   }
+}
+.oauth-button:hover {
+  filter: saturate(110%);
+  transform: translateY(-1px);
 }
 </style>
