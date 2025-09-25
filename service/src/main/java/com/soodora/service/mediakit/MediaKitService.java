@@ -69,7 +69,7 @@ public class MediaKitService {
         try {
             return mediaKitItemRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {
-            throw new UnknownMediaKitException(exception.getMessage());
+            throw new UnknownMediaKitItemException(exception.getMessage());
         }
     }
 
@@ -77,7 +77,7 @@ public class MediaKitService {
         try {
             mediaKitItemRepository.deleteBySlug(slug);
         } catch (UnknownSlugException exception) {
-            throw new UnknownMediaKitException(exception.getMessage());
+            throw new UnknownMediaKitItemException(exception.getMessage());
         }
     }
 
