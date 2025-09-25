@@ -4,6 +4,7 @@ import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.PostService;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
 
 import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
@@ -82,13 +84,17 @@ public class ProfileController {
     }
 
     @GetMapping("/followers")
-    public Set<UserDTO> getFollowers(@AuthenticationPrincipal UserDTO user) {
-        return userService.retrieveFollowers(user.identifier());
+    public Set<PublicUserDTO> getFollowers(@AuthenticationPrincipal UserDTO user) {
+        return userService.retrieveFollowers(user.identifier()).stream()
+                .map(UserDTO::toPublic)
+                .collect(toSet());
     }
 
     @GetMapping("/following")
-    public Set<UserDTO> getFollowing(@AuthenticationPrincipal UserDTO user) {
-        return userService.retrieveFollowing(user.identifier());
+    public Set<PublicUserDTO> getFollowing(@AuthenticationPrincipal UserDTO user) {
+        return userService.retrieveFollowing(user.identifier()).stream()
+                .map(UserDTO::toPublic)
+                .collect(toSet());
     }
 
     @DeleteMapping("/followers/{slug}")

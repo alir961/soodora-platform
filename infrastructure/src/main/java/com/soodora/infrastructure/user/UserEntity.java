@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.user;
 
+import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.auth.RoleEntity;
@@ -101,6 +102,12 @@ public class UserEntity implements DomainEntity<UserDTO> {
         user.followers.remove(this);
     }
 
+    public boolean isArtist() {
+        if (artist == null)
+            return false;
+        return roles.stream().map(RoleEntity::toDTO).anyMatch(RoleDTO::isArtistRole);
+    }
+
     @Override
     public UserDTO toDTO() {
         Set<String> rolesNames = roles.stream()
@@ -116,6 +123,8 @@ public class UserEntity implements DomainEntity<UserDTO> {
                 lastname,
                 description,
                 avatarUrl,
+                createdAt,
+                updatedAt,
                 rolesNames);
     }
 

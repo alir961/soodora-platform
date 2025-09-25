@@ -82,6 +82,15 @@ public class UserController {
         }
     }
 
+    @PutMapping("/{slug}/roles")
+    @PreAuthorize("hasRole('ADMIN')")
+    @SecurityRequirement(name = "bearerAuth")
+    public void updateUserRoles(@PathVariable("slug") String slug, @RequestBody Set<String> roles) {
+        Identifier identifier = createFromSlug(slug);
+
+        userService.updateUserRoles(identifier, roles);
+    }
+
     @DeleteMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")

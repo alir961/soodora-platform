@@ -1,5 +1,6 @@
 package com.soodora.service.user;
 
+import com.soodora.domain.auth.RoleRepository;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.PostDTO;
@@ -8,6 +9,7 @@ import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
 import com.soodora.service.auth.UserPrincipal;
+import com.soodora.service.common.InvalidRequestException;
 
 import java.util.List;
 import java.util.Set;
@@ -22,6 +24,8 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static java.util.stream.Collectors.toSet;
+
 import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
 import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 
@@ -33,6 +37,7 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ProductRepository productRepository;
+    private final RoleRepository roleRepository;
 
     public List<UserDTO> retrieveAllUsers() {
         return userRepository.findAll();
@@ -60,6 +65,17 @@ public class UserService implements UserDetailsService {
         } catch (UnknownSlugException exception) {
             throw new UserUnityException(exception.getMessage());
         }
+    }
+
+    public void updateUserRoles(Identifier identifier, Set<String> roles) {
+        for (String role : roles) {
+            if (roleRepository.findByName("ROLE_" + role.toUpperCase()) == null)
+                throw new InvalidRequestException("Unknown role: " + role);
+        }
+
+        userRepository.updateRole(identifier, roles.stream()
+                .map(role -> roleRepository.findByName("ROLE_" + role.toUpperCase()))
+                .collect(toSet()));
     }
 
     public void deleteUser(Identifier identifier) throws UnknownUserException {

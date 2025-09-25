@@ -5,7 +5,6 @@ import com.soodora.domain.user.UnknownIdentifierException;
 import com.soodora.service.artist.ArtistService;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.auth.UserPrincipal;
-import com.soodora.service.common.InvalidRequestException;
 
 import java.util.List;
 
@@ -18,12 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.Collections.emptyList;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -44,55 +40,6 @@ class ArtistControllerIT {
 
     @MockitoBean
     private ArtistService artistService;
-
-    @Test
-    void givenValidRequest_whenMigrateUser_thenOk() throws Exception {
-        // GIVEN
-        when(artistService.isArtist(USER.identifier())).thenReturn(false);
-
-        // WHEN & THEN
-        mockMvc.perform(post("/artists/:migrate")
-                .contentType(APPLICATION_JSON)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void givenInvalidRequest_whenMigrateUser_thenBadRequest() throws Exception {
-        // GIVEN
-        when(artistService.isArtist(USER.identifier())).thenReturn(false);
-        doThrow(InvalidRequestException.class)
-                .when(artistService).createArtist(USER);
-
-        // WHEN & THEN
-        mockMvc.perform(post("/artists/:migrate")
-                .contentType(APPLICATION_JSON)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void givenAlreadyArtist_whenMigrateUser_thenAccepted() throws Exception {
-        // GIVEN
-        when(artistService.isArtist(USER.identifier())).thenReturn(true);
-
-        // WHEN & THEN
-        mockMvc.perform(post("/artists/:migrate")
-                .contentType(APPLICATION_JSON)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isAccepted());
-    }
-
-    @Test
-    void givenUnauthorizedRequest_whenMigrateUser_thenForbidden() throws Exception {
-        // GIVEN
-        when(artistService.isArtist(USER.identifier())).thenReturn(true);
-
-        // WHEN & THEN
-        mockMvc.perform(post("/artists/:migrate")
-                .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden());
-    }
 
     @Test
     void givenNoArtist_whenGetArtists_thenReturnEmptyList() throws Exception {

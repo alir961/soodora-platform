@@ -2,6 +2,8 @@ package com.soodora.test.factory;
 
 import com.soodora.domain.user.UserDTO;
 
+import java.util.Date;
+
 import lombok.NoArgsConstructor;
 
 import static java.util.Collections.emptySet;
@@ -20,6 +22,8 @@ public class UserFactory {
                 "Doe",
                 "Description",
                 null,
+                new Date(),
+                new Date(),
                 emptySet());
     }
 
@@ -32,6 +36,8 @@ public class UserFactory {
                 "Doe",
                 "Description",
                 null,
+                new Date(),
+                new Date(),
                 emptySet());
     }
 
@@ -44,6 +50,8 @@ public class UserFactory {
                 "Doe",
                 "Description",
                 null,
+                new Date(),
+                new Date(),
                 of("ARTIST"));
     }
 
@@ -56,6 +64,8 @@ public class UserFactory {
                 "Doe",
                 "Description",
                 null,
+                new Date(),
+                new Date(),
                 of("ADMIN"));
     }
 

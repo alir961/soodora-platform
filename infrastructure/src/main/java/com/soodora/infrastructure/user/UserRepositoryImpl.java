@@ -2,6 +2,7 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.post.CommentDTO;
@@ -9,6 +10,8 @@ import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.*;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.auth.RoleEntity;
+import com.soodora.infrastructure.auth.RoleJpaRepository;
 import com.soodora.infrastructure.common.DomainEntity;
 
 import java.util.HashSet;
@@ -35,6 +38,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository userRepository;
     private final ArtistJpaRepository artistRepository;
+    private final RoleJpaRepository roleRepository;
     private final ImageStorageUploader imageStorageUploader;
 
     @Override
@@ -75,16 +79,29 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     @Transactional
-    public UserDTO find(Identifier identifier) {
-        String slug = identifier.getValue();
-        Optional<ArtistEntity> artistEntity = artistRepository.findByUserSlug(slug);
+    public void updateRole(Identifier identifier, Set<RoleDTO> roles) {
+        UserEntity user = findUserByIdentifierOrThrows(identifier);
+        Set<RoleEntity> roleEntities = roles.stream()
+                .map(role -> roleRepository.findByName(role.name()))
+                .collect(toSet());
 
-        if (artistEntity.isPresent()) {
-            ArtistEntity artist = artistEntity.get();
-            UserEntity user = artist.getUser();
+        if (!user.isArtist() && roles.stream().anyMatch(RoleDTO::isArtistRole)) {
+            ArtistEntity artist = new ArtistEntity();
 
-            return user.toDTO();
+            artist.setUser(user);
+            artistRepository.save(artist);
+        } else if (user.isArtist() && roles.stream().noneMatch(RoleDTO::isArtistRole)) {
+            artistRepository.delete(user.getArtist());
+            user.setArtist(null);
         }
+
+        user.setRoles(roleEntities);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO find(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).toDTO();
     }
 

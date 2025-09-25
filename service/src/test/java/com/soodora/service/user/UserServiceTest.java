@@ -1,16 +1,14 @@
 package com.soodora.service.user;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.post.PostRepository;
-import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -34,21 +32,11 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Mock
-    private PostRepository postRepository;
-
-    @Mock
-    private ProductRepository productRepository;
-
+    @InjectMocks
     private UserService userService;
 
     private static final List<UserDTO> USERS = List.of(USER);
     private static final Identifier IDENTIFIER = createFromSlug(USER.slug());
-
-    @BeforeEach
-    void setUp() {
-        userService = new UserService(userRepository, postRepository, productRepository);
-    }
 
     @Test
     void retrieveAllUsers_Success() {

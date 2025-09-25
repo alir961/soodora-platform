@@ -13,7 +13,6 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.service.product.UnknownProductException;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -29,6 +28,7 @@ import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.checkout.Session;
 
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
@@ -87,8 +87,9 @@ class StripePaymentServiceTest {
                 Money.of(BigDecimal.valueOf(149.99), Currency.EUR), 20,
                 new ArtistDTO("artist-slug", "Artist Name", null, null), new Date());
         ArtistDTO artistDTO = new ArtistDTO(vendorSlug, "Artist Name", null, null);
-        UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com", null, null, null, null,
-                Collections.emptySet());
+        UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com", null, null, null, null, new Date(),
+                new Date(),
+                emptySet());
 
         when(productRepository.findBySlug(productSlug)).thenReturn(productDTO);
         when(artistRepository.find(vendorSlug)).thenReturn(artistDTO);
