@@ -26,6 +26,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.*;
@@ -233,6 +234,38 @@ class UserControllerIT {
     void givenUnauthenticated_whenUpdateUser_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(put("/users/slug1"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnknownRole_whenUpdateUserRoles_thenBadRequest() throws Exception {
+        // GIVEN
+        Identifier identifier = createFromSlug("slug1");
+
+        doThrow(InvalidRequestException.class).when(userService).updateUserRoles(identifier, emptySet());
+
+        // WHEN & THEN
+        mockMvc.perform(put("/users/slug1/roles")
+                .contentType("application/json")
+                .content("[]")
+                .with(user(new UserPrincipal(ADMIN))))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenUpdateUserRoles_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(put("/users/slug1/roles")
+                .contentType("application/json")
+                .content("[]")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticated_whenUpdateUserRoles_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(put("/users/slug1/roles"))
                 .andExpect(status().isForbidden());
     }
 

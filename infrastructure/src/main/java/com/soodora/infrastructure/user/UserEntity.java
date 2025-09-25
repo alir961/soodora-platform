@@ -1,5 +1,6 @@
 package com.soodora.infrastructure.user;
 
+import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.auth.RoleEntity;
@@ -99,6 +100,12 @@ public class UserEntity implements DomainEntity<UserDTO> {
     public void unfollow(UserEntity user) {
         following.remove(user);
         user.followers.remove(this);
+    }
+
+    public boolean isArtist() {
+        if (artist == null)
+            return false;
+        return roles.stream().map(RoleEntity::toDTO).anyMatch(RoleDTO::isArtistRole);
     }
 
     @Override

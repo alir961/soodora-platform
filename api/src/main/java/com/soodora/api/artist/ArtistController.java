@@ -30,15 +30,6 @@ public class ArtistController {
 
     private final ArtistService artistService;
 
-    @PostMapping(":migrate")
-    public ResponseEntity<Void> migrateUser(
-            @AuthenticationPrincipal UserDTO user) {
-        if (artistService.isArtist(user.identifier()))
-            return new ResponseEntity<>(ACCEPTED);
-        artistService.createArtist(user);
-        return new ResponseEntity<>(OK);
-    }
-
     @GetMapping
     public ResponseEntity<List<ArtistDTO>> getArtists() {
         List<ArtistDTO> artists = artistService.retrieveArtists();

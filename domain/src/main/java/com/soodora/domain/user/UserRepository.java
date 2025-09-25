@@ -2,6 +2,7 @@ package com.soodora.domain.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.RegisterCommand;
+import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
@@ -17,6 +18,7 @@ public interface UserRepository {
 
     UserDTO save(RegisterCommand command);
     UserDTO update(UpdateUserCommand command, Identifier identifier, FileData fileData);
+    void updateRole(Identifier identifier, Set<RoleDTO> roles);
     UserDTO find(Identifier identifier);
     List<UserDTO> findAll();
     Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);

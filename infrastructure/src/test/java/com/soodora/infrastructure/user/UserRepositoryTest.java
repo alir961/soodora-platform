@@ -2,22 +2,25 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
-import com.soodora.infrastructure.artist.ArtistJpaRepository;
 
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
 
+@ExtendWith(MockitoExtension.class)
 class UserRepositoryImplTest {
 
     private static final RegisterCommand VALID_REGISTER = new RegisterCommand(
@@ -28,16 +31,16 @@ class UserRepositoryImplTest {
             "lastname",
             "external");
 
+    @Mock
     private UserJpaRepository userJpaRepository;
+
+    @InjectMocks
     private UserRepositoryImpl userRepository;
+
     private UserEntity validUser;
-    private ImageStorageUploader imageStorageUploader;
 
     @BeforeEach
     void setUp() {
-        userJpaRepository = mock(UserJpaRepository.class);
-        ArtistJpaRepository artistJpaRepository = mock(ArtistJpaRepository.class);
-        userRepository = new UserRepositoryImpl(userJpaRepository, artistJpaRepository, imageStorageUploader);
         validUser = UserEntityFactory.buildDefaultUserEntity();
     }
 

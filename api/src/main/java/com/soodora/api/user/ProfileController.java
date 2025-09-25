@@ -5,7 +5,6 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.PublicUserDTO;
-import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.PostService;
