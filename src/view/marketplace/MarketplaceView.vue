@@ -126,8 +126,10 @@ const handleFilterModalClose = () => {
           <ion-select v-model="selectedSort">
             <div slot="label">Search Type:</div>
             <ion-select-option value="createdAt,desc">Recently Posted</ion-select-option>
-            <ion-select-option value="price,desc">Price ↑</ion-select-option>
-            <ion-select-option value="price,asc">Price ↓</ion-select-option>
+            <ion-select-option value="price_amount,desc">Price ↑</ion-select-option>
+            <ion-select-option value="price_amount,asc">Price ↓</ion-select-option>
+            <ion-select-option value="price_currency,asc">Currency (EUR, USD, CAD, GBP)</ion-select-option>
+            <ion-select-option value="price_currency,desc">Currency (GBP, CAD, USD, EUR)</ion-select-option>
             <ion-select-option value="quantity,desc">Quantity ↑</ion-select-option>
             <ion-select-option value="quantity,asc">Quantity ↓</ion-select-option>
           </ion-select>

@@ -1,5 +1,7 @@
 export interface Money {
   amount: number;
-  currency: string;
+  currency: Currency;
   symbol: string;
 }
+
+export type Currency = 'EUR' | 'USD' | 'CAD' | 'GBP';

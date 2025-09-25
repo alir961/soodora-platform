@@ -1,5 +1,5 @@
 import { Artist } from '@/entity/Artist';
-import { Money } from '@/entity/Money';
+import { Currency, Money } from '@/entity/Money';
 
 interface Product {
   slug: string;
@@ -18,7 +18,7 @@ interface ProductCreationData {
   description: string;
   category: string;
   price: number;
-  currency: string;
+  currency: Currency;
   quantity: number;
 }
 

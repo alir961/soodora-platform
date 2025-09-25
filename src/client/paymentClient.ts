@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { Currency } from '@/entity/Money';
 
 export interface CheckoutSessionRequest {
   name: string;
   amount: number;
-  currency: string;
+  currency: Currency;
   imageUrl?: string | null;
   productSlug: string;
   vendorSlug: string;

@@ -23,6 +23,7 @@ import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
 import { showToast } from '@/utils';
 import { ProductCreationData } from '@/entity/Product';
 import FileUpload from '@/component/file/FileUpload.vue';
+import CurrencySelector from '@/component/deviseSelector/CurrencySelector.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -339,12 +340,7 @@ const onProductFileSelected = (file: File) => {
               <ion-item class="modal-item">
                 <ion-label position="stacked">Price</ion-label>
                 <ion-input type="number" placeholder="Add a price" v-model.number="newProduct.price">
-                  <ion-select interface="action-sheet" placeholder="Select a currency" v-model="newProduct.currency">
-                    <ion-select-option value="EUR">€</ion-select-option>
-                    <ion-select-option value="USD">$</ion-select-option>
-                    <ion-select-option value="CAD">C$</ion-select-option>
-                    <ion-select-option value="GBP">£</ion-select-option>
-                  </ion-select>
+                  <CurrencySelector v-model="newProduct.currency" />
                 </ion-input>
               </ion-item>
 

@@ -34,6 +34,7 @@ import { showToast } from '@/utils';
 import { arrowBackOutline, pencil } from 'ionicons/icons';
 import FileUpload from '@/component/file/FileUpload.vue';
 import { Artist } from '@/entity/Artist';
+import CurrencySelector from '@/component/deviseSelector/CurrencySelector.vue';
 
 const props = defineProps({
   product: {
@@ -373,12 +374,7 @@ const onFileSelected = (file: File | null) => {
         <ion-item class="modal-item">
           <ion-label position="stacked">Price</ion-label>
           <ion-input type="number" placeholder="Add a price" v-model.number="editedProduct.price.amount">
-            <ion-select interface="action-sheet" placeholder="Select a currency" v-model="editedProduct.price.currency">
-              <ion-select-option value="EUR">€</ion-select-option>
-              <ion-select-option value="USD">$</ion-select-option>
-              <ion-select-option value="CAD">C$</ion-select-option>
-              <ion-select-option value="GBP">£</ion-select-option>
-            </ion-select>
+            <CurrencySelector v-model="editedProduct.price.currency" />
           </ion-input>
         </ion-item>
         <ion-item>
