@@ -3,6 +3,7 @@ package com.soodora.infrastructure.product;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 
 import java.util.Date;
 import java.util.UUID;
@@ -43,7 +44,8 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     private String category;
 
     @Column
-    private long price;
+    @Embedded
+    private MoneyEmbeddable price;
 
     @Column
     private long quantity;
@@ -68,7 +70,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
                 description,
                 imageUrl,
                 category,
-                price,
+                price.toDomain(),
                 quantity,
                 artist.toDTO(),
                 createdAt);

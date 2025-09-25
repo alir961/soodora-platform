@@ -1,5 +1,7 @@
 package com.soodora.service.stripe;
 
+import com.soodora.domain.common.Currency;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -29,12 +31,13 @@ class StripeServiceTest {
         // GIVEN
         CheckoutSessionRequest request = new CheckoutSessionRequest(
                 "My Product",
-                1500L,
+                1499.99,
+                Currency.EUR,
                 "http://image.url/image.png",
                 "product-slug",
                 "vendor-slug",
                 "buyer-slug",
-                2L);
+                1L);
 
         try (MockedStatic<Session> mockedSession = mockStatic(Session.class)) {
             Session fakeSession = mock(Session.class);
@@ -61,13 +64,13 @@ class StripeServiceTest {
             assertEquals("product-slug", params.getMetadata().get("productSlug"));
             assertEquals("vendor-slug", params.getMetadata().get("vendorSlug"));
             assertEquals("buyer-slug", params.getMetadata().get("buyerSlug"));
-            assertEquals("2", params.getMetadata().get("quantity"));
+            assertEquals("1", params.getMetadata().get("quantity"));
 
             assertEquals(1, params.getLineItems().size());
             SessionCreateParams.LineItem lineItem = params.getLineItems().getFirst();
-            assertEquals(2L, lineItem.getQuantity());
-            assertEquals("eur", lineItem.getPriceData().getCurrency());
-            assertEquals(1500L, lineItem.getPriceData().getUnitAmount());
+            assertEquals(1L, lineItem.getQuantity());
+            assertEquals(Currency.EUR.toString(), lineItem.getPriceData().getCurrency());
+            assertEquals(149999, lineItem.getPriceData().getUnitAmount());
             assertEquals("My Product", lineItem.getPriceData().getProductData().getName());
             assertEquals("Achat sur Soodora", lineItem.getPriceData().getProductData().getDescription());
             assertEquals(1, lineItem.getPriceData().getProductData().getImages().size());
@@ -80,7 +83,8 @@ class StripeServiceTest {
         // GIVEN
         CheckoutSessionRequest request = new CheckoutSessionRequest(
                 "My Product",
-                1500L,
+                1499.99,
+                Currency.EUR,
                 "http://image.url/image.png",
                 "product-slug",
                 "vendor-slug",

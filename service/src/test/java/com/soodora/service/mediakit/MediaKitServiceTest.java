@@ -1,6 +1,7 @@
 package com.soodora.service.mediakit;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
 
@@ -27,7 +28,7 @@ class MediaKitServiceTest {
     private MediaKitItemRepository mediaKitItemRepository;
 
     @Mock
-    private MediaKitExporter mediaKitExporter;
+    private PdfExporter pdfExporter;
 
     private MediaKitService mediaKitService;
 
@@ -37,8 +38,8 @@ class MediaKitServiceTest {
     void setUp() {
         mediaKitRepository = mock(MediaKitRepository.class);
         mediaKitItemRepository = mock(MediaKitItemRepository.class);
-        mediaKitExporter = mock(MediaKitExporter.class);
-        mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, mediaKitExporter);
+        pdfExporter = mock(PdfExporter.class);
+        mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, pdfExporter);
     }
 
     @Test
@@ -168,7 +169,7 @@ class MediaKitServiceTest {
         when(mediaKitItemRepository.findAll()).thenReturn(of(item));
 
         byteArray.write("PDF".getBytes());
-        when(mediaKitExporter.exportMediaKit(mediaKit, of(item))).thenReturn(byteArray);
+        when(pdfExporter.exportMediaKit(mediaKit, of(item))).thenReturn(byteArray);
 
         // WHEN
         byte[] result = mediaKitService.exportMediaKitToPdf(slug);
@@ -177,7 +178,7 @@ class MediaKitServiceTest {
         assertArrayEquals("PDF".getBytes(), result);
         verify(mediaKitRepository).findBySlug(slug);
         verify(mediaKitItemRepository).findAll();
-        verify(mediaKitExporter).exportMediaKit(mediaKit, of(item));
+        verify(pdfExporter).exportMediaKit(mediaKit, of(item));
     }
 
     @Test
@@ -193,7 +194,7 @@ class MediaKitServiceTest {
         // THEN
         assertThrows(UnknownMediaKitException.class, executable);
         verify(mediaKitRepository).findBySlug(slug);
-        verifyNoInteractions(mediaKitExporter);
+        verifyNoInteractions(pdfExporter);
     }
 
 }

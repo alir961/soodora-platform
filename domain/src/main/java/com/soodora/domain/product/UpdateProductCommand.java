@@ -1,5 +1,10 @@
 package com.soodora.domain.product;
 
-public record UpdateProductCommand(String name, String description, String category, long price,
+import com.soodora.domain.common.Currency;
+
+import java.math.BigDecimal;
+
+public record UpdateProductCommand(String name, String description, String category, BigDecimal price,
+        Currency currency,
         long quantity) {
 }

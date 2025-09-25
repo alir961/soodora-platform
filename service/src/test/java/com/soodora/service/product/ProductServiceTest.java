@@ -1,10 +1,12 @@
 package com.soodora.service.product;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
 import com.soodora.service.user.UnknownUserException;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -39,8 +41,8 @@ class ProductServiceTest {
     private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final Page<ProductDTO> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
-            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.category(), PRODUCT_1.price(),
-            PRODUCT_1.quantity());
+            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.category(), PRODUCT_1.price().amount(),
+            PRODUCT_1.price().currency(), PRODUCT_1.quantity());
 
     @BeforeEach
     void setUp() {
@@ -108,7 +110,8 @@ class ProductServiceTest {
                 "Updated Name",
                 "Updated Description",
                 "newCategory",
-                150L,
+                BigDecimal.valueOf(149.99),
+                Currency.EUR,
                 5L);
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),
@@ -128,7 +131,8 @@ class ProductServiceTest {
                 "Updated Name",
                 "Updated Description",
                 "newCategory",
-                150L,
+                BigDecimal.valueOf(149.99),
+                Currency.EUR,
                 5L);
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),

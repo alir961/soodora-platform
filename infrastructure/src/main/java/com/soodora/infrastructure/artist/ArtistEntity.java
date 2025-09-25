@@ -7,6 +7,7 @@ import com.soodora.infrastructure.linkpage.LinkPageEntity;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.product.ProductEntity;
+import com.soodora.infrastructure.quote.QuoteEntity;
 import com.soodora.infrastructure.sale.SaleEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -52,6 +53,9 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
     @ManyToMany
     @JoinTable(name = "artists_events", joinColumns = @JoinColumn(name = "artist_id"), inverseJoinColumns = @JoinColumn(name = "event_id"))
     private List<EventEntity> events;
+
+    @OneToMany(mappedBy = "artist", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<QuoteEntity> quotes;
 
     @Override
     public ArtistDTO toDTO() {

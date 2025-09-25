@@ -1,5 +1,8 @@
 package com.soodora.infrastructure.sale;
 
+import com.soodora.domain.common.Currency;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -19,7 +22,7 @@ public class SaleEntityFactory {
                 buildDefaultArtistEntity(),
                 buildDefaultUserEntity(),
                 100,
-                new BigDecimal(10),
+                new MoneyEmbeddable(BigDecimal.valueOf(100.99), Currency.EUR),
                 new Date(),
                 new Date());
     }

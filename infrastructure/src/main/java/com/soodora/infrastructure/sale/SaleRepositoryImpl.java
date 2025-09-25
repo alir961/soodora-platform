@@ -7,6 +7,7 @@ import com.soodora.domain.sale.SaveSaleCommand;
 import com.soodora.domain.user.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.product.ProductJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
@@ -45,7 +46,7 @@ public class SaleRepositoryImpl implements SaleRepository {
 
         entity.setProduct(productEntity);
         entity.setQuantitySold(sale.quantitySold());
-        entity.setAmount(sale.amount());
+        entity.setAmount(new MoneyEmbeddable(sale.amount().amount(), sale.amount().currency()));
         entity.setSlug(generateUniqueSlug());
         entity.setArtist(artistEntity);
         entity.setBuyer(buyerEntity);
