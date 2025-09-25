@@ -5,13 +5,11 @@ import com.soodora.domain.mediakit.MediaKitGenerationException;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 
 import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.BaseFont;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +19,7 @@ import static com.itextpdf.text.Font.BOLD;
 import static com.itextpdf.text.Font.NORMAL;
 
 @Slf4j
-public class PdfMediaKitBuilder {
+public class PdfMediaKitBuilder extends LoadFontFromResources {
 
     private static final String OVERPASS_REGULAR = "/fonts/overpass/overpass-regular.otf";
     private static final String OVERPASS_SEMIBOLD = "/fonts/overpass/overpass-semibold.otf";
@@ -120,28 +118,6 @@ public class PdfMediaKitBuilder {
             return new URI(rawUrl);
         } catch (URISyntaxException exception) {
             throw new MediaKitGenerationException("Unable to parse url");
-        }
-    }
-
-    private Font loadFontFromResources(String resourcePath, int size, int style, BaseColor color) {
-        try (InputStream inputStream = getClass().getResourceAsStream(resourcePath)) {
-            if (inputStream == null)
-                throw new MediaKitGenerationException("Font not found: " + resourcePath);
-
-            byte[] fontBytes = inputStream.readAllBytes();
-
-            BaseFont baseFont = BaseFont.createFont(
-                    resourcePath,
-                    BaseFont.IDENTITY_H,
-                    BaseFont.EMBEDDED,
-                    true,
-                    fontBytes,
-                    null);
-
-            return new Font(baseFont, size, style, color);
-        } catch (Exception e) {
-            log.error("Unable to load font {}: {}", resourcePath, e.getMessage());
-            throw new MediaKitGenerationException("Unable to load font " + resourcePath);
         }
     }
 

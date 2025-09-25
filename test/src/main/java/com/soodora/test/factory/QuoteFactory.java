@@ -7,7 +7,6 @@ import com.soodora.domain.quote.QuoteDTO;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -21,7 +20,7 @@ public class QuoteFactory {
     public static QuoteDTO buildDefaultQuote(String id) {
         ArtistDTO artist = ArtistFactory.buildArtistDTO("123");
 
-        List<QuoteArticleDTO> articles = Collections.singletonList(
+        List<QuoteArticleDTO> articles = List.of(
                 QuoteArticleFactory.buildDefaultQuoteArticle());
 
         Date now = new Date();

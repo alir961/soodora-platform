@@ -74,7 +74,8 @@ public class QuoteEntity implements DomainEntity<QuoteDTO> {
 
         return articles.stream()
                 .map(QuoteArticleEntity::getTotalPrice)
-                .reduce(Money.zero(), Money::add);
+                .reduce(Money::add)
+                .orElse(Money.zero());
     }
 
     @Override

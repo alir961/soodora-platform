@@ -6,15 +6,18 @@ import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.domain.quotearticle.QuoteArticleRepository;
 import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
+import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 import com.soodora.infrastructure.quote.QuoteJpaRepository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +31,7 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
     private final QuoteJpaRepository quoteRepository;
 
     @Override
+    @Transactional
     public QuoteArticleDTO save(CreateQuoteArticleCommand command) {
         QuoteEntity quoteEntity = quoteRepository.findBySlug(command.quoteSlug())
                 .orElseThrow(
@@ -44,6 +48,8 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
         return quoteArticleRepository.save(entity).toDTO();
     }
 
+    @Override
+    @Transactional
     public QuoteArticleDTO update(UpdateQuoteArticleCommand command, String slug) {
         QuoteArticleEntity existingEntity = quoteArticleRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("QuoteArticle not found with slug: " + slug));
@@ -61,6 +67,7 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
     }
 
     @Override
+    @Transactional
     public QuoteArticleDTO findBySlug(String slug) {
         return quoteArticleRepository.findBySlug(slug)
                 .map(QuoteArticleEntity::toDTO)
@@ -68,11 +75,21 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
     }
 
     @Override
+    @Transactional
     public Page<QuoteArticleDTO> findAll(Pageable pageable) {
         return quoteArticleRepository.findAll(pageable).map(QuoteArticleEntity::toDTO);
     }
 
     @Override
+    @Transactional
+    public List<QuoteArticleDTO> findAll() {
+        return quoteArticleRepository.findAll().stream()
+                .map(DomainEntity::toDTO)
+                .toList();
+    }
+
+    @Override
+    @Transactional
     public void deleteArticleQuoteBySlug(String slug) {
         QuoteArticleEntity entity = quoteArticleRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("QuoteArticle not found with slug: " + slug));

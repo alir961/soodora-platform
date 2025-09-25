@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.util.Collections.emptyList;
+
 import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 
 @Repository
@@ -39,6 +41,7 @@ public class QuoteRepositoryImpl implements QuoteRepository {
         entity.setClientAddress(command.clientAddress());
         entity.setClientPhone(command.clientPhone());
         entity.setDescription(command.description());
+        entity.setArticles(emptyList());
 
         return quoteJpaRepository.save(entity).toDTO();
     }
@@ -66,6 +69,7 @@ public class QuoteRepositoryImpl implements QuoteRepository {
     }
 
     @Override
+    @Transactional
     public QuoteDTO findBySlug(String slug) {
         return quoteJpaRepository.findBySlug(slug)
                 .map(QuoteEntity::toDTO)
@@ -73,11 +77,13 @@ public class QuoteRepositoryImpl implements QuoteRepository {
     }
 
     @Override
+    @Transactional
     public Page<QuoteDTO> findAll(Pageable pageable) {
         return quoteJpaRepository.findAll(pageable).map(QuoteEntity::toDTO);
     }
 
     @Override
+    @Transactional
     public Page<QuoteDTO> findByFilter(QuoteFilter filter, Pageable pageable) {
         var spec = QuoteSpecification.build(filter);
         return quoteJpaRepository.findAll(spec, pageable).map(QuoteEntity::toDTO);

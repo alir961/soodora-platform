@@ -1,12 +1,16 @@
 package com.soodora.service.quote;
 
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.quote.*;
 import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.domain.quotearticle.QuoteArticleRepository;
 import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
 import com.soodora.domain.user.UserDTO;
+import com.soodora.service.common.InvalidRequestException;
+
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,7 @@ public class QuoteService {
 
     private final QuoteRepository quoteRepository;
     private final QuoteArticleRepository quoteArticleRepository;
+    private final PdfExporter pdfExporter;
 
     public QuoteDTO createQuote(CreateQuoteCommand command, UserDTO user) {
         if (quoteRepository.isQuoteNameUsedByUser(command.name(), user.slug())) {
@@ -94,6 +99,21 @@ public class QuoteService {
             quoteArticleRepository.deleteArticleQuoteBySlug(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownQuoteArticleException(exception.getMessage());
+        }
+    }
+
+    public byte[] exportQuoteToPdf(String slug) {
+        try {
+            QuoteDTO quote = getQuote(slug);
+            List<QuoteArticleDTO> quoteItems = quoteArticleRepository.findAll()
+                    .stream()
+                    .filter(i -> i.quoteSlug().equals(slug))
+                    .toList();
+
+            return pdfExporter.exportQuote(quote, quoteItems)
+                    .toByteArray();
+        } catch (QuoteGenerationException e) {
+            throw new InvalidRequestException("Failed to export Quote to PDF: " + e.getMessage());
         }
     }
 

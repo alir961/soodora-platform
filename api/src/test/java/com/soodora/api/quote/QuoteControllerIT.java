@@ -24,10 +24,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -105,7 +108,7 @@ class QuoteControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/" + A_QUOTE.slug())
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.quoteDTO.slug").value(A_QUOTE.slug()));
     }
@@ -117,7 +120,7 @@ class QuoteControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/invalidSlug")
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -129,7 +132,7 @@ class QuoteControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/search")
-                .with(user(new UserPrincipal(USER)))
+                .with(user(new UserPrincipal(ARTIST_USER)))
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
@@ -204,7 +207,7 @@ class QuoteControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/articles/" + A_QUOTE_ARTICLE.slug())
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.quoteArticleDTO.slug").value(A_QUOTE_ARTICLE.slug()));
     }
@@ -216,7 +219,7 @@ class QuoteControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/articles/invalid")
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isNotFound());
     }
 
@@ -232,6 +235,41 @@ class QuoteControllerIT {
 
         // THEN
         verify(quoteService).deleteQuoteArticle(A_QUOTE_ARTICLE.slug());
+    }
+
+    @Test
+    void givenValidQuoteSlug_whenExportQuoteToPdf_thenReturnsPdf() throws Exception {
+        // GIVEN
+        byte[] pdfData = "PDFDATA".getBytes();
+        when(quoteService.exportQuoteToPdf("quoteSlug1"))
+                .thenReturn(pdfData);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/quotes/quoteSlug1/export/pdf")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_PDF))
+                .andExpect(header().string(CONTENT_DISPOSITION, containsString("quote_quoteSlug1.pdf")));
+    }
+
+    @Test
+    void givenNoAuthentication_whenExportQuoteToPdf_thenReturnsForbidden() throws Exception {
+        // GIVEN // WHEN // THEN
+        mockMvc.perform(get("/quotes/quoteSlug1/export/pdf"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenQuoteExportFails_whenExportQuoteToPdf_thenReturnsInternalServerError() throws Exception {
+        // GIVEN
+        when(quoteService.exportQuoteToPdf("quoteSlug1"))
+                .thenThrow(new RuntimeException("PDF generation failed"));
+
+        // WHEN // THEN
+        mockMvc.perform(get("/quotes/quoteSlug1/export/pdf")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentType(APPLICATION_JSON));
     }
 
 }

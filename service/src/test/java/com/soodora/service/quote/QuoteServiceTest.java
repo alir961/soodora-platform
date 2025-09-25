@@ -1,13 +1,18 @@
 package com.soodora.service.quote;
 
+import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.common.Currency;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.quote.*;
 import com.soodora.domain.quotearticle.*;
 import com.soodora.test.factory.QuoteArticleFactory;
 import com.soodora.test.factory.QuoteFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -23,7 +28,7 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class QuoteServiceTest {
@@ -33,6 +38,9 @@ class QuoteServiceTest {
 
     @Mock
     private QuoteArticleRepository quoteArticleRepository;
+
+    @Mock
+    private PdfExporter pdfExporter;
 
     private QuoteService quoteService;
 
@@ -74,7 +82,10 @@ class QuoteServiceTest {
 
     @BeforeEach
     void setUp() {
-        quoteService = new QuoteService(quoteRepository, quoteArticleRepository);
+        quoteRepository = mock(QuoteRepository.class);
+        quoteArticleRepository = mock(QuoteArticleRepository.class);
+        pdfExporter = mock(PdfExporter.class);
+        quoteService = new QuoteService(quoteRepository, quoteArticleRepository, pdfExporter);
     }
 
     @Test
@@ -289,6 +300,67 @@ class QuoteServiceTest {
 
         // THEN
         assertThrows(UnknownQuoteArticleException.class, executable);
+    }
+
+    @Test
+    void givenSlug_whenExportQuoteToPdf_thenReturnPdfBytes() throws Exception {
+        // GIVEN
+        String slug = "quote-slug";
+        ArtistDTO artist = new ArtistDTO("slug123", "username123", "description", "avatarUrl");
+        QuoteArticleDTO article = new QuoteArticleDTO(
+                slug,
+                "articleSlug",
+                "Sample Article Description",
+                2,
+                Money.of(BigDecimal.valueOf(50), Currency.EUR),
+                BigDecimal.valueOf(20),
+                Money.of(BigDecimal.valueOf(100), Currency.EUR));
+        QuoteDTO quote = new QuoteDTO(
+                "quoteSlug1",
+                artist,
+                "Sample Quote",
+                "Client Name",
+                "Client Address",
+                "client@email.com",
+                "1234567890",
+                "Quote Description",
+                List.of(article),
+                Money.of(BigDecimal.valueOf(200), Currency.EUR),
+                new Date(),
+                new Date());
+
+        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
+
+        when(quoteRepository.findBySlug(slug)).thenReturn(quote);
+        when(quoteArticleRepository.findAll()).thenReturn(List.of(article));
+
+        byteArray.write("PDF".getBytes());
+        when(pdfExporter.exportQuote(quote, List.of(article))).thenReturn(byteArray);
+
+        // WHEN
+        byte[] result = quoteService.exportQuoteToPdf(slug);
+
+        // THEN
+        assertArrayEquals("PDF".getBytes(), result);
+        verify(quoteRepository).findBySlug(slug);
+        verify(quoteArticleRepository).findAll();
+        verify(pdfExporter).exportQuote(quote, List.of(article));
+    }
+
+    @Test
+    void givenInvalidSlug_whenExportQuoteToPdf_thenThrowUnknownQuoteException() {
+        // GIVEN
+        String slug = "invalid-quote-slug";
+
+        when(quoteRepository.findBySlug(slug)).thenThrow(UnknownQuoteException.class);
+
+        // WHEN
+        Executable executable = () -> quoteService.exportQuoteToPdf(slug);
+
+        // THEN
+        assertThrows(UnknownQuoteException.class, executable);
+        verify(quoteRepository).findBySlug(slug);
+        verifyNoInteractions(pdfExporter);
     }
 
 }
