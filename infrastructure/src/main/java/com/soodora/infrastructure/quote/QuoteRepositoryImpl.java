@@ -49,17 +49,17 @@ public class QuoteRepositoryImpl implements QuoteRepository {
         QuoteEntity entity = quoteJpaRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Quote not found: " + slug));
 
-        if (isNotNullOrBlank(command.name()) && !command.name().equals(entity.getName()))
+        if (isNotNullOrBlank(command.name()))
             entity.setName(command.name());
-        if (isNotNullOrBlank(command.clientName()) && !command.clientName().equals(entity.getClientName()))
+        if (isNotNullOrBlank(command.clientName()))
             entity.setClientName(command.clientName());
-        if (isNotNullOrBlank(command.clientEmail()) && !command.clientEmail().equals(entity.getClientEmail()))
+        if (isNotNullOrBlank(command.clientEmail()))
             entity.setClientEmail(command.clientEmail());
-        if (isNotNullOrBlank(command.clientAddress()) && !command.clientAddress().equals(entity.getClientAddress()))
+        if (isNotNullOrBlank(command.clientAddress()))
             entity.setClientAddress(command.clientAddress());
-        if (isNotNullOrBlank(command.clientPhone()) && !command.clientPhone().equals(entity.getClientPhone()))
+        if (isNotNullOrBlank(command.clientPhone()))
             entity.setClientPhone(command.clientPhone());
-        if (isNotNullOrBlank(command.description()) && !command.description().equals(entity.getDescription()))
+        if (isNotNullOrBlank(command.description()))
             entity.setDescription(command.description());
 
         return quoteJpaRepository.save(entity).toDTO();

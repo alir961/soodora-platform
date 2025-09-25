@@ -46,13 +46,13 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
         QuoteArticleEntity existingEntity = quoteArticleRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("QuoteArticle not found with slug: " + slug));
 
-        if (isNotNullOrBlank(command.description()) && !command.description().equals(existingEntity.getDescription()))
+        if (isNotNullOrBlank(command.description()))
             existingEntity.setDescription(command.description());
-        if (command.quantity() > 0 && command.quantity() != existingEntity.getQuantity())
+        if (command.quantity() > 0)
             existingEntity.setQuantity(command.quantity());
         if (command.price() != 0)
             existingEntity.setUnitPrice(Money.of(command.price(), command.currency()));
-        if (command.vatPercent() != null && !command.vatPercent().equals(existingEntity.getVatPercent()))
+        if (command.vatPercent() != null)
             existingEntity.setVatPercent(command.vatPercent());
 
         return quoteArticleRepository.save(existingEntity).toDTO();
