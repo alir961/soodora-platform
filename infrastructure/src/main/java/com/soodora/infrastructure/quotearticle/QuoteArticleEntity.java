@@ -1,8 +1,9 @@
 package com.soodora.infrastructure.quotearticle;
 
+import com.soodora.domain.common.Money;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.infrastructure.common.DomainEntity;
-import com.soodora.infrastructure.common.Money;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 
 import java.math.BigDecimal;
@@ -40,17 +41,17 @@ public class QuoteArticleEntity implements DomainEntity<QuoteArticleDTO> {
 
     @Column
     @Embedded
-    private Money unitPrice;
+    private MoneyEmbeddable unitPrice;
 
     @Column(nullable = false)
     private BigDecimal vatPercent;
 
     @Transient
     public Money getTotalPrice() {
-        BigDecimal totalHT = unitPrice.getAmount().multiply(BigDecimal.valueOf(quantity));
+        BigDecimal totalHT = unitPrice.toDomain().amount().multiply(BigDecimal.valueOf(quantity));
         BigDecimal totalTTC = totalHT.multiply(
                 BigDecimal.ONE.add(vatPercent.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)));
-        return Money.of(totalTTC.setScale(2, RoundingMode.HALF_UP).doubleValue(), unitPrice.getCurrency());
+        return Money.of(totalTTC.setScale(2, RoundingMode.HALF_UP), unitPrice.toDomain().currency());
     }
 
     @Override
@@ -60,9 +61,9 @@ public class QuoteArticleEntity implements DomainEntity<QuoteArticleDTO> {
                 slug,
                 description,
                 quantity,
-                unitPrice.toDTO(),
+                unitPrice.toDomain(),
                 vatPercent,
-                getTotalPrice().toDTO());
+                getTotalPrice());
     }
 
 }

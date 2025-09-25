@@ -6,9 +6,11 @@ import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.domain.quotearticle.QuoteArticleRepository;
 import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
-import com.soodora.infrastructure.common.Money;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 import com.soodora.infrastructure.quote.QuoteJpaRepository;
+
+import java.math.BigDecimal;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +37,7 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
         entity.setQuote(quoteEntity);
         entity.setDescription(command.description());
         entity.setQuantity(command.quantity());
-        entity.setUnitPrice(Money.of(command.price(), command.currency()));
+        entity.setUnitPrice(new MoneyEmbeddable(command.price(), command.currency()));
         entity.setVatPercent(command.vatPercent());
 
         entity.setSlug(generateUniqueSlug());
@@ -50,8 +52,8 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
             existingEntity.setDescription(command.description());
         if (command.quantity() > 0)
             existingEntity.setQuantity(command.quantity());
-        if (command.price() != 0)
-            existingEntity.setUnitPrice(Money.of(command.price(), command.currency()));
+        if (command.price().compareTo(BigDecimal.ZERO) > 0)
+            existingEntity.setUnitPrice(new MoneyEmbeddable(command.price(), command.currency()));
         if (command.vatPercent() != null)
             existingEntity.setVatPercent(command.vatPercent());
 

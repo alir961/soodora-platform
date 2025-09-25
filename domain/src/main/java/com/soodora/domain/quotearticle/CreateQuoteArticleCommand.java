@@ -8,7 +8,7 @@ public record CreateQuoteArticleCommand(
         String quoteSlug,
         String description,
         int quantity,
-        double price,
+        BigDecimal price,
         Currency currency,
         BigDecimal vatPercent) {
 }

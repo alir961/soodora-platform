@@ -2,7 +2,7 @@ package com.soodora.service.stripe;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.common.MoneyDTO;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.ProductSaleException;
@@ -61,8 +61,8 @@ public class StripePaymentService {
                 .orElseThrow(() -> new UnknownArtistException("Artist not found: " + vendorSlug));
         UserDTO user = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
                 .orElseThrow(() -> new UnknownUserException("User not found: " + buyerSlug));
-        MoneyDTO amount = new MoneyDTO(product.price().amount().multiply(BigDecimal.valueOf(quantityBought)),
-                product.price().currency(), product.price().symbol());
+        Money amount = Money.of(product.price().amount().multiply(BigDecimal.valueOf(quantityBought)),
+                product.price().currency());
 
         if (product.quantity() > 0) {
             SaveSaleCommand sale = new SaveSaleCommand(product, artist, user, quantityBought, amount);

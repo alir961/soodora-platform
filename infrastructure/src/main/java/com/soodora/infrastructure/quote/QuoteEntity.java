@@ -1,9 +1,9 @@
 package com.soodora.infrastructure.quote;
 
+import com.soodora.domain.common.Money;
 import com.soodora.domain.quote.QuoteDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
-import com.soodora.infrastructure.common.Money;
 import com.soodora.infrastructure.quotearticle.QuoteArticleEntity;
 
 import java.util.Date;
@@ -66,6 +66,7 @@ public class QuoteEntity implements DomainEntity<QuoteDTO> {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Transient
     public Money calculateTotal() {
         if (articles == null || articles.isEmpty()) {
             return Money.zero();
@@ -88,7 +89,7 @@ public class QuoteEntity implements DomainEntity<QuoteDTO> {
                 clientPhone,
                 description,
                 articles.stream().map(QuoteArticleEntity::toDTO).collect(toList()),
-                calculateTotal().toDTO(),
+                calculateTotal(),
                 createdAt,
                 updatedAt);
     }

@@ -1,7 +1,7 @@
 package com.soodora.domain.quote;
 
 import com.soodora.domain.artist.ArtistDTO;
-import com.soodora.domain.common.MoneyDTO;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 
 import java.util.Date;
@@ -17,7 +17,7 @@ public record QuoteDTO(
         String clientPhone,
         String description,
         List<QuoteArticleDTO> quoteArticles,
-        MoneyDTO Total,
+        Money Total,
         Date createdAtDate,
         Date updatedAt) {
 }

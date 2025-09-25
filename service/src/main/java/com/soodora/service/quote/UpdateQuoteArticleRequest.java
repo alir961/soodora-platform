@@ -15,7 +15,7 @@ public record UpdateQuoteArticleRequest(
         @Schema(description = "Quote slug", example = "quoteSlug") String quoteSlug,
         @Schema(description = "Quote Article description", example = "My Article") String description,
         @Schema(description = "Quote Article quantity", example = "3") int quantity,
-        @Schema(description = "Quote Article price", example = "49.99") Double price,
+        @Schema(description = "Quote Article price", example = "49.99") BigDecimal price,
         @Schema(description = "Quote Article currency", example = "USD", allowableValues = {
                 "USD", "EUR", "CAD", "GBP"}) Currency currency,
         @Schema(description = "Quote Article TAX Percent", example = "20%") BigDecimal vatPercent)
@@ -29,7 +29,8 @@ public record UpdateQuoteArticleRequest(
         if (quantity <= 0)
             throw new InvalidRequestException("Quantity must be greater than 0 and cannot exceed 100,000");
         if (!isValidMoneyPrice(price))
-            throw new InvalidRequestException("Price must be greater than 0 and cannot exceed 100,000");
+            throw new InvalidRequestException(
+                    "Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents");
         if (!isValidCurrency(currency))
             throw new InvalidRequestException("Currency is not valid");
         if (!isValidBigDecimal(vatPercent))

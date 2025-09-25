@@ -157,7 +157,7 @@ public class ValidationUtilsTest {
         String name = "Product";
         String description = "Desc";
         String category = "Category";
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         long quantity = 10;
 
@@ -172,14 +172,15 @@ public class ValidationUtilsTest {
         String name = "Product";
         String description = "Desc";
         String category = "Category";
-        Double price = 0.0;
+        BigDecimal price = BigDecimal.valueOf(0.0);
         Currency currency = Currency.USD;
         long quantity = 10;
 
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
                 () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
-        assertEquals("Price must be greater than 0 and cannot exceed 100,000", ex.getMessage());
+        assertEquals("Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents",
+                ex.getMessage());
     }
 
     @Test
@@ -188,7 +189,7 @@ public class ValidationUtilsTest {
         String name = "Product";
         String description = "Desc";
         String category = "Category";
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         long quantity = 100001;
 
@@ -199,12 +200,29 @@ public class ValidationUtilsTest {
     }
 
     @Test
+    void givenMoreThanTwoDigitsCents_whenValidateProduct_thenThrowsException() {
+        // GIVEN
+        String name = "Product";
+        String description = "Desc";
+        String category = "Category";
+        BigDecimal price = BigDecimal.valueOf(100.999);
+        Currency currency = Currency.USD;
+        long quantity = 10;
+
+        // WHEN / THEN
+        InvalidRequestException ex = assertThrows(InvalidRequestException.class,
+                () -> ValidationUtils.validateProduct(name, description, category, price, currency, quantity));
+        assertEquals("Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents",
+                ex.getMessage());
+    }
+
+    @Test
     void givenNullCurrency_whenValidateProduct_thenThrowsException() {
         // GIVEN
         String name = "Product";
         String description = "Desc";
         String category = "Category";
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = null;
         long quantity = 10;
 
@@ -252,7 +270,7 @@ public class ValidationUtilsTest {
         String quoteSlug = "quote-slug";
         String description = "Description";
         int quantity = 10;
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         BigDecimal vatPercent = BigDecimal.valueOf(20);
 
@@ -267,7 +285,7 @@ public class ValidationUtilsTest {
         String quoteSlug = "quote-slug";
         String description = "Description";
         int quantity = 0;
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         BigDecimal vatPercent = BigDecimal.valueOf(20);
 
@@ -284,7 +302,7 @@ public class ValidationUtilsTest {
         String quoteSlug = "quote-slug";
         String description = "Description";
         int quantity = 10;
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         BigDecimal vatPercent = BigDecimal.ZERO;
 
@@ -301,7 +319,7 @@ public class ValidationUtilsTest {
         String quoteSlug = "quote-slug";
         String description = "Description";
         int quantity = 10;
-        Double price = 100.0;
+        BigDecimal price = BigDecimal.valueOf(100.0);
         Currency currency = Currency.USD;
         BigDecimal vatPercent = null;
 

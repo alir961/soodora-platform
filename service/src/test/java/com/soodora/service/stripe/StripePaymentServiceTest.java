@@ -3,7 +3,7 @@ package com.soodora.service.stripe;
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.Currency;
-import com.soodora.domain.common.MoneyDTO;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
@@ -84,7 +84,7 @@ class StripePaymentServiceTest {
         when(event.getDataObjectDeserializer()).thenReturn(deserializer);
 
         ProductDTO productDTO = new ProductDTO(productSlug, "name", "desc", "image", "cd",
-                new MoneyDTO(BigDecimal.valueOf(149.99), Currency.EUR, Currency.EUR.getSymbol()), 20,
+                Money.of(BigDecimal.valueOf(149.99), Currency.EUR), 20,
                 new ArtistDTO("artist-slug", "Artist Name", null, null), new Date());
         ArtistDTO artistDTO = new ArtistDTO(vendorSlug, "Artist Name", null, null);
         UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com", null, null, null, null,

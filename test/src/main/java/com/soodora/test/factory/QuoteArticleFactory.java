@@ -1,7 +1,7 @@
 package com.soodora.test.factory;
 
 import com.soodora.domain.common.Currency;
-import com.soodora.domain.common.MoneyDTO;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 
 import java.math.BigDecimal;
@@ -14,16 +14,13 @@ import static lombok.AccessLevel.PROTECTED;
 public class QuoteArticleFactory {
 
     public static QuoteArticleDTO buildDefaultQuoteArticle() {
-        MoneyDTO unitPrice = new MoneyDTO(BigDecimal.valueOf(50.0), Currency.EUR, Currency.EUR.getSymbol());
-        MoneyDTO totalPrice = new MoneyDTO(BigDecimal.valueOf(100.0), Currency.EUR, Currency.EUR.getSymbol());
-
         return new QuoteArticleDTO(
                 "quoteSlug",
                 "articleSlug",
                 "Sample Article Description",
                 2,
-                unitPrice,
+                Money.of(BigDecimal.valueOf(50), Currency.EUR),
                 BigDecimal.valueOf(20),
-                totalPrice);
+                Money.of(BigDecimal.valueOf(100), Currency.EUR));
     }
 }

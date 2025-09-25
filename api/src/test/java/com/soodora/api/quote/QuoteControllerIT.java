@@ -168,7 +168,8 @@ class QuoteControllerIT {
     @Test
     void givenValidRequest_whenCreateQuoteArticle_thenSuccess() throws Exception {
         // GIVEN
-        CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", "Desc", 2, 50.0, Currency.EUR,
+        CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", "Desc", 2,
+                BigDecimal.valueOf(50.0), Currency.EUR,
                 BigDecimal.valueOf(20));
         when(quoteService.addQuoteArticle(any())).thenReturn(A_QUOTE_ARTICLE);
 
@@ -184,7 +185,8 @@ class QuoteControllerIT {
     @Test
     void givenInvalidRequest_whenCreateQuoteArticle_thenBadRequest() throws Exception {
         // GIVEN
-        CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", null, 0, 0.0, null, null);
+        CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", null, 0, BigDecimal.valueOf(0.0),
+                null, null);
         doThrow(InvalidRequestException.class).when(quoteService).addQuoteArticle(any());
 
         // WHEN & THEN

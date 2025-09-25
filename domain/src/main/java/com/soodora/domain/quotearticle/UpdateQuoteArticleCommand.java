@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public record UpdateQuoteArticleCommand(
         String description,
         int quantity,
-        double price,
+        BigDecimal price,
         Currency currency,
         BigDecimal vatPercent) {
 }

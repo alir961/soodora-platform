@@ -3,7 +3,7 @@ package com.soodora.infrastructure.sale;
 import com.soodora.domain.sale.SaleDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
-import com.soodora.infrastructure.common.Money;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -44,7 +44,7 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
     private long quantitySold;
 
     @Embedded
-    private Money amount;
+    private MoneyEmbeddable amount;
 
     @CreationTimestamp
     @Column(updatable = false)
@@ -62,7 +62,7 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
                 artist.toDTO(),
                 buyer.toDTO(),
                 quantitySold,
-                amount.toDTO(),
+                amount.toDomain(),
                 createdAt);
     }
 

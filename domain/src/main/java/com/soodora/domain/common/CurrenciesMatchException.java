@@ -1,4 +1,4 @@
-package com.soodora.infrastructure.common;
+package com.soodora.domain.common;
 
 public class CurrenciesMatchException extends RuntimeException {
 

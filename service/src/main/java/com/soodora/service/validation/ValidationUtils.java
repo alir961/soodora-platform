@@ -29,8 +29,9 @@ public class ValidationUtils {
         return value == null || value.compareTo(BigDecimal.ZERO) <= 0;
     }
 
-    public static boolean isValidMoneyPrice(Double price) {
-        return price != null && price > 0 && price <= 100000;
+    public static boolean isValidMoneyPrice(BigDecimal price) {
+        return price.compareTo(BigDecimal.ZERO) > 0 &&
+                price.compareTo(BigDecimal.valueOf(100000)) <= 0 && price.scale() <= 2;
     }
 
     static String currencyValues = Stream.of(Currency.values())
@@ -109,7 +110,7 @@ public class ValidationUtils {
         return PlaylistPrivacy.valueOf(privacy.toUpperCase());
     }
 
-    public static void validateProduct(String name, String description, String category, Double price,
+    public static void validateProduct(String name, String description, String category, BigDecimal price,
             Currency currency, long quantity) {
         if (!isNotNullOrBlank(name) || !isStringValid(name, 255))
             throw new InvalidRequestException("Name cannot be empty or exceed 255 characters");
@@ -118,7 +119,8 @@ public class ValidationUtils {
         if (!isNotNullOrBlank(category) || !isStringValid(category, 255))
             throw new InvalidRequestException("Category cannot be empty or exceed 255 characters");
         if (!isValidMoneyPrice(price))
-            throw new InvalidRequestException("Price must be greater than 0 and cannot exceed 100,000");
+            throw new InvalidRequestException(
+                    "Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents");
         if (!isLongInRange(quantity, 100000))
             throw new InvalidRequestException("Quantity cannot exceed 100,000 or be 0");
         if (!isValidCurrency(currency))
@@ -142,7 +144,7 @@ public class ValidationUtils {
     }
 
     public static void validateQuoteArticle(String quoteSlug, String description, int quantity,
-            Double price, Currency currency, BigDecimal vatPercent) {
+            BigDecimal price, Currency currency, BigDecimal vatPercent) {
         if (!isNotNullOrBlank(quoteSlug) || !isStringValid(quoteSlug, 255))
             throw new InvalidRequestException("Quote slug cannot be empty or exceed 255 characters");
         if (!isNotNullOrBlank(description) || !isStringValid(description, 1000))
@@ -150,7 +152,8 @@ public class ValidationUtils {
         if (!isLongInRange(quantity, 100_000))
             throw new InvalidRequestException("Quantity cannot exceed 100,000 or be 0");
         if (!isValidMoneyPrice(price))
-            throw new InvalidRequestException("Price must be greater than 0 and cannot exceed 100,000");
+            throw new InvalidRequestException(
+                    "Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents");
         if (!isValidCurrency(currency))
             throw new InvalidRequestException("Currency must be a valid value (" + currencyValues + ")");
         if (vatPercent == null || vatPercent.compareTo(BigDecimal.ZERO) <= 0)

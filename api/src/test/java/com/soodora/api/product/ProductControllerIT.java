@@ -11,6 +11,7 @@ import com.soodora.service.product.CreateProductRequest;
 import com.soodora.service.product.ProductService;
 import com.soodora.service.product.UpdateProductRequest;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -60,7 +61,7 @@ class ProductControllerIT {
                 "Product Name",
                 "Description",
                 "category",
-                100.99,
+                BigDecimal.valueOf(100.99),
                 Currency.EUR,
                 10);
 
@@ -94,7 +95,7 @@ class ProductControllerIT {
                 null,
                 null,
                 "category",
-                0.0,
+                BigDecimal.valueOf(0.0),
                 Currency.EUR,
                 0);
 
@@ -122,7 +123,7 @@ class ProductControllerIT {
                 "Product Name",
                 "Description",
                 "category",
-                100.99,
+                BigDecimal.valueOf(100.99),
                 Currency.EUR,
                 10);
 
@@ -174,7 +175,7 @@ class ProductControllerIT {
                 "Updated Product Name",
                 "Updated Description",
                 "Updated Category",
-                10.99,
+                BigDecimal.valueOf(10.99),
                 Currency.EUR,
                 20L);
 
@@ -211,7 +212,7 @@ class ProductControllerIT {
                 "",
                 "",
                 "",
-                100.99,
+                BigDecimal.valueOf(100.99),
                 Currency.EUR,
                 0L);
 

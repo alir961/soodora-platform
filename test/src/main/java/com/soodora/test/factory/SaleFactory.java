@@ -1,7 +1,7 @@
 package com.soodora.test.factory;
 
 import com.soodora.domain.common.Currency;
-import com.soodora.domain.common.MoneyDTO;
+import com.soodora.domain.common.Money;
 import com.soodora.domain.sale.SaleDTO;
 
 import java.math.BigDecimal;
@@ -25,7 +25,7 @@ public class SaleFactory {
                 buildArtistDTO("id"),
                 buildDefaultUser(),
                 10,
-                new MoneyDTO(BigDecimal.valueOf(10.99), Currency.EUR, "€"),
+                Money.of(BigDecimal.valueOf(10.99), Currency.EUR),
                 new Date());
     }
 

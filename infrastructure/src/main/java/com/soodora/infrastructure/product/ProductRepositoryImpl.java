@@ -12,8 +12,9 @@ import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
-import com.soodora.infrastructure.common.Money;
+import com.soodora.infrastructure.common.MoneyEmbeddable;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,7 +44,7 @@ public class ProductRepositoryImpl implements ProductRepository {
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
 
         entity.setName(command.name());
-        entity.setPrice(Money.of(command.price(), command.currency()));
+        entity.setPrice(new MoneyEmbeddable(command.price(), command.currency()));
         entity.setDescription(command.description());
         if (fileData != null && fileData.content() != null) {
             String imageUrl = imageStorageUploader.upload(fileData);
@@ -71,8 +72,8 @@ public class ProductRepositoryImpl implements ProductRepository {
             String imageUrl = imageStorageUploader.upload(fileData);
             existingProduct.setImageUrl(imageUrl);
         }
-        if (command.price() != 0)
-            existingProduct.setPrice(Money.of(command.price(), command.currency()));
+        if (command.price().compareTo(BigDecimal.ZERO) > 0)
+            existingProduct.setPrice(new MoneyEmbeddable(command.price(), command.currency()));
         if (command.quantity() != 0)
             existingProduct.setQuantity(command.quantity());
 

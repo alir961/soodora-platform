@@ -62,13 +62,13 @@ class QuoteServiceTest {
             QUOTE_ARTICLE.quoteSlug(),
             QUOTE_ARTICLE.description(),
             QUOTE_ARTICLE.quantity(),
-            QUOTE_ARTICLE.unitPrice().amount().doubleValue(),
+            QUOTE_ARTICLE.unitPrice().amount(),
             QUOTE_ARTICLE.unitPrice().currency(),
             QUOTE_ARTICLE.vatPercent());
     private static final UpdateQuoteArticleCommand UPDATE_QUOTE_ARTICLE_COMMAND = new UpdateQuoteArticleCommand(
             "Updated Article Description",
             10,
-            149.99,
+            BigDecimal.valueOf(149.99),
             Currency.USD,
             BigDecimal.valueOf(25));
 

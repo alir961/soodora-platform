@@ -14,7 +14,7 @@ public record CreateQuoteArticleRequest(
         @Schema(description = "Quote slug", example = "quoteSlug") String quoteSlug,
         @Schema(description = "Quote Article description", example = "My Article") String description,
         @Schema(description = "Quote Article quantity", example = "3") int quantity,
-        @Schema(description = "Quote Article price", example = "49.99") Double price,
+        @Schema(description = "Quote Article price", example = "49.99") BigDecimal price,
         @Schema(description = "Quote Article currency", example = "USD", allowableValues = {
                 "USD", "EUR", "CAD", "GBP"}) Currency currency,
         @Schema(description = "Quote Article TAX Percent", example = "20%") BigDecimal vatPercent)
