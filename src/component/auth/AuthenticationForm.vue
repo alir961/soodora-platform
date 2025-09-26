@@ -6,6 +6,8 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRoute, useRouter } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
 import { showToast } from '@/utils';
+import { IonIcon } from '@ionic/vue';
+import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
 
 const { isLogin } = defineProps({
   isLogin: Boolean,
@@ -141,31 +143,7 @@ const strengthLabel = computed(() => {
           :aria-label="showPassword ? 'Hide password' : 'Show password'"
           :title="showPassword ? 'Hide password' : 'Show password'"
           @click="showPassword = !showPassword">
-          <svg
-            v-if="!showPassword"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true">
-            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" />
-            <circle cx="12" cy="12" r="3.5" />
-          </svg>
-          <svg
-            v-else
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true">
-            <path d="M3 3l18 18" />
-            <path d="M10.6 10.6A3.5 3.5 0 0 0 12 15.5M9.9 4.3A11.7 11.7 0 0 1 12 4c7 0 11 8 11 8a18.6 18.6 0 0 1-5 5" />
-            <path d="M6.1 6.6A18.4 18.4 0 0 0 1 12s4 7 11 7a11.3 11.3 0 0 0 3-.4" />
-          </svg>
+          <ion-icon :icon="showPassword ? eyeOffOutline : eyeOutline" aria-hidden="true" />
         </button>
       </div>
 
@@ -203,6 +181,7 @@ const strengthLabel = computed(() => {
   }
 }
 
+/* Field styling */
 .field {
   display: grid;
   gap: 5px;
@@ -370,18 +349,14 @@ const strengthLabel = computed(() => {
   display: grid;
   place-items: center;
   border: 0;
-  background: transparent;
-  color: #9aa3ad;
+  background: transparent !important;
+  color: #7f7f7f;
   border-radius: 8px;
   cursor: pointer;
-  transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    transform 0.06s ease;
+  transition: transform 0.06s ease;
 }
 .input-toggle > .toggle:hover {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.06);
+  background: transparent;
 }
 .input-toggle > .toggle:active {
   transform: translateY(-50%) scale(0.98);
@@ -390,8 +365,9 @@ const strengthLabel = computed(() => {
   outline: 2px solid rgba(59, 130, 246, 0.6);
   outline-offset: 2px;
 }
-.input-toggle > .toggle svg {
+.input-toggle > .toggle ion-icon {
   width: 20px;
   height: 20px;
+  display: block;
 }
 </style>

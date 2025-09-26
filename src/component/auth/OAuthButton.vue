@@ -17,6 +17,8 @@ interface ProviderData {
 
 const router = useRouter();
 
+export type OAuthButtonMode = 'auth' | 'link';
+
 const props = defineProps({
   provider: {
     required: true,
@@ -24,7 +26,7 @@ const props = defineProps({
   },
   linked: Boolean,
   mode: {
-    type: String as PropType<'auth' | 'link'>,
+    type: String as PropType<OAuthButtonMode>,
     default: 'link',
   },
   fluid: {
