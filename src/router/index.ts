@@ -19,6 +19,9 @@ import MediaKitEditView from '@/view/mediakit/MediaKitEditView.vue';
 import PlaylistView from '@/view/playlist/PlaylistView.vue';
 import PlaylistCreateView from '@/view/create/PlaylistCreateView.vue';
 import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
+import QuoteCreateView from '@/view/create/QuoteCreateView.vue';
+import QuoteDetailsView from '@/view/quote/QuoteDetailsView.vue';
+import QuoteView from '@/view/quote/QuoteView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -127,6 +130,21 @@ const routes: Array<RouteRecordRaw> = [
     path: '/playlists/me',
     name: 'PlaylistView',
     component: PlaylistView,
+  },
+  {
+    path: '/quotes/create',
+    name: 'QuoteCreateView',
+    component: QuoteCreateView,
+  },
+  {
+    path: '/quotes/:slug',
+    name: 'QuoteDetailsView',
+    component: QuoteDetailsView,
+  },
+  {
+    path: '/quotes/me',
+    name: 'QuoteView',
+    component: QuoteView,
   },
   {
     path: '/maintenance',

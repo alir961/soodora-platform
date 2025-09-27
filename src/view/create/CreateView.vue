@@ -11,7 +11,15 @@ import {
   IonLabel,
 } from '@ionic/vue';
 
-import { createOutline, bagAddOutline, linkOutline, arrowBackOutline, trashOutline, playCircle } from 'ionicons/icons';
+import {
+  createOutline,
+  bagAddOutline,
+  linkOutline,
+  arrowBackOutline,
+  trashOutline,
+  playCircle,
+  documentLock,
+} from 'ionicons/icons';
 import { callCreatePost, CreatePostRequest } from '@/client/postClient';
 import { createProduct } from '@/client/productClient';
 import { ref, watch } from 'vue';
@@ -167,6 +175,14 @@ const goToMyPlaylists = async () => {
   return router.push(`/playlists/me`);
 };
 
+const goToQuotes = async () => {
+  return router.push(`/quotes/create`);
+};
+
+const goToMyQuotes = async () => {
+  return router.push(`/quotes/me`);
+};
+
 const onPostFileSelected = (file: File) => {
   editedPostFile.value = file;
 };
@@ -218,6 +234,16 @@ const onProductFileSelected = (file: File) => {
       <ion-button @click="goToMyPlaylists" expand="block" class="go-button" color="secondary" fill="solid">
         My Playlists
         <ion-icon :icon="playCircle" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button @click="goToQuotes" expand="block" class="go-button" color="primary" fill="solid">
+        Create Quote
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
+      </ion-button>
+
+      <ion-button @click="goToMyQuotes" expand="block" class="go-button" color="secondary" fill="solid">
+        My Quotes
+        <ion-icon :icon="documentLock" slot="end"></ion-icon>
       </ion-button>
 
       <ion-modal :is-open="showModal" @did-dismiss="showModal = false">
