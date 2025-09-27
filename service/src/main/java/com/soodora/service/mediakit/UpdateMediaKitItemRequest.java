@@ -17,11 +17,11 @@ public record UpdateMediaKitItemRequest(
 
     @Override
     public UpdateMediaKitItemCommand toCommand() {
-        if (!isStringValid(type, 50))
+        if (!isStringValid(type, 50, true))
             throw new InvalidRequestException("Type cannot exceed 50 characters");
-        if (!isStringValid(title, 255))
+        if (!isStringValid(title, 255, true))
             throw new InvalidRequestException("Title cannot exceed 255 characters");
-        if (!isStringValid(content, 5000))
+        if (!isStringValid(content, 5000, true))
             throw new InvalidRequestException("Content cannot exceed 5000 characters");
 
         return new UpdateMediaKitItemCommand(type.trim(), title.trim(), content.trim());

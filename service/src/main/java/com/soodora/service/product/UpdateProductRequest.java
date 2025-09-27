@@ -24,11 +24,11 @@ public record UpdateProductRequest(
 
     @Override
     public UpdateProductCommand toCommand() {
-        if (!isStringValid(name, 255))
+        if (!isStringValid(name, 255, true))
             throw new InvalidRequestException("Name cannot exceed 255 characters");
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, true))
             throw new InvalidRequestException("Description cannot exceed 255 characters");
-        if (!isStringValid(category, 50))
+        if (!isStringValid(category, 50, true))
             throw new InvalidRequestException("Category cannot exceed 50 characters");
         if (!isValidMoneyPrice(price))
             throw new InvalidRequestException(

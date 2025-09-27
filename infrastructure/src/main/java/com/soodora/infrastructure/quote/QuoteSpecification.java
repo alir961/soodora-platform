@@ -49,7 +49,7 @@ public class QuoteSpecification {
     }
 
     private static Specification<QuoteEntity> hasClientName(String clientName) {
-        return (root, query, cb) -> cb.equal(cb.lower(root.get("clientName")), clientName.toLowerCase());
+        return (root, query, cb) -> cb.like(cb.lower(root.get("clientName")), "%" + clientName.toLowerCase() + "%");
     }
 
 }

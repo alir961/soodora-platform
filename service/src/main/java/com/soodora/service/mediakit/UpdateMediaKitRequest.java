@@ -19,11 +19,11 @@ public record UpdateMediaKitRequest(
 
     @Override
     public UpdateMediaKitCommand toCommand() {
-        if (!isStringValid(title, 255))
+        if (!isStringValid(title, 255, true))
             throw new InvalidRequestException("Title cannot exceed 255 characters");
-        if (!isStringValid(contactEmail, 255))
+        if (!isStringValid(contactEmail, 255, true))
             throw new InvalidRequestException("Contact Email cannot exceed 255 characters");
-        if (!isStringValid(contactPhone, 50))
+        if (!isStringValid(contactPhone, 50, true))
             throw new InvalidRequestException("Contact Phone cannot exceed 50 characters");
 
         return new UpdateMediaKitCommand(title.trim(), shortBio.trim(), longBio.trim(), contactEmail.trim(),

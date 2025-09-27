@@ -17,7 +17,7 @@ public record QuoteDTO(
         String clientPhone,
         String description,
         List<QuoteArticleDTO> quoteArticles,
-        Money Total,
+        Money total,
         Date createdAtDate,
         Date updatedAt) {
 }

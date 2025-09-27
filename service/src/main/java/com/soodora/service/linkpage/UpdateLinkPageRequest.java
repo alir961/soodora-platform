@@ -16,9 +16,9 @@ public record UpdateLinkPageRequest(
 
     @Override
     public UpdateLinkPageCommand toCommand() {
-        if (!isStringValid(title, 255))
+        if (!isStringValid(title, 255, true))
             throw new InvalidRequestException("Title cannot exceed 255 characters");
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, true))
             throw new InvalidRequestException("Description cannot exceed 255 characters");
 
         return new UpdateLinkPageCommand(title.trim(), description.trim());
