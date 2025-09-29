@@ -71,7 +71,7 @@ public class PdfExporterImpl implements PdfExporter {
             new PdfQuoteBuilder(document)
                     .addBanner(LOGO_URL)
                     .addHeader(quote)
-                    .addQuoteTable(quoteArticles, quote.Total());
+                    .addQuoteTable(quoteArticles, quote.total());
 
             document.close();
         } catch (DocumentException exception) {

@@ -24,7 +24,7 @@ public record UpdateQuoteArticleRequest(
 
     @Override
     public UpdateQuoteArticleCommand toCommand() {
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, true))
             throw new InvalidRequestException("Description cannot exceed 255 characters");
         if (quantity <= 0)
             throw new InvalidRequestException("Quantity must be greater than 0 and cannot exceed 100,000");
@@ -33,8 +33,6 @@ public record UpdateQuoteArticleRequest(
                     "Price must be greater than 0, cannot exceed 100,000 and must have only two digits cents");
         if (!isValidCurrency(currency))
             throw new InvalidRequestException("Currency is not valid");
-        if (!isValidBigDecimal(vatPercent))
-            throw new InvalidRequestException("VAT is not valid");
 
         return new UpdateQuoteArticleCommand(description.trim(), quantity, price, currency, vatPercent);
     }

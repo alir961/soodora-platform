@@ -18,13 +18,13 @@ public record UpdateLinkRequest(
 
     @Override
     public UpdateLinkCommand toCommand() {
-        if (!isStringValid(title, 255))
+        if (!isStringValid(title, 255, true))
             throw new InvalidRequestException("Title cannot exceed 255 characters");
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, true))
             throw new InvalidRequestException("Description cannot exceed 255 characters");
-        if (!isStringValid(url, 5000))
+        if (!isStringValid(url, 5000, true))
             throw new InvalidRequestException("Link URL cannot exceed 5000 characters");
-        if (!isStringValid(iconUrl, 5000))
+        if (!isStringValid(iconUrl, 5000, true))
             throw new InvalidRequestException("Icon URL cannot exceed 5000 characters");
 
         return new UpdateLinkCommand(title, description, url, iconUrl);

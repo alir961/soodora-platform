@@ -14,13 +14,13 @@ public record UpdateUserRequest(
 
     @Override
     public UpdateUserCommand toCommand() throws InvalidRequestException {
-        if (!isStringValid(username, 50))
+        if (!isStringValid(username, 50, true))
             throw new InvalidRequestException("Username cannot exceed 50 characters");
-        if (!isStringValid(firstname, 50))
+        if (!isStringValid(firstname, 50, true))
             throw new InvalidRequestException("Firstname cannot exceed 50 characters");
-        if (!isStringValid(lastname, 50))
+        if (!isStringValid(lastname, 50, true))
             throw new InvalidRequestException("Lastname cannot exceed 50 characters");
-        if (!isStringValid(description, 1000))
+        if (!isStringValid(description, 1000, true))
             throw new InvalidRequestException("Description cannot exceed 1000 characters");
 
         return new UpdateUserCommand(

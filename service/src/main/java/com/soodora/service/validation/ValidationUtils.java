@@ -17,16 +17,15 @@ import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 @NoArgsConstructor
 public class ValidationUtils {
 
-    public static boolean isStringValid(String value, int maxLength) {
-        return value.length() <= maxLength;
+    public static boolean isStringValid(String value, int maxLength, boolean isUpdate) {
+        if (isUpdate)
+            return value == null || value.length() <= maxLength;
+        else
+            return value != null && value.length() <= maxLength;
     }
 
     public static boolean isLongInRange(long value, long max) {
         return value >= 1 && value <= max;
-    }
-
-    public static boolean isValidBigDecimal(BigDecimal value) {
-        return value == null || value.compareTo(BigDecimal.ZERO) <= 0;
     }
 
     public static boolean isValidMoneyPrice(BigDecimal price) {
@@ -57,52 +56,52 @@ public class ValidationUtils {
 
     public static void validateLink(String title, String description, String url, String iconUrl) {
         validateLinkPage(title, description);
-        if (url == null || url.isEmpty() || !isStringValid(url, 5000))
+        if (url == null || url.isEmpty() || !isStringValid(url, 5000, false))
             throw new InvalidRequestException("Link Url cannot exceed 5000 characters or be empty");
-        if (iconUrl == null || iconUrl.isEmpty() || !isStringValid(iconUrl, 5000))
+        if (iconUrl == null || iconUrl.isEmpty() || !isStringValid(iconUrl, 5000, false))
             throw new InvalidRequestException("Icon Url cannot exceed 5000 characters or be empty");
     }
 
     public static void validateLinkPage(String title, String description) {
-        if (title == null || title.isEmpty() || !isStringValid(title, 255))
+        if (title == null || title.isEmpty() || !isStringValid(title, 255, false))
             throw new InvalidRequestException("Title cannot exceed 255 characters or be empty");
-        if (description == null || description.isEmpty() || !isStringValid(description, 255))
+        if (description == null || description.isEmpty() || !isStringValid(description, 255, false))
             throw new InvalidRequestException("Description cannot exceed 255 characters or be empty");
     }
 
     public static void validateMediaKit(String title, String shortBio, String longBio, String contactEmail,
             String contactPhone) {
-        if (!isNotNullOrBlank(title) || !isStringValid(title, 255))
+        if (!isNotNullOrBlank(title) || !isStringValid(title, 255, false))
             throw new InvalidRequestException("Title cannot be empty or exceed 255 characters");
         if (!isNotNullOrBlank(shortBio))
             throw new InvalidRequestException("Short Bio is required");
         if (!isNotNullOrBlank(longBio))
             throw new InvalidRequestException("Long Bio is required");
-        if (!isNotNullOrBlank(contactEmail) || !isStringValid(contactEmail, 255))
+        if (!isNotNullOrBlank(contactEmail) || !isStringValid(contactEmail, 255, false))
             throw new InvalidRequestException("Contact Email cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(contactPhone) || !isStringValid(contactPhone, 50))
+        if (!isNotNullOrBlank(contactPhone) || !isStringValid(contactPhone, 50, false))
             throw new InvalidRequestException("Contact Phone cannot be empty or exceed 50 characters");
     }
 
     public static void validateMediaKitItem(String type, String title, String content) {
-        if (!isNotNullOrBlank(type) || !isStringValid(type, 50))
+        if (!isNotNullOrBlank(type) || !isStringValid(type, 50, false))
             throw new InvalidRequestException("Type cannot be empty or exceed 50 characters");
-        if (!isNotNullOrBlank(title) || !isStringValid(title, 255))
+        if (!isNotNullOrBlank(title) || !isStringValid(title, 255, false))
             throw new InvalidRequestException("Title cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(content) || !isStringValid(content, 5000))
+        if (!isNotNullOrBlank(content) || !isStringValid(content, 5000, false))
             throw new InvalidRequestException("Content cannot be empty or exceed 5000 characters");
     }
 
     public static PlaylistPrivacy validatePlaylist(String name, String description, String privacy, boolean isUpdate) {
         if (!isUpdate) {
-            if (!isNotNullOrBlank(name) || !isStringValid(name, 255))
+            if (!isNotNullOrBlank(name) || !isStringValid(name, 255, false))
                 throw new InvalidRequestException("Name cannot exceed 255 characters or be empty");
-            if (!isNotNullOrBlank(description) || description.isEmpty() || !isStringValid(description, 255))
+            if (!isNotNullOrBlank(description) || description.isEmpty() || !isStringValid(description, 255, false))
                 throw new InvalidRequestException("Description cannot exceed 255 characters or be empty");
             if (!isNotNullOrBlank(privacy) || !isValidPrivacyState(privacy))
                 throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
         }
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, false))
             throw new InvalidRequestException("Description cannot exceed 255 characters or be empty");
         if (!isValidPrivacyState(privacy))
             throw new InvalidRequestException("Privacy privacy is not valid (values: " + privacyValues + ")");
@@ -112,11 +111,11 @@ public class ValidationUtils {
 
     public static void validateProduct(String name, String description, String category, BigDecimal price,
             Currency currency, long quantity) {
-        if (!isNotNullOrBlank(name) || !isStringValid(name, 255))
+        if (!isNotNullOrBlank(name) || !isStringValid(name, 255, false))
             throw new InvalidRequestException("Name cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(description) || !isStringValid(description, 255))
+        if (!isNotNullOrBlank(description) || !isStringValid(description, 255, false))
             throw new InvalidRequestException("Description cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(category) || !isStringValid(category, 255))
+        if (!isNotNullOrBlank(category) || !isStringValid(category, 255, false))
             throw new InvalidRequestException("Category cannot be empty or exceed 255 characters");
         if (!isValidMoneyPrice(price))
             throw new InvalidRequestException(
@@ -129,25 +128,25 @@ public class ValidationUtils {
 
     public static void validateQuote(String name, String clientName, String clientEmail, String clientAddress,
             String clientPhone, String description) {
-        if (!isNotNullOrBlank(name) || !isStringValid(name, 255))
+        if (!isNotNullOrBlank(name) || !isStringValid(name, 255, false))
             throw new InvalidRequestException("Quote name cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(clientName) || !isStringValid(clientName, 255))
+        if (!isNotNullOrBlank(clientName) || !isStringValid(clientName, 255, false))
             throw new InvalidRequestException("Client name cannot be empty or exceed 255 characters");
-        if (isNotNullOrBlank(clientEmail) && !isStringValid(clientEmail, 255))
+        if (!isNotNullOrBlank(clientEmail) && !isStringValid(clientEmail, 255, false))
             throw new InvalidRequestException("Client email cannot exceed 255 characters");
-        if (isNotNullOrBlank(clientAddress) && !isStringValid(clientAddress, 255))
+        if (!isNotNullOrBlank(clientAddress) && !isStringValid(clientAddress, 255, false))
             throw new InvalidRequestException("Client address cannot exceed 255 characters");
-        if (isNotNullOrBlank(clientPhone) && !isStringValid(clientPhone, 50))
+        if (!isNotNullOrBlank(clientPhone) && !isStringValid(clientPhone, 50, false))
             throw new InvalidRequestException("Client phone cannot exceed 50 characters");
-        if (isNotNullOrBlank(description) && !isStringValid(description, 1000))
+        if (!isNotNullOrBlank(description) && !isStringValid(description, 1000, false))
             throw new InvalidRequestException("Description cannot exceed 1000 characters");
     }
 
     public static void validateQuoteArticle(String quoteSlug, String description, int quantity,
             BigDecimal price, Currency currency, BigDecimal vatPercent) {
-        if (!isNotNullOrBlank(quoteSlug) || !isStringValid(quoteSlug, 255))
+        if (!isNotNullOrBlank(quoteSlug) || !isStringValid(quoteSlug, 255, false))
             throw new InvalidRequestException("Quote slug cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(description) || !isStringValid(description, 1000))
+        if (!isNotNullOrBlank(description) || !isStringValid(description, 1000, false))
             throw new InvalidRequestException("Description cannot be empty or exceed 1000 characters");
         if (!isLongInRange(quantity, 100_000))
             throw new InvalidRequestException("Quantity cannot exceed 100,000 or be 0");

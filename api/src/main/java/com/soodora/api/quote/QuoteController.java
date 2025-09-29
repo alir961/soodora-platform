@@ -74,9 +74,9 @@ public class QuoteController implements QuoteResource {
     public Page<QuoteDTO> getQuotes(@RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
-            @RequestParam(value = "category") Optional<String> category,
+            @RequestParam(value = "clientName") Optional<String> clientName,
             Pageable pageable) {
-        QuoteFilter filter = new QuoteFilter(userSlug, name, description, category);
+        QuoteFilter filter = new QuoteFilter(userSlug, name, description, clientName);
         return quoteService.getQuotesByFilter(filter, pageable);
     }
 

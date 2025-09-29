@@ -20,17 +20,17 @@ public record UpdateQuoteRequest(
 
     @Override
     public UpdateQuoteCommand toCommand() throws InvalidRequestException {
-        if (!isStringValid(name, 255))
+        if (!isStringValid(name, 255, true))
             throw new InvalidRequestException("Name cannot exceed 255 characters");
-        if (!isStringValid(clientName, 255))
+        if (!isStringValid(clientName, 255, true))
             throw new InvalidRequestException("Client Name cannot exceed 255 characters");
-        if (!isStringValid(clientEmail, 255))
+        if (!isStringValid(clientEmail, 255, true))
             throw new InvalidRequestException("Client Email cannot exceed 255 characters");
-        if (!isStringValid(clientAddress, 255))
+        if (!isStringValid(clientAddress, 255, true))
             throw new InvalidRequestException("Client Address cannot exceed 255 characters");
-        if (!isStringValid(clientPhone, 50))
+        if (!isStringValid(clientPhone, 50, true))
             throw new InvalidRequestException("Client Phone cannot exceed 255 characters");
-        if (!isStringValid(description, 255))
+        if (!isStringValid(description, 255, true))
             throw new InvalidRequestException("Description cannot exceed 255 characters");
 
         return new UpdateQuoteCommand(name, clientName, clientEmail, clientAddress, clientPhone, description);
