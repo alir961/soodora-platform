@@ -7,7 +7,7 @@ import {
   removePostFromPlaylist,
   updatePlaylistBySlug,
 } from '@/client/playlistClient';
-import { PlaylistFull, PlaylistPrivacy } from '@/entity/Playlist';
+import { LIKED_AUDIO_PLAYLIST_NAME, PlaylistFull, PlaylistPrivacy } from '@/entity/Playlist';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { arrowBackOutline, createOutline, musicalNotesOutline, trashOutline } from 'ionicons/icons';
 import {
@@ -55,6 +55,10 @@ const editPrivacy = ref<PlaylistPrivacy>('PUBLIC');
 const authStore = useAuthStore();
 const isOwner = computed(() => {
   return playlist.value?.playlistSimpleDTO.owner.slug === authStore.getAuthenticatedUserSlug;
+});
+
+const isLikedAudioPlaylist = computed(() => {
+  return playlist.value?.playlistSimpleDTO.name === LIKED_AUDIO_PLAYLIST_NAME;
 });
 
 const loadPlaylist = async (slug: string, page = 0) => {
@@ -169,7 +173,7 @@ watch(
           </IonButton>
         </IonButtons>
 
-        <IonButtons slot="end" v-if="isOwner">
+        <IonButtons slot="end" v-if="isOwner && !isLikedAudioPlaylist">
           <IonButton fill="clear" @click="openEditModal">
             <IonIcon :icon="createOutline" />
           </IonButton>
@@ -222,6 +226,10 @@ watch(
       @didDismiss="showDeleteConfirm = false" />
 
     <IonModal :is-open="showEditModal" @didDismiss="showEditModal = false">
+      <IonButton fill="clear" @click="$router.back()">
+        <IonIcon :icon="arrowBackOutline" slot="start" />
+        Back
+      </IonButton>
       <IonHeader>
         <IonToolbar>
           <IonTitle>Edit Playlist</IonTitle>

@@ -11,7 +11,6 @@ import { showToast } from '@/utils';
 
 const playlists = ref<Playlist[]>([]);
 const loading = ref(false);
-
 const authStore = useAuthStore();
 
 const loadPlaylistsForUser = async (userSlug: string) => {

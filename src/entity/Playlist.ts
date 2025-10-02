@@ -31,3 +31,5 @@ export interface PlaylistSlugResponse {
 }
 
 export type PlaylistPrivacy = 'PUBLIC' | 'PRIVATE' | 'UNLISTED';
+
+export const LIKED_AUDIO_PLAYLIST_NAME = 'Liked Audio Playlist';
