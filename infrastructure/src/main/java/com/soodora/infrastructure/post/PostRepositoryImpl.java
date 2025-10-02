@@ -3,11 +3,13 @@ package com.soodora.infrastructure.post;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.playlist.PlaylistRepository;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.playlist.PlaylistJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
@@ -30,16 +32,19 @@ import static java.lang.Math.toIntExact;
 import static java.util.Collections.emptySet;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
+import static com.soodora.infrastructure.common.PlaylistConstants.LIKED_AUDIO_PLAYLIST_NAME;
 
 @Repository
 @RequiredArgsConstructor
 public class PostRepositoryImpl implements PostRepository {
 
-    private final UserJpaRepository userRepository;
+    private final UserJpaRepository userJpaRepository;
     private final PostJpaRepository postRepository;
     private final CommentJpaRepository commentRepository;
     private final ArtistJpaRepository artistsRepository;
     private final ImageStorageUploader imageStorageUploader;
+    private final PlaylistRepository playlistRepository;
+    private final PlaylistJpaRepository playlistJpaRepository;
 
     @Override
     @Transactional
@@ -125,16 +130,24 @@ public class PostRepositoryImpl implements PostRepository {
     public void likePost(String postSlug, UserDTO user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+
         boolean alreadyLiked = post.getLikes().stream()
                 .anyMatch(like -> like.getUser().getId().equals(userEntity.getId()));
 
         if (!alreadyLiked) {
             LikeEntity like = new LikeEntity();
-
             like.setSlug(generateUniqueSlug());
             like.setUser(userEntity);
             like.setPost(post);
+
             post.getLikes().add(like);
+
+            if (!post.getAudioTitle().isEmpty()) {
+                playlistJpaRepository.findByName(LIKED_AUDIO_PLAYLIST_NAME)
+                        .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
+                                playlist.getSlug(), postSlug, Pageable.unpaged()));
+            }
+
             postRepository.save(post);
         }
     }
@@ -145,7 +158,14 @@ public class PostRepositoryImpl implements PostRepository {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.slug());
 
-        post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+        boolean removed = post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
+
+        if (removed && !post.getAudioTitle().isEmpty()) {
+            playlistJpaRepository.findByName(LIKED_AUDIO_PLAYLIST_NAME)
+                    .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
+                            playlist.getSlug(), postSlug, Pageable.unpaged()));
+        }
+
         postRepository.save(post);
     }
 
@@ -282,7 +302,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     protected UserEntity findUserBySlugOrThrow(String slug) {
-        return userRepository.findBySlug(slug)
+        return userJpaRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find user with slug: #" + slug));
     }
 

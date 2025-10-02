@@ -33,7 +33,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "400", description = "Invalid request or playlist already exists", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @PostMapping
     ResponseEntity<JsonResponse> createPlaylist(
             @AuthenticationPrincipal UserDTO user,
             @RequestPart("data") CreatePlaylistRequest createPlaylistRequest,
@@ -43,7 +42,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "200", description = "Playlists retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
-    @GetMapping("/search")
     Page<PlaylistDTO> searchPlaylists(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "title") Optional<String> title,
@@ -54,7 +52,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "200", description = "Playlist retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    @GetMapping("/{slug}")
     PlaylistFullDTO getPlaylist(
             @PathVariable String slug,
             Pageable pageableAudioPosts);
@@ -64,7 +61,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "400", description = "Invalid update request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    @PutMapping("/{slug}")
     ResponseEntity<JsonResponse> updatePlaylist(
             @PathVariable String slug,
             @RequestPart("data") UpdatePlaylistRequest request,
@@ -74,7 +70,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "204", description = "Playlist deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    @DeleteMapping("/{slug}")
     void deletePlaylist(@PathVariable("slug") String slug);
 
     @Operation(summary = "Add a post to a playlist", responses = {
@@ -82,7 +77,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "404", description = "Playlist or post not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    @PostMapping("/{playlistSlug}/posts/{postSlug}")
     ResponseEntity<JsonResponse> addPostToPlaylist(
             @PathVariable String playlistSlug,
             @PathVariable String postSlug,
@@ -92,7 +86,6 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "200", description = "Post removed from playlist"),
             @ApiResponse(responseCode = "404", description = "Playlist or post not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    @DeleteMapping("/{playlistSlug}/posts/{postSlug}")
     ResponseEntity<JsonResponse> removePostFromPlaylist(
             @PathVariable String playlistSlug,
             @PathVariable String postSlug,

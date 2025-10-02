@@ -2,6 +2,7 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.playlist.PlaylistRepository;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UpdateUserCommand;
 import com.soodora.domain.user.UserDTO;
@@ -33,6 +34,9 @@ class UserRepositoryImplTest {
 
     @Mock
     private UserJpaRepository userJpaRepository;
+
+    @Mock
+    private PlaylistRepository playlistRepository;
 
     @InjectMocks
     private UserRepositoryImpl userRepository;

@@ -10,10 +10,7 @@ import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.playlist.CreatePlaylistRequest;
-import com.soodora.service.playlist.PlaylistService;
-import com.soodora.service.playlist.PlaylistUnityException;
-import com.soodora.service.playlist.UpdatePlaylistRequest;
+import com.soodora.service.playlist.*;
 import com.soodora.service.user.UnknownUserException;
 
 import java.util.List;
@@ -39,7 +36,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
-import static com.soodora.test.TestConstants.ARTIST_USER;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.PlaylistFactory.*;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
@@ -79,7 +75,7 @@ class PlaylistControllerIT {
         mockMvc.perform(multipart("/playlists")
                 .file(jsonPart)
                 .file(filePart)
-                .with(user(new UserPrincipal(ARTIST_USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.slug").value("playlistSlug1"));
     }
@@ -109,15 +105,15 @@ class PlaylistControllerIT {
                 asJsonString(createPlaylistRequest).getBytes());
         MockMultipartFile filePart = new MockMultipartFile("file", "test-image.jpg", "image/jpeg",
                 "dummy image content".getBytes());
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
         doThrow(new PlaylistUnityException("Name is already used")).when(playlistService)
-                .createPlaylist(any(), eq(ARTIST_USER), any());
+                .createPlaylist(any(), eq(USER), any());
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists")
                 .file(jsonPart)
                 .file(filePart)
-                .with(user(new UserPrincipal(ARTIST_USER))))
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.reason").value("Name is already used"));
     }
