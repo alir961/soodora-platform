@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue';
 import { IonSearchbar, IonButton, IonIcon } from '@ionic/vue';
 import settingsIcon from '@/assets/icons/settings.svg';
 import type { SearchbarCustomEvent } from '@ionic/vue';
