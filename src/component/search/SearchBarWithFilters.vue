@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { IonSearchbar, IonButton, IonIcon } from '@ionic/vue';
 import settingsIcon from '@/assets/icons/settings.svg';
+import { closeOutline } from 'ionicons/icons';
 import type { SearchbarCustomEvent } from '@ionic/vue';
 
 defineProps({
@@ -10,6 +11,7 @@ defineProps({
     default: 'Search...',
   },
   isFilterActive: Boolean,
+  showFilters: Boolean,
   debounce: {
     type: Number,
     default: 0,
@@ -38,9 +40,10 @@ const triggerFilter = () => {
       @ionInput="updateValue" />
     <ion-button
       fill="clear"
-      :class="['search-settings-button', { 'active-filter': isFilterActive }]"
+      :class="['search-settings-button', { 'active-filter': isFilterActive, 'filter-open': showFilters }]"
       @click="triggerFilter">
-      <ion-icon class="settings-icon" :src="settingsIcon" />
+      <ion-icon v-if="showFilters" class="close-icon" :icon="closeOutline" />
+      <ion-icon v-else class="settings-icon" :src="settingsIcon" />
     </ion-button>
   </div>
 </template>
@@ -63,16 +66,27 @@ const triggerFilter = () => {
   --padding-top: 0;
   --padding-bottom: 0;
   --color: white;
+  transition: transform 0.2s ease;
 }
 
-.settings-icon {
+.settings-icon,
+.close-icon {
   width: 30px;
   height: 30px;
   display: block;
   padding: 4px;
+  transition: transform 0.2s ease;
 }
 
-.search-settings-button.active-filter {
+.search-settings-button.active-filter:not(.filter-open) {
   --color: var(--ion-color-primary);
+}
+
+.search-settings-button.filter-open {
+  --color: #ff4444; /* Red color for close icon */
+}
+
+.search-settings-button:active {
+  transform: scale(0.92);
 }
 </style>

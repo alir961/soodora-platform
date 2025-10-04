@@ -7,10 +7,6 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonRow,
-  IonButton,
-  IonSelect,
-  IonSelectOption,
-  IonModal,
 } from '@ionic/vue';
 
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
@@ -54,6 +50,14 @@ const hasMorePlaylists = ref(true);
 const isLoadingPlaylists = ref(false);
 
 const showFilterModal = ref(false);
+
+const toggleFilters = () => {
+  showFilterModal.value = !showFilterModal.value;
+};
+
+const applyFilter = (mode: SearchMode) => {
+  searchMode.value = mode;
+};
 
 const isFilterActive = computed(() => searchMode.value !== '');
 
@@ -246,33 +250,55 @@ const searchPlaceholder = computed(() => {
 <template>
   <ApplicationViewport title="Search">
     <ion-content>
-      <ion-modal
-        :is-open="showFilterModal"
-        @didDismiss="showFilterModal = false"
-        :breakpoints="[0, 0.3, 0.5]"
-        initial-breakpoint="0.3"
-        handle-behavior="cycle">
-        <ion-content class="ion-padding">
-          <div class="filter-modal">
-            <h2>Search Filters</h2>
-            <ion-select v-model="searchMode" class="filter-select">
-              <div slot="label">Search Type:</div>
-              <ion-select-option value="">All</ion-select-option>
-              <ion-select-option value="artist">Artists</ion-select-option>
-              <ion-select-option value="user">Users</ion-select-option>
-              <ion-select-option value="post">Posts</ion-select-option>
-              <ion-select-option value="music">Music</ion-select-option>
-              <ion-select-option value="playlist">Playlists</ion-select-option>
-            </ion-select>
-            <ion-button expand="block" @click="showFilterModal = false">Apply</ion-button>
-          </div>
-        </ion-content>
-      </ion-modal>
       <SearchBarWithFilters
         v-model="searchInput"
         :placeholder="searchPlaceholder"
         :isFilterActive="isFilterActive"
-        @filterClick="showFilterModal = true" />
+        :showFilters="showFilterModal"
+        @filterClick="toggleFilters" />
+
+      <transition name="slide-down">
+        <div v-if="showFilterModal" class="filter-panel-wrapper">
+          <div class="filter-panel">
+            <div class="filter-header">
+              <h3>Search Filters</h3>
+              <button class="clear-btn" @click="applyFilter('')">Clear All</button>
+            </div>
+            <div class="filter-options">
+              <button 
+                :class="['filter-chip', { active: searchMode === '' }]"
+                @click="applyFilter('')">
+                All
+              </button>
+              <button 
+                :class="['filter-chip', { active: searchMode === 'artist' }]"
+                @click="applyFilter('artist')">
+                Artists
+              </button>
+              <button 
+                :class="['filter-chip', { active: searchMode === 'user' }]"
+                @click="applyFilter('user')">
+                Users
+              </button>
+              <button 
+                :class="['filter-chip', { active: searchMode === 'post' }]"
+                @click="applyFilter('post')">
+                Posts
+              </button>
+              <button 
+                :class="['filter-chip', { active: searchMode === 'music' }]"
+                @click="applyFilter('music')">
+                Music
+              </button>
+              <button 
+                :class="['filter-chip', { active: searchMode === 'playlist' }]"
+                @click="applyFilter('playlist')">
+                Playlists
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
 
       <div v-if="searchInput.trim().length === 0" class="search-placeholder-message">
         <div class="glow-background"></div>
@@ -369,6 +395,130 @@ const searchPlaceholder = computed(() => {
 </template>
 
 <style scoped>
+.filter-panel-wrapper {
+  width: 90%;
+  margin: 0 auto;
+}
+
+.filter-panel {
+  background: linear-gradient(
+    to bottom,
+    rgba(18, 22, 30, 0.75),
+    rgba(18, 22, 30, 0.65)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.filter-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.clear-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #60a5fa;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:active {
+  background: rgba(96, 165, 250, 0.12);
+  transform: scale(0.96);
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-chip {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, rgba(29, 78, 216, 0.9), rgba(37, 99, 235, 0.9));
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #ffffff;
+  box-shadow: 
+    0 4px 12px rgba(37, 99, 235, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.slide-down-enter-active {
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.slide-down-leave-active {
+  transition: all 0.25s cubic-bezier(0.8, 0.2, 0.8, 0.2);
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.97);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
 .search-placeholder-message {
   position: fixed;
   top: 40%;
@@ -381,6 +531,8 @@ const searchPlaceholder = computed(() => {
   text-align: center;
   padding: 0 1.5rem;
   animation: float 4s ease-in-out infinite;
+  z-index: 0; /* Behind everything */
+  pointer-events: none; /* Don't block clicks */
 }
 
 .search-info-label-glow {
@@ -450,16 +602,5 @@ const searchPlaceholder = computed(() => {
 .no-results-label {
   padding-left: 1.8em;
   color: var(--ion-color-medium);
-}
-
-.filter-modal {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  border-radius: 12px;
-}
-
-ion-button {
-  --color: white;
 }
 </style>
