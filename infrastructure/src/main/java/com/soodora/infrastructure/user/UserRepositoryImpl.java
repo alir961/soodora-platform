@@ -5,6 +5,8 @@ import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
+import com.soodora.domain.playlist.CreatePlaylistCommand;
+import com.soodora.domain.playlist.PlaylistRepository;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.*;
@@ -31,6 +33,9 @@ import static java.util.stream.Collectors.toSet;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
 import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
+import static com.soodora.domain.playlist.PlaylistPrivacy.PRIVATE;
+import static com.soodora.infrastructure.common.PlaylistConstants.LIKED_AUDIO_PLAYLIST_DESCRIPTION;
+import static com.soodora.infrastructure.common.PlaylistConstants.LIKED_AUDIO_PLAYLIST_NAME;
 
 @Repository
 @RequiredArgsConstructor
@@ -39,6 +44,7 @@ public class UserRepositoryImpl implements UserRepository {
     private final UserJpaRepository userRepository;
     private final ArtistJpaRepository artistRepository;
     private final RoleJpaRepository roleRepository;
+    private final PlaylistRepository playlistRepository;
     private final ImageStorageUploader imageStorageUploader;
 
     @Override
@@ -54,7 +60,11 @@ public class UserRepositoryImpl implements UserRepository {
         user.setLastname(command.lastname());
         user.setDescription("");
         user.setRoles(new HashSet<>());
-        return userRepository.save(user).toDTO();
+        UserDTO userDTO = userRepository.save(user).toDTO();
+        playlistRepository.save(
+                new CreatePlaylistCommand(LIKED_AUDIO_PLAYLIST_NAME, LIKED_AUDIO_PLAYLIST_DESCRIPTION, PRIVATE),
+                userDTO, null);
+        return userDTO;
     }
 
     @Override

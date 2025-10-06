@@ -13,4 +13,6 @@ public interface PlaylistJpaRepository
 
     Optional<PlaylistEntity> findBySlug(String slug);
 
+    Optional<PlaylistEntity> findByName(String name);
+
 }
