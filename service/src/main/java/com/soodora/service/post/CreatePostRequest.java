@@ -9,22 +9,29 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public record CreatePostRequest(
         @Schema(description = "Post title", example = "New Drop !") String title,
         @Schema(description = "Post content", example = "Hello ! Here is my new song stream it !") String content,
-        @Schema(description = "Playlist name", example = "Tribe Of Noise") String audioTitle,
-        @Schema(description = "Playlist name", example = "https://files.freemusicarchive.org/storage-freemusicarchive-org/tribe-of-noise-pro/music/8f71c11826e19070f080957ee1275f62.mp3") String audioUrl)
+        @Schema(description = "Audio title", example = "Tribe Of Noise") String audioTitle,
+        @Schema(description = "Audio url", example = "https://files.freemusicarchive.org/storage-freemusicarchive-org/tribe-of-noise-pro/music/8f71c11826e19070f080957ee1275f62.mp3") String audioUrl)
         implements
             Request<CreatePostCommand> {
 
     @Override
     public CreatePostCommand toCommand() {
-        if (title == null || title.isEmpty() || title.length() > 255)
-            throw new InvalidRequestException("Title is not valid");
-        if (content == null || content.isEmpty() || content.length() > 5000)
-            throw new InvalidRequestException("Content is not valid");
-        if (audioUrl != null && !audioUrl.isEmpty())
-            if (audioTitle == null || audioTitle.isEmpty() || audioTitle.length() > 255)
-                throw new InvalidRequestException("Audio Title is not valid");
+        boolean isBasicPost = title != null && !title.isEmpty() && title.length() <= 255
+                && content != null && !content.isEmpty() && content.length() <= 5000;
 
-        return new CreatePostCommand(title.trim(), content.trim(), audioTitle.trim(), audioUrl);
+        boolean isAudioPost = audioTitle != null && !audioTitle.isEmpty() && audioTitle.length() <= 255
+                && audioUrl != null && !audioUrl.isEmpty();
+
+        if (!isBasicPost && !isAudioPost) {
+            throw new InvalidRequestException(
+                    "Invalid request: must be either a Basic Post (title + content) or an Audio Post (audioTitle + audioUrl)");
+        }
+
+        return new CreatePostCommand(
+                title != null ? title.trim() : null,
+                content != null ? content.trim() : null,
+                audioTitle != null ? audioTitle.trim() : null,
+                audioUrl);
     }
 
 }
