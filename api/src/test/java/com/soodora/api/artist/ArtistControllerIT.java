@@ -104,7 +104,7 @@ class ArtistControllerIT {
     @Test
     void givenValidSlug_whenGetLoggedArtist_thenReturnArtist() throws Exception {
         // GIVEN
-        when(artistService.retrieveArtist(USER.identifier())).thenReturn(ARTIST_A);
+        when(artistService.retrieveArtist(USER.getIdentifier())).thenReturn(ARTIST_A);
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/:me")
@@ -116,7 +116,7 @@ class ArtistControllerIT {
     @Test
     void givenInvalidSlug_whenGetLoggedArtist_thenNotFound() throws Exception {
         // GIVEN
-        when(artistService.retrieveArtist(USER.identifier())).thenThrow(UnknownArtistException.class);
+        when(artistService.retrieveArtist(USER.getIdentifier())).thenThrow(UnknownArtistException.class);
 
         // WHEN & THEN
         mockMvc.perform(get("/artists/:me")

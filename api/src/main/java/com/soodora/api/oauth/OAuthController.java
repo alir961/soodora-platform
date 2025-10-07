@@ -1,7 +1,7 @@
 package com.soodora.api.oauth;
 
 import com.soodora.domain.oauth.OAuthProvider;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.auth.AuthenticationService;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class OAuthController {
     private final AuthenticationService authenticationService;
 
     @GetMapping("/providers")
-    public List<OAuthProvider> getLinkedProviders(@AuthenticationPrincipal UserDTO user) {
+    public List<OAuthProvider> getLinkedProviders(@AuthenticationPrincipal User user) {
         return authenticationService.retrieveUserProviders(user);
     }
 

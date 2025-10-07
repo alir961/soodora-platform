@@ -61,7 +61,7 @@ class QuoteControllerIT {
         CreateQuoteRequest request = new CreateQuoteRequest("Sample Quote", "Client", "email@example.com", "Address",
                 "123456", "Desc");
         when(quoteService.createQuote(any(), eq(ARTIST_USER))).thenReturn(A_QUOTE);
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/quotes")
@@ -77,7 +77,7 @@ class QuoteControllerIT {
         // GIVEN
         CreateQuoteRequest request = new CreateQuoteRequest(null, null, null, null, null, null);
         doThrow(InvalidRequestException.class).when(quoteService).createQuote(any(), eq(ARTIST_USER));
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/quotes")

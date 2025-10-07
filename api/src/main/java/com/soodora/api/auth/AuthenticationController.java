@@ -3,8 +3,6 @@ package com.soodora.api.auth;
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.service.auth.AuthenticationService;
-import com.soodora.service.auth.LoginRequest;
-import com.soodora.service.auth.RegisterRequest;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UserUnityException;
@@ -28,7 +26,7 @@ public class AuthenticationController implements AuthenticationResource {
 
     @Override
     @PostMapping("/register")
-    public ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request) {
+    public ResponseEntity<JsonResponse> registerUser(@RequestBody UserRegisterRequest request) {
         try {
             authenticationService.registerUser(request.toCommand());
             return new ResponseEntity<>(OK);

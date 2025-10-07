@@ -103,7 +103,7 @@ class QuoteServiceTest {
     @Test
     void givenFilter_whenGetQuotesByFilter_thenReturnFilteredQuotes() {
         // GIVEN
-        QuoteFilter filter = new QuoteFilter(of(USER.slug()), empty(), empty(), empty());
+        QuoteFilter filter = new QuoteFilter(of(USER.getSlug()), empty(), empty(), empty());
         List<QuoteDTO> filteredQuotes = List.of(QUOTE_1, QUOTE_3);
         Page<QuoteDTO> pageFilteredQuotes = new PageImpl<>(filteredQuotes, PAGEABLE, filteredQuotes.size());
         when(quoteRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredQuotes);
@@ -192,7 +192,7 @@ class QuoteServiceTest {
     @Test
     void givenValidCreateQuoteCommand_whenCreateQuote_thenSuccess() {
         // GIVEN
-        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.slug())).thenReturn(false);
+        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.getSlug())).thenReturn(false);
 
         // WHEN
         Executable executable = () -> quoteService.createQuote(CREATE_COMMAND, USER);
@@ -205,7 +205,7 @@ class QuoteServiceTest {
     @Test
     void givenQuoteNameAlreadyUsed_whenCreateQuote_thenThrowQuoteUnityException() {
         // GIVEN
-        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.slug())).thenReturn(true);
+        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.getSlug())).thenReturn(true);
 
         // WHEN
         Executable executable = () -> quoteService.createQuote(CREATE_COMMAND, USER);
@@ -306,7 +306,7 @@ class QuoteServiceTest {
     void givenSlug_whenExportQuoteToPdf_thenReturnPdfBytes() throws Exception {
         // GIVEN
         String slug = "quote-slug";
-        ArtistDTO artist = new ArtistDTO("slug123", "username123", "description", "avatarUrl");
+        ArtistDTO artist = new ArtistDTO("slug123", "username123", "description", "avatar");
         QuoteArticleDTO article = new QuoteArticleDTO(
                 slug,
                 "articleSlug",

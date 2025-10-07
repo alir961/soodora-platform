@@ -1,72 +1,104 @@
 package com.soodora.test.factory;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.auth.value.Role;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Email;
+import com.soodora.domain.user.value.Username;
 
 import java.util.Date;
+import java.util.HashSet;
 
 import lombok.NoArgsConstructor;
 
-import static java.util.Collections.emptySet;
 import static java.util.Set.of;
 import static lombok.AccessLevel.PROTECTED;
 
 @NoArgsConstructor(access = PROTECTED)
 public class UserFactory {
 
-    public static UserDTO buildDefaultUser() {
-        return new UserDTO(
-                "slug",
-                "username",
-                "user@example.com",
+    public static User buildNewUser() {
+        return new User(
+                null,
+                new Username("username"),
+                new Email("user@example.com"),
+                "password",
                 "John",
                 "Doe",
+                new Date(),
+                new Date(),
                 "Description",
                 null,
-                new Date(),
-                new Date(),
-                emptySet());
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>());
     }
 
-    public static UserDTO buildDefaultUser(int id) {
-        return new UserDTO(
+    public static User buildDefaultUser() {
+        return new User(
+                "slug",
+                new Username("username"),
+                new Email("user@example.com"),
+                "password",
+                "John",
+                "Doe",
+                new Date(),
+                new Date(),
+                "Description",
+                null,
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>());
+    }
+
+    public static User buildDefaultUser(int id) {
+        return new User(
                 "slug" + id,
-                "username" + id,
-                "user" + id + "@example.com",
+                new Username("username" + id),
+                new Email("user" + id + "@example.com"),
+                "password",
                 "John",
                 "Doe",
+                new Date(),
+                new Date(),
                 "Description",
                 null,
-                new Date(),
-                new Date(),
-                emptySet());
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>());
     }
 
-    public static UserDTO buildDefaultArtistUser() {
-        return new UserDTO(
+    public static User buildDefaultArtistUser() {
+        return new User(
                 "slug",
-                "username",
-                "user@example.com",
+                new Username("username"),
+                new Email("user@example.com"),
+                "password",
                 "John",
                 "Doe",
+                new Date(),
+                new Date(),
                 "Description",
                 null,
-                new Date(),
-                new Date(),
-                of("ARTIST"));
+                of(new Role("ARTIST")),
+                new HashSet<>(),
+                new HashSet<>());
     }
 
-    public static UserDTO buildDefaultAdminUser() {
-        return new UserDTO(
+    public static User buildDefaultAdminUser() {
+        return new User(
                 "slug",
-                "username",
-                "user@example.com",
+                new Username("username"),
+                new Email("user@example.com"),
+                "password",
                 "John",
                 "Doe",
+                new Date(),
+                new Date(),
                 "Description",
                 null,
-                new Date(),
-                new Date(),
-                of("ADMIN"));
+                of(new Role("ADMIN")),
+                new HashSet<>(),
+                new HashSet<>());
     }
 
 }

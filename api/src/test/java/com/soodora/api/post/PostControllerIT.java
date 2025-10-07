@@ -2,7 +2,7 @@ package com.soodora.api.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
@@ -61,8 +61,8 @@ class PostControllerIT {
     private static final PostDTO POST_2 = buildDefaultPost("postSlug2", "Post 2");
     private static final PostDTO POST_3 = buildDefaultPost("postSlug3", "Post 3");
 
-    private static final UserDTO USER_1 = buildDefaultUser(1);
-    private static final UserDTO USER_2 = buildDefaultUser(2);
+    private static final User USER_1 = buildDefaultUser(1);
+    private static final User USER_2 = buildDefaultUser(2);
 
     @Test
     void createPost_Success() throws Exception {
@@ -73,7 +73,7 @@ class PostControllerIT {
                 "My audio",
                 "audioUrl");
 
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
@@ -108,9 +108,9 @@ class PostControllerIT {
                 "test-image.jpg",
                 "image/jpeg");
 
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)
-                .createPost(any(CreatePostCommand.class), any(UserDTO.class), eq(fileData));
+                .createPost(any(CreatePostCommand.class), any(User.class), eq(fileData));
 
         // WHEN & THEN
         mockMvc.perform(post("/posts")
@@ -125,7 +125,7 @@ class PostControllerIT {
         // GIVEN
         Page<PostDTO> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
         when(postService.retrievePosts(any(), any())).thenReturn(postsPage);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
@@ -142,7 +142,7 @@ class PostControllerIT {
         // GIVEN
         Page<PostDTO> emptyPage = new PageImpl<>(List.of());
         when(postService.retrievePosts(any(), any())).thenReturn(emptyPage);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
@@ -155,7 +155,7 @@ class PostControllerIT {
     void retrievePostBySlug_Success() throws Exception {
         // GIVEN
         when(postService.retrievePostBySlug("postSlug1")).thenReturn(POST_1);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1")
@@ -168,7 +168,7 @@ class PostControllerIT {
     @Test
     void retrievePost_Unknown() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(postService).retrievePostBySlug(anyString());
 
         // WHEN & THEN
@@ -194,7 +194,7 @@ class PostControllerIT {
                 of(description));
 
         when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
@@ -225,7 +225,7 @@ class PostControllerIT {
                 of(description));
 
         when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
@@ -242,7 +242,7 @@ class PostControllerIT {
     @Test
     void deletePost_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).deletePostBySlug("postSlug1");
 
         // WHEN & THEN
@@ -255,7 +255,7 @@ class PostControllerIT {
     @Test
     void deletePost_Unknown() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(postService).deletePostBySlug(anyString());
 
         // WHEN & THEN
@@ -274,7 +274,7 @@ class PostControllerIT {
     @Test
     void likePost_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).likePost("postSlug1", USER);
 
         // WHEN & THEN
@@ -295,7 +295,7 @@ class PostControllerIT {
     @Test
     void unlikePost_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).unlikePost("postSlug1", USER);
 
         // WHEN & THEN
@@ -324,14 +324,14 @@ class PostControllerIT {
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1/likes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[*]", containsInAnyOrder(USER_1.slug(), USER_2.slug())));
+                .andExpect(jsonPath("$[*]", containsInAnyOrder(USER_1.getSlug(), USER_2.getSlug())));
     }
 
     @Test
     void addComment_Success() throws Exception {
         // GIVEN
         CommentPostRequest commentRequest = new CommentPostRequest("Great post!");
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         when(postService.commentPost(eq("postSlug1"), any(CommentPostCommand.class), eq(USER)))
                 .thenReturn(new CommentDTO("commentSlug1", "postSlug1", "Great post!", USER, 0, new Date()));
 
@@ -358,7 +358,7 @@ class PostControllerIT {
     @Test
     void deleteComment_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).deleteComment("commentSlug1");
 
         // WHEN & THEN
@@ -389,16 +389,16 @@ class PostControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].slug").value("commentSlug1"))
                 .andExpect(jsonPath("$[0].content").value("Great post!"))
-                .andExpect(jsonPath("$[0].user.slug").value(USER.slug()))
+                .andExpect(jsonPath("$[0].user.slug").value(USER.getSlug()))
                 .andExpect(jsonPath("$[1].slug").value("commentSlug2"))
                 .andExpect(jsonPath("$[1].content").value("Thanks for sharing"))
-                .andExpect(jsonPath("$[1].user.slug").value(USER.slug()));
+                .andExpect(jsonPath("$[1].user.slug").value(USER.getSlug()));
     }
 
     @Test
     void likeComment_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).likeComment("commentSlug1", USER);
 
         // WHEN & THEN
@@ -419,7 +419,7 @@ class PostControllerIT {
     @Test
     void unlikeComment_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(postService).unlikeComment("commentSlug1", USER);
 
         // WHEN & THEN

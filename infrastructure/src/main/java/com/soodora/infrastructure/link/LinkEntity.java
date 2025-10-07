@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.link;
 
 import com.soodora.domain.link.LinkDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.linkpage.LinkPageEntity;
 
 import java.util.Date;
@@ -18,7 +18,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "links")
-public class LinkEntity implements DomainEntity<LinkDTO> {
+public class LinkEntity implements DomainEntityAdapter<LinkDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -52,7 +52,7 @@ public class LinkEntity implements DomainEntity<LinkDTO> {
     private Date updatedAt;
 
     @Override
-    public LinkDTO toDTO() {
+    public LinkDTO aggregate() {
         return new LinkDTO(
                 slug,
                 title,

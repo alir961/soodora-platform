@@ -7,7 +7,7 @@ import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostFilter;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
 import com.soodora.service.post.PostService;
@@ -49,7 +49,7 @@ public class PostController {
     @PreAuthorize("hasRole('ARTIST')")
     @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> createPost(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestPart("data") CreatePostRequest createPostRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
@@ -76,7 +76,7 @@ public class PostController {
     }
 
     @GetMapping("/explore")
-    public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
+    public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal User user, Pageable pageable) {
         return postService.retrieveRecommendedPosts(user, pageable);
     }
 
@@ -93,7 +93,7 @@ public class PostController {
 
     @PostMapping("/{postSlug}/likes")
     @SecurityRequirement(name = "bearerAuth")
-    public void likePost(@PathVariable String postSlug, @AuthenticationPrincipal UserDTO user) {
+    public void likePost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         postService.likePost(postSlug, user);
     }
 
@@ -101,33 +101,33 @@ public class PostController {
     public Set<String> getLikes(@PathVariable String postSlug) {
         return postService.retrieveLikes(postSlug).stream()
                 .map(LikeDTO::user)
-                .map(UserDTO::slug)
+                .map(User::getSlug)
                 .collect(toSet());
     }
 
     @DeleteMapping("/{slug}/likes")
     @SecurityRequirement(name = "bearerAuth")
-    public void unlikePost(@PathVariable String slug, @AuthenticationPrincipal UserDTO user) {
+    public void unlikePost(@AuthenticationPrincipal User user, @PathVariable String slug) {
         postService.unlikePost(slug, user);
     }
 
     @PostMapping("/{postSlug}/reposts")
     @SecurityRequirement(name = "bearerAuth")
-    public void repostPost(@AuthenticationPrincipal UserDTO user, @PathVariable String postSlug) {
+    public void repostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         postService.repostPostBySlug(postSlug, user);
     }
 
     @GetMapping("/{postSlug}/reposts")
     public Set<String> getReposts(@PathVariable String postSlug) {
         return postService.retrieveReposts(postSlug).stream()
-                .map(UserDTO::slug)
+                .map(User::getSlug)
                 .collect(toSet());
     }
 
     @DeleteMapping("/{postSlug}/reposts")
     @SecurityRequirement(name = "bearerAuth")
-    public void unrepostPost(@AuthenticationPrincipal UserDTO user, @PathVariable String postSlug) {
-        postService.unrepostPostBySlug(postSlug, user);
+    public void unrepostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
+        postService.unrepostPostBySlug(user, postSlug);
     }
 
     @GetMapping("/likes")

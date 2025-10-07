@@ -8,7 +8,6 @@ import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
-import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.product.UnknownProductException;
 
@@ -28,10 +27,11 @@ import com.stripe.model.Event;
 import com.stripe.model.EventDataObjectDeserializer;
 import com.stripe.model.checkout.Session;
 
-import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
+
+import static com.soodora.test.TestConstants.USER;
 
 @ExtendWith(MockitoExtension.class)
 class StripePaymentServiceTest {
@@ -83,33 +83,36 @@ class StripePaymentServiceTest {
         when(event.getType()).thenReturn("checkout.session.completed");
         when(event.getDataObjectDeserializer()).thenReturn(deserializer);
 
-        ProductDTO productDTO = new ProductDTO(productSlug, "name", "desc", "image", "cd",
+        ProductDTO product = new ProductDTO(productSlug, "name", "desc", "image", "cd",
                 Money.of(BigDecimal.valueOf(149.99), Currency.EUR), 20,
                 new ArtistDTO("artist-slug", "Artist Name", null, null), new Date());
-        ArtistDTO artistDTO = new ArtistDTO(vendorSlug, "Artist Name", null, null);
-        UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com", null, null, null, null, new Date(),
-                new Date(),
-                emptySet());
+        ArtistDTO artist = new ArtistDTO(vendorSlug, "Artist Name", null, null);
+        // UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com",
+        // null, null, null, null, new Date(),
+        // new Date(),
+        // emptySet());
 
-        when(productRepository.findBySlug(productSlug)).thenReturn(productDTO);
-        when(artistRepository.find(vendorSlug)).thenReturn(artistDTO);
-        when(userRepository.find(any())).thenReturn(userDTO);
+        when(productRepository.findBySlug(productSlug)).thenReturn(product);
+        when(artistRepository.find(vendorSlug)).thenReturn(artist);
+        when(userRepository.find(any())).thenReturn(USER);
 
         // WHEN
         stripePaymentService.handleStripeEvent(event);
 
         // THEN
-        verify(productRepository).updateQuantity(productSlug, productDTO.quantity() - quantity);
+        verify(productRepository).updateQuantity(productSlug, product.quantity() - quantity);
 
         ArgumentCaptor<SaveSaleCommand> saleCmdCaptor = ArgumentCaptor.forClass(SaveSaleCommand.class);
+
         verify(saleRepository).save(saleCmdCaptor.capture());
 
-        SaveSaleCommand savedCmd = saleCmdCaptor.getValue();
-        assertEquals(productDTO, savedCmd.product());
-        assertEquals(artistDTO, savedCmd.artist());
-        assertEquals(userDTO, savedCmd.buyer());
-        assertEquals(quantity, savedCmd.quantitySold());
-        assertEquals(productDTO.price().amount().multiply(BigDecimal.valueOf(quantity)), savedCmd.amount().amount());
+        SaveSaleCommand saveSaleCommand = saleCmdCaptor.getValue();
+        assertEquals(product, saveSaleCommand.product());
+        assertEquals(artist, saveSaleCommand.artist());
+        assertEquals(USER, saveSaleCommand.buyer());
+        assertEquals(quantity, saveSaleCommand.quantitySold());
+        assertEquals(product.price().amount().multiply(BigDecimal.valueOf(quantity)),
+                saveSaleCommand.amount().amount());
     }
 
     @Test

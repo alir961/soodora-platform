@@ -1,8 +1,9 @@
 package com.soodora.infrastructure.linkpage;
 
+import com.soodora.domain.link.LinkDTO;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.link.LinkEntity;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "link_pages")
-public class LinkPageEntity implements DomainEntity<LinkPageDTO> {
+public class LinkPageEntity implements DomainEntityAdapter<LinkPageDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -55,13 +56,17 @@ public class LinkPageEntity implements DomainEntity<LinkPageDTO> {
     private Date updatedAt;
 
     @Override
-    public LinkPageDTO toDTO() {
+    public LinkPageDTO aggregate() {
+        List<LinkDTO> aggregatedLinks = links.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .toList();
+
         return new LinkPageDTO(
                 slug,
                 title,
                 description,
-                links.stream().map(LinkEntity::toDTO).toList(),
-                artist.toDTO());
+                aggregatedLinks,
+                artist.aggregate());
     }
 
 }

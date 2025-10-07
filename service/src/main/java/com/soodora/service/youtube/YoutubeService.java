@@ -1,6 +1,6 @@
 package com.soodora.service.youtube;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.youtube.YoutubeAdapter;
 import com.soodora.domain.youtube.YoutubePlaylistDTO;
 import com.soodora.domain.youtube.YoutubePlaylistItemDTO;
@@ -24,7 +24,7 @@ public class YoutubeService {
     private final OAuthTokenService oauthTokenService;
     private final YoutubeAdapter youtubeAdapter;
 
-    public List<YoutubePlaylistDTO> getPlaylists(UserDTO user) throws ExternalServiceException {
+    public List<YoutubePlaylistDTO> getPlaylists(User user) throws ExternalServiceException {
         try {
             String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);
 
@@ -34,7 +34,7 @@ public class YoutubeService {
         }
     }
 
-    public List<YoutubePlaylistItemDTO> getPlaylistItems(UserDTO user, String playlistId)
+    public List<YoutubePlaylistItemDTO> getPlaylistItems(User user, String playlistId)
             throws ExternalServiceException {
         try {
             String accessToken = oauthTokenService.retrieveUserAccessToken(GOOGLE, user);

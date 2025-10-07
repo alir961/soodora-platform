@@ -2,7 +2,7 @@ package com.soodora.api.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.user.UnknownIdentifierException;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.artist.ArtistService;
 import com.soodora.service.artist.UnknownArtistException;
 
@@ -49,9 +49,9 @@ public class ArtistController {
     }
 
     @GetMapping(":me")
-    public ResponseEntity<ArtistDTO> getLoggedArtist(@AuthenticationPrincipal UserDTO user) {
+    public ResponseEntity<ArtistDTO> getLoggedArtist(@AuthenticationPrincipal User user) {
         try {
-            ArtistDTO artist = artistService.retrieveArtist(user.identifier());
+            ArtistDTO artist = artistService.retrieveArtist(user.getIdentifier());
 
             return ok(artist);
         } catch (UnknownArtistException exception) {

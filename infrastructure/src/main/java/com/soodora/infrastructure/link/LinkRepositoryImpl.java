@@ -5,7 +5,7 @@ import com.soodora.domain.link.CreateLinkCommand;
 import com.soodora.domain.link.LinkDTO;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.linkpage.LinkPageEntity;
 import com.soodora.infrastructure.linkpage.LinkPageJpaRepository;
 
@@ -47,7 +47,7 @@ public class LinkRepositoryImpl implements LinkRepository {
 
         linkPage.getLinks().add(entity);
 
-        return repository.save(entity).toDTO();
+        return repository.save(entity).aggregate();
     }
 
     @Override
@@ -63,20 +63,20 @@ public class LinkRepositoryImpl implements LinkRepository {
             existingLink.setUrl(command.url());
         if (isNotNullOrBlank(command.iconUrl()))
             existingLink.setIconUrl(command.iconUrl());
-        return repository.save(existingLink).toDTO();
+        return repository.save(existingLink).aggregate();
     }
 
     @Override
     @Transactional
     public LinkDTO findBySlug(String slug) {
-        return findLinkBySlugOrThrow(slug).toDTO();
+        return findLinkBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public List<LinkDTO> findAll() {
         return repository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

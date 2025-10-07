@@ -1,15 +1,15 @@
 package com.soodora.domain.product;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Identifier;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface ProductRepository {
 
-    ProductDTO save(CreateProductCommand command, UserDTO user, FileData fileData);
+    ProductDTO save(CreateProductCommand command, User user, FileData fileData);
     ProductDTO update(UpdateProductCommand command, String slug, FileData fileData);
     void updateQuantity(String slug, long quantity);
     ProductDTO findBySlug(String slug);

@@ -55,7 +55,7 @@ class PlaylistServiceTest {
     void givenValidCreatePlaylistCommand_whenCreatePlaylist_thenPlaylistIsSaved() {
         // GIVEN
         CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PUBLIC);
-        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(false);
+        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.getSlug())).thenReturn(false);
         when(playlistRepository.save(any(), eq(USER), eq(FILE_DATA))).thenReturn(PLAYLIST_1);
 
         // WHEN
@@ -70,7 +70,7 @@ class PlaylistServiceTest {
     void givenPlaylistNameAlreadyUsed_whenCreatePlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
         CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PUBLIC);
-        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.slug())).thenReturn(true);
+        when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.getSlug())).thenReturn(true);
 
         // WHEN
         Executable executable = () -> playlistService.createPlaylist(command, USER, FILE_DATA);

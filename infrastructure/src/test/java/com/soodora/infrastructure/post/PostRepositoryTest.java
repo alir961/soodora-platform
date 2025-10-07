@@ -80,7 +80,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -96,7 +97,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -112,7 +114,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -128,7 +131,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -144,7 +148,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p1.getSlug(), result[0].slug());
@@ -160,7 +165,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p1.getSlug(), result[0].slug());
@@ -176,7 +182,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -192,7 +199,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p2.getSlug(), result[0].slug());
@@ -209,7 +217,8 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2, p3));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.toDTO(), PAGE).get().toArray(PostDTO[]::new);
+        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(PostDTO[]::new);
 
         // THEN
         assertEquals(p3.getSlug(), result[0].slug());
@@ -227,7 +236,7 @@ class PostRepositoryTest {
         post.setCreatedAt(from(now().minus(ageInHours, HOURS)));
 
         ArtistEntity artist = new ArtistEntity();
-        UserEntity artistUser = new UserEntity();
+        UserEntity artistUser = buildDefaultUserEntity();
 
         if (isFollowed)
             currentUser.setFollowers(Set.of(artistUser));

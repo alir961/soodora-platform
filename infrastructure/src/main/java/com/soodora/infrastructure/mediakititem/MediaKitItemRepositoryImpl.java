@@ -7,7 +7,7 @@ import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
 import com.soodora.domain.mediakititem.MediaKitItemRepository;
 import com.soodora.domain.mediakititem.UpdateMediaKitItemCommand;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
 import com.soodora.infrastructure.mediakit.MediaKitJpaRepository;
 
@@ -51,7 +51,7 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
 
         mediaKit.getItems().add(mediaKitItem);
 
-        return repository.save(mediaKitItem).toDTO();
+        return repository.save(mediaKitItem).aggregate();
     }
 
     @Override
@@ -69,20 +69,20 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
             String imageUrl = imageStorageUploader.upload(fileData);
             existingMediaKitItem.setContent(imageUrl);
         }
-        return repository.save(existingMediaKitItem).toDTO();
+        return repository.save(existingMediaKitItem).aggregate();
     }
 
     @Override
     @Transactional
     public MediaKitItemDTO findBySlug(String slug) {
-        return findMediaKitItemBySlugOrThrow(slug).toDTO();
+        return findMediaKitItemBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public List<MediaKitItemDTO> findAll() {
         return repository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

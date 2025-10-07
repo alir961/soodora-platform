@@ -1,6 +1,6 @@
 package com.soodora.domain.playlist;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.util.Date;
 
@@ -11,7 +11,7 @@ public record PlaylistDTO(
         int numberOfTracks,
         PlaylistPrivacy privacy,
         String imageUrl,
-        UserDTO owner,
+        User owner,
         Date createdAt,
         Date updatedAt) {
 

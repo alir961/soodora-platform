@@ -1,10 +1,10 @@
 package com.soodora.domain.post;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.util.Date;
 
 public interface LikeDTO {
-    UserDTO user();
+    User user();
     Date likedAt();
 }

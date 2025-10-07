@@ -1,7 +1,7 @@
 package com.soodora.api.configuration;
 
-import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.auth.RoleRepository;
+import com.soodora.domain.auth.value.Role;
 
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
@@ -31,7 +31,7 @@ public class InitialDataConfiguration implements ApplicationListener<ContextRefr
 
     @Transactional
     void createRoleIfNotFound(String name) {
-        RoleDTO role = roleRepository.findByName(name);
+        Role role = roleRepository.findByName(name);
         if (role == null)
             roleRepository.createRole(name);
     }

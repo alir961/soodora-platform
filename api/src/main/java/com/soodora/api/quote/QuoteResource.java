@@ -3,7 +3,7 @@ package com.soodora.api.quote;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.quote.QuoteDTO;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.quote.CreateQuoteArticleRequest;
 import com.soodora.service.quote.CreateQuoteRequest;
 import com.soodora.service.quote.UpdateQuoteArticleRequest;
@@ -30,7 +30,7 @@ public interface QuoteResource {
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PostMapping
-    ResponseEntity<JsonResponse> createQuote(@AuthenticationPrincipal UserDTO user,
+    ResponseEntity<JsonResponse> createQuote(@AuthenticationPrincipal User user,
             @RequestBody CreateQuoteRequest request);
 
     @Operation(summary = "Update an existing quote", security = @SecurityRequirement(name = "bearerAuth"), responses = {

@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.auth;
 
-import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.auth.RoleRepository;
+import com.soodora.domain.auth.value.Role;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,11 +25,11 @@ public class RoleRepositoryImpl implements RoleRepository {
 
     @Override
     @Transactional
-    public RoleDTO findByName(String name) {
+    public Role findByName(String name) {
         RoleEntity role = roleRepository.findByName(name);
 
         if (role == null)
             return null;
-        return role.toDTO();
+        return role.aggregate();
     }
 }

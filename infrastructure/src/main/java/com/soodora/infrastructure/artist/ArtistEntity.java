@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.event.EventEntity;
 import com.soodora.infrastructure.linkpage.LinkPageEntity;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
@@ -25,7 +25,7 @@ import static jakarta.persistence.CascadeType.ALL;
 @Setter
 @NoArgsConstructor
 @Entity(name = "artists")
-public class ArtistEntity implements DomainEntity<ArtistDTO> {
+public class ArtistEntity implements DomainEntityAdapter<ArtistDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -58,7 +58,7 @@ public class ArtistEntity implements DomainEntity<ArtistDTO> {
     private List<QuoteEntity> quotes;
 
     @Override
-    public ArtistDTO toDTO() {
+    public ArtistDTO aggregate() {
         return new ArtistDTO(
                 user.getSlug(),
                 user.getUsername(),

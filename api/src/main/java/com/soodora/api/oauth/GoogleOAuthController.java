@@ -2,7 +2,7 @@ package com.soodora.api.oauth;
 
 import com.soodora.domain.auth.AuthenticationTokenException;
 import com.soodora.domain.oauth.OAuthAuthorizationException;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.oauth.OAuthTokenService;
 
 import java.net.URI;
@@ -61,7 +61,7 @@ public class GoogleOAuthController {
     }
 
     @DeleteMapping
-    public void deleteGoogleOAuth(@AuthenticationPrincipal UserDTO user) {
+    public void deleteGoogleOAuth(@AuthenticationPrincipal User user) {
         oauthTokenService.deleteUserAuthorization(GOOGLE, user);
     }
 

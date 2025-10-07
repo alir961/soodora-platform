@@ -1,16 +1,15 @@
 package com.soodora.api.user;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.common.InvalidValueException;
 import com.soodora.domain.post.PostDTO;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UpdateUserCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.auth.UserPrincipal;
-import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.PostService;
 import com.soodora.service.user.UnknownUserException;
-import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
+import com.soodora.service.user.UserUpdateCommand;
 
 import java.util.List;
 import java.util.Set;
@@ -36,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
 import static com.soodora.test.factory.UserFactory.buildDefaultUser;
@@ -57,13 +56,13 @@ class ProfileControllerIT {
     @Test
     void givenAuthenticatedRequest_whenGetProfile_thenReturnProfile() throws Exception {
         // GIVEN
-        when(userService.retrieveUser(USER.identifier())).thenReturn(USER);
+        when(userService.retrieveUser(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/profile")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("slug").value(USER.slug()));
+                .andExpect(jsonPath("slug").value(USER.getSlug()));
     }
 
     @Test
@@ -80,7 +79,8 @@ class ProfileControllerIT {
                 "newUsername",
                 "firstname",
                 "lastname",
-                "description");
+                "description",
+                "avatar");
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
@@ -109,7 +109,7 @@ class ProfileControllerIT {
     @Test
     void givenInvalidRequest_whenUpdateUser_thenBadRequest() throws Exception {
         // GIVEN
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "", "");
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
                 "",
@@ -125,9 +125,8 @@ class ProfileControllerIT {
         FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
                 filePart.getContentType());
 
-        doThrow(new InvalidRequestException("Invalid Request"))
-                .when(userService)
-                .updateUser(any(UpdateUserCommand.class), eq(USER.slug()), eq(fileData));
+        doThrow(new InvalidValueException("Invalid Request")).when(userService)
+                .updateUser(any(Identifier.class), any(UserUpdateCommand.class));
 
         // WHEN & THEN
         mockMvc.perform(multipart("/profile")
@@ -155,7 +154,7 @@ class ProfileControllerIT {
         mockMvc.perform(delete("/profile")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
-        verify(userService).deleteUser(USER.identifier());
+        verify(userService).deleteUser(USER.getIdentifier());
     }
 
     @Test
@@ -168,7 +167,7 @@ class ProfileControllerIT {
     @Test
     void givenAuthenticatedRequest_whenDeleteProfileAvatar_thenReturnProfile() throws Exception {
         // GIVEN
-        when(userService.retrieveUser(USER.identifier())).thenReturn(USER);
+        when(userService.retrieveUser(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(delete("/profile/:avatar")
@@ -189,12 +188,12 @@ class ProfileControllerIT {
         Identifier followingSlug = createFromSlug("followingSlug");
 
         // WHEN
-        mockMvc.perform(post("/profile/followers/" + followingSlug.getValue())
+        mockMvc.perform(post("/profile/followers/" + followingSlug.value())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
 
         // THEN
-        verify(userService, times(1)).follow(USER.identifier(), followingSlug);
+        verify(userService, times(1)).follow(USER.getIdentifier(), followingSlug);
     }
 
     @Test
@@ -202,10 +201,10 @@ class ProfileControllerIT {
         // GIVEN
         Identifier invalidSlug = createFromSlug("invalidSlug");
 
-        doThrow(UnknownUserException.class).when(userService).follow(USER.identifier(), invalidSlug);
+        doThrow(UnknownUserException.class).when(userService).follow(USER.getIdentifier(), invalidSlug);
 
         // WHEN & THEN
-        mockMvc.perform(post("/profile/followers/" + invalidSlug.getValue())
+        mockMvc.perform(post("/profile/followers/" + invalidSlug.value())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }
@@ -220,9 +219,9 @@ class ProfileControllerIT {
     @Test
     void givenAuthenticatedUser_whenRetrieveFollowers_thenSuccess() throws Exception {
         // GIVEN
-        Set<UserDTO> followers = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+        Set<User> followers = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
 
-        when(userService.retrieveFollowers(USER.identifier())).thenReturn(followers);
+        when(userService.retrieveFollowers(USER.getIdentifier())).thenReturn(followers);
 
         // WHEN & THEN
         mockMvc.perform(get("/profile/followers")
@@ -242,9 +241,9 @@ class ProfileControllerIT {
     @Test
     void givenAuthenticatedUser_whenRetrieveFollowing_thenSuccess() throws Exception {
         // GIVEN
-        Set<UserDTO> following = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+        Set<User> following = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
 
-        when(userService.retrieveFollowing(USER.identifier())).thenReturn(following);
+        when(userService.retrieveFollowing(USER.getIdentifier())).thenReturn(following);
 
         // WHEN & THEN
         mockMvc.perform(get("/profile/following")
@@ -267,12 +266,12 @@ class ProfileControllerIT {
         Identifier followingSlug = createFromSlug("followingSlug");
 
         // WHEN
-        mockMvc.perform(delete("/profile/followers/" + followingSlug.getValue())
+        mockMvc.perform(delete("/profile/followers/" + followingSlug.value())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
 
         // THEN
-        verify(userService, times(1)).unfollow(USER.identifier(), followingSlug);
+        verify(userService, times(1)).unfollow(USER.getIdentifier(), followingSlug);
     }
 
     @Test
@@ -280,10 +279,10 @@ class ProfileControllerIT {
         // GIVEN
         Identifier invalidSlug = createFromSlug("invalidSlug");
 
-        doThrow(UnknownUserException.class).when(userService).unfollow(USER.identifier(), invalidSlug);
+        doThrow(UnknownUserException.class).when(userService).unfollow(USER.getIdentifier(), invalidSlug);
 
         // WHEN & THEN
-        mockMvc.perform(delete("/profile/followers/" + invalidSlug.getValue())
+        mockMvc.perform(delete("/profile/followers/" + invalidSlug.value())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isNotFound());
     }

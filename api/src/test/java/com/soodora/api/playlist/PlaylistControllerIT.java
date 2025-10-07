@@ -6,7 +6,6 @@ import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.UpdatePlaylistCommand;
 import com.soodora.domain.post.PostDTO;
-import com.soodora.domain.user.UserDTO;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
@@ -69,6 +68,7 @@ class PlaylistControllerIT {
         MockMultipartFile filePart = new MockMultipartFile("file", "test-image.jpg", "image/jpeg",
                 "dummy image content".getBytes());
         PlaylistDTO mockedPlaylistDTO = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
+
         when(playlistService.createPlaylist(any(), any(), any())).thenReturn(mockedPlaylistDTO);
 
         // WHEN & THEN
@@ -84,9 +84,10 @@ class PlaylistControllerIT {
     void givenInvalidCreatePlaylistRequest_whenCreatePlaylist_thenBadRequest() throws Exception {
         // GIVEN
         CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", "");
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
-                .createPlaylist(any(CreatePlaylistCommand.class), any(UserDTO.class), any(FileData.class));
+                .createPlaylist(any(CreatePlaylistCommand.class), eq(USER), any(FileData.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists")
@@ -105,7 +106,8 @@ class PlaylistControllerIT {
                 asJsonString(createPlaylistRequest).getBytes());
         MockMultipartFile filePart = new MockMultipartFile("file", "test-image.jpg", "image/jpeg",
                 "dummy image content".getBytes());
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(new PlaylistUnityException("Name is already used")).when(playlistService)
                 .createPlaylist(any(), eq(USER), any());
 
@@ -127,7 +129,8 @@ class PlaylistControllerIT {
                 asJsonString(updatePlaylistRequest).getBytes());
         MockMultipartFile filePart = new MockMultipartFile("file", "test-image.jpg", "image/jpeg",
                 "dummy image content".getBytes());
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists/playlistSlug1")
@@ -149,7 +152,8 @@ class PlaylistControllerIT {
                 asJsonString(updatePlaylistRequest).getBytes());
         MockMultipartFile filePart = new MockMultipartFile("file", "test-image.jpg", "image/jpeg",
                 "dummy image content".getBytes());
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
                 .updatePlaylist(any(UpdatePlaylistCommand.class), eq("playlistSlug1"), any());
 
@@ -170,7 +174,7 @@ class PlaylistControllerIT {
     void givenPlaylistsExist_whenRetrievePlaylists_thenSuccess() throws Exception {
         // GIVEN
         when(playlistService.retrieveAllPlaylists()).thenReturn(asList(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3));
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/search")
@@ -182,7 +186,7 @@ class PlaylistControllerIT {
     void givenNoPlaylistsExist_whenRetrievePlaylists_thenSuccessWithEmptyList() throws Exception {
         // GIVEN
         when(playlistService.retrieveAllPlaylists()).thenReturn(emptyList());
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/search")
@@ -213,7 +217,7 @@ class PlaylistControllerIT {
     @Test
     void givenUnknownPlaylistSlug_whenRetrievePlaylistWithPosts_thenNotFound() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(playlistService).retrievePlaylistBySlug(anyString(),
                 any(Pageable.class));
 
@@ -237,6 +241,7 @@ class PlaylistControllerIT {
         Page<PostDTO> postsAfter = buildPostsPage(
                 asList(buildDefaultPost("postSlug1", "Post 1"), buildDefaultPost("postSlug2", "Post 2")));
         PlaylistFullDTO playlistAfterAdd = new PlaylistFullDTO(playlistBefore.playlistSimpleDTO(), postsAfter);
+
         when(playlistService.addPostToPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
                 .thenReturn(playlistAfterAdd);
 
@@ -254,6 +259,7 @@ class PlaylistControllerIT {
         PlaylistFullDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
         Page<PostDTO> postsAfter = buildPostsPage(List.of(buildDefaultPost("postSlug2", "Post 2")));
         PlaylistFullDTO playlistAfterRemove = new PlaylistFullDTO(playlistBefore.playlistSimpleDTO(), postsAfter);
+
         when(playlistService.removePostFromPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
                 .thenReturn(playlistAfterRemove);
 
@@ -293,7 +299,7 @@ class PlaylistControllerIT {
     @Test
     void givenValidPlaylistSlug_whenDeletePlaylist_thenSuccess() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(playlistService).deletePlaylistBySlug("playlistSlug1");
 
         // WHEN & THEN
@@ -306,7 +312,7 @@ class PlaylistControllerIT {
     @Test
     void givenUnknownPlaylistSlug_whenDeletePlaylist_thenNotFound() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(UnknownUserException.class).when(playlistService).deletePlaylistBySlug(anyString());
 
         // WHEN & THEN

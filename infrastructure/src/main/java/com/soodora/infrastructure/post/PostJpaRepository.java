@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.post;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -17,7 +17,7 @@ public interface PostJpaRepository extends JpaRepository<PostEntity, UUID>, JpaS
 
     Page<PostEntity> findByArtistUserSlug(@Param("slug") String slug, Pageable pageable);
 
-    Page<PostEntity> findByArtistUserSlugIn(List<String> userSlugs, Pageable pageable);
+    Page<PostEntity> findByArtistUserSlugIn(Set<String> userSlugs, Pageable pageable);
 
     Page<PostEntity> findByRepostsSlug(String slug, Pageable pageable);
 

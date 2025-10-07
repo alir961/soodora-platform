@@ -2,8 +2,6 @@ package com.soodora.api.auth;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
-import com.soodora.service.auth.LoginRequest;
-import com.soodora.service.auth.RegisterRequest;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,7 +18,7 @@ public interface AuthenticationResource {
             @ApiResponse(responseCode = "200", description = "Confirmation email sent"),
             @ApiResponse(responseCode = "400", description = "Invalid register request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
     })
-    ResponseEntity<JsonResponse> registerUser(@RequestBody RegisterRequest request);
+    ResponseEntity<JsonResponse> registerUser(@RequestBody UserRegisterRequest request);
 
     @Operation(summary = "Confirm user registration", responses = {
             @ApiResponse(responseCode = "201", description = "User confirmed"),

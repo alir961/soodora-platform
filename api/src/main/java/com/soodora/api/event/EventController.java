@@ -2,7 +2,7 @@ package com.soodora.api.event;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.event.CreateEventRequest;
@@ -30,7 +30,7 @@ public class EventController implements EventResource {
     @Override
     @PostMapping
     public ResponseEntity<?> createEvent(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestBody CreateEventRequest request) {
         try {
             EventDTO event = eventService.createEvent(request.toCommand(), user);
@@ -61,7 +61,7 @@ public class EventController implements EventResource {
     @Override
     @GetMapping(":me")
     public ResponseEntity<?> getAuthenticatedArtistEvents(
-            @AuthenticationPrincipal UserDTO user) {
+            @AuthenticationPrincipal User user) {
         try {
             List<EventDTO> events = eventService.getArtistEvents(user);
 

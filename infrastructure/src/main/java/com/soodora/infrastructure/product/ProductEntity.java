@@ -3,7 +3,7 @@ package com.soodora.infrastructure.product;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductStatus;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 
 import java.util.Date;
@@ -23,7 +23,7 @@ import lombok.Setter;
 @Entity(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductEntity implements DomainEntity<ProductDTO> {
+public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -67,7 +67,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     private Date updatedAt;
 
     @Override
-    public ProductDTO toDTO() {
+    public ProductDTO aggregate() {
         return new ProductDTO(
                 slug,
                 name,
@@ -76,7 +76,7 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
                 category,
                 price.toDomain(),
                 quantity,
-                artist.toDTO(),
+                artist.aggregate(),
                 createdAt);
     }
 

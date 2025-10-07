@@ -4,7 +4,7 @@ import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFullDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.playlist.CreatePlaylistRequest;
 import com.soodora.service.playlist.UpdatePlaylistRequest;
 
@@ -34,7 +34,7 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     ResponseEntity<JsonResponse> createPlaylist(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestPart("data") CreatePlaylistRequest createPlaylistRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 

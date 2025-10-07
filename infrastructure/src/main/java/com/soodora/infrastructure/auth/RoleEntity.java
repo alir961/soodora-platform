@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.auth;
 
-import com.soodora.domain.auth.RoleDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.domain.auth.value.Role;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.Set;
@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @RequiredArgsConstructor
 @Entity(name = "roles")
-public class RoleEntity implements DomainEntity<RoleDTO> {
+public class RoleEntity implements DomainEntityAdapter<Role> {
 
     @Id
     @GeneratedValue
@@ -30,8 +30,12 @@ public class RoleEntity implements DomainEntity<RoleDTO> {
     private Set<UserEntity> users;
 
     @Override
-    public RoleDTO toDTO() {
-        return new RoleDTO(id, name);
+    public Role aggregate() {
+        return new Role(name);
+    }
+
+    public boolean isArtistRole() {
+        return name.equals("ROLE_ARTIST") || name.equals("ROLE_PREMIUM");
     }
 
 }

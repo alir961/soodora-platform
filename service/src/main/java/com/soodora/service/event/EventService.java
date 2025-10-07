@@ -5,7 +5,7 @@ import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.event.CreateEventCommand;
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.event.EventRepository;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.artist.UnknownArtistException;
 
@@ -23,13 +23,13 @@ public class EventService {
     private final ArtistRepository artistRepository;
     private final UserRepository userRepository;
 
-    public EventDTO createEvent(CreateEventCommand command, UserDTO user) {
+    public EventDTO createEvent(CreateEventCommand command, User user) {
         ArtistDTO artist = retrieveArtistOrThrows(user);
 
         return eventRepository.save(command, artist.slug());
     }
 
-    public List<EventDTO> getArtistEvents(UserDTO user) {
+    public List<EventDTO> getArtistEvents(User user) {
         ArtistDTO artist = retrieveArtistOrThrows(user);
 
         return artistRepository.retrieveEvents(artist.slug());
@@ -39,8 +39,8 @@ public class EventService {
         return artistRepository.retrieveEvents(artistSlug);
     }
 
-    private ArtistDTO retrieveArtistOrThrows(UserDTO user) {
-        return userRepository.retrieveArtist(user.identifier())
+    private ArtistDTO retrieveArtistOrThrows(User user) {
+        return userRepository.retrieveArtist(user.getIdentifier())
                 .orElseThrow(() -> new UnknownArtistException("User is not an artist"));
     }
 

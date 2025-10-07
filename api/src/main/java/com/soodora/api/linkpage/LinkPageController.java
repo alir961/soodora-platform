@@ -5,7 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.link.LinkDTO;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.linkpage.LinkPageFilter;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.link.CreateLinkRequest;
 import com.soodora.service.link.LinkService;
@@ -40,10 +40,11 @@ public class LinkPageController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
     public ResponseEntity<JsonResponse> createLinkPage(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestBody CreateLinkPageRequest request) {
         try {
             String slug = linkPageService.createLinkPage(request.toCommand(), user);
+
             return new ResponseEntity<>(new LinkPageSlugResponse(slug), CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -91,11 +92,11 @@ public class LinkPageController {
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{pageSlug}/links")
     public ResponseEntity<JsonResponse> addLink(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @PathVariable String pageSlug,
             @RequestBody CreateLinkRequest request) {
         try {
-            String slug = linkService.createLink(request.toCommand(), user.slug());
+            String slug = linkService.createLink(request.toCommand(), user.getSlug());
             return new ResponseEntity<>(new LinkSlugResponse(slug), CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

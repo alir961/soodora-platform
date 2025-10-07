@@ -3,7 +3,7 @@ package com.soodora.infrastructure.quote;
 import com.soodora.domain.common.Money;
 import com.soodora.domain.quote.QuoteDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.quotearticle.QuoteArticleEntity;
 
 import java.util.Date;
@@ -25,7 +25,7 @@ import static java.util.stream.Collectors.toList;
 @Setter
 @NoArgsConstructor
 @Entity(name = "quotes")
-public class QuoteEntity implements DomainEntity<QuoteDTO> {
+public class QuoteEntity implements DomainEntityAdapter<QuoteDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -79,20 +79,19 @@ public class QuoteEntity implements DomainEntity<QuoteDTO> {
     }
 
     @Override
-    public QuoteDTO toDTO() {
+    public QuoteDTO aggregate() {
         return new QuoteDTO(
                 slug,
-                artist.toDTO(),
+                artist.aggregate(),
                 name,
                 clientName,
                 clientAddress,
                 clientEmail,
                 clientPhone,
                 description,
-                articles.stream().map(QuoteArticleEntity::toDTO).collect(toList()),
+                articles.stream().map(DomainEntityAdapter::aggregate).collect(toList()),
                 calculateTotal(),
                 createdAt,
                 updatedAt);
     }
-
 }

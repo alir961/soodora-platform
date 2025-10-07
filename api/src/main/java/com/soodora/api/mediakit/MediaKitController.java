@@ -5,7 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.MediaKitItemDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.mediakit.*;
 import com.soodora.service.shared.FileDataService;
@@ -33,7 +33,7 @@ public class MediaKitController implements MediaKitResource {
     @PostMapping
     public ResponseEntity<JsonResponse> createMediaKit(
             @RequestBody CreateMediaKitRequest request,
-            @AuthenticationPrincipal UserDTO user) {
+            @AuthenticationPrincipal User user) {
         try {
             MediaKitDTO mediaKitDTO = mediaKitService.createMediaKit(request.toCommand(), user);
 

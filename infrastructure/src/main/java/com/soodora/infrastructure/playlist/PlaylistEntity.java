@@ -4,7 +4,7 @@ import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.PlaylistPrivacy;
 import com.soodora.domain.post.PostDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -25,7 +25,7 @@ import lombok.Setter;
 @Entity(name = "playlists")
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
+public class PlaylistEntity implements DomainEntityAdapter<PlaylistDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -77,7 +77,7 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
     }
 
     @Override
-    public PlaylistDTO toDTO() {
+    public PlaylistDTO aggregate() {
         return new PlaylistDTO(
                 slug,
                 name,
@@ -85,13 +85,13 @@ public class PlaylistEntity implements DomainEntity<PlaylistDTO> {
                 posts.size(),
                 privacy,
                 imageUrl,
-                user.toDTO(),
+                user.aggregate(),
                 createdAt,
                 updatedAt);
     }
 
     public PlaylistFullDTO toFullDTO(Page<PostDTO> postsPage) {
-        return new PlaylistFullDTO(toDTO(), postsPage);
+        return new PlaylistFullDTO(aggregate(), postsPage);
     }
 
 }

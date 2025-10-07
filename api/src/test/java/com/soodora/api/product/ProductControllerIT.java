@@ -77,7 +77,7 @@ class ProductControllerIT {
                 "image/jpeg",
                 "dummy image content".getBytes());
 
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
         doNothing().when(productService).createProduct(any(), eq(ARTIST_USER), any());
 
         // WHEN & THEN
@@ -104,7 +104,7 @@ class ProductControllerIT {
                 "test-image.jpg",
                 "image/jpeg");
 
-        when(userRepository.find(ARTIST_USER.identifier())).thenReturn(ARTIST_USER);
+        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
         doThrow(InvalidRequestException.class).when(productService)
                 .createProduct(any(), eq(ARTIST_USER), eq(fileData));
 
@@ -160,7 +160,7 @@ class ProductControllerIT {
     @Test
     void givenValidSlug_whenGetProduct_thenSuccess() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         when(productService.retrieveProduct("slug")).thenReturn(A_PRODUCT);
 
         mockMvc.perform(get("/products/slug")
@@ -191,7 +191,7 @@ class ProductControllerIT {
                 "image/jpeg",
                 "dummy updated image".getBytes());
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(multipart("/products/productSlug1")
@@ -231,7 +231,7 @@ class ProductControllerIT {
         FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
                 filePart.getContentType());
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))
                 .when(productService).updateProduct(any(), eq("productSlug1"), eq(fileData));
 
@@ -250,7 +250,7 @@ class ProductControllerIT {
     @Test
     void givenValidSlug_whenDeleteProduct_thenSuccess() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doNothing().when(productService).deleteProductBySlug("slug");
 
         // WHEN & THEN

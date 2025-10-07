@@ -3,7 +3,7 @@ package com.soodora.service.product;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.user.UnknownUserException;
 
 import org.springframework.data.domain.Page;
@@ -18,8 +18,8 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public void createProduct(CreateProductCommand command, UserDTO user, FileData fileData) {
-        if (productRepository.isProductNameUsedByUser(command.name(), user.slug()))
+    public void createProduct(CreateProductCommand command, User user, FileData fileData) {
+        if (productRepository.isProductNameUsedByUser(command.name(), user.getSlug()))
             throw new ProductUnityException("Name is already used");
         productRepository.save(command, user, fileData);
     }

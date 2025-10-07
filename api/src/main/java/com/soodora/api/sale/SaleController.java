@@ -1,7 +1,7 @@
 package com.soodora.api.sale;
 
 import com.soodora.domain.sale.SaleDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.sale.SaleService;
 
 import org.springframework.data.domain.Page;
@@ -34,8 +34,8 @@ public class SaleController {
     }
 
     @GetMapping(":me")
-    public Page<SaleDTO> getLoggedArtistSales(@AuthenticationPrincipal UserDTO user, Pageable pageable) {
-        return saleService.getUserSales(pageable, user.slug());
+    public Page<SaleDTO> getLoggedArtistSales(@AuthenticationPrincipal User user, Pageable pageable) {
+        return saleService.getUserSales(pageable, user.getSlug());
     }
 
 }

@@ -2,7 +2,7 @@ package com.soodora.api.product;
 
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.product.ProductDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.product.CreateProductRequest;
 import com.soodora.service.product.UpdateProductRequest;
 
@@ -28,7 +28,7 @@ public interface ProductResource {
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @io.swagger.v3.oas.annotations.media.Content)
     })
     ResponseEntity<JsonResponse> createProduct(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestPart("data") CreateProductRequest createProductRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 

@@ -4,7 +4,8 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.oauth.OAuthAuthorizationException;
 import com.soodora.domain.oauth.OAuthProvider;
 import com.soodora.domain.oauth.OAuthTokenRepository;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
 
@@ -19,72 +20,72 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OAuthTokenRepositoryImpl implements OAuthTokenRepository {
 
-    private final OAuthTokenJpaRepository repository;
+    private final OAuthTokenJpaRepository oauthTokenRepository;
     private final UserJpaRepository userRepository;
 
     @Override
     @Transactional
-    public void createAuthorization(OAuthProvider provider, UserDTO user, String externalId, String refreshToken) {
+    public void createAuthorization(OAuthProvider provider, User user, String externalId, String refreshToken) {
         if (hasAuthorization(provider, user))
             throw new OAuthAuthorizationException("User has already an authorization set for this provider");
         OAuthTokenEntity entity = new OAuthTokenEntity();
 
-        entity.setUser(userFromDTO(user));
+        entity.setUser(fetchEntity(user));
         entity.setProvider(provider);
         entity.setExternalId(externalId);
         entity.setRefreshToken(refreshToken);
-        repository.save(entity);
+        oauthTokenRepository.save(entity);
     }
 
     @Override
     @Transactional
-    public boolean hasAuthorization(OAuthProvider provider, UserDTO user) {
-        return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
+    public boolean hasAuthorization(OAuthProvider provider, User user) {
+        return oauthTokenRepository.findByProviderAndUserId(provider, fetchEntity(user).getId())
                 .isPresent();
     }
 
     @Override
     @Transactional
-    public List<OAuthProvider> retrieveProviders(UserDTO user) {
-        return repository.findByUserId(userFromDTO(user).getId()).stream()
+    public List<OAuthProvider> retrieveProviders(User user) {
+        return oauthTokenRepository.findByUserId(fetchEntity(user).getId()).stream()
                 .map(OAuthTokenEntity::getProvider)
                 .toList();
     }
 
     @Override
     @Transactional
-    public String retrieveRefreshToken(OAuthProvider provider, UserDTO user) {
-        String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
+    public String retrieveRefreshToken(OAuthProvider provider, User user) {
+        String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.getSlug();
 
-        return repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
+        return oauthTokenRepository.findByProviderAndUserId(provider, fetchEntity(user).getId())
                 .map(OAuthTokenEntity::getRefreshToken)
                 .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
     }
 
     @Override
     @Transactional
-    public UserDTO retrieveUser(OAuthProvider provider, String externalId) {
+    public User retrieveUser(OAuthProvider provider, String externalId) {
         String exceptionMessage = "Unable to find " + provider + " authorization for external id #" + externalId;
 
-        return repository.findByProviderAndExternalId(provider, externalId)
+        return oauthTokenRepository.findByProviderAndExternalId(provider, externalId)
                 .map(OAuthTokenEntity::getUser)
-                .map(UserEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
     }
 
     @Override
     @Transactional
-    public void deleteAuthorization(OAuthProvider provider, UserDTO user) {
-        String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.slug();
-        OAuthTokenEntity entity = repository.findByProviderAndUserId(provider, userFromDTO(user).getId())
+    public void deleteAuthorization(OAuthProvider provider, User user) {
+        String exceptionMessage = "Unable to find " + provider + "authorization for user #" + user.getSlug();
+        OAuthTokenEntity entity = oauthTokenRepository.findByProviderAndUserId(provider, fetchEntity(user).getId())
                 .orElseThrow(() -> new OAuthAuthorizationException(exceptionMessage));
 
-        repository.delete(entity);
+        oauthTokenRepository.delete(entity);
     }
 
-    private UserEntity userFromDTO(UserDTO user) throws UnknownSlugException {
-        return userRepository.findBySlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.slug()));
+    private UserEntity fetchEntity(User user) throws UnknownSlugException {
+        return userRepository.findBySlug(user.getSlug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + user.getSlug()));
     }
 
 }

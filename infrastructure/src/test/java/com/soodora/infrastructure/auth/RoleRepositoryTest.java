@@ -1,31 +1,36 @@
 package com.soodora.infrastructure.auth;
 
-import com.soodora.domain.auth.RoleDTO;
 import com.soodora.domain.auth.RoleRepository;
+import com.soodora.domain.auth.value.Role;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class RoleRepositoryTest {
 
-    private static final String ROLE_NAME = "ADMIN";
+    private static final String ARTIST_ROLE = "ARTIST";
 
+    @Mock
     private RoleJpaRepository roleJpaRepository;
+
     private RoleRepository roleRepository;
 
     @BeforeEach
     void setUp() {
-        roleJpaRepository = mock(RoleJpaRepository.class);
         roleRepository = new RoleRepositoryImpl(roleJpaRepository);
     }
 
     @Test
     void givenRoleName_whenCreateRole_thenRoleIsCreated() {
         // WHEN
-        roleRepository.createRole(ROLE_NAME);
+        roleRepository.createRole(ARTIST_ROLE);
 
         // THEN
         verify(roleJpaRepository).save(any(RoleEntity.class));
@@ -35,16 +40,16 @@ class RoleRepositoryTest {
     void givenRoleName_whenFindByName_thenRoleIsReturned() {
         // GIVEN
         RoleEntity roleEntity = new RoleEntity();
-        roleEntity.setName(ROLE_NAME);
 
-        when(roleJpaRepository.findByName(ROLE_NAME)).thenReturn(roleEntity);
+        roleEntity.setName(ARTIST_ROLE);
+        when(roleJpaRepository.findByName(ARTIST_ROLE)).thenReturn(roleEntity);
 
         // WHEN
-        RoleDTO result = roleRepository.findByName(ROLE_NAME);
+        Role result = roleRepository.findByName(ARTIST_ROLE);
 
         // THEN
         assertNotNull(result);
-        assertEquals(ROLE_NAME, result.name());
+        assertEquals(ARTIST_ROLE, result.value());
     }
 
     @Test
@@ -55,7 +60,7 @@ class RoleRepositoryTest {
         when(roleJpaRepository.findByName(unknownRoleName)).thenReturn(null);
 
         // WHEN
-        RoleDTO result = roleRepository.findByName(unknownRoleName);
+        Role result = roleRepository.findByName(unknownRoleName);
 
         // THEN
         assertNull(result);

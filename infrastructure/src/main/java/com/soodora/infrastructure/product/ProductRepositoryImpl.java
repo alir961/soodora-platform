@@ -4,10 +4,11 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.sale.SaleJpaRepository;
 
@@ -37,10 +38,10 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO save(CreateProductCommand command, UserDTO user, FileData fileData) {
+    public ProductDTO save(CreateProductCommand command, User user, FileData fileData) {
         ProductEntity entity = new ProductEntity();
-        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.getSlug()));
 
         entity.setName(command.name());
         entity.setPrice(new MoneyEmbeddable(command.price(), command.currency()));
@@ -54,7 +55,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setArtist(artistEntity);
         entity.setStatus(ACTIVE);
-        return repository.save(entity).toDTO();
+        return repository.save(entity).aggregate();
     }
 
     @Override
@@ -77,7 +78,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         if (command.quantity() != 0)
             existingProduct.setQuantity(command.quantity());
 
-        return repository.save(existingProduct).toDTO();
+        return repository.save(existingProduct).aggregate();
     }
 
     @Override
@@ -87,48 +88,49 @@ public class ProductRepositoryImpl implements ProductRepository {
 
         if (quantity >= 0)
             existingProduct.setQuantity(quantity);
-        repository.save(existingProduct).toDTO();
+        repository.save(existingProduct).aggregate();
     }
 
     @Override
     @Transactional
     public ProductDTO findBySlug(String slug) {
-        return findProductBySlugOrThrow(slug).toDTO();
+        return findProductBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public Page<ProductDTO> findAll(Pageable pageable) {
-        return repository.findByStatus(ProductStatus.ACTIVE, pageable)
-                .map(ProductEntity::toDTO);
+        return repository.findByStatus(ACTIVE, pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable) {
         return repository.findAll(ProductSpecification.build(filter), pageable)
-                .map(ProductEntity::toDTO);
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByArtistUserSlug(identifier.getValue(), pageable)
-                .map(ProductEntity::toDTO);
+        return repository.findByArtistUserSlug(identifier.value(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public void deleteProductBySlug(String slug) {
         ProductEntity product = findProductBySlugOrThrow(slug);
-
         boolean hasSales = saleRepository.existsByProduct(product);
 
         if (hasSales) {
             product.setStatus(INACTIVE);
             repository.save(product);
-        } else
-            repository.delete(product);
+            return;
+        }
+        repository.delete(product);
+
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.CommentDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.Date;
@@ -18,7 +18,7 @@ import lombok.*;
 @Entity(name = "comments")
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentEntity implements DomainEntity<CommentDTO> {
+public class CommentEntity implements DomainEntityAdapter<CommentDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,12 +46,12 @@ public class CommentEntity implements DomainEntity<CommentDTO> {
     private Date createdAt;
 
     @Override
-    public CommentDTO toDTO() {
+    public CommentDTO aggregate() {
         return new CommentDTO(
                 slug,
                 post.getSlug(),
                 content,
-                user.toDTO(),
+                user.aggregate(),
                 likes.size(),
                 createdAt);
     }

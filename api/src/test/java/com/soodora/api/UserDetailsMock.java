@@ -1,6 +1,6 @@
 package com.soodora.api;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.api.user.UserDTO;
 
 import java.util.Collection;
 import java.util.List;

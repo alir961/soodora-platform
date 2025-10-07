@@ -1,11 +1,10 @@
 package com.soodora.domain.user;
 
 import com.soodora.domain.artist.ArtistDTO;
-import com.soodora.domain.auth.RegisterCommand;
-import com.soodora.domain.auth.RoleDTO;
-import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
+import com.soodora.domain.user.value.Identifier;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,22 +15,20 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserRepository {
 
-    UserDTO save(RegisterCommand command);
-    UserDTO update(UpdateUserCommand command, Identifier identifier, FileData fileData);
-    void updateRole(Identifier identifier, Set<RoleDTO> roles);
-    UserDTO find(Identifier identifier);
-    List<UserDTO> findAll();
-    Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);
+    User save(User user);
+
+    boolean isUsed(Identifier identifier);
+    User find(Identifier identifier);
+    User findWithFollowers(Identifier identifier);
+    Set<User> findAll();
+    Page<User> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);
+
     void delete(Identifier identifier);
     void deleteAvatar(Identifier identifier);
-    boolean isUsed(Identifier identifier);
-    String retrieveEncodedPassword(Identifier identifier);
+
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
+    List<PlaylistDTO> retrievePlaylists(Identifier identifier);
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
-    void follow(Identifier follower, Identifier following);
-    Set<UserDTO> retrieveFollowers(Identifier identifier);
-    Set<UserDTO> retrieveFollowing(Identifier identifier);
-    void unfollow(Identifier follower, Identifier following);
 
 }

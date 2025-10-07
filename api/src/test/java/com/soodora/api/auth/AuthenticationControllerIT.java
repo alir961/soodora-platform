@@ -2,8 +2,6 @@ package com.soodora.api.auth;
 
 import com.soodora.service.auth.AuthenticationException;
 import com.soodora.service.auth.AuthenticationService;
-import com.soodora.service.auth.LoginRequest;
-import com.soodora.service.auth.RegisterRequest;
 import com.soodora.service.user.UnknownUserException;
 import com.soodora.service.user.UserUnityException;
 
@@ -22,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
+import static com.soodora.test.TestConstants.VALID_PASSWORD;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,10 +35,10 @@ class AuthenticationControllerIT {
     @Test
     void givenValidRequest_whenRegisterUser_thenOk() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest(
+        UserRegisterRequest request = new UserRegisterRequest(
                 "username",
                 "user@example.com",
-                "Password1234!",
+                VALID_PASSWORD,
                 "John",
                 "Doe",
                 "external");
@@ -56,7 +55,7 @@ class AuthenticationControllerIT {
     @Test
     void givenUsedUsernameOrEmail_whenRegisterUser_thenBadRequest() throws Exception {
         // GIVEN
-        RegisterRequest request = new RegisterRequest(
+        UserRegisterRequest request = new UserRegisterRequest(
                 "username",
                 "user@example.com",
                 "password",

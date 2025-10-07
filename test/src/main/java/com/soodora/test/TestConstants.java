@@ -3,7 +3,7 @@ package com.soodora.test;
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.oauth.RefreshableAuthorization;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import lombok.NoArgsConstructor;
 
@@ -22,9 +22,10 @@ public class TestConstants {
     public static final String REFRESH_TOKEN = "refresh-token";
     public static final RefreshableAuthorization AUTHORIZATION = new RefreshableAuthorization(
             EXTERNAL_TOKEN, ACCESS_TOKEN, REFRESH_TOKEN, 60);
-    public static final UserDTO USER = buildDefaultUser();
-    public static final UserDTO ADMIN = buildDefaultAdminUser();
-    public static final UserDTO ARTIST_USER = buildDefaultArtistUser();
+    public static final String VALID_PASSWORD = "Password1234!";
+    public static final User USER = buildDefaultUser();
+    public static final User ADMIN = buildDefaultAdminUser();
+    public static final User ARTIST_USER = buildDefaultArtistUser();
     public static final ArtistDTO ARTIST = buildArtistDTO("");
     public static final EventDTO EVENT = buildEventDTO("");
     public static final String JWT_TOKEN = "externalToken";
