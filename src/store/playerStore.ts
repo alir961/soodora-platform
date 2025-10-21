@@ -5,6 +5,7 @@ import type { Artist } from '@/entity/Artist';
 export interface NowPlaying {
   slug: string;
   title: string;
+  audioTitle?: string;
   artist?: string;
   imageUrl?: string;
   audioUrl: string;

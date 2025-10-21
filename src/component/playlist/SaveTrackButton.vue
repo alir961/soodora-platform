@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, defineProps, watch, computed } from 'vue';
-import { IonButton, IonIcon, alertController } from '@ionic/vue';
-import { bookmarkOutline, bookmark } from 'ionicons/icons';
+import { ref, watch } from 'vue';
+import { alertController } from '@ionic/vue';
 import { showToast } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import {
@@ -11,7 +10,6 @@ import {
   fetchPlaylistBySlug,
 } from '@/client/playlistClient';
 import router from '@/router';
-import { Pageable } from '@/entity/PageableParams';
 
 const props = defineProps<{
   postSlug: string;
@@ -21,30 +19,31 @@ const props = defineProps<{
 }>();
 
 const authStore = useAuthStore();
-const isLoading = ref(false);
 const savedPlaylistsSlugs = ref<string[]>([]);
-const isSaved = computed(() => savedPlaylistsSlugs.value.length > 0);
 
 const checkSaved = async (postSlug: string) => {
   const userSlug = authStore.getAuthenticatedUserSlug;
   if (!userSlug) return;
 
-  const defaultPage: Pageable = { page: 0, size: 20 };
+  const defaultPage = { page: 0, size: 20 };
   savedPlaylistsSlugs.value = [];
 
-  const playlists = await searchPlaylists(userSlug);
+  try {
+    const playlists = await searchPlaylists(userSlug);
 
-  for (const pl of playlists.content) {
-    const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
-    if (fullPlaylist.postDTO.content.some((p) => p.slug === postSlug)) {
-      savedPlaylistsSlugs.value.push(pl.slug);
+    for (const pl of playlists.content) {
+      const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
+      if (fullPlaylist.postDTO.content.some((p) => p.slug === postSlug)) {
+        savedPlaylistsSlugs.value.push(pl.slug);
+      }
     }
+  } catch (error) {
+    console.error('Failed to check saved playlists', error);
   }
 };
 
-const handleSavePost = async () => {
+const open = async () => {
   if (!props.postSlug) return;
-  isLoading.value = true;
 
   try {
     const userSlug = authStore.getAuthenticatedUserSlug;
@@ -63,7 +62,7 @@ const handleSavePost = async () => {
         type: 'checkbox' as const,
         label: pl.name,
         value: pl.slug,
-        checked: savedPlaylistsSlugs.value.includes(pl.slug), // sync state
+        checked: savedPlaylistsSlugs.value.includes(pl.slug),
       })),
       buttons: [
         { text: 'Cancel', role: 'cancel' },
@@ -93,8 +92,6 @@ const handleSavePost = async () => {
   } catch (error: unknown) {
     const message = 'Failed to update playlists. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
-  } finally {
-    isLoading.value = false;
   }
 };
 
@@ -105,15 +102,8 @@ watch(
   },
   { immediate: true }
 );
-</script>
 
-<template>
-  <ion-button
-    v-if="props.audioTitle && props.audioUrl"
-    fill="clear"
-    size="default"
-    @click.stop="handleSavePost"
-    :disabled="isLoading">
-    <ion-icon :icon="isSaved ? bookmark : bookmarkOutline" />
-  </ion-button>
-</template>
+defineExpose({
+  open,
+});
+</script>

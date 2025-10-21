@@ -23,9 +23,15 @@ const hasMore = ref(true);
 const isLoading = ref(false);
 
 const searchInput = ref('');
-const selectedSort = ref<'price_amount,asc' | 'price_amount,desc' | 'price_currency,asc' | 'price_currency,desc' | 'quantity,asc' | 'quantity,desc' | 'createdAt,desc'>(
-  'createdAt,desc'
-);
+const selectedSort = ref<
+  | 'price_amount,asc'
+  | 'price_amount,desc'
+  | 'price_currency,asc'
+  | 'price_currency,desc'
+  | 'quantity,asc'
+  | 'quantity,desc'
+  | 'createdAt,desc'
+>('createdAt,desc');
 
 const showFilterModal = ref(false);
 
@@ -104,27 +110,27 @@ watch([searchInput, selectedSort], () => {
               <button class="clear-btn" @click="applySort('createdAt,desc')">Reset</button>
             </div>
             <div class="filter-options">
-              <button 
+              <button
                 :class="['filter-chip', { active: selectedSort === 'createdAt,desc' }]"
                 @click="applySort('createdAt,desc')">
                 Recent
               </button>
-              <button 
+              <button
                 :class="['filter-chip', { active: selectedSort === 'price_amount,asc' }]"
                 @click="applySort('price_amount,asc')">
                 Price ↓
               </button>
-              <button 
+              <button
                 :class="['filter-chip', { active: selectedSort === 'price_amount,desc' }]"
                 @click="applySort('price_amount,desc')">
                 Price ↑
               </button>
-              <button 
+              <button
                 :class="['filter-chip', { active: selectedSort === 'quantity,desc' }]"
                 @click="applySort('quantity,desc')">
                 Quantity ↑
               </button>
-              <button 
+              <button
                 :class="['filter-chip', { active: selectedSort === 'quantity,asc' }]"
                 @click="applySort('quantity,asc')">
                 Quantity ↓
@@ -134,17 +140,15 @@ watch([searchInput, selectedSort], () => {
         </div>
       </transition>
 
-      <div class="products-container">
-        <ion-grid>
-          <ion-row>
-            <ProductCard
-              v-for="product in products"
-              :key="product.slug"
-              :product="product"
-              @product-deleted="() => loadProducts(true)" />
-          </ion-row>
-        </ion-grid>
-      </div>
+      <ion-grid>
+        <ion-row>
+          <ProductCard
+            v-for="product in products"
+            :key="product.slug"
+            :product="product"
+            @product-deleted="() => loadProducts(true)" />
+        </ion-row>
+      </ion-grid>
 
       <ion-infinite-scroll @ionInfinite="onInfinite" threshold="100px" :disabled="!hasMore">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more products..." />
@@ -157,20 +161,17 @@ watch([searchInput, selectedSort], () => {
 .filter-panel-wrapper {
   width: 90%;
   margin: 0 auto;
+  margin-bottom: 0.75rem;
 }
 
 .filter-panel {
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 22, 30, 0.75),
-    rgba(18, 22, 30, 0.65)
-  );
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.75), rgba(18, 22, 30, 0.65));
   border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 1.25rem 1.5rem;
   border-radius: 16px;
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
   position: relative;
@@ -184,12 +185,7 @@ watch([searchInput, selectedSort], () => {
   right: 0;
   height: 1px;
   border-radius: 16px 16px 0 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 }
 
 .filter-header {
@@ -255,7 +251,7 @@ watch([searchInput, selectedSort], () => {
   background: linear-gradient(135deg, rgba(29, 78, 216, 0.9), rgba(37, 99, 235, 0.9));
   border-color: rgba(96, 165, 250, 0.3);
   color: #ffffff;
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(37, 99, 235, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
@@ -276,23 +272,5 @@ watch([searchInput, selectedSort], () => {
 .slide-down-leave-to {
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
-}
-
-.products-container {
-  width: 90%;
-  margin: 1rem auto 0 auto;
-}
-
-.products-container ion-grid {
-  padding: 0;
-}
-
-.products-container ion-row {
-  gap: 16px;
-}
-
-/* Remove default ion-col padding */
-.products-container ion-row ion-col {
-  padding: 0;
 }
 </style>

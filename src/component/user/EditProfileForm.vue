@@ -132,9 +132,17 @@ onMounted(() => {
   lastnameInput.value = user.lastname;
   emailInput.value = user.email;
   descriptionInput.value = user.description || '';
-  
-  const avatarUrl = (user as any).avatarUrl || (user as any).profilePicture || (user as any).picture || (user as any).image;
-  
+
+  const userWithAvatar = user as User & {
+    avatarUrl?: string;
+    profilePicture?: string;
+    picture?: string;
+    image?: string;
+  };
+
+  const avatarUrl =
+    userWithAvatar.avatarUrl || userWithAvatar.profilePicture || userWithAvatar.picture || userWithAvatar.image;
+
   if (avatarUrl) {
     if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://') || avatarUrl.startsWith('data:')) {
       avatarPreview.value = avatarUrl;
@@ -158,12 +166,7 @@ onMounted(() => {
     <div class="profile-header">
       <div class="avatar-wrapper" @click="triggerFileInput">
         <div class="avatar-preview">
-          <img 
-            v-if="avatarPreview" 
-            :src="avatarPreview" 
-            alt="Profile avatar"
-            class="avatar-img"
-          />
+          <img v-if="avatarPreview" :src="avatarPreview" alt="Profile avatar" class="avatar-img" />
           <div v-else class="avatar-placeholder">
             <span>{{ usernameInput.charAt(0).toUpperCase() || '?' }}</span>
           </div>
@@ -171,28 +174,21 @@ onMounted(() => {
             <ion-icon :icon="cameraOutline" />
           </div>
         </div>
-        <input 
-          id="avatar-upload"
-          type="file" 
-          accept="image/*" 
-          @change="handleFileChange"
-          style="display: none"
-        />
+        <input id="avatar-upload" type="file" accept="image/*" @change="handleFileChange" style="display: none" />
       </div>
-      
+
       <div class="username-section">
         <div class="username-wrapper">
           <span class="at-symbol">@</span>
-          <input 
-            v-model="usernameInput" 
+          <input
+            v-model="usernameInput"
             class="username-input"
             placeholder="username"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
             spellcheck="false"
-            @contextmenu.prevent
-          />
+            @contextmenu.prevent />
           <ion-icon :icon="pencilOutline" class="edit-icon" />
         </div>
       </div>
@@ -202,31 +198,18 @@ onMounted(() => {
       <div class="field-row">
         <div class="field">
           <label>Email</label>
-          <input 
-            v-model="emailInput" 
-            type="email" 
-            placeholder="you@example.com"
-            @contextmenu.prevent
-          />
+          <input v-model="emailInput" type="email" placeholder="you@example.com" @contextmenu.prevent />
         </div>
         <div class="field">
           <label>Firstname</label>
-          <input 
-            v-model="firstnameInput" 
-            placeholder="John"
-            @contextmenu.prevent
-          />
+          <input v-model="firstnameInput" placeholder="John" @contextmenu.prevent />
         </div>
       </div>
 
       <div class="field-row">
         <div class="field">
           <label>Lastname</label>
-          <input 
-            v-model="lastnameInput" 
-            placeholder="Doe"
-            @contextmenu.prevent
-          />
+          <input v-model="lastnameInput" placeholder="Doe" @contextmenu.prevent />
         </div>
       </div>
 
@@ -236,15 +219,10 @@ onMounted(() => {
           v-model="descriptionInput"
           placeholder="Tell us about yourself..."
           rows="4"
-          @contextmenu.prevent
-        ></textarea>
+          @contextmenu.prevent></textarea>
       </div>
 
-      <button 
-        v-if="hasChanges"
-        :disabled="saving"
-        class="save-btn" 
-        @click="updateAccount">
+      <button v-if="hasChanges" :disabled="saving" class="save-btn" @click="updateAccount">
         <ion-icon :icon="checkmarkOutline" />
         {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
@@ -344,7 +322,9 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px;
   padding: 12px 14px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .username-wrapper:focus-within {
@@ -388,21 +368,21 @@ onMounted(() => {
   .profile-header {
     gap: 12px;
   }
-  
+
   .avatar-preview {
     width: 70px;
     height: 70px;
   }
-  
+
   .avatar-placeholder {
     font-size: 28px;
   }
-  
+
   .avatar-badge {
     width: 24px;
     height: 24px;
   }
-  
+
   .avatar-badge ion-icon {
     font-size: 14px;
   }
@@ -451,7 +431,9 @@ onMounted(() => {
   border-radius: 12px;
   font-size: 15px;
   font-family: inherit;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .field input::placeholder,
@@ -462,7 +444,9 @@ onMounted(() => {
 .field input:focus,
 .field textarea:focus {
   border-color: rgba(59, 130, 246, 0.55);
-  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1), 0 8px 24px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 0 0 6px rgba(59, 130, 246, 0.1),
+    0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .field textarea {
@@ -492,7 +476,10 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.06s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.06s ease;
 }
 
 .action-btn:active {
@@ -523,8 +510,13 @@ onMounted(() => {
   font-weight: 700;
   letter-spacing: 0.01em;
   background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #60a5fa);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: transform 0.06s ease, filter 0.2s ease, box-shadow 0.2s ease;
+  box-shadow:
+    0 10px 30px rgba(37, 99, 235, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    transform 0.06s ease,
+    filter 0.2s ease,
+    box-shadow 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;

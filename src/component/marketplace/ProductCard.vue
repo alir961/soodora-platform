@@ -1,28 +1,20 @@
 <script setup lang="ts">
-import {
-  alertController,
-  AlertInput,
-  IonAvatar,
-  IonCard,
-  IonCol,
-  IonIcon,
-} from '@ionic/vue';
+import { IonAvatar, IonCard, IonCol, IonIcon } from '@ionic/vue';
 import { Product } from '@/entity/Product';
 import { PropType, ref } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
-import customTrashIcon from '@/assets/icons/trash.svg';
-import customShareIcon from '@/assets/icons/share.svg';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { callDeleteProduct, updateProduct } from '@/client/productClient';
+import { callDeleteProduct } from '@/client/productClient';
 import Avatar from '@/component/user/AvatarItem.vue';
-import DateDisplay from '@/component/date/DateDisplay.vue';
-import { createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { createCheckoutSession } from '@/client/paymentClient';
 import { showToast } from '@/utils';
-import { closeOutline, pencil } from 'ionicons/icons';
-import ImageUploadPreview from '@/component/marketplace/ImageUploadPreview.vue';
-import { Artist } from '@/entity/Artist';
-import CurrencySelector from '@/component/deviseSelector/CurrencySelector.vue';
+import { pencil } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
+import customShareIcon from '@/assets/icons/share.svg';
+import customTrashIcon from '@/assets/icons/trash.svg';
+import DateDisplay from '@/component/date/DateDisplay.vue';
+import ExportCard from '@/component/actions/ExportCard.vue';
+import DeleteCard from '@/component/actions/DeleteCard.vue';
 
 const props = defineProps({
   product: {
@@ -33,41 +25,21 @@ const props = defineProps({
 
 const emit = defineEmits(['product-deleted']);
 const authStore = useAuthStore();
+const router = useRouter();
 
-const showImageModal = ref(false);
 const showPurchaseSheet = ref(false);
+const showImagePreview = ref(false);
 const modalImageSrc = ref('');
 const productImageHeight = ref(0);
 const localProduct = ref<Product>({ ...props.product });
 
 const quantity = ref(1);
 const maxQuantity = ref(0);
+const showExportModal = ref(false);
+const showDeleteModal = ref(false);
 
-const editModalOpen = ref(false);
-const emptyArtist: Artist = {
-  slug: '',
-  username: '',
-  description: '',
-  avatarUrl: '',
-};
-const editedProduct = ref<Product>({
-  slug: '',
-  name: '',
-  description: '',
-  imageUrl: '',
-  category: '',
-  price: {
-    amount: 0,
-    currency: 'EUR',
-    symbol: '€',
-  },
-  quantity: 0,
-  vendor: emptyArtist,
-  createdAt: new Date(),
-});
-const selectedFile = ref<File | null>(null);
-
-const showImagePreview = ref(false);
+const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
+const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
 const onProductImageLoad = (event: Event) => {
   const img = event.target as HTMLImageElement;
@@ -103,14 +75,6 @@ const decreaseQuantity = () => {
   if (quantity.value > 1) quantity.value--;
 };
 
-const quantityChanged = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  let val = parseInt(target.value);
-  if (isNaN(val) || val < 1) val = 1;
-  else if (val > maxQuantity.value) val = maxQuantity.value;
-  quantity.value = val;
-};
-
 const goToCheckout = async (product: Product) => {
   if (product.price == null) {
     console.error('Product has no price');
@@ -141,135 +105,52 @@ const goToCheckout = async (product: Product) => {
   }
 };
 
-const askDeleteProduct = async (slug: string) => {
-  const alert = await alertController.create({
-    header: 'Confirm Product Deletion',
-    message: 'Are you sure you want to delete this product?',
-    buttons: [
-      { text: 'Cancel', role: 'cancel' },
-      {
-        text: 'Delete',
-        role: 'destructive',
-        handler: async () => {
-          try {
-            await callDeleteProduct(slug);
-            emit('product-deleted', slug);
-            await showToast('Succeed to delete your product');
-          } catch (error: unknown) {
-            const message = 'Failed to delete your product. ' + (error instanceof Error ? error.message : '');
-            await showToast(message, 'danger');
-          }
-        },
-      },
-    ],
-  });
-  await alert.present();
-};
-
-const exportThemes = [
-  { label: 'Black', type: 'radio', value: 'black' },
-  { label: 'White', type: 'radio', value: 'white' },
-  { label: 'Transparent', type: 'radio', value: 'transparent' },
-] as AlertInput[];
-
-const exportProduct = async (product: Product) => {
-  const alert = await alertController.create({
-    header: 'Select theme for export',
-    inputs: exportThemes,
-    buttons: [
-      { text: 'Cancel', role: 'cancel' },
-      {
-        text: 'Export',
-        handler: async (selectedTheme: string) => {
-          if (!selectedTheme) return;
-          try {
-            const canvas = await createProductCanvas(product, selectedTheme as ExportTheme);
-            downloadCanvas(canvas);
-            await showToast('Succeed to export product');
-          } catch (error: unknown) {
-            const message = 'Failed to export product. ' + (error instanceof Error ? error.message : '');
-            await showToast(message, 'danger');
-          }
-        },
-      },
-    ],
-  });
-  await alert.present();
-};
-
 const openEditModal = () => {
-  editedProduct.value = { ...localProduct.value };
-  editModalOpen.value = true;
+  router.push(`/marketplace/product/${localProduct.value.slug}/edit`);
 };
 
-const closeEditModal = () => {
-  editModalOpen.value = false;
-  selectedFile.value = null;
+const openExportModal = () => {
+  showExportModal.value = true;
 };
 
-const submitEdit = async () => {
-  const formData = new FormData();
-  formData.append(
-    'data',
-    new Blob(
-      [
-        JSON.stringify({
-          name: editedProduct.value.name,
-          description: editedProduct.value.description,
-          category: editedProduct.value.category,
-          price: editedProduct.value.price.amount,
-          currency: editedProduct.value.price.currency,
-          quantity: editedProduct.value.quantity,
-        }),
-      ],
-      { type: 'application/json' }
-    )
-  );
-  if (selectedFile.value) formData.append('file', selectedFile.value);
-
-  try {
-    localProduct.value = await updateProduct(localProduct.value.slug, formData);
-    closeEditModal();
-    await showToast('Product updated successfully');
-  } catch (error: unknown) {
-    const message = 'Failed to update your product. ' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
-  }
+const openDeleteConfirm = () => {
+  showDeleteModal.value = true;
 };
 
-const onFileSelected = (file: File | null) => {
-  selectedFile.value = file;
+const handleProductDeleted = (slug: string) => {
+  emit('product-deleted', slug);
+  showDeleteModal.value = false;
 };
 </script>
 
 <template>
-  <ion-col size="12" size-md="6" size-lg="4">
+  <ion-col size="12" size-md="6" size-lg="4" class="product-col">
     <ion-card class="product-card">
       <div class="card-image-wrapper" @click="openImagePreview">
         <img :src="localProduct.imageUrl" :alt="`Product ${localProduct.name}`" @load="onProductImageLoad" />
-        
-        <!-- Action buttons overlay -->
+
         <div class="card-actions" @click.stop>
-          <button class="action-icon export" @click="exportProduct(localProduct)" title="Export">
+          <button class="action-icon export" @click="openExportModal" title="Export">
             <ion-icon :src="customShareIcon" />
           </button>
-          <button 
+
+          <button
             v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
-            class="action-icon edit" 
+            class="action-icon edit"
             @click="openEditModal"
             title="Edit">
             <ion-icon :src="pencil" />
           </button>
-          <button 
+
+          <button
             v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
-            class="action-icon delete" 
-            @click="askDeleteProduct(localProduct.slug)"
+            class="action-icon delete"
+            @click="openDeleteConfirm"
             title="Delete">
             <ion-icon :src="customTrashIcon" />
           </button>
         </div>
 
-        <!-- Price badge -->
         <div class="price-badge">
           <span class="price-amount">{{ localProduct.price?.amount.toFixed(2) }}</span>
           <span class="price-currency">{{ localProduct.price?.symbol }}</span>
@@ -278,7 +159,10 @@ const onFileSelected = (file: File | null) => {
 
       <div class="card-content">
         <div class="product-header">
-          <h3 class="product-name">{{ localProduct.name }}</h3>
+          <div class="header-top">
+            <h3 class="product-name">{{ localProduct.name }}</h3>
+            <DateDisplay :date="localProduct.createdAt" class="product-date" />
+          </div>
           <span class="product-category">{{ localProduct.category }}</span>
         </div>
 
@@ -291,22 +175,19 @@ const onFileSelected = (file: File | null) => {
             </ion-avatar>
             <UsernameTag :user="localProduct.vendor" class="vendor-name" />
           </div>
-          
+
           <div class="stock-info">
             <span class="stock-label">Stock:</span>
             <span class="stock-value">{{ localProduct.quantity ?? 'N/A' }}</span>
           </div>
         </div>
 
-        <button 
-          class="buy-button"
-          @click="openImageModal(localProduct.imageUrl, localProduct.quantity)">
+        <button class="buy-button" @click="openImageModal(localProduct.imageUrl, localProduct.quantity)">
           Buy Now
         </button>
       </div>
     </ion-card>
 
-    <!-- Image Preview Modal -->
     <transition name="preview-fade">
       <div v-if="showImagePreview" class="image-preview-overlay" @click="closeImagePreview">
         <div class="image-preview-container" @click.stop>
@@ -316,149 +197,89 @@ const onFileSelected = (file: File | null) => {
       </div>
     </transition>
 
-    <!-- Purchase Bottom Sheet -->
-    <transition name="sheet-overlay">
-      <div v-if="showPurchaseSheet" class="purchase-overlay" @click="closePurchaseSheet">
-        <div class="purchase-sheet" @click.stop>
-          <div class="sheet-handle"></div>
-          
-          <div class="product-preview">
-            <img :src="localProduct.imageUrl" :alt="localProduct.name" class="preview-image" />
-            <div class="preview-info">
-              <h3>{{ localProduct.name }}</h3>
-              <p class="preview-vendor">by @{{ localProduct.vendor.username }}</p>
-              <p class="preview-price">
-                {{ localProduct.price?.amount.toFixed(2) }} {{ localProduct.price?.symbol }}
-              </p>
-            </div>
-          </div>
+    <Teleport to="body">
+      <transition name="sheet-slide">
+        <div v-if="showPurchaseSheet" class="purchase-overlay" @click="closePurchaseSheet">
+          <div class="purchase-sheet" @click.stop>
+            <div class="sheet-handle"></div>
 
-          <div class="quantity-section">
-            <label>Quantity</label>
-            <div class="quantity-controls">
-              <button 
-                class="qty-btn" 
-                @click="decreaseQuantity" 
-                :disabled="quantity <= 1">
-                −
-              </button>
-              <div class="qty-display">
-                <span class="qty-number">{{ quantity }}</span>
-                <span class="qty-max">/ {{ maxQuantity }} in stock</span>
-              </div>
-              <button 
-                class="qty-btn" 
-                @click="increaseQuantity" 
-                :disabled="quantity >= maxQuantity">
-                +
-              </button>
-            </div>
-          </div>
-
-          <div class="purchase-summary">
-            <div class="summary-row">
-              <span>Subtotal</span>
-              <span class="summary-value">
-                {{ (localProduct.price!.amount * quantity).toFixed(2) }} {{ localProduct.price?.symbol }}
-              </span>
-            </div>
-          </div>
-
-          <button 
-            class="checkout-btn"
-            @click="goToCheckout(localProduct)"
-            :disabled="quantity < 1 || quantity > maxQuantity">
-            Proceed to Checkout
-          </button>
-
-          <button class="cancel-btn" @click="closePurchaseSheet">
-            Cancel
-          </button>
-        </div>
-      </div>
-    </transition>
-
-    <!-- Edit Product Modal -->
-    <transition name="fade">
-      <div v-if="editModalOpen" class="edit-modal-overlay" @click="closeEditModal">
-        <div class="edit-modal-container" @click.stop>
-          <div class="edit-modal-header">
-            <h2>Edit Product</h2>
-            <button class="edit-close-btn" @click="closeEditModal">
-              <ion-icon :icon="closeOutline" />
-              Close
-            </button>
-          </div>
-
-          <div class="edit-modal-content">
-            <div class="edit-form-field">
-              <label>Product Name</label>
-              <input type="text" v-model="editedProduct.name" placeholder="Enter product name" />
-            </div>
-
-            <div class="edit-form-field">
-              <label>Description</label>
-              <textarea v-model="editedProduct.description" placeholder="Describe your product" rows="4"></textarea>
-            </div>
-
-            <div class="edit-form-field">
-              <label>Category</label>
-              <select v-model="editedProduct.category">
-                <option value="">Select a category</option>
-                <option value="Vinyl">Vinyl</option>
-                <option value="CD">CD</option>
-                <option value="Clothing">Clothing</option>
-                <option value="Concert Tickets">Concert Tickets</option>
-                <option value="Digital Downloads">Digital Downloads</option>
-                <option value="Accessories">Accessories</option>
-                <option value="Posters">Posters</option>
-              </select>
-            </div>
-
-            <div class="edit-form-row">
-              <div class="edit-form-field">
-                <label>Price</label>
-                <input type="number" v-model.number="editedProduct.price.amount" placeholder="0.00" step="0.01" />
-              </div>
-              <div class="edit-form-field">
-                <label>Currency</label>
-                <CurrencySelector v-model="editedProduct.price.currency" />
+            <div class="product-preview">
+              <img :src="localProduct.imageUrl" :alt="localProduct.name" class="preview-image" />
+              <div class="preview-info">
+                <h3>{{ localProduct.name }}</h3>
+                <p class="preview-vendor">by @{{ localProduct.vendor.username }}</p>
+                <p class="preview-price">
+                  {{ localProduct.price?.amount.toFixed(2) }} {{ localProduct.price?.symbol }}
+                </p>
               </div>
             </div>
 
-            <div class="edit-form-field">
+            <div class="quantity-section">
               <label>Quantity</label>
-              <input type="number" v-model.number="editedProduct.quantity" placeholder="0" min="0" />
+              <div class="quantity-controls">
+                <button class="qty-btn" @click="decreaseQuantity" :disabled="quantity <= 1">−</button>
+                <div class="qty-display">
+                  <span class="qty-number">{{ quantity }}</span>
+                  <span class="qty-max">/ {{ maxQuantity }} in stock</span>
+                </div>
+                <button class="qty-btn" @click="increaseQuantity" :disabled="quantity >= maxQuantity">+</button>
+              </div>
             </div>
 
-            <div class="edit-form-field">
-              <label>Product Image</label>
-              <ImageUploadPreview 
-                :current-image-url="editedProduct.imageUrl"
-                @file-selected="onFileSelected" />
+            <div class="purchase-summary">
+              <div class="summary-row">
+                <span>Subtotal</span>
+                <span class="summary-value">
+                  {{ (localProduct.price!.amount * quantity).toFixed(2) }} {{ localProduct.price?.symbol }}
+                </span>
+              </div>
             </div>
 
-            <button class="edit-save-btn" @click="submitEdit">Save Changes</button>
+            <button
+              class="checkout-btn"
+              @click="goToCheckout(localProduct)"
+              :disabled="quantity < 1 || quantity > maxQuantity">
+              Proceed to Checkout
+            </button>
+
+            <button class="cancel-btn" @click="closePurchaseSheet">Cancel</button>
           </div>
         </div>
-      </div>
-    </transition>
+      </transition>
+    </Teleport>
+
+    <ExportCard
+      v-if="showExportModal"
+      :item="localProduct"
+      type="product"
+      ref="exportCardRef"
+      @vue:mounted="exportCardRef?.open()" />
+
+    <DeleteCard
+      v-if="showDeleteModal"
+      item-type="product"
+      :item-slug="localProduct.slug"
+      :delete-function="callDeleteProduct"
+      @deleted="handleProductDeleted"
+      ref="deleteCardRef"
+      @vue:mounted="deleteCardRef?.open()" />
   </ion-col>
 </template>
 
 <style scoped>
-/* Product Card */
+.product-col {
+  padding: 0 1rem;
+}
+
 .product-card {
   margin: 0 0 16px 0;
   border-radius: 16px;
   overflow: hidden;
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 22, 30, 0.85),
-    rgba(18, 22, 30, 0.75)
-  );
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(to bottom, rgba(22, 28, 38, 0.92), rgba(18, 22, 30, 0.88));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
   transition: all 0.2s ease;
   width: 100%;
   height: auto;
@@ -468,11 +289,12 @@ const onFileSelected = (file: File | null) => {
 
 .product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
-  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
-/* Image Section */
 .card-image-wrapper {
   position: relative;
   width: 100%;
@@ -493,7 +315,6 @@ const onFileSelected = (file: File | null) => {
   transform: scale(1.05);
 }
 
-/* Action Buttons Overlay */
 .card-actions {
   position: absolute;
   top: 12px;
@@ -546,6 +367,7 @@ const onFileSelected = (file: File | null) => {
 .action-icon.delete {
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
 .action-icon.delete ion-icon {
@@ -556,7 +378,6 @@ const onFileSelected = (file: File | null) => {
   transform: scale(0.95);
 }
 
-/* Price Badge */
 .price-badge {
   position: absolute;
   bottom: 12px;
@@ -586,7 +407,6 @@ const onFileSelected = (file: File | null) => {
   color: #93c5fd;
 }
 
-/* Card Content */
 .card-content {
   padding: 16px;
   display: flex;
@@ -601,6 +421,13 @@ const onFileSelected = (file: File | null) => {
   gap: 6px;
 }
 
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+}
+
 .product-name {
   font-size: 1.2rem;
   font-weight: 600;
@@ -609,6 +436,16 @@ const onFileSelected = (file: File | null) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-date {
+  font-size: 0.75rem;
+  color: #9aa3ad;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .product-category {
@@ -630,7 +467,6 @@ const onFileSelected = (file: File | null) => {
   text-overflow: ellipsis;
 }
 
-/* Card Footer */
 .card-footer {
   display: flex;
   justify-content: space-between;
@@ -691,7 +527,6 @@ const onFileSelected = (file: File | null) => {
   font-weight: 700;
 }
 
-/* Buy Button */
 .buy-button {
   appearance: none;
   border: 0;
@@ -704,7 +539,7 @@ const onFileSelected = (file: File | null) => {
   font-size: 1rem;
   letter-spacing: 0.01em;
   background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #60a5fa);
-  box-shadow: 
+  box-shadow:
     0 8px 20px rgba(37, 99, 235, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition: all 0.2s ease;
@@ -712,7 +547,7 @@ const onFileSelected = (file: File | null) => {
 }
 
 .buy-button:hover {
-  box-shadow: 
+  box-shadow:
     0 10px 24px rgba(37, 99, 235, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
@@ -720,12 +555,11 @@ const onFileSelected = (file: File | null) => {
 
 .buy-button:active {
   transform: translateY(0);
-  box-shadow: 
+  box-shadow:
     0 6px 16px rgba(37, 99, 235, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* Image Preview Modal */
 .image-preview-overlay {
   position: fixed;
   top: 0;
@@ -794,7 +628,6 @@ const onFileSelected = (file: File | null) => {
   transform: scale(0.95);
 }
 
-/* Preview fade animation */
 .preview-fade-enter-active {
   animation: previewFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -831,7 +664,6 @@ const onFileSelected = (file: File | null) => {
   }
 }
 
-/* Purchase Bottom Sheet Styles */
 .purchase-overlay {
   position: fixed;
   top: 0;
@@ -847,11 +679,7 @@ const onFileSelected = (file: File | null) => {
 }
 
 .purchase-sheet {
-  background: linear-gradient(
-    to bottom,
-    rgba(18, 22, 30, 0.98),
-    rgba(18, 22, 30, 0.95)
-  );
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.98), rgba(18, 22, 30, 0.95));
   border-radius: 24px 24px 0 0;
   padding: 1.5rem;
   width: 100%;
@@ -1025,7 +853,7 @@ const onFileSelected = (file: File | null) => {
   font-size: 1.05rem;
   letter-spacing: 0.01em;
   background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #60a5fa);
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(37, 99, 235, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
   transition: all 0.2s ease;
@@ -1034,7 +862,7 @@ const onFileSelected = (file: File | null) => {
 
 .checkout-btn:active:not(:disabled) {
   transform: translateY(1px);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(37, 99, 235, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
@@ -1063,196 +891,6 @@ const onFileSelected = (file: File | null) => {
   transform: scale(0.98);
 }
 
-/* Edit Product Modal - Fullscreen */
-.edit-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.9);
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 0 1rem 2rem;
-}
-
-.edit-modal-container {
-  min-height: 100vh;
-  background: linear-gradient(
-    to bottom,
-    rgba(13, 27, 42, 0.95),
-    rgba(9, 18, 30, 0.92)
-  );
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.edit-modal-header {
-  position: sticky;
-  top: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(13, 27, 42, 0.98),
-    rgba(13, 27, 42, 0.95)
-  );
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  padding: 1.25rem 1.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
-.edit-modal-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
-.edit-close-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
-  color: #60a5fa;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.edit-close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
-}
-
-.edit-close-btn:active {
-  transform: scale(0.98);
-}
-
-.edit-modal-content {
-  flex: 1;
-  padding: 1.5rem;
-  max-width: 600px;
-  width: 100%;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.edit-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-}
-
-.edit-form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.edit-form-field label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #cfcfcf;
-  letter-spacing: 0.01em;
-}
-
-.edit-form-field input,
-.edit-form-field textarea,
-.edit-form-field select {
-  appearance: none;
-  outline: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(13, 27, 42, 0.4);
-  color: #fff;
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-family: inherit;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-}
-
-.edit-form-field textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.edit-form-field input::placeholder,
-.edit-form-field textarea::placeholder {
-  color: #7f7f7f;
-}
-
-.edit-form-field input:hover,
-.edit-form-field textarea:hover,
-.edit-form-field select:hover {
-  border-color: rgba(59, 130, 246, 0.35);
-  background: rgba(13, 27, 42, 0.6);
-}
-
-.edit-form-field input:focus,
-.edit-form-field textarea:focus,
-.edit-form-field select:focus {
-  border-color: rgba(59, 130, 246, 0.55);
-  box-shadow:
-    0 0 0 6px rgba(59, 130, 246, 0.1),
-    0 8px 24px rgba(0, 0, 0, 0.25);
-  background: rgba(13, 27, 42, 0.7);
-}
-
-.edit-save-btn {
-  width: 100%;
-  height: 48px;
-  border: 0;
-  border-radius: 12px;
-  cursor: pointer;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
-  background: linear-gradient(135deg, #1d4ed8, #2563eb 55%, #60a5fa);
-  box-shadow:
-    0 10px 30px rgba(37, 99, 235, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
-}
-
-.edit-save-btn:hover {
-  box-shadow:
-    0 12px 32px rgba(37, 99, 235, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-  transform: translateY(-1px);
-}
-
-.edit-save-btn:active {
-  transform: translateY(0);
-  box-shadow:
-    0 8px 24px rgba(37, 99, 235, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-/* Fade transition */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.2s ease;
@@ -1263,25 +901,63 @@ const onFileSelected = (file: File | null) => {
   opacity: 0;
 }
 
-/* Responsive */
+.sheet-slide-enter-active {
+  transition: opacity 0.3s ease;
+}
+
+.sheet-slide-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.sheet-slide-enter-from,
+.sheet-slide-leave-to {
+  opacity: 0;
+}
+
+.sheet-slide-enter-active .purchase-sheet {
+  animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.sheet-slide-leave-active .purchase-sheet {
+  animation: slideDown 0.3s cubic-bezier(0.8, 0.2, 0.8, 0.2);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
 @media (max-width: 768px) {
   .card-image-wrapper {
     height: 200px;
   }
-  
+
   .action-icon {
     width: 32px;
     height: 32px;
   }
-  
+
   .action-icon ion-icon {
     font-size: 16px;
   }
-  
+
   .price-badge {
     padding: 6px 12px;
   }
-  
+
   .price-amount {
     font-size: 1.2rem;
   }
@@ -1301,7 +977,7 @@ const onFileSelected = (file: File | null) => {
   .purchase-sheet {
     padding: 1.25rem;
   }
-  
+
   .preview-image {
     width: 70px;
     height: 70px;

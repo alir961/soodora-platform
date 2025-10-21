@@ -19,16 +19,19 @@ const showImagePreview = ref(false);
 
 const hasImage = computed(() => !!previewUrl.value);
 
-watch(() => props.currentImageUrl, (newUrl) => {
-  if (newUrl && !selectedFile.value) {
-    previewUrl.value = newUrl;
+watch(
+  () => props.currentImageUrl,
+  (newUrl) => {
+    if (newUrl && !selectedFile.value) {
+      previewUrl.value = newUrl;
+    }
   }
-});
+);
 
 const handleFileChange = (event: Event) => {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
-  
+
   if (file) {
     selectedFile.value = file;
     const reader = new FileReader();
@@ -55,26 +58,16 @@ const closeImagePreview = () => {
 
 <template>
   <div class="image-upload-preview">
-    <input
-      ref="fileInputRef"
-      type="file"
-      accept="image/*"
-      @change="handleFileChange"
-      class="hidden-input"
-    />
-    
+    <input ref="fileInputRef" type="file" accept="image/*" @change="handleFileChange" class="hidden-input" />
+
     <div v-if="hasImage" class="preview-container">
-      <img 
-        :src="previewUrl" 
-        alt="Product preview" 
-        class="preview-image" 
-        @click="openImagePreview" />
+      <img :src="previewUrl" alt="Product preview" class="preview-image" @click="openImagePreview" />
       <button type="button" class="change-btn" @click="triggerFileInput">
         <ion-icon :icon="cloudUploadOutline" />
         Change Image
       </button>
     </div>
-    
+
     <div v-else class="upload-placeholder" @click="triggerFileInput">
       <div class="placeholder-content">
         <ion-icon :icon="imageOutline" class="placeholder-icon" />
@@ -83,7 +76,6 @@ const closeImagePreview = () => {
       </div>
     </div>
 
-    <!-- Fullscreen Image Preview -->
     <transition name="preview-fade">
       <div v-if="showImagePreview" class="image-preview-overlay" @click="closeImagePreview">
         <div class="image-preview-container" @click.stop>
@@ -218,7 +210,6 @@ const closeImagePreview = () => {
   color: #9aa3ad;
 }
 
-/* Fullscreen Image Preview */
 .image-preview-overlay {
   position: fixed;
   top: 0;
@@ -287,7 +278,6 @@ const closeImagePreview = () => {
   transform: scale(0.95);
 }
 
-/* Preview fade animation */
 .preview-fade-enter-active {
   animation: previewFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }

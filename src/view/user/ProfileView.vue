@@ -14,7 +14,6 @@ import { loadBearerToken } from '@/store/localStorage';
 import { showToast } from '@/utils';
 import { closeOutline } from 'ionicons/icons';
 import { cogOutline } from 'ionicons/icons';
-import { arrowBackOutline } from 'ionicons/icons';
 
 const route = useRoute();
 const linkedProviders = ref<OAuthProvider[]>([]);
@@ -22,7 +21,7 @@ const providers: OAuthProvider[] = ['google'];
 const authStore = useAuthStore();
 const showEditForm = ref(false);
 const showFollowList = ref<{ showing: boolean; type?: 'followers' | 'following' }>({ showing: false });
-const profileComponentRef = ref<any>(null);
+const profileComponentRef = ref<InstanceType<typeof ProfileComponent> | null>(null);
 
 onIonViewWillEnter(async () => {
   if (route.query.error === 'oauth') {
@@ -105,11 +104,7 @@ const headerButtonText = computed(() => {
   <ApplicationViewport title="Account" authenticated>
     <div class="profile-header">
       <ion-card-title class="profile-title">{{ headerTitle }}</ion-card-title>
-      <ion-button 
-        size="small" 
-        fill="outline" 
-        class="edit-button" 
-        @click="headerButtonAction">
+      <ion-button size="small" fill="outline" class="edit-button" @click="headerButtonAction">
         <ion-icon slot="start" :icon="headerButtonIcon" />
         {{ headerButtonText }}
       </ion-button>
@@ -122,7 +117,7 @@ const headerButtonText = computed(() => {
     <div v-if="authStore.getAuthenticatedUser" class="content-wrapper">
       <transition name="fade" mode="out-in">
         <div v-if="!showEditForm" key="profile-view">
-          <ProfileComponent 
+          <ProfileComponent
             ref="profileComponentRef"
             :profile="authStore.getAuthenticatedUser"
             @list-state-change="handleListStateChange" />
@@ -141,7 +136,7 @@ const headerButtonText = computed(() => {
             </div>
 
             <div v-if="isAdministrator" class="button administration-button" @click="openAdministrationPanel">
-              <span>Administration Panel</span>
+              <span>Admin Panel</span>
             </div>
 
             <div class="post-list">
@@ -242,9 +237,15 @@ const headerButtonText = computed(() => {
 }
 
 @keyframes gradientFlow {
-  0% { background-position: 0 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% {
+    background-position: 0 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
 
 .post-list {
@@ -261,4 +262,3 @@ const headerButtonText = computed(() => {
   justify-content: center;
 }
 </style>
-

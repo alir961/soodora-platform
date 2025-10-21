@@ -19,7 +19,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['list-opened', 'list-closed']);
+const emit = defineEmits<{
+  'list-opened': [type: 'followers' | 'following'];
+  'list-closed': [];
+}>();
 
 const reloadFollowers = () => {
   callRetrieveFollowers(props.user)
@@ -35,12 +38,12 @@ const reloadFollowing = () => {
 
 const openFollowersList = () => {
   showList.value = 'followers';
-  emit('list-opened');
+  emit('list-opened', 'followers');
 };
 
 const openFollowingList = () => {
   showList.value = 'following';
-  emit('list-opened');
+  emit('list-opened', 'following');
 };
 
 const closeList = () => {
@@ -82,17 +85,13 @@ defineExpose({ closeList });
 
   <div v-else class="list-container">
     <div class="user-list">
-      <div 
-        v-for="user in showList === 'followers' ? followers : following" 
+      <div
+        v-for="user in showList === 'followers' ? followers : following"
         :key="user.username"
         class="user-card"
         @click="navigateToProfile(user.username)">
         <div class="user-avatar">
-          <img 
-            v-if="user.avatarUrl" 
-            :src="user.avatarUrl" 
-            :alt="user.username"
-          />
+          <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="user.username" />
           <div v-else class="avatar-placeholder">
             {{ user.username.charAt(0).toUpperCase() }}
           </div>
@@ -141,7 +140,7 @@ defineExpose({ closeList });
 .list-container {
   padding: 1rem 0;
   width: 100%;
-  overflow: hidden; /* Prevent horizontal overflow */
+  overflow: hidden;
 }
 
 .user-list {
@@ -162,7 +161,10 @@ defineExpose({ closeList });
   border-radius: 12px;
   padding: 14px 16px;
   cursor: pointer;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.06s ease;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.06s ease;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -201,9 +203,9 @@ defineExpose({ closeList });
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0; /* Required for text-overflow to work in flexbox */
-  overflow: hidden; /* Ensure container enforces boundaries */
-  max-width: 100%; /* Constrain to available space */
+  min-width: 0;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .user-username {
@@ -213,7 +215,7 @@ defineExpose({ closeList });
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%; /* Use full available width */
+  width: 100%;
 }
 
 .user-fullname {
@@ -222,7 +224,7 @@ defineExpose({ closeList });
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 100%; /* Use full available width */
+  width: 100%;
 }
 
 .follow-btn {
@@ -241,7 +243,7 @@ defineExpose({ closeList });
     width: 45px;
     height: 45px;
   }
-  
+
   .avatar-placeholder {
     font-size: 18px;
   }

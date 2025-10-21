@@ -24,21 +24,19 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
 
 const followCounterRef = ref<InstanceType<typeof FollowCounter> | null>(null);
 const showingList = ref(false);
+const currentListType = ref<'followers' | 'following'>('followers');
 
 const emit = defineEmits(['list-state-change']);
 
-const handleListOpened = () => {
+const handleListOpened = (type: 'followers' | 'following') => {
   showingList.value = true;
-  emit('list-state-change', { showing: true, type: getListType() });
+  currentListType.value = type;
+  emit('list-state-change', { showing: true, type });
 };
 
 const handleListClosed = () => {
   showingList.value = false;
   emit('list-state-change', { showing: false });
-};
-
-const getListType = () => {
-  return 'followers';
 };
 
 defineExpose({ closeList: () => followCounterRef.value?.closeList() });
@@ -53,7 +51,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
           <img v-else src="/assets/images/svg/avatar.svg" :alt="`${profile.username} avatar`" />
         </ion-card-title>
         <div class="user-details">
-          <ion-card-title class="profile-username">{{ profile.username }}</ion-card-title>
+          <ion-card-title class="profile-username">@{{ profile.username }}</ion-card-title>
           <div class="tag-and-follow">
             <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
             <FollowButton v-if="canFollow" :user="profile" @click.stop />
@@ -64,9 +62,9 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
 
     <ion-card-content>
       <p v-html="formattedDescription" class="description" />
-      <FollowCounter 
+      <FollowCounter
         ref="followCounterRef"
-        :user="profile" 
+        :user="profile"
         class="followers"
         @list-opened="handleListOpened"
         @list-closed="handleListClosed" />
@@ -85,7 +83,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
     text-shadow: 0 0 2px rgba(0, 116, 228, 0.5);
 
     &.avatar-container {
-      flex-shrink: 0; /* Prevent avatar from shrinking */
+      flex-shrink: 0;
     }
 
     &.profile-username {
@@ -93,9 +91,9 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      min-width: 0; /* Allow truncation */
+      min-width: 0;
       max-width: 100%;
-      display: block; /* Override flex from parent to ensure ellipsis works */
+      display: block;
     }
 
     img {
@@ -106,7 +104,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
       border: 1px solid #0074e4;
       box-shadow: 0 0 4px #0074e4;
       transition: transform 0.3s ease;
-      flex-shrink: 0; /* Prevent image from shrinking */
+      flex-shrink: 0;
     }
   }
 
@@ -139,7 +137,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
       margin-bottom: 0;
     }
   }
-  
+
   .tag-and-follow {
     display: flex;
     align-items: center;
@@ -154,15 +152,15 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 0; /* Remove gap to let margin handle spacing */
+    gap: 0;
     width: 100%;
-    min-width: 0; /* Enable text truncation */
+    min-width: 0;
   }
 
   .user-details {
     flex: 1;
-    min-width: 0; /* Critical: allows text truncation to work */
-    overflow: hidden; /* Clip overflow */
+    min-width: 0;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     gap: 0.5em;

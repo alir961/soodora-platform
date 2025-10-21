@@ -1,4 +1,4 @@
-# GrooveConductor - Application
+# Soodora - Application
 
 ## Description
 

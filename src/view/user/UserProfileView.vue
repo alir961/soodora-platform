@@ -14,7 +14,7 @@ const router = useRouter();
 
 const user = ref(null) as Ref<User | null>;
 const showFollowList = ref<{ showing: boolean; type?: 'followers' | 'following' }>({ showing: false });
-const profileComponentRef = ref<any>(null);
+const profileComponentRef = ref<InstanceType<typeof ProfileComponent> | null>(null);
 
 onMounted(async () => {
   const userSlug = route.params.slug as string;
@@ -55,24 +55,20 @@ const handleBackButton = () => {
   <ApplicationViewport title="User Profile" back-button>
     <div class="profile-header">
       <ion-card-title class="profile-title">{{ headerTitle }}</ion-card-title>
-      <ion-button 
-        size="small" 
-        fill="outline" 
-        class="back-button" 
-        @click="handleBackButton">
+      <ion-button size="small" fill="outline" class="back-button" @click="handleBackButton">
         <ion-icon slot="start" :icon="closeOutline" />
         Back
       </ion-button>
     </div>
-    
-    <ProfileComponent 
-      v-if="user" 
+
+    <ProfileComponent
+      v-if="user"
       ref="profileComponentRef"
       :profile="user"
       @list-state-change="handleListStateChange" />
-    
+
     <UserContentList v-if="user && !showFollowList.showing" :user="user" />
-    
+
     <div v-if="!user" class="loading">
       <p>Loading...</p>
     </div>

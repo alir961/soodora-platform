@@ -202,18 +202,17 @@ onMounted(() => {
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </swiper-slide>
-    <swiper-slide>
+    <swiper-slide class="products-slide">
       <ion-grid>
         <ion-row>
-          <div
-            v-for="(product, index) in products"
+          <ProductCard
+            v-for="product in products"
             :key="product.slug"
-            :class="['post-wrapper', index === products.length - 1 ? 'last' : '']">
-            <ProductCard :product="product" />
-          </div>
+            :product="product"
+            @product-deleted="() => loadProducts(true)" />
         </ion-row>
       </ion-grid>
-      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMorePost">
+      <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMoreProduct">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </swiper-slide>
@@ -259,5 +258,9 @@ ion-grid {
 .tab-button.active {
   color: white;
   border-bottom: 2px solid white;
+}
+
+.products-slide {
+  padding-top: 1rem;
 }
 </style>

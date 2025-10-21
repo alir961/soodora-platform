@@ -4,4 +4,4 @@ export interface Money {
   symbol: string;
 }
 
-export type Currency = 'EUR' | 'USD' | 'CAD' | 'GBP';
+export type Currency = '' | 'EUR' | 'USD' | 'CAD' | 'GBP';

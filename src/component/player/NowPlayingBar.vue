@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { IonIcon } from '@ionic/vue';
-import { play, pause, closeOutline, heart, heartOutline } from 'ionicons/icons';
-import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue';
+import { play, pause, closeOutline, heart, heartOutline, addOutline } from 'ionicons/icons';
+import { computed, ref, watch, onMounted, onUnmounted, nextTick, createApp } from 'vue';
 import { usePlayerStore } from '@/store/playerStore';
-import UsernameTag from '@/component/user/UsernameTag.vue';
 import { useLikeStore } from '@/store/likeStore';
 
 const player = usePlayerStore();
@@ -15,7 +14,7 @@ let ro: ResizeObserver | null = null;
 const progressBackground = computed(() => {
   if (!player.duration) return '';
   const pct = (player.currentTime / player.duration) * 100;
-  return `background: linear-gradient(90deg, var(--ion-color-primary) ${pct}%, #2a2a2a ${pct}%)`;
+  return `background: linear-gradient(90deg, var(--ion-color-primary) ${pct}%, rgba(42, 42, 42, 0.5) ${pct}%)`;
 });
 
 const toggle = () => (player.isPlaying ? player.pause() : player.play());
@@ -112,44 +111,102 @@ watch(
     else publishOffset(0);
   }
 );
+
+const openSaveTrack = async () => {
+  if (!player.current) return;
+
+  const { default: SaveTrackButton } = await import('@/component/playlist/SaveTrackCard.vue');
+
+  const container = document.createElement('div');
+  document.body.appendChild(container);
+
+  const app = createApp(SaveTrackButton, {
+    postSlug: player.current.slug,
+    audioTitle: player.current.audioTitle,
+    audioUrl: player.current.audioUrl,
+    imageUrl: player.current.imageUrl,
+  });
+
+  const instance = app.mount(container) as InstanceType<typeof SaveTrackButton>;
+
+  const cleanup = () => {
+    try {
+      app.unmount();
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
+    } catch (e) {
+      console.error('Cleanup error:', e);
+    }
+  };
+
+  if (instance && typeof instance.open === 'function') {
+    instance.open();
+  }
+
+  const checkInterval = setInterval(() => {
+    if (!document.body.contains(container)) {
+      cleanup();
+      clearInterval(checkInterval);
+    }
+  }, 500);
+
+  setTimeout(() => {
+    clearInterval(checkInterval);
+  }, 120000);
+};
 </script>
 
 <template>
   <div v-if="player.hasTrack" class="now-playing" ref="barEl">
-    <button class="aux-btn" :class="{ active: isLiked }" @click="toggleLike" aria-label="Like">
-      <ion-icon :icon="isLiked ? heart : heartOutline" />
-    </button>
-    <button class="close-btn" @click="player.clear" aria-label="Close">
-      <ion-icon :icon="closeOutline" />
-    </button>
+    <div class="top-row">
+      <div class="album-art">
+        <img
+          :src="player.current?.imageUrl || '/assets/images/png/no-album-art.png'"
+          :alt="player.current?.audioTitle || 'Album art'" />
+      </div>
 
-    <div v-if="player.current?.owner" class="artist-row">
-      <UsernameTag :user="player.current.owner" />
+      <div class="track-info">
+        <div class="track-title marquee">{{ player.current?.audioTitle || 'Unknown Track' }}</div>
+        <div v-if="player.current?.owner" class="track-artist">
+          {{ player.current.owner.username || player.current.owner.slug }}
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="aux-btn" :class="{ active: isLiked }" @click="toggleLike" aria-label="Like">
+          <ion-icon :icon="isLiked ? heart : heartOutline" />
+        </button>
+        <button class="aux-btn save-btn" @click="openSaveTrack" aria-label="Save to playlist">
+          <ion-icon :icon="addOutline" />
+        </button>
+        <button class="close-btn" @click="player.clear" aria-label="Close">
+          <ion-icon :icon="closeOutline" />
+        </button>
+      </div>
     </div>
 
-    <div class="main-row">
+    <div class="controls-row">
       <button class="play-btn" @click="toggle" aria-label="Play/Pause">
         <ion-icon :icon="player.isPlaying ? pause : play" />
       </button>
-      <div class="main-content">
-        <div class="title marquee">{{ player.current?.title }}</div>
-        <div class="slider-wrap">
-          <span class="time left">{{ formatTime(player.currentTime) }}</span>
-          <input
-            class="slider swiper-no-swiping"
-            type="range"
-            min="0"
-            :max="player.duration"
-            step="0.1"
-            :value="player.currentTime"
-            @input="onSeek"
-            @touchstart.stop
-            @touchmove.stop
-            @touchend.stop
-            @mousedown.stop
-            :style="progressBackground" />
-          <span class="time right">{{ formatTime(player.duration) }}</span>
-        </div>
+
+      <div class="slider-container">
+        <span class="time">{{ formatTime(player.currentTime) }}</span>
+        <input
+          class="slider swiper-no-swiping"
+          type="range"
+          min="0"
+          :max="player.duration"
+          step="0.1"
+          :value="player.currentTime"
+          @input="onSeek"
+          @touchstart.stop
+          @touchmove.stop
+          @touchend.stop
+          @mousedown.stop
+          :style="progressBackground" />
+        <span class="time">{{ formatTime(player.duration) }}</span>
       </div>
     </div>
   </div>
@@ -158,203 +215,338 @@ watch(
 <style scoped>
 .now-playing {
   position: fixed;
-  left: 12px;
-  right: 12px;
+  width: 92%;
+  margin: 0 auto;
   bottom: max(12px, env(safe-area-inset-bottom));
+  padding: 10px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(10, 15, 28, 0.92));
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 16px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(59, 130, 246, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 10px 12px 12px 12px;
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255, 140, 0, 0.09) 0%,
-      rgba(255, 140, 0, 0.06) 35%,
-      rgba(255, 140, 0, 0.03) 65%,
-      rgba(255, 255, 255, 0) 100%
-    ),
-    rgba(18, 18, 18, 0.75);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-  backdrop-filter: saturate(150%) blur(14px);
-  -webkit-backdrop-filter: saturate(150%) blur(14px);
-  z-index: 2000;
 }
 
-.artist-row {
-  padding-right: 60px;
-}
-
-.main-row {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  align-items: stretch;
+.top-row {
+  display: flex;
+  align-items: center;
   gap: 10px;
+  min-height: 52px;
 }
-.main-content {
+
+.album-art {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.album-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.track-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  justify-content: center;
+  gap: 2px;
   min-width: 0;
-  width: 100%;
 }
-.title {
-  font-size: 14px;
-  color: #fff;
+
+.track-title {
+  font-size: 1rem !important;
   font-weight: 600;
-  letter-spacing: 0.2px;
-}
-
-.artist-line {
-  margin-top: 2px;
-}
-
-.marquee {
+  color: #ffffff;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  line-height: 1.3;
 }
 
-.slider-wrap {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+.track-artist {
+  font-size: 0.7rem !important;
+  color: #cbd5e1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
   align-items: center;
+}
+
+.aux-btn,
+.close-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+}
+
+.aux-btn::before,
+.close-btn::before {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aux-btn ion-icon,
+.close-btn ion-icon {
+  font-size: 15px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.aux-btn:hover,
+.close-btn:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.aux-btn:active,
+.close-btn:active {
+  transform: scale(0.95);
+}
+
+.aux-btn:active::before,
+.close-btn:active::before {
+  opacity: 1;
+  transform: scale(2);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aux-btn.active {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(37, 99, 235, 0.3));
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+  animation: ripple 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+@keyframes like-pop {
+  0% {
+    transform: scale(0.9);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.save-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
 }
 
-.time {
-  font-size: 11px;
-  color: var(--ion-color-medium);
-  width: 36px;
-  text-align: left;
-  font-variant-numeric: tabular-nums;
+.play-btn {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(255, 255, 255, 0.05);
+  width: 52px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.time.right {
-  text-align: right;
+.play-btn ion-icon {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.play-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.play-btn:active {
+  transform: scale(0.95);
+}
+
+.slider-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.time {
+  font-size: 0.65rem;
+  color: #9aa3ad;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  min-width: 26px;
+  text-align: center;
 }
 
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
-  height: 6px;
+  flex: 1;
+  height: 5px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
   outline: none;
+  cursor: pointer;
 }
+
 .slider::-webkit-slider-runnable-track {
-  height: 6px;
+  height: 5px;
   background: transparent;
   border-radius: 999px;
 }
+
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
-  background: #fff;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
-  margin-top: -5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  margin-top: -3.5px;
 }
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
 .slider::-moz-range-track {
-  height: 6px;
+  height: 5px;
   background: transparent;
   border-radius: 999px;
 }
+
 .slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
-  background: #fff;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
   border: none;
   border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  margin-top: -3.5px;
 }
 
-.play-btn {
-  align-self: stretch;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  transition:
-    transform 120ms ease,
-    box-shadow 180ms ease;
-}
-.play-btn ion-icon {
-  font-size: 24px;
-  line-height: 1;
-  color: var(--ion-color-primary);
-}
-
-.play-btn:active {
-  transform: scale(0.965);
-}
-.close-btn,
-.aux-btn {
-  transition: transform 120ms ease;
-}
-.close-btn:active,
-.aux-btn:active {
-  transform: scale(0.965);
-}
-
-.close-btn {
-  position: absolute;
-  right: 14px;
-  top: 10px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.close-btn ion-icon {
-  font-size: 16px;
-}
-
-.aux-btn {
-  position: absolute;
-  right: 58px;
-  top: 10px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.aux-btn ion-icon {
-  font-size: 16px;
-}
-.aux-btn.active {
-  background: var(--ion-color-primary);
-  border-color: var(--ion-color-primary);
-  animation: like-pop 140ms ease;
-}
-
-@keyframes like-pop {
-  0% {
-    transform: scale(0.94);
+@media (max-width: 768px) {
+  .now-playing {
+    left: 8px;
+    right: 8px;
+    padding: 8px;
+    gap: 6px;
   }
-  60% {
-    transform: scale(1.06);
+
+  .top-row {
+    min-height: 48px;
+    gap: 8px;
   }
-  100% {
-    transform: scale(1);
+
+  .album-art {
+    width: 48px;
+    height: 48px;
+  }
+
+  .track-title {
+    font-size: 1.1rem !important;
+  }
+
+  .track-artist {
+    font-size: 0.8rem !important;
+  }
+
+  .play-btn {
+    width: 48px;
+    height: 25px;
+  }
+
+  .play-btn ion-icon {
+    font-size: 18px;
+  }
+
+  .aux-btn,
+  .close-btn {
+    width: 26px;
+    height: 26px;
+  }
+
+  .aux-btn ion-icon,
+  .close-btn ion-icon {
+    font-size: 14px;
+  }
+
+  .time {
+    font-size: 0.8rem;
+    min-width: 24px;
   }
 }
 </style>
