@@ -1,18 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
-import {
-  IonContent,
-  IonList,
-  IonLabel,
-  IonInfiniteScroll,
-  IonInfiniteScrollContent,
-  IonRow,
-  IonButton,
-  IonSelect,
-  IonSelectOption,
-  IonModal,
-} from '@ionic/vue';
-
+import { IonContent, IonList, IonInfiniteScroll, IonInfiniteScrollContent, IonRow } from '@ionic/vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import type { User } from '@/entity/User';
 import type { Post } from '@/entity/Post';
@@ -40,6 +28,9 @@ const posts = ref<Post[]>([]);
 const playlists = ref<Playlist[]>([]);
 
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
+const hasSearchCompleted = ref(false);
+const lastSearchQuery = ref('');
+const isInitialState = ref(true);
 
 const currentPageUsers = ref(0);
 const hasMoreUsers = ref(true);
@@ -55,6 +46,14 @@ const isLoadingPlaylists = ref(false);
 
 const showFilterModal = ref(false);
 
+const toggleFilters = () => {
+  showFilterModal.value = !showFilterModal.value;
+};
+
+const applyFilter = (mode: SearchMode) => {
+  searchMode.value = mode;
+};
+
 const isFilterActive = computed(() => searchMode.value !== '');
 
 const fetchUsers = async (reset = false) => {
@@ -63,14 +62,13 @@ const fetchUsers = async (reset = false) => {
     users.value = [];
     currentPageUsers.value = 0;
     hasMoreUsers.value = true;
+    isInitialState.value = true;
     return;
   }
 
   if (isLoadingUsers.value || (!hasMoreUsers.value && !reset)) return;
 
   if (reset) {
-    artists.value = [];
-    users.value = [];
     currentPageUsers.value = 0;
     hasMoreUsers.value = true;
   }
@@ -83,18 +81,30 @@ const fetchUsers = async (reset = false) => {
       return user.roles.includes('ARTIST') || user.roles.includes('PREMIUM');
     };
 
-    if (searchMode.value === 'artist') {
-      artists.value.push(...content.filter(isArtist));
-    } else if (searchMode.value === '') {
-      artists.value.push(...content.filter(isArtist));
-      users.value.push(...content.filter((user) => !isArtist(user)));
+    if (reset) {
+      if (searchMode.value === 'artist') {
+        artists.value = content.filter(isArtist);
+      } else if (searchMode.value === '') {
+        artists.value = content.filter(isArtist);
+        users.value = content.filter((user) => !isArtist(user));
+      } else {
+        users.value = content.filter((user) => !isArtist(user));
+        artists.value = [];
+      }
     } else {
-      users.value.push(...content.filter((user) => !isArtist(user)));
-      artists.value = [];
+      if (searchMode.value === 'artist') {
+        artists.value.push(...content.filter(isArtist));
+      } else if (searchMode.value === '') {
+        artists.value.push(...content.filter(isArtist));
+        users.value.push(...content.filter((user) => !isArtist(user)));
+      } else {
+        users.value.push(...content.filter((user) => !isArtist(user)));
+      }
     }
 
     hasMoreUsers.value = content.length === PAGE_SIZE;
     if (hasMoreUsers.value) currentPageUsers.value++;
+    isInitialState.value = false;
   } catch (error) {
     console.error('Search profiles failed', error);
     hasMoreUsers.value = false;
@@ -108,13 +118,13 @@ const fetchPosts = async (reset = false) => {
     posts.value = [];
     currentPagePosts.value = 0;
     hasMorePosts.value = true;
+    isInitialState.value = true;
     return;
   }
 
   if (isLoadingPosts.value || (!hasMorePosts.value && !reset)) return;
 
   if (reset) {
-    posts.value = [];
     currentPagePosts.value = 0;
     hasMorePosts.value = true;
   }
@@ -144,10 +154,16 @@ const fetchPosts = async (reset = false) => {
       ...post,
       createdAt: new Date(post.createdAt),
     }));
-    posts.value.push(...fetchedPosts);
+
+    if (reset) {
+      posts.value = fetchedPosts;
+    } else {
+      posts.value.push(...fetchedPosts);
+    }
 
     hasMorePosts.value = fetchedPosts.length === PAGE_SIZE;
     if (hasMorePosts.value) currentPagePosts.value++;
+    isInitialState.value = false;
   } catch (error) {
     console.error('Search posts failed:', error);
     hasMorePosts.value = false;
@@ -161,13 +177,13 @@ const fetchPlaylists = async (reset = false) => {
     playlists.value = [];
     currentPagePlaylists.value = 0;
     hasMorePlaylists.value = true;
+    isInitialState.value = true;
     return;
   }
 
   if (isLoadingPlaylists.value || (!hasMorePlaylists.value && !reset)) return;
 
   if (reset) {
-    playlists.value = [];
     currentPagePlaylists.value = 0;
     hasMorePlaylists.value = true;
   }
@@ -184,10 +200,15 @@ const fetchPlaylists = async (reset = false) => {
 
     const response = await searchPlaylists(undefined, params.name, undefined, params.page, params.size, params.sort);
 
-    playlists.value.push(...response.content);
+    if (reset) {
+      playlists.value = response.content;
+    } else {
+      playlists.value.push(...response.content);
+    }
 
     hasMorePlaylists.value = response.content.length === PAGE_SIZE;
     if (hasMorePlaylists.value) currentPagePlaylists.value++;
+    isInitialState.value = false;
   } catch (error) {
     console.error('Search playlists failed:', error);
     hasMorePlaylists.value = false;
@@ -209,15 +230,33 @@ const fetchResults = async (reset = false) => {
 };
 
 watch(searchInput, () => {
+  if (hasAnyResults.value || isInitialState.value) {
+    hasSearchCompleted.value = false;
+  }
+
   if (searchTimeout.value) clearTimeout(searchTimeout.value);
 
-  searchTimeout.value = setTimeout(() => {
-    fetchResults(true);
+  searchTimeout.value = setTimeout(async () => {
+    try {
+      await fetchResults(true);
+      lastSearchQuery.value = searchInput.value.trim();
+    } finally {
+      hasSearchCompleted.value = true;
+    }
   }, 300);
 });
 
-watch(searchMode, () => {
-  fetchResults(true);
+watch(searchMode, async () => {
+  if (hasAnyResults.value) {
+    hasSearchCompleted.value = false;
+  }
+
+  try {
+    await fetchResults(true);
+    lastSearchQuery.value = searchInput.value.trim();
+  } finally {
+    hasSearchCompleted.value = true;
+  }
 });
 
 const loadMore = async (ev: CustomEvent) => {
@@ -236,118 +275,173 @@ const searchPlaceholder = computed(() => {
     case 'music':
       return 'Search for music...';
     case 'playlist':
-      return 'Search for playlist...';
+      return 'Search for playlists...';
     default:
       return 'Search for anything...';
   }
+});
+
+const hasAnyResults = computed(() => {
+  if (!searchInput.value.trim()) return true;
+
+  if (searchMode.value === 'artist') return artists.value.length > 0;
+  if (searchMode.value === 'user') return users.value.length > 0;
+  if (searchMode.value === 'post' || searchMode.value === 'music') return posts.value.length > 0;
+  if (searchMode.value === 'playlist') return playlists.value.length > 0;
+
+  return artists.value.length > 0 || users.value.length > 0 || posts.value.length > 0 || playlists.value.length > 0;
+});
+
+const shouldShowNoResults = computed(() => {
+  return (
+    searchInput.value.trim().length > 0 && !hasAnyResults.value && hasSearchCompleted.value && !isInitialState.value
+  );
+});
+
+const shouldShowPlaceholder = computed(() => {
+  return searchInput.value.trim().length === 0 || isInitialState.value;
+});
+
+const noResultsMessage = computed(() => {
+  const query = lastSearchQuery.value || searchInput.value.trim();
+
+  if (searchMode.value === 'artist') return `No artists found for "${query}"`;
+  if (searchMode.value === 'user') return `No users found for "${query}"`;
+  if (searchMode.value === 'post') return `No posts found for "${query}"`;
+  if (searchMode.value === 'music') return `No music found for "${query}"`;
+  if (searchMode.value === 'playlist') return `No playlists found for "${query}"`;
+
+  return `No results found for "${query}"`;
 });
 </script>
 
 <template>
   <ApplicationViewport title="Search">
     <ion-content>
-      <ion-modal
-        :is-open="showFilterModal"
-        @didDismiss="showFilterModal = false"
-        :breakpoints="[0, 0.3, 0.5]"
-        initial-breakpoint="0.3"
-        handle-behavior="cycle">
-        <ion-content class="ion-padding">
-          <div class="filter-modal">
-            <h2>Search Filters</h2>
-            <ion-select v-model="searchMode" class="filter-select">
-              <div slot="label">Search Type:</div>
-              <ion-select-option value="">All</ion-select-option>
-              <ion-select-option value="artist">Artists</ion-select-option>
-              <ion-select-option value="user">Users</ion-select-option>
-              <ion-select-option value="post">Posts</ion-select-option>
-              <ion-select-option value="music">Music</ion-select-option>
-              <ion-select-option value="playlist">Playlists</ion-select-option>
-            </ion-select>
-            <ion-button expand="block" @click="showFilterModal = false">Apply</ion-button>
-          </div>
-        </ion-content>
-      </ion-modal>
+      <div v-if="shouldShowPlaceholder || shouldShowNoResults" class="ambient-glow">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+      </div>
+
       <SearchBarWithFilters
         v-model="searchInput"
         :placeholder="searchPlaceholder"
         :isFilterActive="isFilterActive"
-        @filterClick="showFilterModal = true" />
+        :showFilters="showFilterModal"
+        @filterClick="toggleFilters" />
 
-      <div v-if="searchInput.trim().length === 0" class="search-placeholder-message">
-        <div class="glow-background"></div>
-        <div class="search-info-glow-wrapper">
-          <ion-label class="search-info-label-glow">
-            Begin your search adventure!<br />
-            Find users, artists, posts, <br />
-            playlists or tunes here.
-          </ion-label>
-          <div class="search-info-icon">🔍</div>
+      <transition name="slide-down">
+        <div v-if="showFilterModal" class="filter-panel-wrapper">
+          <div class="filter-panel">
+            <div class="filter-header">
+              <h3>Search Filters</h3>
+              <button class="clear-btn" @click="applyFilter('')">Clear All</button>
+            </div>
+            <div class="filter-options">
+              <button :class="['filter-chip', { active: searchMode === '' }]" @click="applyFilter('')">All</button>
+              <button :class="['filter-chip', { active: searchMode === 'artist' }]" @click="applyFilter('artist')">
+                Artists
+              </button>
+              <button :class="['filter-chip', { active: searchMode === 'user' }]" @click="applyFilter('user')">
+                Users
+              </button>
+              <button :class="['filter-chip', { active: searchMode === 'post' }]" @click="applyFilter('post')">
+                Posts
+              </button>
+              <button :class="['filter-chip', { active: searchMode === 'music' }]" @click="applyFilter('music')">
+                Music
+              </button>
+              <button :class="['filter-chip', { active: searchMode === 'playlist' }]" @click="applyFilter('playlist')">
+                Playlists
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <div v-if="shouldShowPlaceholder" class="search-placeholder-message" :class="{ 'pushed-down': showFilterModal }">
+        <div class="placeholder-cards">
+          <div class="placeholder-card main-card">
+            <div class="icon-wrapper">
+              <div class="search-icon">🔍</div>
+              <div class="icon-glow"></div>
+            </div>
+            <h2 class="placeholder-title">Start Your Search</h2>
+            <p class="placeholder-text">
+              Discover artists, users, posts,<br />
+              playlists, and music all in one place
+            </p>
+          </div>
+
+          <div class="placeholder-card info-card">
+            <p class="info-text">
+              💡 <strong>Pro tip:</strong> Use filters to narrow down your results and find exactly what you're looking
+              for
+            </p>
+          </div>
         </div>
       </div>
 
-      <template v-if="(searchMode === '' || searchMode === 'artist') && searchInput.trim().length > 0">
-        <h2 class="section-title">Artists</h2>
-        <ion-list v-if="artists.length" class="name-list">
-          <UserListItem
-            v-for="(artist, index) in artists"
-            :key="artist.slug"
-            :isLast="index === artists.length - 1"
-            :user="artist" />
-        </ion-list>
-        <ion-list v-else>
-          <ion-label class="no-results-label">No matching artists found</ion-label>
-        </ion-list>
-      </template>
+      <div v-if="shouldShowNoResults" class="no-results-container" :class="{ 'pushed-down': showFilterModal }">
+        <div class="no-results-card">
+          <div class="no-results-icon">🔍</div>
+          <h3 class="no-results-title">{{ noResultsMessage }}</h3>
+          <p class="no-results-hint">Try adjusting your search or filters</p>
+        </div>
+      </div>
 
-      <template v-if="(searchMode === '' || searchMode === 'user') && searchInput.trim().length > 0">
-        <h2 class="section-title">Users</h2>
-        <ion-list v-if="users.length > 0" class="name-list">
-          <UserListItem
-            v-for="(user, index) in users"
-            :key="user.slug"
-            :isLast="index === users.length - 1"
-            :user="user" />
-        </ion-list>
-        <ion-list v-else>
-          <ion-label class="no-results-label">No matching users found</ion-label>
-        </ion-list>
-      </template>
+      <template v-if="hasAnyResults && searchInput.trim().length > 0">
+        <template v-if="searchMode === '' || searchMode === 'artist'">
+          <h2 v-if="artists.length" class="section-title">Artists</h2>
+          <ion-list v-if="artists.length" class="name-list">
+            <UserListItem
+              v-for="(artist, index) in artists"
+              :key="artist.slug"
+              :isLast="index === artists.length - 1"
+              :user="artist" />
+          </ion-list>
+        </template>
 
-      <template
-        v-if="(searchMode === '' || searchMode === 'post' || searchMode === 'music') && searchInput.trim().length > 0">
-        <h2 class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
-        <ion-list v-if="posts.length > 0">
-          <ion-row>
-            <div
-              v-for="(post, index) in posts"
-              :key="post.slug"
-              :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
-              <div class="post-separator" v-if="index !== posts.length - 1"></div>
-              <PostCard
-                :post="post"
-                @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"
-                @post-like="post.likeCount++"
-                @post-unlike="post.likeCount--"
-                @post-repost="post.repostCount++"
-                @post-unrepost="post.repostCount--"
-                class="post-card" />
-            </div>
-          </ion-row>
-        </ion-list>
-        <ion-list v-else>
-          <ion-label class="no-results-label">No matching posts found</ion-label>
-        </ion-list>
-      </template>
+        <template v-if="searchMode === '' || searchMode === 'user'">
+          <h2 v-if="users.length > 0" class="section-title">Users</h2>
+          <ion-list v-if="users.length > 0" class="name-list">
+            <UserListItem
+              v-for="(user, index) in users"
+              :key="user.slug"
+              :isLast="index === users.length - 1"
+              :user="user" />
+          </ion-list>
+        </template>
 
-      <template v-if="(searchMode === '' || searchMode === 'playlist') && searchInput.trim().length > 0">
-        <h2 class="section-title">Playlists</h2>
-        <ion-list v-if="playlists.length > 0" class="name-list">
-          <PlaylistItem v-for="pl in playlists" :key="pl.slug" :playlist="pl" />
-        </ion-list>
-        <ion-list v-else>
-          <ion-label class="no-results-label">No matching playlists found</ion-label>
-        </ion-list>
+        <template v-if="searchMode === '' || searchMode === 'post' || searchMode === 'music'">
+          <h2 v-if="posts.length > 0" class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
+          <ion-list v-if="posts.length > 0">
+            <ion-row>
+              <div
+                v-for="(post, index) in posts"
+                :key="post.slug"
+                :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
+                <div class="post-separator" v-if="index !== posts.length - 1"></div>
+                <PostCard
+                  :post="post"
+                  @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"
+                  @post-like="post.likeCount++"
+                  @post-unlike="post.likeCount--"
+                  @post-repost="post.repostCount++"
+                  @post-unrepost="post.repostCount--"
+                  class="post-card" />
+              </div>
+            </ion-row>
+          </ion-list>
+        </template>
+
+        <template v-if="searchMode === '' || searchMode === 'playlist'">
+          <h2 v-if="playlists.length > 0" class="section-title">Playlists</h2>
+          <ion-list v-if="playlists.length > 0" class="name-list">
+            <PlaylistItem v-for="pl in playlists" :key="pl.slug" :playlist="pl" />
+          </ion-list>
+        </template>
       </template>
 
       <ion-infinite-scroll
@@ -369,25 +463,376 @@ const searchPlaceholder = computed(() => {
 </template>
 
 <style scoped>
+.filter-panel-wrapper {
+  width: 90%;
+  margin: 0 auto;
+  position: relative;
+  z-index: 100;
+}
+
+.filter-panel {
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.75), rgba(18, 22, 30, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+}
+
+.filter-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filter-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.clear-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #60a5fa;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.clear-btn:active {
+  background: rgba(96, 165, 250, 0.12);
+  transform: scale(0.96);
+}
+
+.filter-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-chip {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, rgba(29, 78, 216, 0.9), rgba(37, 99, 235, 0.9));
+  border-color: rgba(96, 165, 250, 0.3);
+  color: #ffffff;
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.slide-down-enter-active {
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.slide-down-leave-active {
+  transition: all 0.25s cubic-bezier(0.8, 0.2, 0.8, 0.2);
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.97);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.98);
+}
+
 .search-placeholder-message {
   position: fixed;
-  top: 40%;
-  left: 0;
-  width: 100vw;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 30vh;
-  text-align: center;
-  padding: 0 1.5rem;
-  animation: float 4s ease-in-out infinite;
+  z-index: 0;
+  pointer-events: none;
+  animation: fadeIn 0.5s ease;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.search-info-label-glow {
-  color: var(--ion-color-medium);
-  font-size: 1.4rem;
-  line-height: 1.5;
+.search-placeholder-message.pushed-down {
+  transform: translate(-50%, -30%);
+}
+
+.placeholder-cards {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.placeholder-card {
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.75), rgba(18, 22, 30, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  text-align: center;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.placeholder-card.main-card {
+  padding: 3rem 2rem;
+}
+
+.placeholder-card.info-card {
+  padding: 1.25rem 1.5rem;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(18, 22, 30, 0.68), rgba(13, 27, 42, 0.72));
+}
+
+.placeholder-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+.icon-wrapper {
+  position: relative;
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.search-icon {
+  position: relative;
+  z-index: 1;
+  font-size: 4rem;
+  filter: drop-shadow(0 4px 16px rgba(59, 130, 246, 0.5));
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.1) 50%, transparent 100%);
+  filter: blur(30px);
+  animation: glowPulse 3s ease-in-out infinite;
+  z-index: 0;
+}
+
+.placeholder-title {
+  font-size: 1.5rem;
+  font-weight: 600;
   color: #ffffff;
+  margin: 0 0 0.75rem 0;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+}
+
+.placeholder-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #9aa3ad;
+  margin: 0;
+  font-weight: 400;
+}
+
+.info-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #b8c5d3;
+  margin: 0;
+  text-align: left;
+}
+
+.info-text strong {
+  color: #e0e7ef;
+  font-weight: 600;
+}
+
+.no-results-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  z-index: 0;
+  pointer-events: none;
+  animation: fadeIn 0.4s ease;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.no-results-container.pushed-down {
+  transform: translate(-50%, -30%);
+}
+
+.no-results-card {
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.75), rgba(18, 22, 30, 0.65));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.no-results-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(239, 68, 68, 0.3), transparent);
+}
+
+.no-results-icon {
+  font-size: 3.5rem;
+  opacity: 0.5;
+  margin-bottom: 1rem;
+  filter: grayscale(0.5);
+}
+
+.no-results-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: -0.01em;
+  word-break: break-word;
+}
+
+.no-results-hint {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #9aa3ad;
+  margin: 0;
+  font-weight: 400;
+}
+
+.ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 1;
+  animation: glowFloat 10s ease-in-out infinite;
+}
+
+.glow-orb.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 100%);
+  top: -150px;
+  left: -150px;
+  animation-delay: 0s;
+}
+
+.glow-orb.orb-2 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.06) 50%, transparent 100%);
+  bottom: -100px;
+  right: -100px;
+  animation-delay: 2s;
+}
+
+.glow-orb.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 100%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 4s;
+}
+
+@keyframes glowFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-20px, -25px) scale(1.05);
+  }
+  66% {
+    transform: translate(20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
 @keyframes float {
@@ -396,24 +841,32 @@ const searchPlaceholder = computed(() => {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(-8px);
   }
 }
 
-.glow-background {
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(0, 136, 255, 0.6) 0%, rgba(0, 51, 204, 0.4) 40%, rgba(0, 0, 0, 0) 100%);
-  filter: blur(100px);
-  opacity: 0.6;
-  z-index: 0;
-  animation: pulse 6s ease-in-out infinite alternate;
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
 }
 
-.search-info-icon {
-  font-size: 2.2rem;
-  margin-top: 0.5rem;
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
 }
 
 .section-title {
@@ -447,19 +900,45 @@ const searchPlaceholder = computed(() => {
   margin: 0;
 }
 
-.no-results-label {
-  padding-left: 1.8em;
-  color: var(--ion-color-medium);
-}
+@media (max-width: 640px) {
+  .placeholder-card.main-card {
+    padding: 2.5rem 1.5rem;
+  }
 
-.filter-modal {
-  display: flex;
-  flex-direction: column;
-  padding: 1.5rem;
-  border-radius: 12px;
-}
+  .placeholder-title {
+    font-size: 1.3rem;
+  }
 
-ion-button {
-  --color: white;
+  .placeholder-text {
+    font-size: 0.95rem;
+  }
+
+  .search-icon {
+    font-size: 3.5rem;
+  }
+
+  .info-text {
+    font-size: 0.85rem;
+  }
+
+  .search-placeholder-message.pushed-down {
+    transform: translate(-50%, -25%);
+  }
+
+  .no-results-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .no-results-icon {
+    font-size: 3rem;
+  }
+
+  .no-results-title {
+    font-size: 1.1rem;
+  }
+
+  .no-results-hint {
+    font-size: 0.85rem;
+  }
 }
 </style>

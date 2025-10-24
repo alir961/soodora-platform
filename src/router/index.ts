@@ -22,6 +22,8 @@ import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import QuoteCreateView from '@/view/create/QuoteCreateView.vue';
 import QuoteDetailsView from '@/view/quote/QuoteDetailsView.vue';
 import QuoteView from '@/view/quote/QuoteView.vue';
+import ProductFormView from '@/view/marketplace/ProductFormView.vue';
+import PostFormView from '@/view/explore/PostFormView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -155,6 +157,18 @@ const routes: Array<RouteRecordRaw> = [
     path: '/:catchAll(.*)',
     name: 'NotFound',
     component: NotFoundView,
+  },
+  {
+    path: '/marketplace/product/create',
+    component: ProductFormView,
+  },
+  {
+    path: '/marketplace/product/:slug/edit',
+    component: ProductFormView,
+  },
+  {
+    path: '/explore/post/create',
+    component: PostFormView,
   },
 ];
 

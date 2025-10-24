@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonCardContent, IonCardHeader, IonCardTitle } from '@ionic/vue';
 import { User } from '@/entity/User';
-import { PropType, computed } from 'vue';
+import { PropType, computed, ref } from 'vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import RoleTagComponent from '@/component/user/RoleTagComponent.vue';
 import FollowCounter from '@/component/follow/FollowCounter.vue';
@@ -21,18 +21,37 @@ const canFollow = computed(() => {
 });
 
 const formattedDescription = computed(() => props.profile.description?.replace(/\n/g, '<br>') ?? '');
+
+const followCounterRef = ref<InstanceType<typeof FollowCounter> | null>(null);
+const showingList = ref(false);
+const currentListType = ref<'followers' | 'following'>('followers');
+
+const emit = defineEmits(['list-state-change']);
+
+const handleListOpened = (type: 'followers' | 'following') => {
+  showingList.value = true;
+  currentListType.value = type;
+  emit('list-state-change', { showing: true, type });
+};
+
+const handleListClosed = () => {
+  showingList.value = false;
+  emit('list-state-change', { showing: false });
+};
+
+defineExpose({ closeList: () => followCounterRef.value?.closeList() });
 </script>
 
 <template>
   <div id="profile-container">
     <ion-card-header>
       <div class="header-content">
-        <ion-card-title>
+        <ion-card-title class="avatar-container">
           <img v-if="profile.avatarUrl" :src="profile.avatarUrl" :alt="`${profile.username} avatar`" />
           <img v-else src="/assets/images/svg/avatar.svg" :alt="`${profile.username} avatar`" />
         </ion-card-title>
-        <div>
-          <ion-card-title class="profile-username">{{ profile.username }}</ion-card-title>
+        <div class="user-details">
+          <ion-card-title class="profile-username">@{{ profile.username }}</ion-card-title>
           <div class="tag-and-follow">
             <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
             <FollowButton v-if="canFollow" :user="profile" @click.stop />
@@ -43,7 +62,12 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
 
     <ion-card-content>
       <p v-html="formattedDescription" class="description" />
-      <FollowCounter :user="profile" class="followers" />
+      <FollowCounter
+        ref="followCounterRef"
+        :user="profile"
+        class="followers"
+        @list-opened="handleListOpened"
+        @list-closed="handleListClosed" />
     </ion-card-content>
   </div>
 </template>
@@ -58,8 +82,18 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     letter-spacing: 0.05em;
     text-shadow: 0 0 2px rgba(0, 116, 228, 0.5);
 
+    &.avatar-container {
+      flex-shrink: 0;
+    }
+
     &.profile-username {
       font-size: 1.5em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      max-width: 100%;
+      display: block;
     }
 
     img {
@@ -70,10 +104,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
       border: 1px solid #0074e4;
       box-shadow: 0 0 4px #0074e4;
       transition: transform 0.3s ease;
-
-      &:hover {
-        transform: scale(1.1);
-      }
+      flex-shrink: 0;
     }
   }
 
@@ -106,6 +137,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
       margin-bottom: 0;
     }
   }
+
   .tag-and-follow {
     display: flex;
     align-items: center;
@@ -120,6 +152,18 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    gap: 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .user-details {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IonButton, IonCardTitle, modalController, onIonViewWillEnter } from '@ionic/vue';
+import { IonButton, IonCardTitle, IonIcon, onIonViewWillEnter } from '@ionic/vue';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
@@ -12,11 +12,16 @@ import EditProfileForm from '@/component/user/EditProfileForm.vue';
 import { User } from '@/entity/User';
 import { loadBearerToken } from '@/store/localStorage';
 import { showToast } from '@/utils';
+import { closeOutline } from 'ionicons/icons';
+import { cogOutline } from 'ionicons/icons';
 
 const route = useRoute();
 const linkedProviders = ref<OAuthProvider[]>([]);
 const providers: OAuthProvider[] = ['google'];
 const authStore = useAuthStore();
+const showEditForm = ref(false);
+const showFollowList = ref<{ showing: boolean; type?: 'followers' | 'following' }>({ showing: false });
+const profileComponentRef = ref<InstanceType<typeof ProfileComponent> | null>(null);
 
 onIonViewWillEnter(async () => {
   if (route.query.error === 'oauth') {
@@ -33,16 +38,13 @@ const fetchUserData = async () => {
   }
 };
 
-const openProfileEditionModal = async () => {
-  const modal = await modalController.create({
-    component: EditProfileForm,
-  });
+const openProfileEditor = () => {
+  showEditForm.value = true;
+};
 
-  await modal.present();
-  await modal.onWillDismiss();
-
+const closeProfileEditor = async () => {
+  showEditForm.value = false;
   const updatedProfile = await retrieveAuthenticatedProfile();
-
   authStore.authenticate(updatedProfile);
 };
 
@@ -64,14 +66,47 @@ const isAdministrator = computed(() => {
   if (!user) return false;
   return user.roles.includes('ADMIN');
 });
+
+const handleListStateChange = (state: { showing: boolean; type?: 'followers' | 'following' }) => {
+  showFollowList.value = state;
+};
+
+const closeFollowList = () => {
+  profileComponentRef.value?.closeList();
+  showFollowList.value = { showing: false };
+};
+
+const headerTitle = computed(() => {
+  if (showEditForm.value) return 'About You';
+  if (showFollowList.value.showing) {
+    return showFollowList.value.type === 'followers' ? 'Followers' : 'Following';
+  }
+  return 'About You';
+});
+
+const headerButtonAction = computed(() => {
+  if (showFollowList.value.showing) return closeFollowList;
+  return showEditForm.value ? closeProfileEditor : openProfileEditor;
+});
+
+const headerButtonIcon = computed(() => {
+  if (showFollowList.value.showing || showEditForm.value) return closeOutline;
+  return cogOutline;
+});
+
+const headerButtonText = computed(() => {
+  if (showFollowList.value.showing) return 'Back';
+  return showEditForm.value ? 'Cancel' : 'Settings';
+});
 </script>
 
 <template>
   <ApplicationViewport title="Account" authenticated>
     <div class="profile-header">
-      <ion-card-title class="profile-title">About You</ion-card-title>
-      <ion-button size="small" fill="outline" class="edit-button" @click="openProfileEditionModal">
-        Edit Profile
+      <ion-card-title class="profile-title">{{ headerTitle }}</ion-card-title>
+      <ion-button size="small" fill="outline" class="edit-button" @click="headerButtonAction">
+        <ion-icon slot="start" :icon="headerButtonIcon" />
+        {{ headerButtonText }}
       </ion-button>
     </div>
 
@@ -79,24 +114,39 @@ const isAdministrator = computed(() => {
       <p>Loading...</p>
     </div>
 
-    <ProfileComponent v-else :profile="authStore.getAuthenticatedUser" />
+    <div v-if="authStore.getAuthenticatedUser" class="content-wrapper">
+      <transition name="fade" mode="out-in">
+        <div v-if="!showEditForm" key="profile-view">
+          <ProfileComponent
+            ref="profileComponentRef"
+            :profile="authStore.getAuthenticatedUser"
+            @list-state-change="handleListStateChange" />
 
-    <OAuthButton
-      class="button google-button"
-      v-for="provider in providers"
-      :key="provider"
-      :provider="provider"
-      :linked="linkedProviders.includes(provider)"
-      @unlink="fetchUserData" />
+          <template v-if="!showFollowList.showing">
+            <OAuthButton
+              class="button google-button"
+              v-for="provider in providers"
+              :key="provider"
+              :provider="provider"
+              :linked="linkedProviders.includes(provider)"
+              @unlink="fetchUserData" />
 
-    <div class="button feedback-button" @click="openFeedbackForm"><span>Give Us Feedback</span></div>
+            <div v-if="!isAdministrator" class="button feedback-button" @click="openFeedbackForm">
+              <span>Give Us Feedback</span>
+            </div>
 
-    <div v-if="isAdministrator" class="button administration-button" @click="openAdministrationPanel">
-      <span>Administration Panel</span>
-    </div>
+            <div v-if="isAdministrator" class="button administration-button" @click="openAdministrationPanel">
+              <span>Admin Panel</span>
+            </div>
 
-    <div v-if="authStore.getAuthenticatedUser" class="post-list">
-      <UserContentList :user="authStore.getAuthenticatedUser" />
+            <div class="post-list">
+              <UserContentList :user="authStore.getAuthenticatedUser" />
+            </div>
+          </template>
+        </div>
+
+        <EditProfileForm v-else key="edit-form" @close="closeProfileEditor" />
+      </transition>
     </div>
   </ApplicationViewport>
 </template>
@@ -126,10 +176,23 @@ const isAdministrator = computed(() => {
   }
 }
 
+.content-wrapper {
+  position: relative;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .google-button,
 .feedback-button,
 .administration-button {
-  width: 80%;
+  width: 90%;
   margin: 0 auto;
   padding: 0.4rem 1rem;
   text-align: center;

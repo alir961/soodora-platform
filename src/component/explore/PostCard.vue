@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import {
-  alertController,
-  AlertInput,
   IonButton,
   IonCard,
   IonCardContent,
@@ -17,21 +15,21 @@ import { usePlayerStore } from '@/store/playerStore';
 import { Post } from '@/entity/Post';
 import { callDeletePost, callPostUnrepost, callPostRepost, callGetPostReposts } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { createPostCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
 import { Router, useRouter } from 'vue-router';
 import customLikeIcon from '@/assets/icons/like.svg';
 import customCommentIcon from '@/assets/icons/comment.svg';
 import customRepostIcon from '@/assets/icons/repost.svg';
-import customShareIcon from '@/assets/icons/share.svg';
-import customTrashIcon from '@/assets/icons/trash.svg';
-import customPlayIcon from '@/assets/icons/play.svg';
-import customPauseIcon from '@/assets/icons/pause.svg';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import Avatar from '@/component/user/AvatarItem.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import { showToast } from '@/utils';
 import { useLikeStore } from '@/store/likeStore';
-import SaveTrackButton from '@/component/playlist/SaveTrackButton.vue';
+import customShareIcon from '@/assets/icons/share.svg';
+import customTrashIcon from '@/assets/icons/trash.svg';
+import { addOutline } from 'ionicons/icons';
+import ExportCard from '@/component/actions/ExportCard.vue';
+import DeleteCard from '@/component/actions/DeleteCard.vue';
+import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -60,25 +58,13 @@ const duration = ref(0);
 const currentTime = ref(0);
 const player = usePlayerStore();
 
+const isMusicPost = computed(() => {
+  return props.post.audioUrl && props.post.audioTitle;
+});
+
 function isCurrentTrack(): boolean {
   return !!player.current && player.current.slug === props.post.slug;
 }
-
-const progressBackground = computed(() => {
-  if (duration.value === 0) return '';
-  const percent = (currentTime.value / duration.value) * 100;
-  return `background: linear-gradient(90deg, var(--ion-color-primary) ${percent}%, #161515 ${percent}%)`;
-});
-
-const togglePlay = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-  if (audio.paused) {
-    audio.play();
-  } else {
-    audio.pause();
-  }
-};
 
 const onLoadedMetadata = () => {
   const audio = audioRef.value;
@@ -99,11 +85,6 @@ const onTimeUpdate = () => {
   }
 };
 
-const seekAudio = () => {
-  const audio = audioRef.value;
-  if (audio) audio.currentTime = currentTime.value;
-};
-
 const onAudioPlay = () => {
   isPlaying.value = true;
   document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug } }));
@@ -122,6 +103,7 @@ const onAudioPlay = () => {
     player.setTrack({
       slug: props.post.slug,
       title: props.post.title,
+      audioTitle: props.post.audioTitle,
       artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
       imageUrl: props.post.imageUrl || undefined,
       audioUrl: props.post.audioUrl,
@@ -144,78 +126,6 @@ const onEnded = () => {
     player.isPlaying = false;
     player.updateTime(0);
   }
-};
-
-const exportThemes = [
-  {
-    label: 'Black',
-    type: 'radio',
-    value: 'black',
-  },
-  {
-    label: 'White',
-    type: 'radio',
-    value: 'white',
-  },
-  {
-    label: 'Transparent',
-    type: 'radio',
-    value: 'transparent',
-  },
-] as AlertInput[];
-
-const exportPost = async (post: Post) => {
-  const alert = await alertController.create({
-    header: 'Select theme for export',
-    inputs: exportThemes,
-    buttons: [
-      {
-        text: 'Cancel',
-        role: 'cancel',
-      },
-      {
-        text: 'Export',
-        handler: async (selectedTheme: string) => {
-          if (!selectedTheme) return;
-          try {
-            const canvas = await createPostCanvas(post, selectedTheme as ExportTheme);
-
-            downloadCanvas(canvas);
-            await showToast('Succeed to export post.');
-          } catch (error: unknown) {
-            const message = 'Failed to export post. ' + (error instanceof Error ? error.message : '');
-            await showToast(message, 'danger');
-          }
-        },
-      },
-    ],
-  });
-  await alert.present();
-};
-
-const askDeletePost = async (slug: string) => {
-  const alert = await alertController.create({
-    header: 'Confirm Post Deletion',
-    message: 'Are you sure you want to delete this post?',
-    buttons: [
-      { text: 'Cancel', role: 'cancel' },
-      {
-        text: 'Delete',
-        role: 'destructive',
-        handler: async () => {
-          try {
-            await callDeletePost(slug);
-            emit('post-deleted', slug);
-            await showToast('Succeed to delete post.');
-          } catch (error: unknown) {
-            const message = 'Failed to delete post. ' + (error instanceof Error ? error.message : '');
-            await showToast(message, 'danger');
-          }
-        },
-      },
-    ],
-  });
-  await alert.present();
 };
 
 const loadLikes = async (postSlug: string) => {
@@ -347,6 +257,37 @@ const formatTime = (time: number) => {
   const seconds = Math.floor(time % 60);
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
+
+const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
+const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
+const saveTrackCardRef = ref<InstanceType<typeof SaveTrackCard> | null>(null);
+
+const openExportModal = () => {
+  exportCardRef.value?.open();
+};
+
+const openDeleteConfirm = () => {
+  deleteCardRef.value?.open();
+};
+
+const openSaveTrack = () => {
+  saveTrackCardRef.value?.open();
+};
+
+const handlePostDeleted = (slug: string) => {
+  emit('post-deleted', slug);
+};
+
+const playTrack = () => {
+  const audio = audioRef.value;
+  if (!audio) return;
+
+  if (audio.paused) {
+    audio.play();
+  } else {
+    audio.pause();
+  }
+};
 </script>
 
 <template>
@@ -362,14 +303,63 @@ const formatTime = (time: number) => {
               <UsernameTag :user="post.owner" />
               <DateDisplay :date="post.createdAt" class="post-date" />
             </div>
-            <span class="post-title">{{ post.title }}</span>
+            <span v-show="!isMusicPost" class="post-title">{{ post.title }}</span>
           </div>
         </div>
       </ion-card-header>
       <ion-card-content>
-        <p>{{ post.content }}</p>
-        <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
-        <div v-if="post.audioUrl" class="audio-content">
+        <template v-if="!isMusicPost">
+          <p>{{ post.content }}</p>
+          <ion-img v-show="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
+
+          <div class="settings-container">
+            <div class="post-actions">
+              <ion-button
+                class="like-button"
+                fill="clear"
+                size="default"
+                @click.stop="toggleLikePost(post.slug)"
+                :class="{ 'heart-active': isLiked }">
+                <ion-icon :src="customLikeIcon" />
+                <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button
+                class="comment-button"
+                fill="clear"
+                size="default"
+                @click.stop="redirectToPostComments(post.slug)">
+                <ion-icon :src="customCommentIcon" />
+                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button
+                class="repost-button"
+                fill="clear"
+                size="default"
+                @click.stop="toggleRepostPost(post.slug)"
+                :class="{ 'repost-active': isReposted }">
+                <ion-icon :src="customRepostIcon" />
+                <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
+                <ion-icon :src="customShareIcon" />
+              </ion-button>
+            </div>
+
+            <ion-button
+              v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
+              class="delete-button"
+              fill="clear"
+              size="default"
+              @click.stop="openDeleteConfirm">
+              <ion-icon :src="customTrashIcon" />
+            </ion-button>
+          </div>
+        </template>
+
+        <template v-else>
           <audio
             :src="post.audioUrl"
             ref="audioRef"
@@ -378,80 +368,100 @@ const formatTime = (time: number) => {
             @timeupdate="onTimeUpdate"
             @play="onAudioPlay"
             @pause="onAudioPause"
-            @ended="onEnded" />
-          <div class="custom-audio-controls">
-            <ion-icon :src="isPlaying ? customPauseIcon : customPlayIcon" @click="togglePlay" class="play-pause-icon" />
-            <span class="audio-time">{{ formatTime(currentTime) }}</span>
-            <input
-              class="slider swiper-no-swiping"
-              type="range"
-              min="0"
-              :max="duration"
-              step="0.1"
-              v-model="currentTime"
-              @input="seekAudio"
-              @touchstart.stop
-              @touchmove.stop
-              @touchend.stop
-              @mousedown.stop
-              :style="progressBackground" />
-            <span class="audio-duration">{{ formatTime(duration) }}</span>
-          </div>
-        </div>
-        <p>{{ post.audioTitle }}</p>
-        <div class="settings-container">
-          <div class="post-actions">
-            <ion-button
-              class="like-button"
-              fill="clear"
-              size="default"
-              @click.stop="toggleLikePost(post.slug)"
-              :class="{ 'heart-active': isLiked }">
-              <ion-icon :src="customLikeIcon" />
-              <ion-note v-if="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
-            </ion-button>
+            @ended="onEnded"
+            style="display: none" />
 
-            <ion-button
-              class="comment-button"
-              fill="clear"
-              size="default"
-              @click.stop="redirectToPostComments(post.slug)">
-              <ion-icon :src="customCommentIcon" />
-              <ion-note v-if="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
-            </ion-button>
+          <div class="track-card" @click="playTrack">
+            <div class="track-cover">
+              <img :src="post.imageUrl || '/assets/images/png/no-album-art.png'" :alt="post.audioTitle" />
 
-            <ion-button
-              class="repost-button"
-              fill="clear"
-              size="default"
-              @click.stop="toggleRepostPost(post.slug)"
-              :class="{ 'repost-active': isReposted }">
-              <ion-icon :src="customRepostIcon" />
-              <ion-note v-if="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
-            </ion-button>
+              <div class="visualizer-overlay" :class="{ active: isPlaying && isCurrentTrack() }">
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+                <div class="visualizer-bar"></div>
+              </div>
+            </div>
 
-            <ion-button fill="clear" size="default" @click.stop="exportPost(post)">
-              <ion-icon :src="customShareIcon" />
-            </ion-button>
+            <div class="track-info">
+              <h3 class="track-title">{{ post.audioTitle }}</h3>
+              <p class="track-artist">{{ post.owner.username || post.owner.slug }}</p>
+            </div>
 
-            <SaveTrackButton
-              :postSlug="post.slug"
-              :audioTitle="post.audioTitle"
-              :audioUrl="post.audioUrl"
-              :currentPlaylistSlug="currentPlaylistSlug" />
+            <div class="track-meta">
+              <span class="track-duration">{{ formatTime(duration) }}</span>
+              <button class="track-save-btn" @click.stop="openSaveTrack" title="Add to playlist">
+                <ion-icon :icon="addOutline" />
+              </button>
+            </div>
           </div>
 
-          <ion-button
-            v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
-            fill="clear"
-            size="default"
-            @click.stop="askDeletePost(post.slug)"
-            class="delete-button">
-            <ion-icon :src="customTrashIcon" />
-          </ion-button>
-        </div>
+          <div class="settings-container music-actions">
+            <div class="post-actions">
+              <ion-button
+                class="like-button"
+                fill="clear"
+                size="default"
+                @click.stop="toggleLikePost(post.slug)"
+                :class="{ 'heart-active': isLiked }">
+                <ion-icon :src="customLikeIcon" />
+                <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button
+                class="comment-button"
+                fill="clear"
+                size="default"
+                @click.stop="redirectToPostComments(post.slug)">
+                <ion-icon :src="customCommentIcon" />
+                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button
+                class="repost-button"
+                fill="clear"
+                size="default"
+                @click.stop="toggleRepostPost(post.slug)"
+                :class="{ 'repost-active': isReposted }">
+                <ion-icon :src="customRepostIcon" />
+                <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
+              </ion-button>
+
+              <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
+                <ion-icon :src="customShareIcon" />
+              </ion-button>
+            </div>
+
+            <ion-button
+              v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+              class="delete-button"
+              fill="clear"
+              size="default"
+              @click.stop="openDeleteConfirm">
+              <ion-icon :src="customTrashIcon" />
+            </ion-button>
+          </div>
+        </template>
       </ion-card-content>
     </ion-card>
+
+    <ExportCard :item="post" type="post" ref="exportCardRef" />
+
+    <DeleteCard
+      item-type="post"
+      :item-slug="post.slug"
+      :delete-function="callDeletePost"
+      @deleted="handlePostDeleted"
+      ref="deleteCardRef" />
+
+    <SaveTrackCard
+      v-show="isMusicPost"
+      :post-slug="post.slug"
+      :audio-title="post.audioTitle"
+      :audio-url="post.audioUrl"
+      :image-url="post.imageUrl"
+      :current-playlist-slug="currentPlaylistSlug"
+      ref="saveTrackCardRef" />
   </ion-col>
 </template>
 
@@ -649,6 +659,16 @@ ion-avatar img {
   --padding-end: 0;
 }
 
+.export-button {
+  --padding-end: 0;
+  --color: #60a5fa;
+  color: #60a5fa;
+}
+
+.save-button {
+  --padding-end: 0;
+}
+
 .settings-container ion-button.heart-active {
   --color: var(--ion-color-primary);
   color: var(--ion-color-primary);
@@ -662,5 +682,244 @@ ion-avatar img {
 .delete-button {
   --padding-start: 0;
   --padding-end: 0;
+  --color: #f87171;
+  color: #f87171;
+}
+
+.track-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(13, 27, 42, 0.6), rgba(9, 18, 30, 0.5));
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+.track-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent 50%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.track-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.track-card:hover::before {
+  opacity: 1;
+}
+
+.track-card:active {
+  transform: translateY(0);
+}
+
+.track-cover {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.track-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.track-card:hover .track-cover img {
+  transform: scale(1.05);
+}
+
+.visualizer-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 10px;
+}
+
+.visualizer-overlay.active {
+  opacity: 1;
+}
+
+.visualizer-bar {
+  width: 3px;
+  height: 12px;
+  background: linear-gradient(to top, #60a5fa, #93c5fd);
+  border-radius: 2px;
+  transform-origin: bottom;
+  animation: visualize 0.6s ease-in-out infinite;
+}
+
+.visualizer-bar:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.visualizer-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.visualizer-bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.visualizer-bar:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+@keyframes visualize {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+  }
+  50% {
+    transform: scaleY(1.5);
+  }
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.track-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.track-artist {
+  font-size: 0.85rem;
+  color: #9aa3ad;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.track-duration {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #9aa3ad;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+}
+
+.track-save-btn {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  background: rgba(59, 130, 246, 0.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #60a5fa;
+}
+
+.track-save-btn ion-icon {
+  font-size: 20px;
+}
+
+.track-save-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
+}
+
+.track-save-btn:active {
+  transform: scale(0.95);
+}
+
+.music-actions {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .track-card {
+    padding: 0.6rem;
+    gap: 0.875rem;
+    border-radius: 16px;
+  }
+
+  .track-cover {
+    width: 56px;
+    height: 56px;
+  }
+
+  .visualizer-bar {
+    width: 2.5px;
+    height: 10px;
+    gap: 2px;
+  }
+
+  .track-title {
+    font-size: 0.95rem;
+  }
+
+  .track-artist {
+    font-size: 0.8rem;
+  }
+
+  .track-duration {
+    font-size: 0.85rem;
+    min-width: 36px;
+  }
+
+  .track-save-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .track-save-btn ion-icon {
+    font-size: 18px;
+  }
 }
 </style>

@@ -9,6 +9,7 @@
 *.sublime-project
 *.sublime-workspace
 .DS_Store
+.gitignore
 Thumbs.db
 UserInterfaceState.xcuserstate
 $RECYCLE.BIN/
@@ -30,3 +31,4 @@ npm-debug.log*
 /platforms
 /plugins
 /www
+/AGENTS.md
