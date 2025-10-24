@@ -179,25 +179,22 @@ async function submitUpdate() {
   }
 }
 
-const showDeletePageModal = ref(false);
-const showDeleteLinkModal = ref(false);
 const deletingLinkIndex = ref<number | null>(null);
 
 const deletePageCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const deleteLinkCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
 const deletePage = () => {
-  showDeletePageModal.value = true;
+  deletePageCardRef.value?.open();
 };
 
 const handlePageDeleted = async () => {
   await router.push('/linkpages');
-  showDeletePageModal.value = false;
 };
 
 const submitLinkDeletion = (index: number) => {
   deletingLinkIndex.value = index;
-  showDeleteLinkModal.value = true;
+  deleteLinkCardRef.value?.open();
 };
 
 const handleLinkDeleted = async () => {
@@ -205,7 +202,6 @@ const handleLinkDeleted = async () => {
     links.value.splice(deletingLinkIndex.value, 1);
     deletingLinkIndex.value = null;
   }
-  showDeleteLinkModal.value = false;
 };
 
 const deleteLinkFunction = async () => {
@@ -529,22 +525,18 @@ const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.va
     </ion-content>
 
     <DeleteCard
-      v-if="showDeletePageModal"
       item-type="link hub"
       :item-slug="pageSlug || 'page'"
       :delete-function="deleteLinkPage"
       @deleted="handlePageDeleted"
-      ref="deletePageCardRef"
-      @vue:mounted="deletePageCardRef?.open()" />
+      ref="deletePageCardRef" />
 
     <DeleteCard
-      v-if="showDeleteLinkModal && deletingLinkIndex !== null"
       item-type="link"
-      :item-slug="links[deletingLinkIndex]?.slug || 'new-link'"
+      :item-slug="deletingLinkIndex !== null ? (links[deletingLinkIndex]?.slug ?? 'new-link') : 'new-link'"
       :delete-function="deleteLinkFunction"
       @deleted="handleLinkDeleted"
-      ref="deleteLinkCardRef"
-      @vue:mounted="deleteLinkCardRef?.open()" />
+      ref="deleteLinkCardRef" />
   </ApplicationViewport>
 </template>
 

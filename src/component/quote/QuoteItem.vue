@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
 import { useRouter } from 'vue-router';
 import type { QuoteDTO } from '@/entity/Quote';
 import { IonItem, IonLabel, IonIcon } from '@ionic/vue';

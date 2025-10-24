@@ -1,6 +1,7 @@
-describe('My First Test', () => {
-  it('Visits the app root url', () => {
+describe('App Root', () => {
+  it('Visits the app root url and finds Soodora', () => {
     cy.visit('/');
-    cy.contains('#container', 'Ready to create an app?');
+    cy.get('#app').should('exist');
+    cy.contains('Soodora');
   });
 });

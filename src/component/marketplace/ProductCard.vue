@@ -30,20 +30,20 @@ const router = useRouter();
 const showPurchaseSheet = ref(false);
 const showImagePreview = ref(false);
 const modalImageSrc = ref('');
-const productImageHeight = ref(0);
+
 const localProduct = ref<Product>({ ...props.product });
 
 const quantity = ref(1);
 const maxQuantity = ref(0);
-const showExportModal = ref(false);
-const showDeleteModal = ref(false);
-
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
-const onProductImageLoad = (event: Event) => {
-  const img = event.target as HTMLImageElement;
-  productImageHeight.value = img.clientHeight;
+const openExportModal = () => {
+  exportCardRef.value?.open();
+};
+
+const openDeleteConfirm = () => {
+  deleteCardRef.value?.open();
 };
 
 const openImageModal = (src: string, productQuantity: number | null) => {
@@ -109,17 +109,8 @@ const openEditModal = () => {
   router.push(`/marketplace/product/${localProduct.value.slug}/edit`);
 };
 
-const openExportModal = () => {
-  showExportModal.value = true;
-};
-
-const openDeleteConfirm = () => {
-  showDeleteModal.value = true;
-};
-
 const handleProductDeleted = (slug: string) => {
   emit('product-deleted', slug);
-  showDeleteModal.value = false;
 };
 </script>
 
@@ -127,28 +118,22 @@ const handleProductDeleted = (slug: string) => {
   <ion-col size="12" size-md="6" size-lg="4" class="product-col">
     <ion-card class="product-card">
       <div class="card-image-wrapper" @click="openImagePreview">
-        <img :src="localProduct.imageUrl" :alt="`Product ${localProduct.name}`" @load="onProductImageLoad" />
+        <img :src="localProduct.imageUrl" :alt="`Product ${localProduct.name}`" />
 
         <div class="card-actions" @click.stop>
           <button class="action-icon export" @click="openExportModal" title="Export">
             <ion-icon :src="customShareIcon" />
           </button>
 
-          <button
-            v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
-            class="action-icon edit"
-            @click="openEditModal"
-            title="Edit">
-            <ion-icon :src="pencil" />
-          </button>
+          <template v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug">
+            <button class="action-icon edit" @click="openEditModal" title="Edit">
+              <ion-icon :src="pencil" />
+            </button>
 
-          <button
-            v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug"
-            class="action-icon delete"
-            @click="openDeleteConfirm"
-            title="Delete">
-            <ion-icon :src="customTrashIcon" />
-          </button>
+            <button class="action-icon delete" @click="openDeleteConfirm" title="Delete">
+              <ion-icon :src="customTrashIcon" />
+            </button>
+          </template>
         </div>
 
         <div class="price-badge">
@@ -248,21 +233,14 @@ const handleProductDeleted = (slug: string) => {
       </transition>
     </Teleport>
 
-    <ExportCard
-      v-if="showExportModal"
-      :item="localProduct"
-      type="product"
-      ref="exportCardRef"
-      @vue:mounted="exportCardRef?.open()" />
+    <ExportCard :item="localProduct" type="product" ref="exportCardRef" />
 
     <DeleteCard
-      v-if="showDeleteModal"
       item-type="product"
       :item-slug="localProduct.slug"
       :delete-function="callDeleteProduct"
       @deleted="handleProductDeleted"
-      ref="deleteCardRef"
-      @vue:mounted="deleteCardRef?.open()" />
+      ref="deleteCardRef" />
   </ion-col>
 </template>
 

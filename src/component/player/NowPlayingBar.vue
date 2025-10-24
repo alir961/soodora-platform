@@ -115,7 +115,7 @@ watch(
 const openSaveTrack = async () => {
   if (!player.current) return;
 
-  const { default: SaveTrackButton } = await import('@/component/playlist/SaveTrackCard.vue');
+  const { default: SaveTrackButton } = await import('@/component/actions/SaveTrackCard.vue');
 
   const container = document.createElement('div');
   document.body.appendChild(container);

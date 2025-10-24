@@ -64,7 +64,25 @@ const loadPlaylists = async () => {
     if (!userSlug) return;
 
     const response = await searchPlaylists(userSlug);
-    allPlaylists.value = response.content;
+    const playlistsWithCounts: Playlist[] = [];
+    const defaultPage = { page: 0, size: 20 };
+    for (const pl of response.content) {
+      try {
+        const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
+        // Use totalElements if available, otherwise fallback to content.length
+        const postCount = fullPlaylist?.postDTO?.page?.totalElements ?? fullPlaylist?.postDTO?.content?.length ?? 0;
+        playlistsWithCounts.push({
+          ...pl,
+          postCount,
+        });
+      } catch (err) {
+        playlistsWithCounts.push({
+          ...pl,
+          postCount: 0,
+        });
+      }
+    }
+    allPlaylists.value = playlistsWithCounts;
     selectedPlaylists.value = new Set(savedPlaylistsSlugs.value);
   } catch (error) {
     console.error('Failed to load playlists', error);

@@ -29,7 +29,7 @@ import customTrashIcon from '@/assets/icons/trash.svg';
 import { addOutline } from 'ionicons/icons';
 import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
-import SaveTrackCard from '@/component/playlist/SaveTrackCard.vue';
+import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -258,29 +258,24 @@ const formatTime = (time: number) => {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
-const showExportModal = ref(false);
-const showDeleteModal = ref(false);
-const showSaveTrackModal = ref(false);
-
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const saveTrackCardRef = ref<InstanceType<typeof SaveTrackCard> | null>(null);
 
 const openExportModal = () => {
-  showExportModal.value = true;
+  exportCardRef.value?.open();
 };
 
 const openDeleteConfirm = () => {
-  showDeleteModal.value = true;
+  deleteCardRef.value?.open();
 };
 
 const openSaveTrack = () => {
-  showSaveTrackModal.value = true;
+  saveTrackCardRef.value?.open();
 };
 
 const handlePostDeleted = (slug: string) => {
   emit('post-deleted', slug);
-  showDeleteModal.value = false;
 };
 
 const playTrack = () => {
@@ -308,14 +303,14 @@ const playTrack = () => {
               <UsernameTag :user="post.owner" />
               <DateDisplay :date="post.createdAt" class="post-date" />
             </div>
-            <span v-if="!isMusicPost" class="post-title">{{ post.title }}</span>
+            <span v-show="!isMusicPost" class="post-title">{{ post.title }}</span>
           </div>
         </div>
       </ion-card-header>
       <ion-card-content>
         <template v-if="!isMusicPost">
           <p>{{ post.content }}</p>
-          <ion-img v-if="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
+          <ion-img v-show="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
 
           <div class="settings-container">
             <div class="post-actions">
@@ -326,7 +321,7 @@ const playTrack = () => {
                 @click.stop="toggleLikePost(post.slug)"
                 :class="{ 'heart-active': isLiked }">
                 <ion-icon :src="customLikeIcon" />
-                <ion-note v-if="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
+                <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -335,7 +330,7 @@ const playTrack = () => {
                 size="default"
                 @click.stop="redirectToPostComments(post.slug)">
                 <ion-icon :src="customCommentIcon" />
-                <ion-note v-if="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -345,7 +340,7 @@ const playTrack = () => {
                 @click.stop="toggleRepostPost(post.slug)"
                 :class="{ 'repost-active': isReposted }">
                 <ion-icon :src="customRepostIcon" />
-                <ion-note v-if="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
+                <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
               </ion-button>
 
               <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
@@ -354,7 +349,7 @@ const playTrack = () => {
             </div>
 
             <ion-button
-              v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+              v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
               class="delete-button"
               fill="clear"
               size="default"
@@ -410,7 +405,7 @@ const playTrack = () => {
                 @click.stop="toggleLikePost(post.slug)"
                 :class="{ 'heart-active': isLiked }">
                 <ion-icon :src="customLikeIcon" />
-                <ion-note v-if="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
+                <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -419,7 +414,7 @@ const playTrack = () => {
                 size="default"
                 @click.stop="redirectToPostComments(post.slug)">
                 <ion-icon :src="customCommentIcon" />
-                <ion-note v-if="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -429,7 +424,7 @@ const playTrack = () => {
                 @click.stop="toggleRepostPost(post.slug)"
                 :class="{ 'repost-active': isReposted }">
                 <ion-icon :src="customRepostIcon" />
-                <ion-note v-if="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
+                <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
               </ion-button>
 
               <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
@@ -450,31 +445,23 @@ const playTrack = () => {
       </ion-card-content>
     </ion-card>
 
-    <ExportCard
-      v-if="showExportModal"
-      :item="post"
-      type="post"
-      ref="exportCardRef"
-      @vue:mounted="exportCardRef?.open()" />
+    <ExportCard :item="post" type="post" ref="exportCardRef" />
 
     <DeleteCard
-      v-if="showDeleteModal"
       item-type="post"
       :item-slug="post.slug"
       :delete-function="callDeletePost"
       @deleted="handlePostDeleted"
-      ref="deleteCardRef"
-      @vue:mounted="deleteCardRef?.open()" />
+      ref="deleteCardRef" />
 
     <SaveTrackCard
-      v-if="showSaveTrackModal && isMusicPost"
+      v-show="isMusicPost"
       :post-slug="post.slug"
       :audio-title="post.audioTitle"
       :audio-url="post.audioUrl"
       :image-url="post.imageUrl"
       :current-playlist-slug="currentPlaylistSlug"
-      ref="saveTrackCardRef"
-      @vue:mounted="saveTrackCardRef?.open()" />
+      ref="saveTrackCardRef" />
   </ion-col>
 </template>
 
