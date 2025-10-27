@@ -127,9 +127,9 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void likePost(String postSlug, UserDTO user) {
+    public void likePost(String postSlug, UserDTO userDto) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(userDto.slug());
 
         boolean alreadyLiked = post.getLikes().stream()
                 .anyMatch(like -> like.getUser().getId().equals(userEntity.getId()));
@@ -139,11 +139,11 @@ public class PostRepositoryImpl implements PostRepository {
             like.setSlug(generateUniqueSlug());
             like.setUser(userEntity);
             like.setPost(post);
-
             post.getLikes().add(like);
 
             if (!post.getAudioTitle().isEmpty()) {
-                playlistJpaRepository.findByName(LIKED_AUDIO_PLAYLIST_NAME)
+                playlistJpaRepository
+                        .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
                         .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
                                 playlist.getSlug(), postSlug, Pageable.unpaged()));
             }
@@ -161,7 +161,8 @@ public class PostRepositoryImpl implements PostRepository {
         boolean removed = post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
 
         if (removed && !post.getAudioTitle().isEmpty()) {
-            playlistJpaRepository.findByName(LIKED_AUDIO_PLAYLIST_NAME)
+            playlistJpaRepository
+                    .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
                     .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
                             playlist.getSlug(), postSlug, Pageable.unpaged()));
         }

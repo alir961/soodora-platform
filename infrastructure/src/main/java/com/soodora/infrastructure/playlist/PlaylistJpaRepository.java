@@ -1,5 +1,7 @@
 package com.soodora.infrastructure.playlist;
 
+import com.soodora.infrastructure.user.UserEntity;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +15,6 @@ public interface PlaylistJpaRepository
 
     Optional<PlaylistEntity> findBySlug(String slug);
 
-    Optional<PlaylistEntity> findByName(String name);
+    Optional<PlaylistEntity> findByUserAndName(UserEntity user, String name);
 
 }

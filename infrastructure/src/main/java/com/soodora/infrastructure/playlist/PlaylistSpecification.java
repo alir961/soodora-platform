@@ -7,10 +7,12 @@ import org.springframework.data.jpa.domain.Specification;
 public class PlaylistSpecification {
 
     public static Specification<PlaylistEntity> build(PlaylistFilter filter) {
-        Specification<PlaylistEntity> spec = null;
+        Specification<PlaylistEntity> spec;
 
         if (filter.userSlug().isPresent())
-            spec = appendSpec(spec, hasUserSlug(filter.userSlug().get()));
+            spec = hasUserSlug(filter.userSlug().get());
+        else
+            spec = notPrivate();
 
         if (filter.name().isPresent())
             spec = appendSpec(spec, hasName(filter.name().get()));
@@ -39,6 +41,10 @@ public class PlaylistSpecification {
 
     private static Specification<PlaylistEntity> hasDescription(String description) {
         return (root, query, cb) -> cb.like(cb.lower(root.get("description")), "%" + description.toLowerCase() + "%");
+    }
+
+    private static Specification<PlaylistEntity> notPrivate() {
+        return (root, query, cb) -> cb.notEqual(root.get("privacy"), 1);
     }
 
 }
