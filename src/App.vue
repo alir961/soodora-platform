@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { IonApp, IonIcon, IonLabel, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs } from '@ionic/vue';
-import { cartOutline, addCircleOutline, searchOutline, personOutline, planetOutline } from 'ionicons/icons';
+import {
+  cartOutline,
+  addCircleOutline,
+  searchOutline,
+  personOutline,
+  planetOutline,
+  musicalNoteOutline,
+} from 'ionicons/icons';
 import { capitalize } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { ref, computed, watchEffect, onMounted } from 'vue';
@@ -22,6 +29,7 @@ const tabs: TabEntry[] = [
   { name: 'marketplace', icon: cartOutline, requiresAuth: false },
   { name: 'create', icon: addCircleOutline, requiresAdminOrUser: true },
   { name: 'search', icon: searchOutline, requiresAuth: false },
+  { name: 'playlists', icon: musicalNoteOutline, requiresAuth: true },
   { name: 'authentication', icon: personOutline, requiresAuth: false },
   { name: 'profile', icon: personOutline, requiresAuth: true },
 ];

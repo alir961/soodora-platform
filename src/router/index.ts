@@ -8,7 +8,6 @@ import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
 import CommentView from '@/view/explore/CommentView.vue';
-import CreateView from '@/view/create/CreateView.vue';
 import LinkPageView from '@/view/create/LinkPageView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
@@ -16,14 +15,16 @@ import MySaleView from '@/view/marketplace/MySaleView.vue';
 import ConfirmationView from '@/view/user/ConfirmationView.vue';
 import MediaKitCreateView from '@/view/create/MediaKitCreateView.vue';
 import MediaKitEditView from '@/view/mediakit/MediaKitEditView.vue';
-import PlaylistView from '@/view/playlist/PlaylistView.vue';
-import PlaylistCreateView from '@/view/create/PlaylistCreateView.vue';
-import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import QuoteCreateView from '@/view/create/QuoteCreateView.vue';
 import QuoteDetailsView from '@/view/quote/QuoteDetailsView.vue';
 import QuoteView from '@/view/quote/QuoteView.vue';
 import ProductFormView from '@/view/marketplace/ProductFormView.vue';
 import PostFormView from '@/view/explore/PostFormView.vue';
+import PlaylistView from '@/view/playlist/PlaylistView.vue';
+import PlaylistCreateView from '@/view/playlist/PlaylistCreateView.vue';
+import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
+import PlaylistMeView from '@/view/playlist/PlaylistMeView.vue';
+import CreateView from '@/view/create/CreateView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -119,6 +120,11 @@ const routes: Array<RouteRecordRaw> = [
     component: MediaKitEditView,
   },
   {
+    path: '/playlists',
+    name: 'PlaylistView',
+    component: PlaylistView,
+  },
+  {
     path: '/playlists/create',
     name: 'PlaylistCreateView',
     component: PlaylistCreateView,
@@ -130,8 +136,8 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/playlists/me',
-    name: 'PlaylistView',
-    component: PlaylistView,
+    name: 'PlaylistMeView',
+    component: PlaylistMeView,
   },
   {
     path: '/quotes/create',

@@ -25,6 +25,7 @@ const loadQuotesForUser = async () => {
   loading.value = true;
   try {
     const params: QuoteSearchParams = {
+      userSlug: userSlug,
       clientName: searchQuery.value,
       page: 0,
       size: 50,
