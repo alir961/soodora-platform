@@ -1,67 +1,65 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
-import { searchPlaylists } from '@/client/playlistClient';
-import { Playlist } from '@/entity/Playlist';
+import { IonButton, IonIcon } from '@ionic/vue';
+import { createOutline, playCircle } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { useAuthStore } from '@/store/reactiveStorage';
-import { IonButton, IonContent, IonHeader, IonIcon, IonList, IonLoading, IonTitle, IonToolbar } from '@ionic/vue';
-import { arrowBackOutline } from 'ionicons/icons';
-import PlaylistItem from '@/component/playlist/PlaylistItem.vue';
-import { showToast } from '@/utils';
 
-const playlists = ref<Playlist[]>([]);
-const loading = ref(false);
-const authStore = useAuthStore();
+const router = useRouter();
 
-const loadPlaylistsForUser = async (userSlug: string) => {
-  loading.value = true;
-  try {
-    const playlistPage = await searchPlaylists(userSlug);
-    playlists.value = playlistPage.content;
-  } catch (err) {
-    const message = (err as Error)?.message ?? 'Unable to load playlists';
-    playlists.value = [];
-    await showToast(message, 'danger');
-  } finally {
-    loading.value = false;
-  }
+const goToPlaylists = async () => {
+  return router.push(`/playlists/create`);
 };
 
-watchEffect(() => {
-  const slug = authStore.getAuthenticatedUserSlug;
-  if (slug) loadPlaylistsForUser(slug);
-});
+const goToMyPlaylists = async () => {
+  return router.push(`/playlists/me`);
+};
 </script>
 
 <template>
-  <ApplicationViewport title="Playlists">
-    <IonHeader>
-      <IonToolbar>
-        <IonButton class="inline-back-button" slot="start" fill="clear" @click="$router.back()">
-          <IonIcon :icon="arrowBackOutline" />
-          Back
-        </IonButton>
-        <IonTitle>My Playlists</IonTitle>
-      </IonToolbar>
-    </IonHeader>
+  <ApplicationViewport title="Playlists" authenticated>
+    <div class="create-container ion-padding">
+      <h1 class="page-title">Playlists</h1>
+      <p class="page-description">Create your mood with Soodora.</p>
 
-    <IonContent class="ion-padding">
-      <IonLoading :is-open="loading" message="Loading playlists..." />
+      <ion-button @click="goToPlaylists" expand="block" class="go-button" color="primary" fill="solid">
+        Create Playlists
+        <ion-icon :icon="createOutline" slot="end"></ion-icon>
+      </ion-button>
 
-      <IonList v-if="!loading && playlists.length">
-        <PlaylistItem v-for="p in playlists" :key="p.slug" :playlist="p" />
-      </IonList>
-
-      <div v-if="!loading && !playlists.length" class="ion-text-center ion-padding">
-        <p>No playlists found.</p>
-      </div>
-    </IonContent>
+      <ion-button @click="goToMyPlaylists" expand="block" class="go-button" color="secondary" fill="solid">
+        My Playlists
+        <ion-icon :icon="playCircle" slot="end"></ion-icon>
+      </ion-button>
+    </div>
   </ApplicationViewport>
 </template>
 
 <style scoped>
-.inline-back-button {
+.create-container {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  margin: 20px;
+  padding: 10px 20px;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 0;
+}
+
+.page-description {
+  font-size: 19px;
+  color: var(--ion-color-medium);
+  margin-bottom: 20px;
+}
+
+.go-button {
+  margin-top: 12px;
+  border-radius: 12px;
+}
+
+ion-button.go-button::part(native) {
+  color: white !important;
 }
 </style>

@@ -63,6 +63,7 @@ export interface UpdateQuoteArticleRequest {
 }
 
 export interface QuoteSearchParams {
+  userSlug?: string;
   clientName?: string;
   name?: string;
   description?: string;

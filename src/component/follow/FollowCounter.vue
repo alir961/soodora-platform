@@ -51,8 +51,8 @@ const closeList = () => {
   emit('list-closed');
 };
 
-const navigateToProfile = (username: string) => {
-  router.push(`/profile/${username}`);
+const navigateToProfile = (slug: string) => {
+  router.push(`/user/${slug}`);
 };
 
 onMounted(() => {
@@ -89,7 +89,7 @@ defineExpose({ closeList });
         v-for="user in showList === 'followers' ? followers : following"
         :key="user.username"
         class="user-card"
-        @click="navigateToProfile(user.username)">
+        @click="navigateToProfile(user.slug)">
         <div class="user-avatar">
           <img v-if="user.avatarUrl" :src="user.avatarUrl" :alt="user.username" />
           <div v-else class="avatar-placeholder">

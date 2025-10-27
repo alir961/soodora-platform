@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonButton, IonIcon } from '@ionic/vue';
 
-import { createOutline, bagAddOutline, linkOutline, playCircle, documentLock } from 'ionicons/icons';
+import { createOutline, bagAddOutline, linkOutline, documentLock } from 'ionicons/icons';
 import { ref, watch } from 'vue';
 import { getUserLinkPage } from '@/client/linkPageClient';
 import { useAuthStore } from '@/store/reactiveStorage';
@@ -74,7 +74,7 @@ const goToMediaKit = async () => {
   try {
     const userPage = await getMediaKitByArtistSlug(userSlug);
     if (userPage) {
-      router.push(`/mediakits/${userPage.slug}`);
+      await router.push(`/mediakits/${userPage.slug}`);
       return;
     }
   } catch (error: unknown) {
@@ -82,15 +82,7 @@ const goToMediaKit = async () => {
     console.log('Error fetching Media Kit:', message);
   }
 
-  router.push('/mediakits/create');
-};
-
-const goToPlaylists = async () => {
-  return router.push(`/playlists/create`);
-};
-
-const goToMyPlaylists = async () => {
-  return router.push(`/playlists/me`);
+  await router.push('/mediakits/create');
 };
 
 const goToQuotes = async () => {
@@ -134,16 +126,6 @@ const goToMyQuotes = async () => {
       <ion-button @click="goToMediaKit" expand="block" class="go-button" color="primary" fill="solid">
         Create MediaKit
         <ion-icon :icon="createOutline" slot="end"></ion-icon>
-      </ion-button>
-
-      <ion-button @click="goToPlaylists" expand="block" class="go-button" color="primary" fill="solid">
-        Create Playlists
-        <ion-icon :icon="createOutline" slot="end"></ion-icon>
-      </ion-button>
-
-      <ion-button @click="goToMyPlaylists" expand="block" class="go-button" color="secondary" fill="solid">
-        My Playlists
-        <ion-icon :icon="playCircle" slot="end"></ion-icon>
       </ion-button>
 
       <ion-button @click="goToQuotes" expand="block" class="go-button" color="primary" fill="solid">
