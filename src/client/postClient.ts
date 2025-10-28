@@ -199,6 +199,7 @@ async function callDeleteComment(postSlug: string, commentSlug: string): Promise
 
 async function callSearchPosts(
   title: string | null,
+  audioTitle: string | null,
   description: string | null,
   hasAudio: boolean = false,
   pageNumber: number,
@@ -209,6 +210,7 @@ async function callSearchPosts(
     const params = new URLSearchParams();
 
     if (title) params.append('title', title);
+    if (audioTitle) params.append('audioTitle', audioTitle);
     if (description) params.append('description', description);
     if (hasAudio) params.append('hasAudio', hasAudio.toString());
 

@@ -2,6 +2,7 @@ import { Post } from '@/entity/Post';
 
 interface PostSearchParams {
   title?: string;
+  audioTitle?: string;
   description?: string;
   hasAudio?: boolean;
   page: number;

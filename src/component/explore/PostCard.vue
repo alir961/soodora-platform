@@ -157,12 +157,10 @@ const toggleRepostPost = async (postSlug: string) => {
       await callPostUnrepost(postSlug);
       isReposted.value = false;
       emit('post-unrepost');
-      await showToast('Succeed to unrepost post.');
     } else {
       await callPostRepost(postSlug);
       isReposted.value = true;
       emit('post-repost');
-      await showToast('Succeed to repost post.');
     }
   } catch (error: unknown) {
     const message = 'Unable to update repost. ' + (error instanceof Error ? error.message : '');
@@ -427,7 +425,12 @@ const playTrack = () => {
                 <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
               </ion-button>
 
-              <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
+              <ion-button
+                v-if="!post.audioTitle"
+                class="export-button"
+                fill="clear"
+                size="default"
+                @click.stop="openExportModal">
                 <ion-icon :src="customShareIcon" />
               </ion-button>
             </div>
@@ -445,7 +448,7 @@ const playTrack = () => {
       </ion-card-content>
     </ion-card>
 
-    <ExportCard :item="post" type="post" ref="exportCardRef" />
+    <ExportCard v-if="!post.audioTitle" :item="post" type="post" ref="exportCardRef" />
 
     <DeleteCard
       item-type="post"
