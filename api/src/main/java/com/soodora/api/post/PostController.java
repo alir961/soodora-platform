@@ -67,9 +67,10 @@ public class PostController {
             @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "hasAudio") Optional<Boolean> hasAudio,
             @RequestParam(value = "title") Optional<String> title,
+            @RequestParam(value = "audioTitle") Optional<String> audioTitle,
             @RequestParam(value = "description") Optional<String> description,
             Pageable pageable) {
-        PostFilter filter = new PostFilter(userSlug, hasAudio, title, description);
+        PostFilter filter = new PostFilter(userSlug, hasAudio, title, audioTitle, description);
 
         return postService.retrievePosts(filter, pageable);
     }
@@ -131,7 +132,7 @@ public class PostController {
 
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(@RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
 
         return postService.retrieveUserLikes(filter);
     }
@@ -139,7 +140,7 @@ public class PostController {
     @GetMapping("/comments")
     public List<CommentDTO> getUserComments(
             @RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
         return postService.retrieveUserComments(filter);
     }
 

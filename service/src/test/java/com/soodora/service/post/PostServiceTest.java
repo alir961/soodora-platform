@@ -77,7 +77,7 @@ class PostServiceTest {
     @Test
     void retrievePosts_NoFilter() {
         // GIVEN
-        PostFilter noFilter = new PostFilter(empty(), empty(), empty(), empty());
+        PostFilter noFilter = new PostFilter(empty(), empty(), empty(), empty(), empty());
 
         when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS);
 
@@ -91,7 +91,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -110,7 +110,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterHasAudioUrl_True() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), of(true), empty(), empty());
+        PostFilter filter = new PostFilter(empty(), of(true), empty(), empty(), empty());
 
         List<PostDTO> postsWithAudio = List.of(POST_1, POST_2);
         Page<PostDTO> pageWithAudio = new PageImpl<>(postsWithAudio, PAGEABLE, postsWithAudio.size());
@@ -128,7 +128,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterHasAudioUrl_False() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), of(false), empty(), empty());
+        PostFilter filter = new PostFilter(empty(), of(false), empty(), empty(), empty());
 
         List<PostDTO> postsWithoutAudio = List.of(POST_4_WITHOUT_AUDIO);
         Page<PostDTO> pageWithoutAudio = new PageImpl<>(postsWithoutAudio, PAGEABLE, postsWithoutAudio.size());
@@ -146,7 +146,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_True() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(true), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), of(true), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -164,7 +164,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_False() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(false), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), of(false), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_4_WITHOUT_AUDIO);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -410,7 +410,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
         List<LikeDTO> expected = List.of(
                 new PostLikeDTO(POST_1.slug(), USER, new Date()),
                 new CommentLikeDTO("comment-slug", USER, new Date()));
@@ -426,7 +426,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserLikes(filter));
@@ -435,7 +435,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
         List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
         when(userRepository.retrievePostComments(any())).thenReturn(expected);
 
@@ -449,7 +449,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithoutUserSlug_ThrowsException() {
         // GIVEN
-        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(empty(), empty(), empty(), empty(), empty());
 
         // WHEN & THEN
         assertThrows(MissingUserSlugException.class, () -> postService.retrieveUserComments(filter));
