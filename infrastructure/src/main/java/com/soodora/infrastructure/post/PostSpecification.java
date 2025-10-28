@@ -20,6 +20,9 @@ public class PostSpecification {
         if (filter.title().isPresent())
             spec = appendSpec(spec, hasTitle(filter.title().get()));
 
+        if (filter.audioTitle().isPresent())
+            spec = appendSpec(spec, hasAudioTitle(filter.audioTitle().get()));
+
         if (filter.description().isPresent())
             spec = appendSpec(spec, hasDescription(filter.description().get()));
 
@@ -56,6 +59,10 @@ public class PostSpecification {
 
     private static Specification<PostEntity> hasTitle(String title) {
         return (root, query, cb) -> cb.like(cb.lower(root.get("title")), "%" + title.toLowerCase() + "%");
+    }
+
+    private static Specification<PostEntity> hasAudioTitle(String audioTitle) {
+        return (root, query, cb) -> cb.like(cb.lower(root.get("audioTitle")), "%" + audioTitle.toLowerCase() + "%");
     }
 
     private static Specification<PostEntity> hasDescription(String description) {

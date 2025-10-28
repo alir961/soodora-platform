@@ -25,7 +25,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.lang.String.valueOf;
+import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -178,14 +178,20 @@ class PostControllerIT {
     }
 
     @Test
-    void givenValidFilter_whenSearchPosts_thenRetrieveFilteredPosts() throws Exception {
+    void givenAudioTitleFilter_whenSearchPosts_thenRetrieveFilteredAudioPosts() throws Exception {
         // GIVEN
         String userSlug = "slug1";
         boolean hasAudio = true;
-        String title = "title1";
+        String audioTitle = "audioTitle1";
         String description = "description1";
         Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
-        PostFilter postFilter = new PostFilter(of(userSlug), of(hasAudio), of(title), of(description));
+
+        PostFilter postFilter = new PostFilter(
+                of(userSlug),
+                of(hasAudio),
+                empty(),
+                of(audioTitle),
+                of(description));
 
         when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
         when(userRepository.find(USER.identifier())).thenReturn(USER);
@@ -193,7 +199,38 @@ class PostControllerIT {
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
                 .param("userSlug", userSlug)
-                .param("hasAudio", valueOf(hasAudio))
+                .param("hasAudio", String.valueOf(hasAudio))
+                .param("audioTitle", audioTitle)
+                .param("description", description)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
+    }
+
+    @Test
+    void givenTitleFilter_whenSearchPosts_thenRetrieveFilteredNonAudioPosts() throws Exception {
+        // GIVEN
+        String userSlug = "slug1";
+        boolean hasAudio = false;
+        String title = "title1";
+        String description = "description1";
+        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+
+        PostFilter postFilter = new PostFilter(
+                of(userSlug),
+                of(hasAudio),
+                of(title),
+                empty(),
+                of(description));
+
+        when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
+        when(userRepository.find(USER.identifier())).thenReturn(USER);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/search")
+                .param("userSlug", userSlug)
+                .param("hasAudio", String.valueOf(hasAudio))
                 .param("title", title)
                 .param("description", description)
                 .with(user(new UserPrincipal(USER))))
