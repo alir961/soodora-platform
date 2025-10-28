@@ -24,7 +24,8 @@ const searchMode = ref<SearchMode>('');
 
 const artists = ref<User[]>([]);
 const users = ref<User[]>([]);
-const posts = ref<Post[]>([]);
+const postsText = ref<Post[]>([]);
+const postsAudio = ref<Post[]>([]);
 const playlists = ref<Playlist[]>([]);
 
 const searchTimeout = ref<ReturnType<typeof setTimeout> | null>(null);
@@ -36,9 +37,14 @@ const currentPageUsers = ref(0);
 const hasMoreUsers = ref(true);
 const isLoadingUsers = ref(false);
 
-const currentPagePosts = ref(0);
-const hasMorePosts = ref(true);
-const isLoadingPosts = ref(false);
+const currentPageText = ref(0);
+const currentPageAudio = ref(0);
+
+const hasMoreText = ref(true);
+const hasMoreAudio = ref(true);
+
+const isLoadingText = ref(false);
+const isLoadingAudio = ref(false);
 
 const currentPagePlaylists = ref(0);
 const hasMorePlaylists = ref(true);
@@ -113,36 +119,36 @@ const fetchUsers = async (reset = false) => {
   }
 };
 
-const fetchPosts = async (reset = false) => {
+const fetchTextPosts = async (reset = false) => {
   if (!searchInput.value.trim()) {
-    posts.value = [];
-    currentPagePosts.value = 0;
-    hasMorePosts.value = true;
+    postsText.value = [];
+    currentPageText.value = 0;
+    hasMoreText.value = true;
     isInitialState.value = true;
     return;
   }
 
-  if (isLoadingPosts.value || (!hasMorePosts.value && !reset)) return;
+  if (isLoadingText.value || (!hasMoreText.value && !reset)) return;
 
   if (reset) {
-    currentPagePosts.value = 0;
-    hasMorePosts.value = true;
+    currentPageText.value = 0;
+    hasMoreText.value = true;
   }
 
-  isLoadingPosts.value = true;
+  isLoadingText.value = true;
 
   try {
     const params: PostSearchParams = {
-      page: currentPagePosts.value,
+      page: currentPageText.value,
       size: PAGE_SIZE,
       sort: 'createdAt,desc',
       title: searchInput.value.trim(),
       description: searchInput.value.trim(),
-      ...(searchMode.value === 'music' ? { hasAudio: true } : {}),
     };
 
     const response = await callSearchPosts(
       params.title ?? null,
+      params.audioTitle ?? null,
       params.description ?? null,
       params.hasAudio ?? undefined,
       params.page,
@@ -150,25 +156,84 @@ const fetchPosts = async (reset = false) => {
       params.sort
     );
 
-    const fetchedPosts = response.content.map((post) => ({
-      ...post,
-      createdAt: new Date(post.createdAt),
+    const fetchedPosts = response.content.map((postsText) => ({
+      ...postsText,
+      createdAt: new Date(postsText.createdAt),
     }));
 
     if (reset) {
-      posts.value = fetchedPosts;
+      postsText.value = fetchedPosts;
     } else {
-      posts.value.push(...fetchedPosts);
+      postsText.value.push(...fetchedPosts);
     }
 
-    hasMorePosts.value = fetchedPosts.length === PAGE_SIZE;
-    if (hasMorePosts.value) currentPagePosts.value++;
+    hasMoreText.value = fetchedPosts.length === PAGE_SIZE;
+    if (hasMoreText.value) currentPageText.value++;
     isInitialState.value = false;
   } catch (error) {
-    console.error('Search posts failed:', error);
-    hasMorePosts.value = false;
+    console.error('Search text posts failed:', error);
+    hasMoreText.value = false;
   } finally {
-    isLoadingPosts.value = false;
+    isLoadingText.value = false;
+  }
+};
+
+const fetchAudioPosts = async (reset = false) => {
+  if (!searchInput.value.trim()) {
+    postsAudio.value = [];
+    currentPageAudio.value = 0;
+    hasMoreAudio.value = true;
+    isInitialState.value = true;
+    return;
+  }
+
+  if (isLoadingAudio.value || (!hasMoreAudio.value && !reset)) return;
+
+  if (reset) {
+    currentPageAudio.value = 0;
+    hasMoreAudio.value = true;
+  }
+
+  isLoadingAudio.value = true;
+
+  try {
+    const params: PostSearchParams = {
+      page: currentPageAudio.value,
+      size: PAGE_SIZE,
+      sort: 'createdAt,desc',
+      audioTitle: searchInput.value.trim(),
+      hasAudio: true,
+    };
+
+    const response = await callSearchPosts(
+      params.title ?? null,
+      params.audioTitle ?? null,
+      params.description ?? null,
+      params.hasAudio ?? undefined,
+      params.page,
+      params.size,
+      params.sort
+    );
+
+    const fetchedPosts = response.content.map((postsAudio) => ({
+      ...postsAudio,
+      createdAt: new Date(postsAudio.createdAt),
+    }));
+
+    if (reset) {
+      postsAudio.value = fetchedPosts;
+    } else {
+      postsAudio.value.push(...fetchedPosts);
+    }
+
+    hasMoreAudio.value = fetchedPosts.length === PAGE_SIZE;
+    if (hasMoreAudio.value) currentPageAudio.value++;
+    isInitialState.value = false;
+  } catch (error) {
+    console.error('Search audio posts failed:', error);
+    hasMoreAudio.value = false;
+  } finally {
+    isLoadingAudio.value = false;
   }
 };
 
@@ -219,11 +284,13 @@ const fetchPlaylists = async (reset = false) => {
 
 const fetchResults = async (reset = false) => {
   if (searchMode.value === '' || searchMode.value === null) {
-    await Promise.all([fetchUsers(reset), fetchPosts(reset), fetchPlaylists(reset)]);
+    await Promise.all([fetchUsers(reset), fetchTextPosts(reset), fetchAudioPosts(reset), fetchPlaylists(reset)]);
   } else if (searchMode.value === 'user' || searchMode.value === 'artist') {
     await fetchUsers(reset);
-  } else if (searchMode.value === 'post' || searchMode.value === 'music') {
-    await fetchPosts(reset);
+  } else if (searchMode.value === 'post') {
+    await fetchTextPosts(reset);
+  } else if (searchMode.value === 'music') {
+    await fetchAudioPosts(reset);
   } else if (searchMode.value === 'playlist') {
     await fetchPlaylists(reset);
   }
@@ -286,10 +353,17 @@ const hasAnyResults = computed(() => {
 
   if (searchMode.value === 'artist') return artists.value.length > 0;
   if (searchMode.value === 'user') return users.value.length > 0;
-  if (searchMode.value === 'post' || searchMode.value === 'music') return posts.value.length > 0;
+  if (searchMode.value === 'post') return postsText.value.length > 0;
+  if (searchMode.value === 'music') return postsAudio.value.length > 0;
   if (searchMode.value === 'playlist') return playlists.value.length > 0;
 
-  return artists.value.length > 0 || users.value.length > 0 || posts.value.length > 0 || playlists.value.length > 0;
+  return (
+    artists.value.length > 0 ||
+    users.value.length > 0 ||
+    postsText.value.length > 0 ||
+    postsAudio.value.length > 0 ||
+    playlists.value.length > 0
+  );
 });
 
 const shouldShowNoResults = computed(() => {
@@ -414,18 +488,40 @@ const noResultsMessage = computed(() => {
           </ion-list>
         </template>
 
-        <template v-if="searchMode === '' || searchMode === 'post' || searchMode === 'music'">
-          <h2 v-if="posts.length > 0" class="section-title">{{ searchMode === 'music' ? 'Music' : 'Posts' }}</h2>
-          <ion-list v-if="posts.length > 0">
+        <template v-if="searchMode === '' || searchMode === 'post'">
+          <h2 v-if="postsText.length > 0" class="section-title">Posts</h2>
+          <ion-list v-if="postsText.length > 0">
             <ion-row>
               <div
-                v-for="(post, index) in posts"
+                v-for="(post, index) in postsText"
                 :key="post.slug"
-                :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
-                <div class="post-separator" v-if="index !== posts.length - 1"></div>
+                :class="['post-wrapper', index === postsText.length - 1 ? 'last' : '']">
+                <div class="post-separator" v-if="index !== postsText.length - 1"></div>
                 <PostCard
                   :post="post"
-                  @post-deleted="(slug) => (posts = posts.filter((p) => p.slug !== slug))"
+                  @post-deleted="(slug) => (postsText = postsText.filter((p) => p.slug !== slug))"
+                  @post-like="post.likeCount++"
+                  @post-unlike="post.likeCount--"
+                  @post-repost="post.repostCount++"
+                  @post-unrepost="post.repostCount--"
+                  class="post-card" />
+              </div>
+            </ion-row>
+          </ion-list>
+        </template>
+
+        <template v-if="searchMode === '' || searchMode === 'music'">
+          <h2 v-if="postsAudio.length > 0" class="section-title">Music</h2>
+          <ion-list v-if="postsAudio.length > 0">
+            <ion-row>
+              <div
+                v-for="(post, index) in postsAudio"
+                :key="post.slug"
+                :class="['post-wrapper', index === postsAudio.length - 1 ? 'last' : '']">
+                <div class="post-separator" v-if="index !== postsAudio.length - 1"></div>
+                <PostCard
+                  :post="post"
+                  @post-deleted="(slug) => (postsAudio = postsAudio.filter((p) => p.slug !== slug))"
                   @post-like="post.likeCount++"
                   @post-unlike="post.likeCount--"
                   @post-repost="post.repostCount++"
@@ -450,11 +546,13 @@ const noResultsMessage = computed(() => {
         :disabled="
           searchMode === 'user'
             ? !hasMoreUsers
-            : searchMode === 'post' || searchMode === 'music'
-              ? !hasMorePosts
-              : searchMode === 'playlist'
-                ? !hasMorePlaylists
-                : !hasMoreUsers && !hasMorePosts && !hasMorePlaylists
+            : searchMode === 'post'
+              ? !hasMoreText
+              : searchMode === 'music'
+                ? !hasMoreAudio
+                : searchMode === 'playlist'
+                  ? !hasMorePlaylists
+                  : !hasMoreUsers && !hasMoreText && !hasMoreAudio && !hasMorePlaylists
         ">
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
@@ -560,24 +658,6 @@ const noResultsMessage = computed(() => {
   box-shadow:
     0 4px 12px rgba(37, 99, 235, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.slide-down-enter-active {
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.slide-down-leave-active {
-  transition: all 0.25s cubic-bezier(0.8, 0.2, 0.8, 0.2);
-}
-
-.slide-down-enter-from {
-  opacity: 0;
-  transform: translateY(-12px) scale(0.97);
-}
-
-.slide-down-leave-to {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.98);
 }
 
 .search-placeholder-message {

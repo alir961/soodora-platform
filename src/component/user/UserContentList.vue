@@ -71,7 +71,7 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
   if (isLoading.value || (!hasMorePost.value && !reset)) return;
   try {
     const page = reset ? 0 : currentPostPage.value;
-    const pageable = { page, size: PAGE_SIZE };
+    const pageable = { page, size: PAGE_SIZE, sort: 'createdAt,desc' };
     let postPage: PostPage | null = null;
 
     isLoading.value = true;
