@@ -141,7 +141,7 @@ public class PostRepositoryImpl implements PostRepository {
             like.setPost(post);
             post.getLikes().add(like);
 
-            if (!post.getAudioTitle().isEmpty()) {
+            if (post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
                 playlistJpaRepository
                         .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
                         .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
@@ -160,7 +160,7 @@ public class PostRepositoryImpl implements PostRepository {
 
         boolean removed = post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
 
-        if (removed && !post.getAudioTitle().isEmpty()) {
+        if (removed && post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
             playlistJpaRepository
                     .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
                     .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
