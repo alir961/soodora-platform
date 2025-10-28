@@ -1,0 +1,2 @@
+ALTER TABLE quotes DROP COLUMN amount;
+ALTER TABLE quotes DROP COLUMN currency;
