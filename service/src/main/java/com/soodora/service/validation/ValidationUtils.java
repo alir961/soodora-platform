@@ -19,7 +19,7 @@ public class ValidationUtils {
 
     public static boolean isStringValid(String value, int maxLength, boolean isUpdate) {
         if (isUpdate)
-            return value == null || value.length() <= maxLength;
+            return value == null || value.isBlank() || value.length() <= maxLength;
         else
             return value != null && value.length() <= maxLength;
     }
@@ -88,7 +88,7 @@ public class ValidationUtils {
             throw new InvalidRequestException("Type cannot be empty or exceed 50 characters");
         if (!isNotNullOrBlank(title) || !isStringValid(title, 255, false))
             throw new InvalidRequestException("Title cannot be empty or exceed 255 characters");
-        if (!isNotNullOrBlank(content) || !isStringValid(content, 5000, false))
+        if (!isStringValid(content, 5000, true))
             throw new InvalidRequestException("Content cannot be empty or exceed 5000 characters");
     }
 
