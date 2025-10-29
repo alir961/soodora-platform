@@ -36,7 +36,6 @@ const router = useRouter();
 const authStore = useAuthStore();
 const IMAGE = 'Image';
 
-const slug = ref<string | undefined>(route.params.slug as string | undefined);
 const mediaKit = ref<MediaKitDTO | null>(null);
 const mediaKitItems = ref<MediaKitItemDTO[]>([]);
 const isLoading = ref(false);
@@ -61,16 +60,19 @@ const selectedFile = ref<File | null>(null);
 const editedItem = ref<MediaKitItemDTO | null>(null);
 const editedSelectedFile = ref<File | null>(null);
 
-async function fetchMediaKit(slugToLoad: string) {
+async function fetchMediaKit(slugToLoad: string, showToastOnError = true) {
   isLoading.value = true;
   try {
     const mk = await getMediaKitBySlug(slugToLoad);
     mediaKit.value = mk;
     mediaKitItems.value = mk.items || [];
-    await showToast('Succeed to load MediaKit');
+    if (showToastOnError) await showToast('Succeed to load MediaKit');
   } catch (error: unknown) {
-    const message = 'Failed to load MediaKit. ' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
+    if (showToastOnError) {
+      const message =
+        'Failed to load MediaKit. Maybe you need to create one !' + (error instanceof Error ? error.message : '');
+      await showToast(message, 'warning');
+    }
   } finally {
     isLoading.value = false;
   }
@@ -209,9 +211,16 @@ const removeItemHandler = async (slug: string) => {
   }
 };
 
+const goToCreate = async () => {
+  await router.push('/create');
+};
+
 onMounted(async () => {
-  if (slug.value) {
-    await fetchMediaKit(slug.value);
+  if (route.name !== 'MediaKitEdit') return;
+
+  const slugValue = route.params.slug as string | undefined;
+  if (slugValue) {
+    await fetchMediaKit(slugValue, false);
   } else {
     const artistSlug = authStore.getAuthenticatedUserSlug;
     try {
@@ -227,19 +236,21 @@ onMounted(async () => {
 watch(
   () => route.params.slug,
   async (newSlug) => {
-    slug.value = newSlug as string | undefined;
-    if (slug.value) await fetchMediaKit(slug.value);
+    if (route.name !== 'MediaKitEdit') return;
+
+    const slugValue = newSlug as string | undefined;
+    if (slugValue) await fetchMediaKit(slugValue, true);
   }
 );
 </script>
 
 <template>
   <ApplicationViewport title="Media Kit">
-    <IonContent class="ion-padding">
+    <IonContent class="form-content-wrapper">
       <div v-if="isLoading">Loading...</div>
 
       <div v-else-if="mediaKit">
-        <IonButton slot="start" fill="clear" @click="$router.back()">
+        <IonButton slot="start" fill="clear" @click="goToCreate">
           <IonIcon :icon="arrowBackOutline" />
           Back
         </IonButton>
@@ -332,7 +343,7 @@ watch(
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="newItem.title" />
           </IonItem>
-          <IonItem>
+          <IonItem v-if="newItem.type !== IMAGE">
             <IonLabel position="stacked">Content</IonLabel>
             <IonTextarea :disabled="selectedFile !== null" v-model="newItem.content" :rows="5" />
           </IonItem>
@@ -365,11 +376,11 @@ watch(
             <IonLabel position="stacked">Title</IonLabel>
             <IonInput v-model="editedItem.title" />
           </IonItem>
-          <IonItem>
+          <IonItem v-if="editedItem.type !== IMAGE">
             <IonLabel position="stacked">Content</IonLabel>
             <IonTextarea :disabled="editedSelectedFile !== null" v-model="editedItem.content" :rows="5" />
           </IonItem>
-          <IonButton expand="block" color="primary" @click="saveEditedItemHandler">Save Item</IonButton>
+          <IonButton class="submit-btn" expand="block" @click="saveEditedItemHandler">Save Item</IonButton>
         </IonContent>
       </IonModal>
     </IonContent>

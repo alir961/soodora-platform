@@ -8,7 +8,7 @@ import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
 import CommentView from '@/view/explore/CommentView.vue';
-import LinkPageView from '@/view/create/LinkPageView.vue';
+import LinkHubCreateView from '@/view/create/LinkHubCreateView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
@@ -25,6 +25,8 @@ import PlaylistCreateView from '@/view/playlist/PlaylistCreateView.vue';
 import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import PlaylistMeView from '@/view/playlist/PlaylistMeView.vue';
 import CreateView from '@/view/create/CreateView.vue';
+import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
+import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -47,14 +49,19 @@ const routes: Array<RouteRecordRaw> = [
     component: CreateView,
   },
   {
-    path: '/linkpages',
-    name: 'LinkPageCreate',
-    component: LinkPageView,
+    path: '/linkhub/create',
+    name: 'LinkHubCreate',
+    component: LinkHubCreateView,
   },
   {
-    path: '/linkpages/:slug',
-    name: 'LinkPageDetail',
-    component: LinkPageView,
+    path: '/linkhub/edit/:slug',
+    name: 'LinkHubEdit',
+    component: LinkHubEditView,
+  },
+  {
+    path: '/linkhub/:slug',
+    name: 'LinkHubDetail',
+    component: LinkHubDetailView,
   },
   {
     path: '/search',
