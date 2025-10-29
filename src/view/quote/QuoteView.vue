@@ -8,7 +8,6 @@ import { IonButton, IonContent, IonHeader, IonIcon, IonList, IonLoading, IonTitl
 import { arrowBackOutline } from 'ionicons/icons';
 import QuoteItem from '@/component/quote/QuoteItem.vue';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
-import { showToast } from '@/utils';
 
 const quotes = ref<QuoteDTO[]>([]);
 const loading = ref(false);
@@ -35,8 +34,6 @@ const loadQuotesForUser = async () => {
     quotes.value = quotePage.content;
   } catch (err) {
     quotes.value = [];
-    const message = (err as Error)?.message ?? 'Unable to load quotes';
-    await showToast(message, 'danger');
   } finally {
     loading.value = false;
   }

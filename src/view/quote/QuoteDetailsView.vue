@@ -81,7 +81,7 @@ const loadQuote = async (slug: string) => {
 
     if (!quote.value.quoteArticles) quote.value.quoteArticles = [];
   } catch (e) {
-    await showToast('Failed to load quote', 'danger');
+    await showToast('Failed to load quote', 'warning');
   }
 };
 
@@ -115,7 +115,7 @@ const handleDeleteQuote = async () => {
   if (!quote.value) return;
   try {
     await deleteQuoteApi(quote.value.slug);
-    await router.push('/quotes/me');
+    await router.push('/create');
     await showToast('Quote deleted successfully');
   } catch {
     await showToast('Failed to delete quote', 'danger');
@@ -210,6 +210,7 @@ const downloadPdf = async () => {
 watch(
   () => route.params.slug,
   (newSlug) => {
+    if (route.name !== 'QuoteDetailsView') return;
     if (typeof newSlug === 'string') loadQuote(newSlug);
   },
   { immediate: true }

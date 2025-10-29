@@ -13,19 +13,22 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 const hasLinkPage = ref(false);
+const hasCheckedLinkPage = ref(false);
 
 const checkUserLinkPage = async () => {
+  if (hasCheckedLinkPage.value) return;
   const userSlug = authStore.getAuthenticatedUserSlug;
+  if (!userSlug) return;
 
-  if (userSlug) {
-    try {
-      const userPage = await getUserLinkPage(userSlug);
-      hasLinkPage.value = !!userPage;
-    } catch (error) {
-      console.log('Unable to fetch artist link hub', error);
-      hasLinkPage.value = false;
-    }
-  } else hasLinkPage.value = false;
+  try {
+    const userPage = await getUserLinkPage(userSlug);
+    hasLinkPage.value = !!userPage;
+  } catch (error) {
+    hasLinkPage.value = false;
+    console.log('Unable to fetch artist link hub', error);
+  } finally {
+    hasCheckedLinkPage.value = true;
+  }
 };
 
 watch(
@@ -46,7 +49,7 @@ const goToCreateProduct = async () => {
   await router.push('/marketplace/product/create');
 };
 
-const goToLinkPages = async () => {
+const goToLinkHub = async () => {
   const userSlug = authStore.getAuthenticatedUserSlug;
 
   if (!userSlug) return;
@@ -54,13 +57,13 @@ const goToLinkPages = async () => {
     const userPage = await getUserLinkPage(userSlug);
 
     if (userPage) {
-      await router.push(`/linkpages/${userPage.slug}`);
+      await router.push(`/linkhub/edit/${userPage.slug}`);
       return;
     }
   } catch (error) {
     console.log('Unable to fetch artist link hub', error);
   }
-  await router.push('/linkpages');
+  await router.push('/linkhub/create');
 };
 
 const goToSalesPage = async () => {
@@ -118,7 +121,7 @@ const goToMyQuotes = async () => {
         My Sales
       </ion-button>
 
-      <ion-button @click="goToLinkPages" expand="block" class="go-button" color="primary" fill="solid">
+      <ion-button @click="goToLinkHub" expand="block" class="go-button" color="primary" fill="solid">
         {{ hasLinkPage ? 'Edit your Link Hub' : 'Create a Link Hub' }}
         <ion-icon :icon="linkOutline" slot="end"></ion-icon>
       </ion-button>

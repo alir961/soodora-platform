@@ -1,158 +1,92 @@
 <script setup lang="ts">
 import { showToast } from '@/utils';
-import { IonContent, onIonViewDidEnter, IonIcon } from '@ionic/vue';
+import { IonIcon, onIonViewDidEnter } from '@ionic/vue';
 import {
-  createLinkPage,
   getLinkPage,
   updateLinkPage,
-  deleteLinkPage,
   createLink,
   updateLink,
   deleteLink,
-  getUserLinkPage,
-  CreateLinkPageRequest,
+  deleteLinkPage,
   CreateLinkRequest,
 } from '@/client/linkPageClient';
-import { Link } from '@/entity/Link';
-import { copyOutline, closeOutline, linkOutline, addCircleOutline, chevronForwardOutline } from 'ionicons/icons';
-import { ref, computed, watch } from 'vue';
-import { onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/store/reactiveStorage';
-import instagramIcon from '@/assets/icons/instagram.svg';
-import xIcon from '@/assets/icons/x.svg';
-import youtubeIcon from '@/assets/icons/youtube.svg';
-import soundcloudIcon from '@/assets/icons/soundcloud.svg';
-import tiktokIcon from '@/assets/icons/tiktok.svg';
+import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
-
-const platformIcons: Record<string, string> = {
-  instagram: instagramIcon,
-  x: xIcon,
-  youtube: youtubeIcon,
-  soundcloud: soundcloudIcon,
-  tiktok: tiktokIcon,
-  other: linkOutline,
-};
+import {
+  copyOutline,
+  closeOutline,
+  linkOutline,
+  addCircleOutline,
+  chevronForwardOutline,
+  shareOutline,
+} from 'ionicons/icons';
+import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 
 const pageSlug = computed(() => route.params.slug as string | undefined);
-const isCreateMode = computed(() => !pageSlug.value);
+const isOwner = ref(false);
 
 const pageData = ref({
   title: '',
   description: '',
 });
 
-const checkedOwnership = ref(false);
-
 type EditableLink = CreateLinkRequest & { slug?: string };
 const links = ref<EditableLink[]>([]);
-const isOwner = ref(false);
-const activeNewLinkIndex = ref<number | null>(null);
 const editingLinkIndex = ref<number | null>(null);
+const deletingLinkIndex = ref<number | null>(null);
 
-const iconOptions = [
-  { label: 'Instagram', value: 'instagram' },
-  { label: 'X', value: 'x' },
-  { label: 'YouTube', value: 'youtube' },
-  { label: 'SoundCloud', value: 'soundcloud' },
-  { label: 'TikTok', value: 'tiktok' },
-  { label: 'Other', value: 'other' },
-];
+const deletePageCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
+const deleteLinkCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
-const platformUrlPrefixes: Record<string, string> = {
-  instagram: 'https://www.instagram.com/',
-  x: 'https://x.com/',
-  youtube: 'https://www.youtube.com/',
-  soundcloud: 'https://soundcloud.com/',
-  tiktok: 'https://www.tiktok.com/@',
-  other: '',
-};
+const pageUrl = computed(() => (pageSlug.value ? `${window.location.origin}/linkhub/${pageSlug.value}` : ''));
+
+const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.value.description.trim());
 
 function addLink() {
-  const newIndex = links.value.length;
-  links.value.push({
-    title: '',
-    description: '',
-    url: '',
-    iconUrl: 'other',
-  });
-  editingLinkIndex.value = newIndex;
-  activeNewLinkIndex.value = newIndex;
+  links.value.push({ title: '', description: '', url: '', iconUrl: 'other' });
+  editingLinkIndex.value = links.value.length - 1;
 }
 
 function toggleEditLink(index: number) {
-  if (editingLinkIndex.value === index) {
-    editingLinkIndex.value = null;
-  } else {
-    editingLinkIndex.value = index;
-  }
+  editingLinkIndex.value = editingLinkIndex.value === index ? null : index;
 }
 
 function updateLinkUrl(link: EditableLink, platform: string) {
   link.iconUrl = platform;
-
-  const currentPrefix = platformUrlPrefixes[platform];
-  if (!link.url || Object.values(platformUrlPrefixes).some((prefix) => prefix && link.url.startsWith(prefix))) {
-    link.url = currentPrefix;
+  const prefix = platformUrlPrefixes[platform];
+  if (!link.url || Object.values(platformUrlPrefixes).some((p) => p && link.url.startsWith(p))) {
+    link.url = prefix;
   }
 }
 
-function isLinkValid(link: EditableLink): boolean {
+function isLinkValid(link: EditableLink) {
   return !!(link.title.trim() && link.description.trim() && link.url.trim());
 }
 
-async function submitCreate() {
-  try {
-    const pageCommand: CreateLinkPageRequest = {
-      title: pageData.value.title,
-      description: pageData.value.description,
-    };
-    const createdLinkPageSlug = await createLinkPage(pageCommand);
-
-    for (const link of links.value) {
-      await createLink(createdLinkPageSlug, link);
-    }
-
-    await showToast('Succeed to create Link Hub.');
-    await router.push(`/linkpages/${createdLinkPageSlug}`);
-  } catch (error: unknown) {
-    const message = 'Unable to create Link Hub. ' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
-  }
-}
-
-const pageUrl = computed(() => {
-  if (!pageSlug.value) return '';
-  return `${window.location.origin}/linkpages/${pageSlug.value}`;
-});
-
 async function loadPage() {
-  if (!pageSlug.value || isCreateMode.value) {
-    return;
-  }
+  if (!pageSlug.value) return;
   try {
     const page = await getLinkPage(pageSlug.value);
     pageData.value.title = page.title;
     pageData.value.description = page.description;
-    links.value = (page.links || []).map((link: Link) => ({
+    links.value = (page.links || []).map((link) => ({
       slug: link.slug,
       title: link.title,
       description: link.description,
       url: link.url,
       iconUrl: link.iconUrl,
     }));
-
     isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
-  } catch (error: unknown) {
-    const message = 'Unable to load the Link Hub.' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
-    console.error('Failed to load hub:', error);
+  } catch (err) {
+    console.error(err);
+    await showToast('Unable to load the Link Hub.', 'danger');
   }
 }
 
@@ -165,360 +99,211 @@ async function submitUpdate() {
     });
 
     for (const link of links.value) {
-      if ((link as Link).slug) {
-        await updateLink(pageSlug.value, (link as Link).slug, link);
+      if (link.slug) {
+        await updateLink(pageSlug.value, link.slug, link);
       } else {
         await createLink(pageSlug.value, link);
       }
     }
 
-    await showToast('Succeed to update Link Hub.');
-  } catch (error: unknown) {
-    const message = 'Unable to update the Link Hub.' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
+    await showToast('Link Hub updated successfully.', 'success');
+  } catch (err) {
+    console.error(err);
+    await showToast('Failed to update Link Hub.', 'danger');
   }
 }
 
-const deletingLinkIndex = ref<number | null>(null);
+function copyPageUrl() {
+  if (!pageSlug.value) return;
+  navigator.clipboard.writeText(pageUrl.value);
+  showToast('URL copied to clipboard!', 'success');
+}
 
-const deletePageCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
-const deleteLinkCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
+async function goToPublicLinkHub() {
+  if (!pageSlug.value) return;
+  await router.push(`/linkhub/${pageSlug.value}`);
+}
 
-const deletePage = () => {
-  deletePageCardRef.value?.open();
-};
-
-const handlePageDeleted = async () => {
-  await router.push('/linkpages');
-};
-
+const deletePage = () => deletePageCardRef.value?.open();
 const submitLinkDeletion = (index: number) => {
   deletingLinkIndex.value = index;
   deleteLinkCardRef.value?.open();
 };
 
-const handleLinkDeleted = async () => {
+async function handleLinkDeleted() {
   if (deletingLinkIndex.value !== null) {
     links.value.splice(deletingLinkIndex.value, 1);
     deletingLinkIndex.value = null;
   }
-};
+}
 
-const deleteLinkFunction = async () => {
-  if (deletingLinkIndex.value !== null) {
+async function deleteLinkFunction() {
+  if (deletingLinkIndex.value !== null && pageSlug.value) {
     const link = links.value[deletingLinkIndex.value];
-    if (pageSlug.value && link.slug) {
-      await deleteLink(pageSlug.value, link.slug);
-    }
-  }
-};
-
-async function checkIfUserHasLinkPage() {
-  try {
-    const userSlug = authStore.getAuthenticatedUserSlug;
-
-    if (!userSlug) {
-      isOwner.value = false;
-      checkedOwnership.value = true;
-      return;
-    }
-
-    if (!pageSlug.value) {
-      const userPage = await getUserLinkPage(userSlug);
-
-      if (userPage) {
-        await router.push(`/linkpages/${userPage.slug}`);
-        checkedOwnership.value = true;
-        return;
-      }
-      isOwner.value = false;
-    } else {
-      const page = await getLinkPage(pageSlug.value);
-      isOwner.value = userSlug === page.owner.slug;
-    }
-    checkedOwnership.value = true;
-  } catch (error) {
-    console.error('Error checking ownership:', error);
-    isOwner.value = false;
-    checkedOwnership.value = true;
+    if (link.slug) await deleteLink(pageSlug.value, link.slug);
   }
 }
 
-function copyPageUrl() {
-  if (pageSlug.value) {
-    const url = `${window.location.origin}/linkpages/${pageSlug.value}`;
-    navigator.clipboard.writeText(url);
-    showToast('URL copied to clipboard!', 'success');
-  }
+async function handlePageDeleted() {
+  await router.push('/create');
 }
 
-onIonViewDidEnter(async () => {
-  await checkIfUserHasLinkPage();
-  await loadPage();
-});
-
-onMounted(async () => {
-  await checkIfUserHasLinkPage();
-  await loadPage();
-});
-
-watch(
-  () => route.fullPath,
-  (newPath) => {
-    if (newPath === '/linkpages' && isCreateMode.value) {
-      checkIfUserHasLinkPage();
-    }
-  },
-  { immediate: true }
-);
-
-watch(
-  () => route.params.slug,
-  (newSlug) => {
-    if (!newSlug) {
-      resetData();
-    }
-  }
-);
-
-function resetData() {
-  pageData.value.title = '';
-  pageData.value.description = '';
-  links.value = [];
-  isOwner.value = false;
-  editingLinkIndex.value = null;
+async function goToCreate() {
+  await router.push('/create');
 }
 
-const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.value.description.trim());
+onIonViewDidEnter(loadPage);
+onMounted(loadPage);
 </script>
 
 <template>
   <ApplicationViewport title="Link Page">
     <ion-content class="form-content-wrapper">
-      <div v-if="isCreateMode">
+      <div v-if="isOwner">
         <div class="form-header">
-          <h2>Create Link Hub</h2>
-          <button class="close-btn" @click="$router.back()">
+          <h2>Edit Link Hub</h2>
+          <button class="close-btn" @click="goToCreate">
             <ion-icon :icon="closeOutline" />
             Close
           </button>
         </div>
 
         <div class="form-content">
+          <div class="url-section">
+            <div class="url-display">
+              <span class="url-label">Your Link Hub URL:</span>
+              <div class="url-box">
+                <span class="url-text">{{ pageUrl }}</span>
+                <button class="copy-url-btn" @click="copyPageUrl" title="Copy URL">
+                  <ion-icon :icon="copyOutline" />
+                </button>
+                <button class="copy-url-btn" @click="goToPublicLinkHub" title="Go To Public Link Hub">
+                  <ion-icon :icon="shareOutline" />
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="form-section">
             <div class="section-header">
               <ion-icon :icon="linkOutline" class="section-icon" />
-              <h3>Your Link Hub</h3>
+              <h3>Hub Information</h3>
             </div>
 
             <div class="form-field">
-              <label>Page Title <span class="required">*</span></label>
-              <input type="text" v-model="pageData.title" placeholder="Give your link hub a name" required />
+              <label>Hub Title <span class="required">*</span></label>
+              <input type="text" v-model="pageData.title" placeholder="Link Hub title" required />
             </div>
 
             <div class="form-field">
               <label>Description <span class="required">*</span></label>
-              <textarea
-                v-model="pageData.description"
-                placeholder="Describe what visitors will find here"
-                rows="4"
-                required></textarea>
+              <textarea v-model="pageData.description" placeholder="Link Hub description" rows="4" required></textarea>
             </div>
           </div>
 
-          <button
-            class="submit-btn"
-            @click="submitCreate"
-            :disabled="!pageData.title.trim() || !pageData.description.trim()">
-            Create Link Hub
-          </button>
-        </div>
-      </div>
-
-      <div v-else>
-        <div v-if="!checkedOwnership" class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>Loading...</p>
-        </div>
-
-        <div v-else>
-          <div v-if="isOwner">
-            <div class="form-header">
-              <h2>Edit Link Hub</h2>
-              <button class="close-btn" @click="$router.back()">
-                <ion-icon :icon="closeOutline" />
-                Close
+          <div class="form-section">
+            <div class="section-header">
+              <div class="header-left">
+                <ion-icon :icon="linkOutline" class="section-icon" />
+                <h3>Your Links</h3>
+              </div>
+              <button class="add-link-btn" @click="addLink">
+                <ion-icon :icon="addCircleOutline" />
+                <span>Add Link</span>
               </button>
             </div>
 
-            <div class="form-content">
-              <div class="url-section">
-                <div class="url-display">
-                  <span class="url-label">Your Link Hub URL:</span>
-                  <div class="url-box">
-                    <span class="url-text">{{ pageUrl }}</span>
-                    <button class="copy-url-btn" @click="copyPageUrl" title="Copy URL">
-                      <ion-icon :icon="copyOutline" />
+            <div v-if="links.length === 0" class="empty-links">
+              <p>No links yet. Add your first link to get started!</p>
+            </div>
+
+            <div v-else class="links-grid">
+              <div v-for="(link, idx) in links" :key="idx" class="link-wrapper">
+                <div v-if="editingLinkIndex !== idx" class="link-collapsed-bar" @click="toggleEditLink(idx)">
+                  <div class="collapsed-icon">
+                    <ion-icon v-if="platformIcons[link.iconUrl]" :src="platformIcons[link.iconUrl]" />
+                    <ion-icon v-else :icon="linkOutline" />
+                  </div>
+                  <div class="collapsed-info">
+                    <span class="collapsed-title">{{ link.title || 'Untitled Link' }}</span>
+                    <span class="collapsed-url">{{ link.url || 'No URL set' }}</span>
+                  </div>
+                  <ion-icon :icon="chevronForwardOutline" class="collapsed-arrow" />
+                </div>
+
+                <div v-else class="link-card expanded">
+                  <div class="link-card-top-row">
+                    <div class="link-card-mode-wrapper">
+                      <span class="link-card-mode">
+                        {{ link.slug ? 'Update Link' : 'Create Link' }}
+                      </span>
+                    </div>
+                    <button class="cancel-link-btn" @click="toggleEditLink(idx)">
+                      <ion-icon :icon="closeOutline" />
+                      Close
+                    </button>
+                  </div>
+
+                  <div class="form-field">
+                    <label>Link Title <span class="required">*</span></label>
+                    <input type="text" v-model="link.title" placeholder="e.g., My Instagram" />
+                  </div>
+
+                  <div class="form-field">
+                    <label>Description <span class="required">*</span></label>
+                    <input type="text" v-model="link.description" placeholder="Brief description" />
+                  </div>
+
+                  <div class="form-field">
+                    <label>Platform</label>
+                    <div class="platform-selector">
+                      <button
+                        v-for="option in iconOptions"
+                        :key="option.value"
+                        type="button"
+                        class="platform-option"
+                        :class="{ active: link.iconUrl === option.value }"
+                        @click="updateLinkUrl(link, option.value)"
+                        :title="option.label">
+                        <ion-icon v-if="platformIcons[option.value]" :src="platformIcons[option.value]" />
+                        <span v-else>{{ option.label.charAt(0) }}</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-field">
+                    <label>URL <span class="required">*</span></label>
+                    <div class="url-input-wrapper">
+                      <div class="url-prefix">
+                        <ion-icon
+                          v-if="link.iconUrl !== 'other' && platformIcons[link.iconUrl]"
+                          :src="platformIcons[link.iconUrl]"
+                          class="url-prefix-icon" />
+                        <ion-icon v-else :icon="linkOutline" class="url-prefix-icon" />
+                      </div>
+                      <input
+                        type="url"
+                        v-model="link.url"
+                        :placeholder="link.iconUrl === 'other' ? 'https://...' : platformUrlPrefixes[link.iconUrl]" />
+                    </div>
+                  </div>
+
+                  <div class="link-actions">
+                    <button class="save-link-btn" @click="submitUpdate" :disabled="!isLinkValid(link)">
+                      {{ link.slug ? 'Save Changes' : 'Create Link' }}
+                    </button>
+                    <button class="delete-link-btn" @click="submitLinkDeletion(idx)" title="Delete link">
+                      Delete Link
                     </button>
                   </div>
                 </div>
               </div>
-
-              <div class="form-section">
-                <div class="section-header">
-                  <ion-icon :icon="linkOutline" class="section-icon" />
-                  <h3>Hub Information</h3>
-                </div>
-
-                <div class="form-field">
-                  <label>Hub Title <span class="required">*</span></label>
-                  <input type="text" v-model="pageData.title" placeholder="Link Hub title" required />
-                </div>
-
-                <div class="form-field">
-                  <label>Description <span class="required">*</span></label>
-                  <textarea
-                    v-model="pageData.description"
-                    placeholder="Link Hub description"
-                    rows="4"
-                    required></textarea>
-                </div>
-              </div>
-
-              <div class="form-section">
-                <div class="section-header">
-                  <div class="header-left">
-                    <ion-icon :icon="linkOutline" class="section-icon" />
-                    <h3>Your Links</h3>
-                  </div>
-                  <button class="add-link-btn" @click="addLink">
-                    <ion-icon :icon="addCircleOutline" />
-                    <span>Add Link</span>
-                  </button>
-                </div>
-
-                <div v-if="links.length === 0" class="empty-links">
-                  <p>No links yet. Add your first link to get started!</p>
-                </div>
-
-                <div v-else class="links-grid">
-                  <div v-for="(link, idx) in links" :key="idx" class="link-wrapper">
-                    <div v-if="editingLinkIndex !== idx" class="link-collapsed-bar" @click="toggleEditLink(idx)">
-                      <div class="collapsed-icon">
-                        <ion-icon v-if="platformIcons[link.iconUrl]" :src="platformIcons[link.iconUrl]" />
-                        <ion-icon v-else :icon="linkOutline" />
-                      </div>
-                      <div class="collapsed-info">
-                        <span class="collapsed-title">{{ link.title || 'Untitled Link' }}</span>
-                        <span class="collapsed-url">{{ link.url || 'No URL set' }}</span>
-                      </div>
-                      <ion-icon :icon="chevronForwardOutline" class="collapsed-arrow" />
-                    </div>
-
-                    <div v-else class="link-card expanded">
-                      <div class="link-card-top-row">
-                        <div class="link-card-mode-wrapper">
-                          <span class="link-card-mode">
-                            {{ link.slug ? 'Update Link' : 'Create Link' }}
-                          </span>
-                        </div>
-                        <button class="cancel-link-btn" @click="toggleEditLink(idx)">
-                          <ion-icon :icon="closeOutline" />
-                          Close
-                        </button>
-                      </div>
-
-                      <div class="form-field">
-                        <label>Link Title <span class="required">*</span></label>
-                        <input type="text" v-model="link.title" placeholder="e.g., My Instagram" />
-                      </div>
-
-                      <div class="form-field">
-                        <label>Description <span class="required">*</span></label>
-                        <input type="text" v-model="link.description" placeholder="Brief description" />
-                      </div>
-
-                      <div class="form-field">
-                        <label>Platform</label>
-                        <div class="platform-selector">
-                          <button
-                            v-for="option in iconOptions"
-                            :key="option.value"
-                            type="button"
-                            class="platform-option"
-                            :class="{ active: link.iconUrl === option.value }"
-                            @click="updateLinkUrl(link, option.value)"
-                            :title="option.label">
-                            <ion-icon v-if="platformIcons[option.value]" :src="platformIcons[option.value]" />
-                            <span v-else>{{ option.label.charAt(0) }}</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      <div class="form-field">
-                        <label>URL <span class="required">*</span></label>
-                        <div class="url-input-wrapper">
-                          <div class="url-prefix">
-                            <ion-icon
-                              v-if="link.iconUrl !== 'other' && platformIcons[link.iconUrl]"
-                              :src="platformIcons[link.iconUrl]"
-                              class="url-prefix-icon" />
-                            <ion-icon v-else :icon="linkOutline" class="url-prefix-icon" />
-                          </div>
-                          <input
-                            type="url"
-                            v-model="link.url"
-                            :placeholder="
-                              link.iconUrl === 'other' ? 'https://...' : platformUrlPrefixes[link.iconUrl]
-                            " />
-                        </div>
-                      </div>
-
-                      <div class="link-actions">
-                        <button class="save-link-btn" @click="submitUpdate" :disabled="!isLinkValid(link)">
-                          {{ link.slug ? 'Save Changes' : 'Create Link' }}
-                        </button>
-                        <button class="delete-link-btn" @click="submitLinkDeletion(idx)" title="Delete link">
-                          Delete Link
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="action-buttons">
-                <button class="submit-btn" @click="submitUpdate" :disabled="!isHubInfoValid">Save Changes</button>
-                <button class="danger-btn" @click="deletePage">Delete Link Hub</button>
-              </div>
             </div>
           </div>
 
-          <div v-else class="public-view">
-            <div class="public-header">
-              <h1>{{ pageData.title }}</h1>
-              <p class="public-description">{{ pageData.description }}</p>
-            </div>
-
-            <div class="public-links">
-              <a
-                v-for="(link, idx) in links"
-                :key="idx"
-                :href="link.url.startsWith('http') ? link.url : 'https://' + link.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="public-link-card">
-                <div class="public-link-icon">
-                  <ion-icon v-if="platformIcons[link.iconUrl]" :src="platformIcons[link.iconUrl]" />
-                  <ion-icon v-else :icon="linkOutline" />
-                </div>
-                <div class="public-link-info">
-                  <h3>{{ link.title }}</h3>
-                  <p v-if="link.description">{{ link.description }}</p>
-                </div>
-                <ion-icon :icon="chevronForwardOutline" class="public-link-arrow" />
-              </a>
-            </div>
+          <div class="action-buttons">
+            <button class="submit-btn" @click="submitUpdate" :disabled="!isHubInfoValid">Save Changes</button>
+            <button class="danger-btn" @click="deletePage">Delete Link Hub</button>
           </div>
         </div>
       </div>
@@ -658,12 +443,6 @@ const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.va
   font-size: 1rem;
 }
 
-.optional {
-  color: #9aa3ad;
-  font-size: 0.8rem;
-  font-weight: 500;
-}
-
 .form-field input,
 .form-field textarea {
   appearance: none;
@@ -746,24 +525,6 @@ const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.va
   transform: none;
   background: linear-gradient(135deg, #374151, #4b5563);
   box-shadow: none;
-}
-
-.loading-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 3rem 1rem;
-  gap: 1rem;
-}
-
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #60a5fa;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
@@ -1281,116 +1042,6 @@ const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.va
   transform: scale(0.98);
 }
 
-.public-view {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-}
-
-.public-header {
-  text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.public-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 0.75rem 0;
-  text-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-}
-
-.public-description {
-  font-size: 1.1rem;
-  color: #9aa3ad;
-  margin: 0;
-  line-height: 1.6;
-}
-
-.public-links {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.public-link-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1.25rem;
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.6), rgba(9, 18, 30, 0.5));
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-radius: 16px;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  cursor: pointer;
-}
-
-.public-link-card:hover {
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.8), rgba(9, 18, 30, 0.7));
-  border-color: rgba(59, 130, 246, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-.public-link-card:active {
-  transform: translateY(0);
-}
-
-.public-link-icon {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.public-link-icon ion-icon {
-  font-size: 28px;
-  color: #60a5fa;
-}
-
-.public-link-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.public-link-info h3 {
-  margin: 0 0 4px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.public-link-info p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #9aa3ad;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.public-link-arrow {
-  font-size: 20px;
-  color: #60a5fa;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.public-link-card:hover .public-link-arrow {
-  transform: translateX(4px);
-}
-
 @media (max-width: 768px) {
   .form-header {
     padding: 1rem 1.25rem;
@@ -1430,27 +1081,6 @@ const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.va
   .platform-option {
     width: 44px;
     height: 44px;
-  }
-
-  .public-view {
-    padding: 1.5rem 1rem;
-  }
-
-  .public-header h1 {
-    font-size: 1.75rem;
-  }
-
-  .public-description {
-    font-size: 1rem;
-  }
-
-  .public-link-icon {
-    width: 48px;
-    height: 48px;
-  }
-
-  .public-link-icon ion-icon {
-    font-size: 24px;
   }
 
   .link-collapsed-bar {

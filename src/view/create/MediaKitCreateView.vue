@@ -28,15 +28,13 @@ const closeForm = () => {
 
 const isSubmitDisabled = computed(() => {
   if (isLoading.value) return true;
-  if (
+  return (
     !newMediaKit.value.title?.trim() ||
     !newMediaKit.value.shortBio?.trim() ||
     !newMediaKit.value.longBio?.trim() ||
     !newMediaKit.value.contactEmail?.trim() ||
     !newMediaKit.value.contactPhone?.trim()
-  )
-    return true;
-  return false;
+  );
 });
 
 const saveNewMediaKit = async () => {
@@ -46,6 +44,11 @@ const saveNewMediaKit = async () => {
     const created = await createMediaKit(newMediaKit.value);
     await router.push(`/mediakits/${created.slug}`);
     await showToast('Succeed to create MediaKit');
+    newMediaKit.value.title = '';
+    newMediaKit.value.shortBio = '';
+    newMediaKit.value.longBio = '';
+    newMediaKit.value.contactEmail = '';
+    newMediaKit.value.contactPhone = '';
   } catch (error: unknown) {
     const message = 'Failed to create MediaKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
@@ -225,12 +228,6 @@ const saveNewMediaKit = async () => {
 .required {
   color: #f87171;
   font-size: 1rem;
-}
-
-.optional {
-  color: #9aa3ad;
-  font-size: 0.8rem;
-  font-weight: 500;
 }
 
 .form-field input,
