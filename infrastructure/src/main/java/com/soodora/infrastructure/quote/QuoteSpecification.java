@@ -37,7 +37,7 @@ public class QuoteSpecification {
     }
 
     private static Specification<QuoteEntity> hasUserSlug(String slug) {
-        return (root, query, cb) -> cb.equal(root.get("artist").get("slug"), slug);
+        return (root, query, cb) -> cb.equal(root.get("artist").get("user").get("slug"), slug);
     }
 
     private static Specification<QuoteEntity> hasName(String name) {
