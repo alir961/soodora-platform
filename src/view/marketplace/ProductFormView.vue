@@ -125,7 +125,7 @@ const submitForm = async () => {
       await showToast('Product created successfully');
     }
 
-    router.push('/marketplace');
+    await router.push('/marketplace');
   } catch (error: unknown) {
     const action = isEditMode.value ? 'update' : 'create';
     const message = `Failed to ${action} product. ` + (error instanceof Error ? error.message : '');

@@ -91,8 +91,12 @@ const submitForm = async () => {
 
     await callCreatePost(formData);
     await showToast('Post created successfully');
+    postData.value.title = '';
+    postData.value.content = '';
+    postData.value.audioTitle = '';
+    postData.value.audioUrl = '';
 
-    router.push('/explore');
+    await router.push('/explore');
   } catch (error: unknown) {
     const message = 'Failed to create post. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
