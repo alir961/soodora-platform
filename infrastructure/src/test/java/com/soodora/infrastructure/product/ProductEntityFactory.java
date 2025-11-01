@@ -10,6 +10,8 @@ import java.util.Date;
 
 import static java.util.UUID.randomUUID;
 
+import static com.soodora.domain.product.ProductStatus.ACTIVE;
+
 public class ProductEntityFactory extends ProductFactory {
 
     public static ProductEntity buildDefaultProductEntity(ArtistEntity artist) {
@@ -23,6 +25,7 @@ public class ProductEntityFactory extends ProductFactory {
                 new MoneyEmbeddable(BigDecimal.valueOf(100.99), Currency.EUR),
                 10,
                 artist,
+                ACTIVE,
                 new Date(),
                 new Date());
     }

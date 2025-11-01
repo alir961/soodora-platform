@@ -1,5 +1,7 @@
 package com.soodora.infrastructure.sale;
 
+import com.soodora.infrastructure.product.ProductEntity;
+
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,5 +14,7 @@ public interface SaleJpaRepository extends JpaRepository<SaleEntity, UUID> {
     Optional<SaleEntity> findBySlug(String slug);
 
     Page<SaleEntity> findByArtistUserSlug(String slug, Pageable pageable);
+
+    boolean existsByProduct(ProductEntity product);
 
 }
