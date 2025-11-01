@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.product;
 
 import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.product.ProductStatus;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntity;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
@@ -53,6 +54,9 @@ public class ProductEntity implements DomainEntity<ProductDTO> {
     @ManyToOne
     @JoinColumn
     private ArtistEntity artist;
+
+    @Column
+    private ProductStatus status;
 
     @CreationTimestamp
     @Column(updatable = false)

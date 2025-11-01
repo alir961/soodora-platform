@@ -1,5 +1,7 @@
 package com.soodora.infrastructure.product;
 
+import com.soodora.domain.product.ProductStatus;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,6 +19,8 @@ public interface ProductJpaRepository
             JpaSpecificationExecutor<ProductEntity> {
 
     Optional<ProductEntity> findBySlug(String slug);
+
+    Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
 
     Optional<List<ProductEntity>> findProductsByArtistUserSlug(String slug);
 

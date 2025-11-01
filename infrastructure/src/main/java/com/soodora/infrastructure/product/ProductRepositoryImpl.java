@@ -3,20 +3,16 @@ package com.soodora.infrastructure.product;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.product.CreateProductCommand;
-import com.soodora.domain.product.ProductDTO;
-import com.soodora.domain.product.ProductFilter;
-import com.soodora.domain.product.ProductRepository;
-import com.soodora.domain.product.UpdateProductCommand;
+import com.soodora.domain.product.*;
 import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
+import com.soodora.infrastructure.sale.SaleJpaRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
 import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
+import static com.soodora.domain.product.ProductStatus.ACTIVE;
+import static com.soodora.domain.product.ProductStatus.INACTIVE;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +33,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     private final ProductJpaRepository repository;
     private final ArtistJpaRepository artistRepository;
     private final ImageStorageUploader imageStorageUploader;
+    private final SaleJpaRepository saleRepository;
 
     @Override
     @Transactional
@@ -54,6 +53,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
         entity.setArtist(artistEntity);
+        entity.setStatus(ACTIVE);
         return repository.save(entity).toDTO();
     }
 
@@ -99,7 +99,8 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Page<ProductDTO> findAll(Pageable pageable) {
-        return repository.findAll(pageable).map(ProductEntity::toDTO);
+        return repository.findByStatus(ProductStatus.ACTIVE, pageable)
+                .map(ProductEntity::toDTO);
     }
 
     @Override
@@ -119,9 +120,15 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public void deleteProductBySlug(String slug) {
-        Optional<ProductEntity> product = repository.findBySlug(slug);
+        ProductEntity product = findProductBySlugOrThrow(slug);
 
-        repository.deleteById(product.orElseThrow().getId());
+        boolean hasSales = saleRepository.existsByProduct(product);
+
+        if (hasSales) {
+            product.setStatus(INACTIVE);
+            repository.save(product);
+        } else
+            repository.delete(product);
     }
 
     @Override

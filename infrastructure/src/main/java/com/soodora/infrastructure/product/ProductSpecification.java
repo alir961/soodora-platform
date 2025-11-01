@@ -10,11 +10,13 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import static com.soodora.domain.product.ProductStatus.ACTIVE;
+
 @NoArgsConstructor(access = PRIVATE)
 public class ProductSpecification {
 
     public static Specification<ProductEntity> build(ProductFilter filter) {
-        Specification<ProductEntity> specification = null;
+        Specification<ProductEntity> specification = isActive();
         Optional<String> userSlugFilter = filter.userSlug();
         Optional<String> nameFilter = filter.name();
         Optional<String> descriptionFilter = filter.description();
@@ -52,4 +54,7 @@ public class ProductSpecification {
         return (root, query, cb) -> cb.equal(cb.lower(root.get("category")), category.toLowerCase());
     }
 
+    private static Specification<ProductEntity> isActive() {
+        return (root, query, cb) -> cb.equal(root.get("status"), ACTIVE);
+    }
 }
