@@ -5,7 +5,6 @@ import { getMySales } from '@/client/saleClient';
 import { Sale } from '@/entity/Sale';
 import { IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonContent } from '@ionic/vue';
 import {
-  arrowBackOutline,
   closeOutline,
   personOutline,
   mailOutline,
@@ -105,7 +104,7 @@ onMounted(async () => {
                   :alt="sale.product.name"
                   class="sale-image" />
                 <div v-else class="sale-image-placeholder">
-                  <ion-icon :icon="arrowBackOutline" />
+                  <ion-icon :icon="closeOutline" />
                 </div>
               </div>
 
