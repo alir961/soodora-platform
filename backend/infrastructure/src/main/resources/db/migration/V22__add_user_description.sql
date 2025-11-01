@@ -1,0 +1,2 @@
+ALTER TABLE users
+    ADD COLUMN description VARCHAR(1024) NOT NULL DEFAULT '';
