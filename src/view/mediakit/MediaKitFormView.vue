@@ -1,63 +1,52 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { createPlaylist } from '@/client/playlistClient';
-import { showToast } from '@/utils';
+import { createMediaKit } from '@/client/mediaKitClient';
+import type { MediaKitDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import ImageUploadPreview from '@/component/marketplace/ImageUploadPreview.vue';
-import { IonIcon, IonContent } from '@ionic/vue';
-import { closeOutline, musicalNotesOutline } from 'ionicons/icons';
+import { IonIcon } from '@ionic/vue';
+import { closeOutline, documentTextOutline } from 'ionicons/icons';
+import { showToast } from '@/utils';
 
 const router = useRouter();
 
-const newPlaylist = ref<{ name: string; description: string; privacy: string }>({
-  name: '',
-  description: '',
-  privacy: 'PUBLIC',
+const newMediaKit = ref<MediaKitDTO>({
+  slug: '',
+  title: '',
+  shortBio: '',
+  longBio: '',
+  contactEmail: '',
+  contactPhone: '',
+  items: [],
 });
 
-const playlistCoverFile = ref<File | null>(null);
-const currentImageUrl = ref<string>('');
-
-const onPlaylistCoverSelected = (file: File | null) => {
-  playlistCoverFile.value = file;
-  if (file) {
-    currentImageUrl.value = URL.createObjectURL(file);
-  } else {
-    currentImageUrl.value = '';
-  }
-};
+const isLoading = ref(false);
 
 const closeForm = () => {
   router.back();
 };
 
-const isLoading = ref(false);
-
 const isSubmitDisabled = computed(() => {
   if (isLoading.value) return true;
-  if (!newPlaylist.value.name.trim() || !newPlaylist.value.description.trim()) return true;
+  if (
+    !newMediaKit.value.title?.trim() ||
+    !newMediaKit.value.shortBio?.trim() ||
+    !newMediaKit.value.longBio?.trim() ||
+    !newMediaKit.value.contactEmail?.trim() ||
+    !newMediaKit.value.contactPhone?.trim()
+  )
+    return true;
   return false;
 });
 
-const callCreatePlaylist = async () => {
+const saveNewMediaKit = async () => {
   try {
     if (isSubmitDisabled.value) return;
-
     isLoading.value = true;
-
-    const formData = new FormData();
-    formData.append('data', new Blob([JSON.stringify(newPlaylist.value)], { type: 'application/json' }));
-
-    if (playlistCoverFile.value) {
-      formData.append('file', playlistCoverFile.value, playlistCoverFile.value.name);
-    }
-
-    const createdPlaylist = await createPlaylist(formData);
-    await showToast('Playlist created!');
-    await router.push({ name: 'PlaylistDetailsView', params: { slug: createdPlaylist.slug } });
+    const created = await createMediaKit(newMediaKit.value);
+    await router.push(`/mediakits/${created.slug}`);
   } catch (error: unknown) {
-    const message = 'Failed to create playlist. ' + (error instanceof Error ? error.message : '');
+    const message = 'Failed to create MediaKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -66,63 +55,63 @@ const callCreatePlaylist = async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Playlist">
+  <ApplicationViewport title="Create Media Kit">
     <div class="form-header">
-      <h2>Create Playlist</h2>
+      <h2>Create Media Kit</h2>
       <button class="close-btn" @click="closeForm">
         <IonIcon :icon="closeOutline" />
         Close
       </button>
     </div>
 
-    <IonContent class="form-content-wrapper">
+    <div class="form-content-wrapper">
       <div class="form-content">
         <div class="form-section">
           <div class="section-header">
-            <IonIcon :icon="musicalNotesOutline" class="section-icon" />
-            <h3>Playlist Details</h3>
+            <IonIcon :icon="documentTextOutline" class="section-icon" />
+            <h3>Media Kit Details</h3>
           </div>
 
           <div class="form-field">
-            <label>Name <span class="required">*</span></label>
-            <input type="text" v-model="newPlaylist.name" placeholder="Give your playlist a name" required />
+            <label>Title <span class="required">*</span></label>
+            <input type="text" v-model="newMediaKit.title" placeholder="Enter media kit title" required />
           </div>
 
           <div class="form-field">
-            <label>Description <span class="required">*</span></label>
-            <textarea
-              v-model="newPlaylist.description"
-              placeholder="Describe your playlist"
-              rows="4"
-              required></textarea>
+            <label>Short Bio <span class="required">*</span></label>
+            <textarea v-model="newMediaKit.shortBio" placeholder="Short bio" rows="3" required></textarea>
           </div>
 
           <div class="form-field">
-            <label>Privacy <span class="required">*</span></label>
-            <select v-model="newPlaylist.privacy">
-              <option value="PUBLIC">Public</option>
-              <option value="PRIVATE">Private</option>
-              <option value="UNLISTED">Unlisted</option>
-            </select>
+            <label>Long Bio <span class="required">*</span></label>
+            <textarea v-model="newMediaKit.longBio" placeholder="Long bio" rows="5" required></textarea>
           </div>
 
           <div class="form-field">
-            <label>Cover Image <span class="optional">(Optional)</span></label>
-            <ImageUploadPreview :current-image-url="currentImageUrl" @file-selected="onPlaylistCoverSelected" />
+            <label>Contact Email <span class="required">*</span></label>
+            <input type="email" v-model="newMediaKit.contactEmail" placeholder="Contact email" required />
+          </div>
+
+          <div class="form-field">
+            <label>Contact Phone <span class="required">*</span></label>
+            <input type="tel" v-model="newMediaKit.contactPhone" placeholder="Contact phone" required />
           </div>
         </div>
 
-        <button class="submit-btn" @click="callCreatePlaylist" :disabled="isSubmitDisabled">
-          {{ isLoading ? 'Creating...' : 'Create Playlist' }}
+        <button class="submit-btn" @click="saveNewMediaKit" :disabled="isSubmitDisabled">
+          {{ isLoading ? 'Creating...' : 'Create MediaKit' }}
         </button>
       </div>
-    </IonContent>
+    </div>
   </ApplicationViewport>
 </template>
 
 <style scoped>
 .form-content-wrapper {
   --background: linear-gradient(to bottom, rgba(13, 27, 42, 0.95), rgba(9, 18, 30, 0.92));
+  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.95), rgba(9, 18, 30, 0.92));
+  overflow-y: auto;
+  max-height: calc(100vh - 64px);
 }
 
 .form-header {
@@ -244,8 +233,7 @@ const callCreatePlaylist = async () => {
 }
 
 .form-field input,
-.form-field textarea,
-.form-field select {
+.form-field textarea {
   appearance: none;
   outline: none;
   border: 1px solid rgba(59, 130, 246, 0.2);
@@ -274,15 +262,13 @@ const callCreatePlaylist = async () => {
 }
 
 .form-field input:hover,
-.form-field textarea:hover,
-.form-field select:hover {
+.form-field textarea:hover {
   border-color: rgba(59, 130, 246, 0.35);
   background: rgba(13, 27, 42, 0.6);
 }
 
 .form-field input:focus,
-.form-field textarea:focus,
-.form-field select:focus {
+.form-field textarea:focus {
   border-color: rgba(59, 130, 246, 0.55);
   box-shadow:
     0 0 0 6px rgba(59, 130, 246, 0.1),
@@ -346,8 +332,7 @@ const callCreatePlaylist = async () => {
   }
 
   .form-field input,
-  .form-field textarea,
-  .form-field select {
+  .form-field textarea {
     font-size: 16px;
   }
 }

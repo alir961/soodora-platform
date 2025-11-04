@@ -50,21 +50,56 @@ const redirectToProfile = async () => {
 
 <style scoped>
 ion-item {
+  --background: transparent;
+  --background-hover: rgba(255, 255, 255, 0.05);
+  --background-activated: rgba(255, 255, 255, 0.08);
   --border-width: 0;
   --border-style: none;
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --inner-padding-end: 12px;
+  --min-height: 70px;
+
   & ion-avatar {
-    width: 30px;
-    height: 30px;
+    width: 48px;
+    height: 48px;
+    margin-right: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  ion-item {
+    --padding-start: 0.75rem;
+    --padding-end: 0.75rem;
+    --inner-padding-end: 10px;
+    --min-height: 65px;
+
+    & ion-avatar {
+      width: 44px;
+      height: 44px;
+    }
   }
 }
 
 .item-separator {
   height: 1px;
-  background-color: rgba(255, 255, 255, 0.15);
-  margin: 0.5em 0.5em;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 10%,
+    rgba(255, 255, 255, 0.1) 90%,
+    transparent 100%
+  );
+  margin: 0 1rem;
 
   &:nth-last-child(1) {
     display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .item-separator {
+    margin: 0 0.75rem;
   }
 }
 </style>

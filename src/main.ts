@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import { IonicVue } from '@ionic/vue';
 import router from './router';
+import { fadeTransition } from './router/animations';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css';
@@ -35,7 +36,11 @@ import './theme/variables.css';
 import { configureAxios } from '@/axiosConfiguration';
 import { createPinia } from 'pinia';
 
-const app = createApp(App).use(IonicVue).use(router);
+const app = createApp(App)
+  .use(IonicVue, {
+    navAnimation: fadeTransition,
+  })
+  .use(router);
 const pinia = createPinia();
 
 configureAxios();

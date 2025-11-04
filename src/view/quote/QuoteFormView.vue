@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { IonIcon } from '@ionic/vue';
 import { closeOutline, documentTextOutline } from 'ionicons/icons';
 import { showToast } from '@/utils';
-import { createQuote } from '@/client/quoteClient';
-import type { CreateQuoteRequest } from '@/entity/Quote';
+import { createQuote, getQuote, updateQuote } from '@/client/quoteClient';
+import type { CreateQuoteRequest, UpdateQuoteRequest } from '@/entity/Quote';
 
 const router = useRouter();
+const route = useRoute();
+
+const isEditMode = computed(() => !!route.params.slug);
+const quoteSlug = computed(() => route.params.slug as string);
 
 const newQuote = ref<CreateQuoteRequest>({
   name: '',
@@ -25,14 +29,43 @@ const closeForm = () => {
   router.back();
 };
 
+const loadQuote = async () => {
+  if (!isEditMode.value) return;
+
+  try {
+    isLoading.value = true;
+    const quote = await getQuote(quoteSlug.value);
+    newQuote.value = {
+      name: quote.name,
+      clientName: quote.clientName,
+      clientEmail: quote.clientEmail,
+      clientAddress: quote.clientAddress,
+      clientPhone: quote.clientPhone,
+      description: quote.description || '',
+    };
+  } catch (error: unknown) {
+    const message = 'Failed to load quote. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
+    router.back();
+  } finally {
+    isLoading.value = false;
+  }
+};
+
 const saveNewQuote = async () => {
   try {
     isLoading.value = true;
-    const created = await createQuote(newQuote.value);
-    await router.push(`/quotes/${created.slug}`);
-    await showToast('Succeed to create Quote');
+
+    if (isEditMode.value) {
+      await updateQuote(quoteSlug.value, newQuote.value as UpdateQuoteRequest);
+      await router.push(`/quotes/${quoteSlug.value}?t=${Date.now()}`);
+    } else {
+      const created = await createQuote(newQuote.value);
+      await router.push(`/quotes/${created.slug}?t=${Date.now()}`);
+    }
   } catch (error: unknown) {
-    const message = 'Failed to create Quote. ' + (error instanceof Error ? error.message : '');
+    const message =
+      `Failed to ${isEditMode.value ? 'update' : 'create'} quote. ` + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -46,12 +79,16 @@ const isSubmitDisabled = computed(() => {
   }
   return false;
 });
+
+onMounted(() => {
+  loadQuote();
+});
 </script>
 
 <template>
-  <ApplicationViewport title="Create Quote">
+  <ApplicationViewport :title="isEditMode ? 'Edit Quote' : 'Create Quote'">
     <div class="form-header">
-      <h2>Create Quote</h2>
+      <h2>{{ isEditMode ? 'Edit Quote' : 'Create Quote' }}</h2>
       <button class="close-btn" @click="closeForm">
         <IonIcon :icon="closeOutline" />
         Close
@@ -98,7 +135,7 @@ const isSubmitDisabled = computed(() => {
         </div>
 
         <button class="submit-btn" @click="saveNewQuote" :disabled="isSubmitDisabled">
-          {{ isLoading ? 'Creating...' : 'Create Quote' }}
+          {{ isLoading ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Quote' : 'Create Quote' }}
         </button>
       </div>
     </div>

@@ -6,14 +6,22 @@ import {
   IonInfiniteScroll,
   IonInfiniteScrollContent,
   IonRow,
+  IonIcon,
   onIonViewWillEnter,
 } from '@ionic/vue';
+import { ellipsisHorizontal, storefrontOutline, addCircleOutline, receiptOutline } from 'ionicons/icons';
 
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import { Product } from '@/entity/Product';
 import { callSearchProducts } from '@/client/productClient';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
+import ActionsPopup, { type ActionItem } from '@/component/actions/ActionsPopup.vue';
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/reactiveStorage';
+
+const router = useRouter();
+const authStore = useAuthStore();
 
 const PAGE_SIZE = 10;
 
@@ -34,6 +42,15 @@ const selectedSort = ref<
 >('createdAt,desc');
 
 const showFilterModal = ref(false);
+const showActionsPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
+
+const canCreateContent = computed(() => {
+  const user = authStore.getAuthenticatedUser;
+  if (!user) return false;
+  return user.roles.some((role) => ['ADMIN', 'PREMIUM', 'ARTIST'].includes(role));
+});
 
 const isDefaultSort = computed(() => selectedSort.value === 'createdAt,desc');
 
@@ -44,6 +61,39 @@ const toggleFilters = () => {
 const applySort = (sort: typeof selectedSort.value) => {
   selectedSort.value = sort;
 };
+
+const openActionsPopup = (event: MouseEvent) => {
+  const button = event.currentTarget as HTMLElement;
+  const rect = button.getBoundingClientRect();
+  popupX.value = rect.right - 220;
+  popupY.value = rect.bottom + 8;
+  showActionsPopup.value = true;
+};
+
+const closeActionsPopup = () => {
+  showActionsPopup.value = false;
+};
+
+const handleCreateProduct = () => {
+  router.push('/marketplace/product/create');
+};
+
+const handleMySales = () => {
+  router.push('/marketplace/mysales');
+};
+
+const actionItems = computed<ActionItem[]>(() => [
+  {
+    icon: addCircleOutline,
+    label: 'Create Product',
+    action: handleCreateProduct,
+  },
+  {
+    icon: receiptOutline,
+    label: 'My Sales',
+    action: handleMySales,
+  },
+]);
 
 const loadProducts = async (reset = false) => {
   if (isLoading.value || (!hasMore.value && !reset)) return;
@@ -95,6 +145,37 @@ watch([searchInput, selectedSort], () => {
 <template>
   <ApplicationViewport title="Marketplace">
     <ion-content>
+      <div class="ambient-glow">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+      </div>
+
+      <div class="marketplace-header">
+        <div class="header-content">
+          <div class="header-left">
+            <div class="header-icon-wrapper">
+              <ion-icon :icon="storefrontOutline" class="header-icon" />
+            </div>
+            <div class="header-text">
+              <h1 class="header-title">Marketplace</h1>
+              <p class="header-subtitle">Own a piece of your favorite artist.</p>
+            </div>
+          </div>
+          <button v-if="canCreateContent" class="actions-button" @click="openActionsPopup">
+            <ion-icon :icon="ellipsisHorizontal" />
+          </button>
+        </div>
+      </div>
+
+      <ActionsPopup
+        v-if="canCreateContent"
+        :is-open="showActionsPopup"
+        :x="popupX"
+        :y="popupY"
+        :actions="actionItems"
+        @close="closeActionsPopup" />
+
       <SearchBarWithFilters
         v-model="searchInput"
         placeholder="Search products..."
@@ -158,6 +239,111 @@ watch([searchInput, selectedSort], () => {
 </template>
 
 <style scoped>
+.marketplace-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(18, 22, 30, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  padding: 1rem 1.5rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+}
+
+.header-icon {
+  font-size: 22px;
+  color: #60a5fa;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 2px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-subtitle {
+  font-size: 0.85rem;
+  color: #9aa3ad;
+  margin: 0;
+  font-weight: 500;
+}
+
+.actions-button {
+  appearance: none;
+  border: none;
+  height: 38px;
+  width: 38px;
+  padding: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.actions-button ion-icon {
+  font-size: 22px;
+  padding-bottom: 0;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.actions-button:hover {
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
+  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
+  transform: translateY(-2px);
+}
+
+.actions-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
+}
+
 .filter-panel-wrapper {
   width: 90%;
   margin: 0 auto;
@@ -272,5 +458,95 @@ watch([searchInput, selectedSort], () => {
 .slide-down-leave-to {
   opacity: 0;
   transform: translateY(-8px) scale(0.98);
+}
+
+.ambient-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 1;
+  animation: glowFloat 10s ease-in-out infinite;
+}
+
+.glow-orb.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 100%);
+  top: -150px;
+  left: -150px;
+}
+
+.glow-orb.orb-2 {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.06) 50%, transparent 100%);
+  bottom: -100px;
+  right: -100px;
+}
+
+.glow-orb.orb-3 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.18) 0%, rgba(37, 99, 235, 0.05) 50%, transparent 100%);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes glowFloat {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-20px, -25px) scale(1.05);
+  }
+  66% {
+    transform: translate(20px, 20px) scale(0.95);
+  }
+}
+
+@media (max-width: 640px) {
+  .marketplace-header {
+    padding: 1rem;
+  }
+
+  .header-icon-wrapper {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+  }
+
+  .header-icon {
+    font-size: 20px;
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .actions-button {
+    height: 38px;
+    border-radius: 10px;
+  }
+
+  .actions-button ion-icon {
+    font-size: 19px;
+  }
 }
 </style>

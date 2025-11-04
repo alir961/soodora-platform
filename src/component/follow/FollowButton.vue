@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { IonButton } from '@ionic/vue';
 import { callFollowUser, callUnfollowUser } from '@/client/profileClient';
 import { User } from '@/entity/User';
 import { computed, onMounted, PropType, ref } from 'vue';
@@ -51,28 +50,52 @@ onMounted(() => {
 </script>
 
 <template>
-  <ion-button
-    class="follow-button"
-    fill="outline"
-    size="small"
-    :color="isFollowing ? 'danger' : 'primary'"
-    @click="toggleFollow">
+  <button class="follow-button" :class="{ 'is-following': isFollowing }" @click="toggleFollow">
     {{ isFollowing ? 'Unfollow' : 'Follow' }}
-  </ion-button>
+  </button>
 </template>
 
 <style scoped>
 .follow-button {
-  --border-radius: 20px;
-  --padding-start: 10px;
-  --padding-end: 10px;
-  --padding-top: 5px;
-  --padding-bottom: 5px;
+  border-radius: 20px;
+  padding: 5px 10px;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 1rem;
   text-transform: none;
+  margin: 0;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  /* Follow state - Blue gradient */
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(37, 99, 235, 0.9));
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
+
+.follow-button:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 1), rgba(37, 99, 235, 1));
+}
+
 .follow-button:active {
-  filter: brightness(0.9);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(29, 78, 216, 0.95));
+  transform: scale(0.96);
+}
+
+.follow-button.is-following {
+  /* Unfollow state - Transparent with subtle background */
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.follow-button.is-following:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.follow-button.is-following:active {
+  background: rgba(239, 68, 68, 0.15);
 }
 </style>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { PropType } from 'vue';
+import { PropType, ref } from 'vue';
 import { User } from '@/entity/User';
 import { modalController, IonList, IonButton, IonContent, IonIcon } from '@ionic/vue';
 import UserListItem from '@/component/user/UserListItem.vue';
 import { arrowBackOutline } from 'ionicons/icons';
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -15,6 +15,8 @@ defineProps({
     required: true,
   },
 });
+
+const displayedUsers = ref<User[]>(props.users);
 </script>
 
 <template>
@@ -32,9 +34,13 @@ defineProps({
       <h2 class="floating-header-title">{{ title }}</h2>
     </div>
     <ion-list class="modal-item">
-      <UserListItem v-for="user in users" :key="user.slug" :user="user" @select="() => modalController.dismiss()" />
+      <UserListItem
+        v-for="user in displayedUsers"
+        :key="user.slug"
+        :user="user"
+        @select="() => modalController.dismiss()" />
     </ion-list>
-    <p v-if="users.length === 0" class="no-content">Nothing to display!</p>
+    <p v-if="displayedUsers.length === 0" class="no-content">Nothing to display!</p>
   </ion-content>
 </template>
 

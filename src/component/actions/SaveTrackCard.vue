@@ -124,7 +124,6 @@ const saveChanges = async () => {
     }
 
     savedPlaylistsSlugs.value = [...current];
-    await showToast('Track saved successfully!', 'success');
     closeModal();
   } catch (error: unknown) {
     const message = 'Failed to save track. ' + (error instanceof Error ? error.message : '');
@@ -153,85 +152,87 @@ defineExpose({
 </script>
 
 <template>
-  <Teleport to="body">
-    <transition name="modal-fade">
-      <div v-if="showModal" class="save-modal-overlay" @click="closeModal">
-        <div class="save-modal" @click.stop>
-          <button class="close-btn" @click="closeModal">✕</button>
+  <div>
+    <Teleport v-if="showModal" to="body">
+      <transition name="modal-fade" appear>
+        <div class="save-modal-overlay" @click="closeModal">
+          <div class="save-modal" @click.stop>
+            <button class="close-btn" @click="closeModal">✕</button>
 
-          <div class="modal-content">
-            <div class="modal-header">
-              <div class="header-content">
-                <div class="track-cover">
-                  <img
-                    :src="props.imageUrl || player.current?.imageUrl || '/assets/images/png/no-album-art.png'"
-                    :alt="audioTitle || 'Track cover'" />
-                </div>
-                <div class="header-text">
-                  <h3>Save Track</h3>
-                  <p class="track-name" v-if="audioTitle">{{ audioTitle }}</p>
+            <div class="modal-content">
+              <div class="modal-header">
+                <div class="header-content">
+                  <div class="track-cover">
+                    <img
+                      :src="props.imageUrl || player.current?.imageUrl || '/assets/images/png/no-album-art.png'"
+                      :alt="audioTitle || 'Track cover'" />
+                  </div>
+                  <div class="header-text">
+                    <h3>Save Track</h3>
+                    <p class="track-name" v-if="audioTitle">{{ audioTitle }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div v-if="isLoading" class="loading-state">
-              <div class="loading-spinner"></div>
-              <p>Loading playlists...</p>
-            </div>
-
-            <div v-else-if="allPlaylists.length === 0" class="empty-state">
-              <div class="empty-icon">
-                <ion-icon :icon="musicalNotesOutline" />
+              <div v-if="isLoading" class="loading-state">
+                <div class="loading-spinner"></div>
+                <p>Loading playlists...</p>
               </div>
-              <p class="empty-text">No playlists yet</p>
-              <p class="empty-subtext">Create your first playlist to save tracks</p>
-              <button class="create-first-btn" @click="goToCreatePlaylist">
-                <ion-icon :icon="addCircleOutline" />
-                <span>Create Playlist</span>
-              </button>
-            </div>
 
-            <div v-else class="playlists-section">
-              <div class="list-header">
-                <span>Your Playlists</span>
-                <button class="add-playlist-btn" @click="goToCreatePlaylist" title="Create new playlist">
+              <div v-else-if="allPlaylists.length === 0" class="empty-state">
+                <div class="empty-icon">
+                  <ion-icon :icon="musicalNotesOutline" />
+                </div>
+                <p class="empty-text">No playlists yet</p>
+                <p class="empty-subtext">Create your first playlist to save tracks</p>
+                <button class="create-first-btn" @click="goToCreatePlaylist">
                   <ion-icon :icon="addCircleOutline" />
+                  <span>Create Playlist</span>
                 </button>
               </div>
 
-              <div class="playlists-scroll">
-                <button
-                  v-for="playlist in allPlaylists"
-                  :key="playlist.slug"
-                  class="playlist-item"
-                  :class="{ selected: selectedPlaylists.has(playlist.slug) }"
-                  @click="togglePlaylist(playlist.slug)">
-                  <div class="playlist-cover">
-                    <img v-if="playlist.imageUrl" :src="playlist.imageUrl" :alt="playlist.name" />
-                    <div v-else class="playlist-placeholder">
-                      <ion-icon :icon="musicalNotesOutline" />
+              <div v-else class="playlists-section">
+                <div class="list-header">
+                  <span>Your Playlists</span>
+                  <button class="add-playlist-btn" @click="goToCreatePlaylist" title="Create new playlist">
+                    <ion-icon :icon="addCircleOutline" />
+                  </button>
+                </div>
+
+                <div class="playlists-scroll">
+                  <button
+                    v-for="playlist in allPlaylists"
+                    :key="playlist.slug"
+                    class="playlist-item"
+                    :class="{ selected: selectedPlaylists.has(playlist.slug) }"
+                    @click="togglePlaylist(playlist.slug)">
+                    <div class="playlist-cover">
+                      <img v-if="playlist.imageUrl" :src="playlist.imageUrl" :alt="playlist.name" />
+                      <div v-else class="playlist-placeholder">
+                        <ion-icon :icon="musicalNotesOutline" />
+                      </div>
                     </div>
-                  </div>
-                  <div class="playlist-details">
-                    <span class="playlist-name">{{ playlist.name }}</span>
-                    <span class="playlist-count">{{ playlist.postCount || 0 }} tracks</span>
-                  </div>
-                  <div class="playlist-check">
-                    <ion-icon :icon="checkmarkCircle" />
-                  </div>
+                    <div class="playlist-details">
+                      <span class="playlist-name">{{ playlist.name }}</span>
+                      <span class="playlist-count">{{ playlist.postCount || 0 }} tracks</span>
+                    </div>
+                    <div class="playlist-check">
+                      <ion-icon :icon="checkmarkCircle" />
+                    </div>
+                  </button>
+                </div>
+
+                <button class="save-btn" :disabled="isSavingChanges" @click="saveChanges">
+                  <span v-if="!isSavingChanges">Save Changes</span>
+                  <span v-else>Saving...</span>
                 </button>
               </div>
-
-              <button class="save-btn" :disabled="isSavingChanges" @click="saveChanges">
-                <span v-if="!isSavingChanges">Save Changes</span>
-                <span v-else>Saving...</span>
-              </button>
             </div>
           </div>
         </div>
-      </div>
-    </transition>
-  </Teleport>
+      </transition>
+    </Teleport>
+  </div>
 </template>
 
 <style scoped>

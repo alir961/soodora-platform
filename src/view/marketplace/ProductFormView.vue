@@ -119,10 +119,8 @@ const submitForm = async () => {
     if (isEditMode.value) {
       const productSlug = route.params.slug as string;
       await updateProduct(productSlug, formData);
-      await showToast('Product updated successfully');
     } else {
       await createProduct(formData);
-      await showToast('Product created successfully');
     }
 
     await router.push('/marketplace');

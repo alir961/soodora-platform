@@ -36,6 +36,12 @@ const reloadFollowing = () => {
     .catch((error) => console.error(error));
 };
 
+const handleFollowToggle = (userSlug: string) => {
+  if (showList.value === 'following') {
+    following.value = following.value.filter((user) => user.slug !== userSlug);
+  }
+};
+
 const openFollowersList = () => {
   showList.value = 'followers';
   emit('list-opened', 'followers');
@@ -100,7 +106,7 @@ defineExpose({ closeList });
           <div class="user-username">@{{ user.username }}</div>
           <div class="user-fullname">{{ user.firstname }} {{ user.lastname }}</div>
         </div>
-        <FollowButton :user="user" @click.stop class="follow-btn" />
+        <FollowButton :user="user" @click.stop @toggle="() => handleFollowToggle(user.slug)" class="follow-btn" />
       </div>
 
       <div v-if="(showList === 'followers' ? followers : following).length === 0" class="empty-state">
