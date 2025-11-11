@@ -7,6 +7,7 @@ import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.by;
 
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
 import static com.soodora.test.factory.PostFactory.buildDefaultPostWithoutAudio;
 import static com.soodora.test.factory.UserFactory.buildDefaultUser;
@@ -496,6 +497,42 @@ class PostServiceTest {
         assertEquals(expectedPage.getContent(), result.getContent());
 
         verify(postRepository).findByFollowingSlugs(followingSlugs, pageable);
+    }
+
+    @Test
+    void givenOwnerUser_whenComputePostAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        PostAnalytics analytics = postService.computePostAnalytics(ARTIST_USER, POST_1.getSlug());
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenAdminUser_whenComputePostAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        PostAnalytics analytics = postService.computePostAnalytics(ADMIN, POST_1.getSlug());
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenInvalidUser_whenComputePostAnalytics_thenThrowsInvalidPermissionException() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        Executable executable = () -> postService.computePostAnalytics(USER, POST_1.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the post owner can access the analytics");
     }
 
 }

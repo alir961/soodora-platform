@@ -9,6 +9,7 @@ import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CommentPostRequest;
 import com.soodora.service.post.CreatePostRequest;
+import com.soodora.service.post.PostAnalytics;
 import com.soodora.service.post.PostService;
 import com.soodora.service.user.UnknownUserException;
 
@@ -31,13 +32,11 @@ import static java.util.Optional.of;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
 import static com.soodora.test.TestConstants.ARTIST_USER;
@@ -440,6 +439,32 @@ class PostControllerIT {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenGetPostAnalytics_thenForbidden() throws Exception {
+        mockMvc.perform(get("/posts/post-slug/analytics"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedRequest_whenGetPostAnalytics_thenOk() throws Exception {
+        // GIVEN
+        String postSlug = "post-slug";
+        PostAnalytics analytics = new PostAnalytics(1, 2, 3, 0, 1, 2);
+
+        when(postService.computePostAnalytics(USER, postSlug)).thenReturn(analytics);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/post-slug/analytics")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likes").value(1))
+                .andExpect(jsonPath("$.comments").value(2))
+                .andExpect(jsonPath("$.reposts").value(3))
+                .andExpect(jsonPath("$.subscribedLikes").value(0))
+                .andExpect(jsonPath("$.subscribedComments").value(1))
+                .andExpect(jsonPath("$.subscribedReposts").value(2));
     }
 
 }

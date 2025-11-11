@@ -6,6 +6,7 @@ import com.soodora.domain.post.*;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.List;
 import java.util.Optional;
@@ -177,16 +178,20 @@ public class PostService {
         postRepository.unrepost(postSlug, user);
     }
 
-    public PostAnalytics computePostAnalytics(String postSlug) {
+    public PostAnalytics computePostAnalytics(User user, String postSlug) {
         Post post = retrievePostBySlug(postSlug);
         User owner = post.getOwner();
-        int subscribedLikes = countSubscribers(post.getLikedUsers(), owner);
-        int subscribedComments = countSubscribers(post.getCommentedUsers(), owner);
-        int subscribedReposts = countSubscribers(post.getRepostedUsers(), owner);
 
-        return new PostAnalytics(
-                post.getLikedUsers().size(), post.getCommentedUsers().size(), post.getRepostedUsers().size(),
-                subscribedLikes, subscribedComments, subscribedReposts);
+        if (owner.getSlug().equals(user.getSlug()) || user.isAdmin()) {
+            int subscribedLikes = countSubscribers(post.getLikedUsers(), owner);
+            int subscribedComments = countSubscribers(post.getCommentedUsers(), owner);
+            int subscribedReposts = countSubscribers(post.getRepostedUsers(), owner);
+
+            return new PostAnalytics(
+                    post.getLikedUsers().size(), post.getCommentedUsers().size(), post.getRepostedUsers().size(),
+                    subscribedLikes, subscribedComments, subscribedReposts);
+        }
+        throw new InvalidPermissionException("Only the post owner can access the analytics");
     }
 
     private int countSubscribers(List<User> users, User target) {

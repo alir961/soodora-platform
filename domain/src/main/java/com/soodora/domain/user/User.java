@@ -51,6 +51,10 @@ public class User {
         this.roles = roles;
     }
 
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(Role::isAdmin);
+    }
+
     public void follow(User user) {
         if (user.getSlug().equals(slug))
             throw new UserFollowException("User cannot follow itself");
