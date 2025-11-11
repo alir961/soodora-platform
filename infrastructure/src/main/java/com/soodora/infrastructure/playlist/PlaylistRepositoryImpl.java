@@ -7,6 +7,7 @@ import com.soodora.domain.playlist.*;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.common.EntitySpecification;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.post.PostJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
@@ -88,13 +89,17 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     @Override
     @Transactional
     public Page<PlaylistDTO> findByFilter(PlaylistFilter filter, Pageable pageable) {
-        return repository.findAll(PlaylistSpecification.build(filter), pageable).map(DomainEntityAdapter::aggregate);
+        EntitySpecification<PlaylistEntity> playlistSpecification = new PlaylistSpecification(filter);
+
+        return repository.findAll(playlistSpecification.build(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public boolean isPlaylistNameUsedByUser(String name, String userSlug) {
         UserEntity user = findUserBySlugOrThrow(userSlug);
+
         return user.getPlaylists().stream()
                 .anyMatch(playlist -> playlist.getName().equalsIgnoreCase(name));
     }

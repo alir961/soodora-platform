@@ -1,34 +1,27 @@
 package com.soodora.infrastructure.playlist;
 
 import com.soodora.domain.playlist.PlaylistFilter;
+import com.soodora.infrastructure.common.EntitySpecification;
 
 import org.springframework.data.jpa.domain.Specification;
 
-public class PlaylistSpecification {
+import lombok.RequiredArgsConstructor;
 
-    public static Specification<PlaylistEntity> build(PlaylistFilter filter) {
-        Specification<PlaylistEntity> spec;
+@RequiredArgsConstructor
+public class PlaylistSpecification extends EntitySpecification<PlaylistEntity> {
+
+    private final PlaylistFilter filter;
+
+    public Specification<PlaylistEntity> build() {
+        Specification<PlaylistEntity> specification = notPrivate();
 
         if (filter.userSlug().isPresent())
-            spec = hasUserSlug(filter.userSlug().get());
-        else
-            spec = notPrivate();
-
+            specification = hasUserSlug(filter.userSlug().get());
         if (filter.name().isPresent())
-            spec = appendSpec(spec, hasName(filter.name().get()));
-
+            specification = append(specification, hasName(filter.name().get()));
         if (filter.description().isPresent())
-            spec = appendSpec(spec, hasDescription(filter.description().get()));
-
-        return spec;
-    }
-
-    private static Specification<PlaylistEntity> appendSpec(Specification<PlaylistEntity> base,
-            Specification<PlaylistEntity> addition) {
-        if (base == null) {
-            return addition;
-        }
-        return base.and(addition);
+            specification = append(specification, hasDescription(filter.description().get()));
+        return specification;
     }
 
     private static Specification<PlaylistEntity> hasUserSlug(String slug) {

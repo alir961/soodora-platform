@@ -9,6 +9,7 @@ import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.common.EntitySpecification;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.sale.SaleJpaRepository;
 
@@ -107,7 +108,9 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     @Transactional
     public Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable) {
-        return repository.findAll(ProductSpecification.build(filter), pageable)
+        EntitySpecification<ProductEntity> productSpecification = new ProductSpecification(filter);
+
+        return repository.findAll(productSpecification.build(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

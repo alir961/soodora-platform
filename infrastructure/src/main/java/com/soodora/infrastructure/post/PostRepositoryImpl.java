@@ -10,6 +10,7 @@ import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.common.EntitySpecification;
 import com.soodora.infrastructure.playlist.PlaylistJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
@@ -89,7 +90,9 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     @Transactional
     public Page<Post> findByFilter(PostFilter filter, Pageable pageable) {
-        return postRepository.findAll(PostSpecification.build(filter), pageable)
+        EntitySpecification<PostEntity> postSpecification = new PostSpecification(filter);
+
+        return postRepository.findAll(postSpecification.build(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

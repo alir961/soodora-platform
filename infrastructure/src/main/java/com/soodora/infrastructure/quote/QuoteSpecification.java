@@ -1,19 +1,20 @@
 package com.soodora.infrastructure.quote;
 
 import com.soodora.domain.quote.QuoteFilter;
+import com.soodora.infrastructure.common.EntitySpecification;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
-import static lombok.AccessLevel.PRIVATE;
+@RequiredArgsConstructor
+public class QuoteSpecification extends EntitySpecification<QuoteEntity> {
 
-@NoArgsConstructor(access = PRIVATE)
-public class QuoteSpecification {
+    private final QuoteFilter filter;
 
-    public static Specification<QuoteEntity> build(QuoteFilter filter) {
+    public Specification<QuoteEntity> build() {
         Specification<QuoteEntity> specification = null;
         Optional<String> userSlugFilter = filter.userSlug();
         Optional<String> nameFilter = filter.name();
@@ -21,7 +22,7 @@ public class QuoteSpecification {
         Optional<String> clientNameFilter = filter.clientName();
 
         if (userSlugFilter.isPresent())
-            specification = append(specification, hasUserSlug(userSlugFilter.get()));
+            specification = append(null, hasUserSlug(userSlugFilter.get()));
         if (nameFilter.isPresent())
             specification = append(specification, hasName(nameFilter.get()));
         if (descriptionFilter.isPresent())
@@ -29,11 +30,6 @@ public class QuoteSpecification {
         if (clientNameFilter.isPresent())
             specification = append(specification, hasClientName(clientNameFilter.get()));
         return specification;
-    }
-
-    private static Specification<QuoteEntity> append(Specification<QuoteEntity> base,
-            Specification<QuoteEntity> addition) {
-        return base == null ? addition : base.and(addition);
     }
 
     private static Specification<QuoteEntity> hasUserSlug(String slug) {
