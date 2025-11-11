@@ -12,13 +12,13 @@ public interface PlaylistRepository {
 
     PlaylistDTO save(CreatePlaylistCommand command, User user, FileData playlistImage);
     PlaylistDTO update(UpdatePlaylistCommand command, String slug, FileData playlistImage);
-    PlaylistFullDTO findBySlug(String slug, Pageable pageableAudioPosts);
+    PopulatedPlaylistDTO findBySlug(String slug, Pageable pageableAudioPosts);
     List<PlaylistDTO> findAll();
     Page<PlaylistDTO> findByFilter(PlaylistFilter filter, Pageable pageable);
     boolean isPlaylistNameUsedByUser(String name, String userSlug);
-    PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
-    PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
-    PlaylistFullDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts);
+    PopulatedPlaylistDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
+    PopulatedPlaylistDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
+    PopulatedPlaylistDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts);
     void deletePlaylistAndUnlinkPosts(String slug);
 
 }

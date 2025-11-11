@@ -2,9 +2,9 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.api.post.PostDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.InvalidValueException;
-import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
@@ -105,7 +105,8 @@ public class ProfileController {
     @GetMapping("/following/posts")
     @SecurityRequirement(name = "bearerAuth")
     public Page<PostDTO> getFollowingPosts(@AuthenticationPrincipal User user, Pageable pageable) {
-        return postService.retrievePostsFromFollowing(user.getIdentifier(), pageable);
+        return postService.retrievePostsFromFollowing(user.getIdentifier(), pageable)
+                .map(PostDTO::build);
     }
 
 }

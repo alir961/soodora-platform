@@ -1,10 +1,10 @@
 package com.soodora.infrastructure.playlist;
 
 import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.PlaylistPrivacy;
-import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.PublicUserDTO;
+import com.soodora.domain.playlist.PopulatedPlaylistDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;
@@ -91,8 +91,8 @@ public class PlaylistEntity implements DomainEntityAdapter<PlaylistDTO> {
                 updatedAt);
     }
 
-    public PlaylistFullDTO toFullDTO(Page<PostDTO> postsPage) {
-        return new PlaylistFullDTO(aggregate(), postsPage);
+    public PopulatedPlaylistDTO toFullDTO(Page<Post> postsPage) {
+        return new PopulatedPlaylistDTO(aggregate(), postsPage);
     }
 
 }

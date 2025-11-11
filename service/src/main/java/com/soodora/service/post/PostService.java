@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toSet;
 
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
@@ -113,14 +114,14 @@ public class PostService {
         }
     }
 
-    public Page<PostDTO> retrievePosts(PostFilter filter, Pageable pageable) {
+    public Page<Post> retrievePosts(PostFilter filter, Pageable pageable) {
         if (filter.isEmpty())
             return postRepository.findAll(pageable);
         else
             return postRepository.findByFilter(filter, pageable);
     }
 
-    public Page<PostDTO> retrieveRecommendedPosts(User user, Pageable pageable) {
+    public Page<Post> retrieveRecommendedPosts(User user, Pageable pageable) {
         if (user == null)
             return postRepository.findAll(pageable);
         return postRepository.findRecommendedPosts(user, pageable);
@@ -142,7 +143,7 @@ public class PostService {
         throw new MissingUserSlugException();
     }
 
-    public PostDTO retrievePostBySlug(String postSlug) {
+    public Post retrievePostBySlug(String postSlug) {
         try {
             return postRepository.find(postSlug);
         } catch (UnknownSlugException exception) {
@@ -150,7 +151,7 @@ public class PostService {
         }
     }
 
-    public Page<PostDTO> retrievePostsFromFollowing(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrievePostsFromFollowing(Identifier identifier, Pageable pageable) {
         User user = userRepository.findWithFollowers(identifier);
         Set<String> followingSlugs = user.getFollowing()
                 .stream()
@@ -174,6 +175,24 @@ public class PostService {
 
     public void unrepostPostBySlug(User user, String postSlug) {
         postRepository.unrepost(postSlug, user);
+    }
+
+    public PostAnalytics computePostAnalytics(String postSlug) {
+        Post post = retrievePostBySlug(postSlug);
+        User owner = post.getOwner();
+        int subscribedLikes = countSubscribers(post.getLikedUsers(), owner);
+        int subscribedComments = countSubscribers(post.getCommentedUsers(), owner);
+        int subscribedReposts = countSubscribers(post.getRepostedUsers(), owner);
+
+        return new PostAnalytics(
+                post.getLikedUsers().size(), post.getCommentedUsers().size(), post.getRepostedUsers().size(),
+                subscribedLikes, subscribedComments, subscribedReposts);
+    }
+
+    private int countSubscribers(List<User> users, User target) {
+        return toIntExact(users.stream()
+                .filter(u -> u.isFollowing(target))
+                .count());
     }
 
 }

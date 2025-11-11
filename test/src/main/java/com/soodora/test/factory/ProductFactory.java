@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
+import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 
 @NoArgsConstructor(access = PROTECTED)
 public class ProductFactory {
@@ -25,7 +25,7 @@ public class ProductFactory {
                 "category",
                 Money.of(BigDecimal.valueOf(100.99), Currency.EUR),
                 10,
-                buildArtistDTO("id"),
+                buildDefaultArtist("id"),
                 new Date());
     }
 
@@ -38,7 +38,7 @@ public class ProductFactory {
                 "category",
                 Money.of(BigDecimal.valueOf(100.99), Currency.EUR),
                 10,
-                buildArtistDTO("id" + suffix),
+                buildDefaultArtist("id" + suffix),
                 new Date());
     }
 

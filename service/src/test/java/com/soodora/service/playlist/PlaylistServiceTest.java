@@ -38,7 +38,7 @@ class PlaylistServiceTest {
     private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
     private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
-    private static final PlaylistFullDTO FULL_PLAYLIST = buildDefaultPlaylistFull("slug1", "Name 1");
+    private static final PopulatedPlaylistDTO FULL_PLAYLIST = buildDefaultPlaylistFull("slug1", "Name 1");
     private static final String SLUG_1 = "slug1";
     private static final List<PlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
     private static final FileData FILE_DATA = new FileData(
@@ -149,7 +149,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findBySlug(eq(SLUG_1), any(Pageable.class))).thenReturn(FULL_PLAYLIST);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.retrievePlaylistBySlug(SLUG_1, Pageable.unpaged());
+        PopulatedPlaylistDTO result = playlistService.retrievePlaylistBySlug(SLUG_1, Pageable.unpaged());
 
         // THEN
         assertEquals(FULL_PLAYLIST, result);
@@ -194,7 +194,7 @@ class PlaylistServiceTest {
                 .thenReturn(FULL_PLAYLIST);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.addPostToPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
+        PopulatedPlaylistDTO result = playlistService.addPostToPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
 
         // THEN
         assertEquals(FULL_PLAYLIST, result);
@@ -218,7 +218,7 @@ class PlaylistServiceTest {
                 .thenReturn(FULL_PLAYLIST);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.removePostFromPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
+        PopulatedPlaylistDTO result = playlistService.removePostFromPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
 
         // THEN
         assertEquals(FULL_PLAYLIST, result);

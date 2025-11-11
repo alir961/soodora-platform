@@ -1,8 +1,8 @@
 package com.soodora.api.playlist;
 
 import com.soodora.api.common.JsonResponse;
-import com.soodora.domain.playlist.PlaylistFullDTO;
+import com.soodora.domain.playlist.PopulatedPlaylistDTO;
 
-public record PlaylistFullResponse(PlaylistFullDTO playlistFullDTO) implements JsonResponse {
+public record PlaylistFullResponse(PopulatedPlaylistDTO playlist) implements JsonResponse {
 
 }

@@ -67,4 +67,8 @@ public class User {
         user.followers.removeIf(u -> u.getSlug().equals(slug));
     }
 
+    public boolean isFollowing(User user) {
+        return following.contains(user);
+    }
+
 }

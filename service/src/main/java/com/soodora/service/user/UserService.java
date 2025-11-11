@@ -2,7 +2,7 @@ package com.soodora.service.user;
 
 import com.soodora.domain.auth.value.Role;
 import com.soodora.domain.cdn.ImageStorageUploader;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
@@ -142,15 +142,15 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public Page<PostDTO> retrievePosts(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrievePosts(Identifier identifier, Pageable pageable) {
         return postRepository.findUserPosts(identifier, pageable);
     }
 
-    public Page<PostDTO> retrieveReposts(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrieveReposts(Identifier identifier, Pageable pageable) {
         return postRepository.findUserReposts(identifier, pageable);
     }
 
-    public Page<PostDTO> retrieveAudios(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrieveAudios(Identifier identifier, Pageable pageable) {
         return postRepository.findUserAudios(identifier, pageable);
     }
 

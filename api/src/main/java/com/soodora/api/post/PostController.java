@@ -5,12 +5,12 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
-import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostFilter;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
+import com.soodora.service.post.PostAnalytics;
 import com.soodora.service.post.PostService;
 import com.soodora.service.shared.FileDataService;
 
@@ -73,17 +73,19 @@ public class PostController {
             Pageable pageable) {
         PostFilter filter = new PostFilter(userSlug, hasAudio, title, audioTitle, description);
 
-        return postService.retrievePosts(filter, pageable);
+        return postService.retrievePosts(filter, pageable)
+                .map(PostDTO::build);
     }
 
     @GetMapping("/explore")
     public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal User user, Pageable pageable) {
-        return postService.retrieveRecommendedPosts(user, pageable);
+        return postService.retrieveRecommendedPosts(user, pageable)
+                .map(PostDTO::build);
     }
 
     @GetMapping("/{postSlug}")
     public PostDTO getPost(@PathVariable String postSlug) {
-        return postService.retrievePostBySlug(postSlug);
+        return PostDTO.build(postService.retrievePostBySlug(postSlug));
     }
 
     @DeleteMapping("/{postSlug}")
@@ -129,6 +131,13 @@ public class PostController {
     @SecurityRequirement(name = "bearerAuth")
     public void unrepostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         postService.unrepostPostBySlug(user, postSlug);
+    }
+
+    @GetMapping("/{postSlug}/analytics")
+    public PostAnalyticsDTO getPostAnalytics(@PathVariable String postSlug) {
+        PostAnalytics postAnalytics = postService.computePostAnalytics(postSlug);
+
+        return PostAnalyticsDTO.build(postAnalytics);
     }
 
     @GetMapping("/likes")

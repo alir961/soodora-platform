@@ -4,7 +4,7 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
@@ -73,7 +73,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistFullDTO findBySlug(String slug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO findBySlug(String slug, Pageable pageableAudioPosts) {
         return getPlaylistWithPosts(slug, pageableAudioPosts);
     }
 
@@ -101,7 +101,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
@@ -113,7 +113,8 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO removePostFromPlaylist(String playlistSlug, String postSlug,
+            Pageable pageableAudioPosts) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
@@ -132,14 +133,14 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
     }
 
     @Transactional
-    public PlaylistFullDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
 
         return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
     }
 
     @Transactional
-    public Page<PostDTO> playlistPostsPage(String playlistSlug, Pageable pageableAudioPosts) {
+    public Page<Post> playlistPostsPage(String playlistSlug, Pageable pageableAudioPosts) {
         return postRepository
                 .findByPlaylistSlug(playlistSlug, pageableAudioPosts)
                 .map(DomainEntityAdapter::aggregate);

@@ -3,9 +3,9 @@ package com.soodora.api.playlist;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.playlist.CreatePlaylistCommand;
 import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.playlist.PlaylistFullDTO;
+import com.soodora.domain.playlist.PopulatedPlaylistDTO;
 import com.soodora.domain.playlist.UpdatePlaylistCommand;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
@@ -56,7 +56,7 @@ class PlaylistControllerIT {
     private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("playlistSlug1", "Playlist 1");
     private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("playlistSlug2", "Playlist 2");
     private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("playlistSlug3", "Playlist 3");
-    private static final PlaylistFullDTO PLAYLIST_4 = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
+    private static final PopulatedPlaylistDTO PLAYLIST_4 = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
 
     @Test
     void givenValidCreatePlaylistRequest_whenCreatePlaylist_thenSuccess() throws Exception {
@@ -210,8 +210,8 @@ class PlaylistControllerIT {
         mockMvc.perform(get("/playlists/playlistSlug4")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.playlistSimpleDTO.slug").value("playlistSlug4"))
-                .andExpect(jsonPath("$.postDTO.content").isArray());
+                .andExpect(jsonPath("$.playlist.slug").value("playlistSlug4"))
+                .andExpect(jsonPath("$.posts.content").isArray());
     }
 
     @Test
@@ -237,10 +237,10 @@ class PlaylistControllerIT {
     @Test
     void givenValidPlaylistAndPost_whenAddPostToPlaylist_thenSuccess() throws Exception {
         // GIVEN
-        PlaylistFullDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
-        Page<PostDTO> postsAfter = buildPostsPage(
+        PopulatedPlaylistDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
+        Page<Post> postsAfter = buildPostsPage(
                 asList(buildDefaultPost("postSlug1", "Post 1"), buildDefaultPost("postSlug2", "Post 2")));
-        PlaylistFullDTO playlistAfterAdd = new PlaylistFullDTO(playlistBefore.playlistSimpleDTO(), postsAfter);
+        PopulatedPlaylistDTO playlistAfterAdd = new PopulatedPlaylistDTO(playlistBefore.playlist(), postsAfter);
 
         when(playlistService.addPostToPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
                 .thenReturn(playlistAfterAdd);
@@ -249,16 +249,16 @@ class PlaylistControllerIT {
         mockMvc.perform(post("/playlists/playlistSlug4/posts/postSlug1")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.playlistFullDTO.playlistSimpleDTO.slug").value("playlistSlug4"))
-                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content.length()").value(2));
+                .andExpect(jsonPath("$.playlist.playlist.slug").value("playlistSlug4"))
+                .andExpect(jsonPath("$.playlist.posts.content.length()").value(2));
     }
 
     @Test
     void givenValidPlaylistAndPost_whenRemovePostFromPlaylist_thenSuccess() throws Exception {
         // GIVEN
-        PlaylistFullDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
-        Page<PostDTO> postsAfter = buildPostsPage(List.of(buildDefaultPost("postSlug2", "Post 2")));
-        PlaylistFullDTO playlistAfterRemove = new PlaylistFullDTO(playlistBefore.playlistSimpleDTO(), postsAfter);
+        PopulatedPlaylistDTO playlistBefore = buildDefaultPlaylistFull("playlistSlug4", "Playlist 4");
+        Page<Post> postsAfter = buildPostsPage(List.of(buildDefaultPost("postSlug2", "Post 2")));
+        PopulatedPlaylistDTO playlistAfterRemove = new PopulatedPlaylistDTO(playlistBefore.playlist(), postsAfter);
 
         when(playlistService.removePostFromPlaylist(eq("playlistSlug4"), eq("postSlug1"), any(Pageable.class)))
                 .thenReturn(playlistAfterRemove);
@@ -267,7 +267,7 @@ class PlaylistControllerIT {
         mockMvc.perform(delete("/playlists/playlistSlug4/posts/postSlug1")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.playlistFullDTO.postDTO.content.length()").value(1));
+                .andExpect(jsonPath("$.playlist.posts.content.length()").value(1));
     }
 
     @Test

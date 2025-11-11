@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PRIVATE;
 
-import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
+import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 import static com.soodora.test.factory.EventFactory.buildEventDTO;
 import static com.soodora.test.factory.UserFactory.*;
 
@@ -26,7 +26,7 @@ public class TestConstants {
     public static final User USER = buildDefaultUser();
     public static final User ADMIN = buildDefaultAdminUser();
     public static final User ARTIST_USER = buildDefaultArtistUser();
-    public static final ArtistDTO ARTIST = buildArtistDTO("");
+    public static final ArtistDTO ARTIST = buildDefaultArtist("");
     public static final EventDTO EVENT = buildEventDTO("");
     public static final String JWT_TOKEN = "externalToken";
     public static final String REDIRECT_URL = "http://localhost:8080/callback";

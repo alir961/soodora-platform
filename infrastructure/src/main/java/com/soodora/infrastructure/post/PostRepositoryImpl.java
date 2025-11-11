@@ -52,7 +52,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public PostDTO save(CreatePostCommand command, User user, FileData fileData) {
+    public Post save(CreatePostCommand command, User user, FileData fileData) {
         PostEntity entity = new PostEntity();
         ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.getSlug());
 
@@ -74,13 +74,13 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public PostDTO find(String postSlug) {
+    public Post find(String postSlug) {
         return findPostBySlugOrThrow(postSlug).aggregate();
     }
 
     @Override
     @Transactional
-    public Page<PostDTO> findAll(Pageable pageable) {
+    public Page<Post> findAll(Pageable pageable) {
         Page<PostEntity> page = postRepository.findAll(pageable);
 
         return page.map(DomainEntityAdapter::aggregate);
@@ -88,14 +88,14 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable) {
+    public Page<Post> findByFilter(PostFilter filter, Pageable pageable) {
         return postRepository.findAll(PostSpecification.build(filter), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<PostDTO> findRecommendedPosts(User user, Pageable pageable) {
+    public Page<Post> findRecommendedPosts(User user, Pageable pageable) {
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         Set<UserEntity> followers = userEntity.getFollowers();
         List<PostEntity> sortedPosts = postRepository.findAll().stream()
@@ -103,7 +103,7 @@ public class PostRepositoryImpl implements PostRepository {
                 .toList();
         int start = toIntExact(pageable.getOffset());
         int end = min(start + pageable.getPageSize(), sortedPosts.size());
-        List<PostDTO> pageContent = sortedPosts.subList(start, end).stream()
+        List<Post> pageContent = sortedPosts.subList(start, end).stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
 
@@ -112,21 +112,21 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable) {
+    public Page<Post> findUserPosts(Identifier identifier, Pageable pageable) {
         return postRepository.findByArtistUserSlug(identifier.value(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<PostDTO> findUserReposts(Identifier identifier, Pageable pageable) {
+    public Page<Post> findUserReposts(Identifier identifier, Pageable pageable) {
         return postRepository.findByRepostsSlug(identifier.value(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable) {
+    public Page<Post> findUserAudios(Identifier identifier, Pageable pageable) {
         return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(identifier.value(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
@@ -304,7 +304,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
-    public Page<PostDTO> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable) {
+    public Page<Post> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable) {
         return postRepository.findByArtistUserSlugIn(followingSlugs, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }

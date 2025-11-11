@@ -5,7 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFilter;
-import com.soodora.domain.playlist.PlaylistFullDTO;
+import com.soodora.domain.playlist.PopulatedPlaylistDTO;
 import com.soodora.domain.playlist.UpdatePlaylistCommand;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
@@ -65,7 +65,7 @@ public class PlaylistController implements PlaylistResource {
     }
 
     @GetMapping("/{slug}")
-    public PlaylistFullDTO getPlaylist(@PathVariable String slug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO getPlaylist(@PathVariable String slug, Pageable pageableAudioPosts) {
         return playlistService.retrievePlaylistBySlug(slug, pageableAudioPosts);
     }
 
@@ -76,9 +76,9 @@ public class PlaylistController implements PlaylistResource {
         try {
             UpdatePlaylistCommand command = request.toCommand();
             FileData fileData = fileDataService.toFileData(imageFile);
+            PlaylistDTO playlist = playlistService.updatePlaylist(command, slug, fileData);
 
-            PlaylistDTO playlistDTO = playlistService.updatePlaylist(command, slug, fileData);
-            return new ResponseEntity<>(new PlaylistResponse(playlistDTO), OK);
+            return new ResponseEntity<>(new PlaylistResponse(playlist), OK);
         } catch (InvalidRequestException | UnknownPlaylistException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -93,11 +93,11 @@ public class PlaylistController implements PlaylistResource {
     public ResponseEntity<JsonResponse> addPostToPlaylist(
             @PathVariable String playlistSlug,
             @PathVariable String postSlug,
-            Pageable pageableAudioPosts) {
+            Pageable pageable) {
         try {
-            PlaylistFullDTO playlistFullDTO = playlistService.addPostToPlaylist(playlistSlug, postSlug,
-                    pageableAudioPosts);
-            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), OK);
+            PopulatedPlaylistDTO playlist = playlistService.addPostToPlaylist(playlistSlug, postSlug, pageable);
+
+            return new ResponseEntity<>(new PlaylistFullResponse(playlist), OK);
         } catch (PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -107,11 +107,11 @@ public class PlaylistController implements PlaylistResource {
     public ResponseEntity<JsonResponse> removePostFromPlaylist(
             @PathVariable String playlistSlug,
             @PathVariable String postSlug,
-            Pageable pageableAudioPosts) {
+            Pageable pageable) {
         try {
-            PlaylistFullDTO playlistFullDTO = playlistService.removePostFromPlaylist(playlistSlug, postSlug,
-                    pageableAudioPosts);
-            return new ResponseEntity<>(new PlaylistFullResponse(playlistFullDTO), OK);
+            PopulatedPlaylistDTO playlist = playlistService.removePostFromPlaylist(playlistSlug, postSlug, pageable);
+
+            return new ResponseEntity<>(new PlaylistFullResponse(playlist), OK);
         } catch (PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }

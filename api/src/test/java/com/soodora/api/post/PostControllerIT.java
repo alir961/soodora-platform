@@ -58,9 +58,9 @@ class PostControllerIT {
     @MockitoBean
     private UserRepository userRepository;
 
-    private static final PostDTO POST_1 = buildDefaultPost("postSlug1", "Post 1");
-    private static final PostDTO POST_2 = buildDefaultPost("postSlug2", "Post 2");
-    private static final PostDTO POST_3 = buildDefaultPost("postSlug3", "Post 3");
+    private static final Post POST_1 = buildDefaultPost("postSlug1", "Post 1");
+    private static final Post POST_2 = buildDefaultPost("postSlug2", "Post 2");
+    private static final Post POST_3 = buildDefaultPost("postSlug3", "Post 3");
 
     private static final User USER_1 = buildDefaultUser(1);
     private static final User USER_2 = buildDefaultUser(2);
@@ -124,7 +124,7 @@ class PostControllerIT {
     @Test
     void retrievePost_Success() throws Exception {
         // GIVEN
-        Page<PostDTO> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
+        Page<Post> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
         when(postService.retrievePosts(any(), any())).thenReturn(postsPage);
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
@@ -133,15 +133,16 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()))
-                .andExpect(jsonPath("$.content[1].slug").value(POST_2.slug()))
-                .andExpect(jsonPath("$.content[2].slug").value(POST_3.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()))
+                .andExpect(jsonPath("$.content[1].slug").value(POST_2.getSlug()))
+                .andExpect(jsonPath("$.content[2].slug").value(POST_3.getSlug()));
     }
 
     @Test
     void retrievePosts_Empty() throws Exception {
         // GIVEN
-        Page<PostDTO> emptyPage = new PageImpl<>(List.of());
+        Page<Post> emptyPage = new PageImpl<>(List.of());
+
         when(postService.retrievePosts(any(), any())).thenReturn(emptyPage);
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
@@ -185,7 +186,7 @@ class PostControllerIT {
         boolean hasAudio = true;
         String audioTitle = "audioTitle1";
         String description = "description1";
-        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
         PostFilter postFilter = new PostFilter(
                 of(userSlug),
@@ -206,7 +207,7 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
     }
 
     @Test
@@ -216,7 +217,7 @@ class PostControllerIT {
         boolean hasAudio = false;
         String title = "title1";
         String description = "description1";
-        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
         PostFilter postFilter = new PostFilter(
                 of(userSlug),
@@ -237,7 +238,7 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
     }
 
     @Test
@@ -319,7 +320,7 @@ class PostControllerIT {
         // GIVEN
         when(postService.retrieveLikes("postSlug1"))
                 .thenReturn(List.of(
-                        new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER_1), new Date()),
+                        new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER_1), new Date()),
                         new PostLikeDTO("postSlug1", PublicUserDTO.build(USER_2), new Date())));
 
         // WHEN & THEN

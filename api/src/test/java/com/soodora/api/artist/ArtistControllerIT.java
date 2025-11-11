@@ -24,15 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
+import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class ArtistControllerIT {
 
-    private static final ArtistDTO ARTIST_A = buildArtistDTO("A");
-    private static final ArtistDTO ARTIST_B = buildArtistDTO("B");
-    private static final ArtistDTO ARTIST_C = buildArtistDTO("C");
+    private static final ArtistDTO ARTIST_A = buildDefaultArtist("A");
+    private static final ArtistDTO ARTIST_B = buildDefaultArtist("B");
+    private static final ArtistDTO ARTIST_C = buildDefaultArtist("C");
     private static final List<ArtistDTO> ARTISTS = List.of(ARTIST_A, ARTIST_B, ARTIST_C);
 
     @Autowired

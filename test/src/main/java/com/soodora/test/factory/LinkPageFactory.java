@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
+import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 
 @NoArgsConstructor(access = PROTECTED)
 public class LinkPageFactory {
@@ -20,7 +20,7 @@ public class LinkPageFactory {
                 name,
                 "Description",
                 links,
-                buildArtistDTO("id"));
+                buildDefaultArtist("id"));
     }
 
 }

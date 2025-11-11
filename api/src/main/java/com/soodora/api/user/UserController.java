@@ -2,9 +2,9 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
+import com.soodora.api.post.PostDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.InvalidValueException;
-import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.value.Identifier;
@@ -127,21 +127,24 @@ public class UserController {
     public Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrievePosts(identifier, pageable);
+        return userService.retrievePosts(identifier, pageable)
+                .map(PostDTO::build);
     }
 
     @GetMapping("/{slug}/reposts")
     public Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveReposts(identifier, pageable);
+        return userService.retrieveReposts(identifier, pageable)
+                .map(PostDTO::build);
     }
 
     @GetMapping("/{slug}/audios")
     public Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveAudios(identifier, pageable);
+        return userService.retrieveAudios(identifier, pageable)
+                .map(PostDTO::build);
     }
 
     @GetMapping("/{slug}/products")

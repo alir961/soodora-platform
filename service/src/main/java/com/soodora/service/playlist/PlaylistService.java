@@ -34,7 +34,7 @@ public class PlaylistService {
         return playlistRepository.findByFilter(filter, pageable);
     }
 
-    public PlaylistFullDTO retrievePlaylistBySlug(String slug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO retrievePlaylistBySlug(String slug, Pageable pageableAudioPosts) {
         return playlistRepository.findBySlug(slug, pageableAudioPosts);
     }
 
@@ -55,7 +55,7 @@ public class PlaylistService {
         }
     }
 
-    public PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
         try {
             return playlistRepository.addPostToPlaylist(playlistSlug, postSlug, pageableAudioPosts);
         } catch (UnknownSlugException exception) {
@@ -63,7 +63,8 @@ public class PlaylistService {
         }
     }
 
-    public PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public PopulatedPlaylistDTO removePostFromPlaylist(String playlistSlug, String postSlug,
+            Pageable pageableAudioPosts) {
         try {
             return playlistRepository.removePostFromPlaylist(playlistSlug, postSlug, pageableAudioPosts);
         } catch (UnknownSlugException exception) {

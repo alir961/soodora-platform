@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.post;
 
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.playlist.PlaylistEntity;
@@ -26,7 +26,7 @@ import static java.lang.System.currentTimeMillis;
 @Entity(name = "posts")
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostEntity implements DomainEntityAdapter<PostDTO> {
+public class PostEntity implements DomainEntityAdapter<Post> {
 
     private static final double LIKE_FACTOR = 2.0;
     private static final double COMMENT_FACTOR = 3.0;
@@ -95,19 +95,20 @@ public class PostEntity implements DomainEntityAdapter<PostDTO> {
     }
 
     @Override
-    public PostDTO aggregate() {
-        return new PostDTO(
+    public Post aggregate() {
+        return new Post(
                 slug,
                 title,
                 content,
                 imageUrl,
                 audioTitle,
                 audioUrl,
-                artist.aggregate(),
-                likes.size(),
-                reposts.size(),
-                comments.size(),
-                createdAt);
+                artist.getUser().aggregate(),
+                likes.stream().map(LikeEntity::getUser).map(DomainEntityAdapter::aggregate).toList(),
+                comments.stream().map(CommentEntity::getUser).map(DomainEntityAdapter::aggregate).toList(),
+                reposts.stream().map(DomainEntityAdapter::aggregate).toList(),
+                createdAt,
+                updatedAt);
     }
 
 }

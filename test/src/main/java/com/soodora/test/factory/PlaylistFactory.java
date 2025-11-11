@@ -1,9 +1,9 @@
 package com.soodora.test.factory;
 
 import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.playlist.PlaylistFullDTO;
-import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.user.PublicUserDTO;
+import com.soodora.domain.playlist.PopulatedPlaylistDTO;
+import com.soodora.domain.post.Post;
 
 import java.util.Date;
 import java.util.List;
@@ -35,7 +35,7 @@ public class PlaylistFactory {
                 new Date());
     }
 
-    public static PlaylistFullDTO buildDefaultPlaylistFull(String slug, String name) {
+    public static PopulatedPlaylistDTO buildDefaultPlaylistFull(String slug, String name) {
         PlaylistDTO playlistDTO = new PlaylistDTO(
                 slug,
                 name,
@@ -46,14 +46,13 @@ public class PlaylistFactory {
                 PublicUserDTO.build(buildDefaultUser()),
                 new Date(),
                 new Date());
-
-        List<PostDTO> posts = List.of(
+        List<Post> posts = List.of(
                 buildDefaultPost("postSlug1", "Post 1"),
                 buildDefaultPost("postSlug2", "Post 2"),
                 buildDefaultPost("postSlug3", "Post 3"));
-        Page<PostDTO> postPage = new PageImpl<>(posts);
+        Page<Post> postPage = new PageImpl<>(posts);
 
-        return new PlaylistFullDTO(playlistDTO, postPage);
+        return new PopulatedPlaylistDTO(playlistDTO, postPage);
     }
 
 }

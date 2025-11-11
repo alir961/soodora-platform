@@ -12,9 +12,9 @@ import org.springframework.data.domain.Pageable;
 
 public interface PostRepository {
 
-    PostDTO save(CreatePostCommand command, User user, FileData fileData);
-    PostDTO find(String postSlug);
-    Page<PostDTO> findAll(Pageable pageable);
+    Post save(CreatePostCommand command, User user, FileData fileData);
+    Post find(String postSlug);
+    Page<Post> findAll(Pageable pageable);
     void likePost(String postSlug, User user);
     void unlikePost(String postSlug, User user);
     CommentDTO commentPost(String postSlug, CommentPostCommand command, User user);
@@ -28,11 +28,11 @@ public interface PostRepository {
     void delete(String postSlug);
     void repost(String postSlug, User user);
     void unrepost(String postSlug, User user);
-    Page<PostDTO> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable);
-    Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable);
-    Page<PostDTO> findRecommendedPosts(User user, Pageable pageable);
-    Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable);
-    Page<PostDTO> findUserReposts(Identifier identifier, Pageable pageable);
-    Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable);
+    Page<Post> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable);
+    Page<Post> findByFilter(PostFilter filter, Pageable pageable);
+    Page<Post> findRecommendedPosts(User user, Pageable pageable);
+    Page<Post> findUserPosts(Identifier identifier, Pageable pageable);
+    Page<Post> findUserReposts(Identifier identifier, Pageable pageable);
+    Page<Post> findUserAudios(Identifier identifier, Pageable pageable);
 
 }
