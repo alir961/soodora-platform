@@ -3,6 +3,7 @@ package com.soodora.infrastructure.post;
 import com.soodora.domain.post.CommentLikeDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.post.PostLikeDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -47,9 +48,9 @@ public class LikeEntity implements DomainEntityAdapter<LikeDTO> {
     @Override
     public LikeDTO aggregate() {
         if (post != null) {
-            return new PostLikeDTO(post.getSlug(), user.aggregate(), likedAt);
+            return new PostLikeDTO(post.getSlug(), PublicUserDTO.build(user.aggregate()), likedAt);
         } else if (comment != null) {
-            return new CommentLikeDTO(comment.getSlug(), user.aggregate(), likedAt);
+            return new CommentLikeDTO(comment.getSlug(), PublicUserDTO.build(user.aggregate()), likedAt);
         } else {
             throw new IllegalStateException("Like must reference either a post or a comment.");
         }

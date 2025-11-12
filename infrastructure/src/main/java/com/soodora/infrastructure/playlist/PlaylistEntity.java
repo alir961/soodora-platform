@@ -4,6 +4,7 @@ import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.PlaylistPrivacy;
 import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;
@@ -85,7 +86,7 @@ public class PlaylistEntity implements DomainEntityAdapter<PlaylistDTO> {
                 posts.size(),
                 privacy,
                 imageUrl,
-                user.aggregate(),
+                PublicUserDTO.build(user.aggregate()),
                 createdAt,
                 updatedAt);
     }

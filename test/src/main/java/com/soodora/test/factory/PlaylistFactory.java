@@ -3,6 +3,7 @@ package com.soodora.test.factory;
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.user.PublicUserDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,7 @@ public class PlaylistFactory {
                 0,
                 PUBLIC,
                 "imageUrl",
-                buildDefaultUser(),
+                PublicUserDTO.build(buildDefaultUser()),
                 new Date(),
                 new Date());
     }
@@ -42,7 +43,7 @@ public class PlaylistFactory {
                 0,
                 PUBLIC,
                 "imageUrl",
-                buildDefaultUser(),
+                PublicUserDTO.build(buildDefaultUser()),
                 new Date(),
                 new Date());
 

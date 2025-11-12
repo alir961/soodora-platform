@@ -7,6 +7,7 @@ import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostFilter;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
@@ -101,7 +102,7 @@ public class PostController {
     public Set<String> getLikes(@PathVariable String postSlug) {
         return postService.retrieveLikes(postSlug).stream()
                 .map(LikeDTO::user)
-                .map(User::getSlug)
+                .map(PublicUserDTO::slug)
                 .collect(toSet());
     }
 

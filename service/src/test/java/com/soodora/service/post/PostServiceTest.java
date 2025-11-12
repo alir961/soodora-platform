@@ -3,6 +3,7 @@ package com.soodora.service.post;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
@@ -265,7 +266,8 @@ class PostServiceTest {
     void commentPost_Success() {
         // GIVEN
         CommentPostCommand command = new CommentPostCommand("Nice post");
-        CommentDTO expectedComment = new CommentDTO("slug", "postSlug", "content", USER, 0, new Date());
+        CommentDTO expectedComment = new CommentDTO("slug", "postSlug", "content", PublicUserDTO.build(USER), 0,
+                new Date());
         when(postRepository.commentPost(POST_1.slug(), command, USER)).thenReturn(expectedComment);
 
         // WHEN
@@ -344,8 +346,8 @@ class PostServiceTest {
     void retrieveCommentLikes_Success() {
         // GIVEN
         List<LikeDTO> expectedLikes = List.of(
-                new CommentLikeDTO("comment-slug", USER, new Date()),
-                new CommentLikeDTO("comment-slug", USER, new Date()));
+                new CommentLikeDTO("comment-slug", PublicUserDTO.build(USER), new Date()),
+                new CommentLikeDTO("comment-slug", PublicUserDTO.build(USER), new Date()));
         when(postRepository.retrieveCommentLikes("comment-slug")).thenReturn(expectedLikes);
 
         // WHEN
@@ -367,7 +369,7 @@ class PostServiceTest {
     @Test
     void retrieveLikes_Success() {
         // GIVEN
-        List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.slug(), USER, new Date()));
+        List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER), new Date()));
         when(postRepository.retrieveLikes(POST_1.slug())).thenReturn(expectedLikes);
 
         // WHEN
@@ -389,7 +391,8 @@ class PostServiceTest {
     @Test
     void retrieveComments_Success() {
         // GIVEN
-        List<CommentDTO> expectedComments = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
+        List<CommentDTO> expectedComments = List
+                .of(new CommentDTO("slug", "postSlug", "content", PublicUserDTO.build(USER), 0, new Date()));
         when(postRepository.retrieveComments(POST_1.slug())).thenReturn(expectedComments);
 
         // WHEN
@@ -413,8 +416,8 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
         List<LikeDTO> expected = List.of(
-                new PostLikeDTO(POST_1.slug(), USER, new Date()),
-                new CommentLikeDTO("comment-slug", USER, new Date()));
+                new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER), new Date()),
+                new CommentLikeDTO("comment-slug", PublicUserDTO.build(USER), new Date()));
         when(userRepository.retrieveLikes(any())).thenReturn(expected);
 
         // WHEN
@@ -437,7 +440,8 @@ class PostServiceTest {
     void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
-        List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
+        List<CommentDTO> expected = List
+                .of(new CommentDTO("slug", "postSlug", "content", PublicUserDTO.build(USER), 0, new Date()));
         when(userRepository.retrievePostComments(any())).thenReturn(expected);
 
         // WHEN

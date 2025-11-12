@@ -2,6 +2,7 @@ package com.soodora.api.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
@@ -318,8 +319,8 @@ class PostControllerIT {
         // GIVEN
         when(postService.retrieveLikes("postSlug1"))
                 .thenReturn(List.of(
-                        new PostLikeDTO(POST_1.slug(), USER_1, new Date()),
-                        new PostLikeDTO("postSlug1", USER_2, new Date())));
+                        new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER_1), new Date()),
+                        new PostLikeDTO("postSlug1", PublicUserDTO.build(USER_2), new Date())));
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1/likes"))
@@ -333,7 +334,8 @@ class PostControllerIT {
         CommentPostRequest commentRequest = new CommentPostRequest("Great post!");
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         when(postService.commentPost(eq("postSlug1"), any(CommentPostCommand.class), eq(USER)))
-                .thenReturn(new CommentDTO("commentSlug1", "postSlug1", "Great post!", USER, 0, new Date()));
+                .thenReturn(new CommentDTO("commentSlug1", "postSlug1", "Great post!", PublicUserDTO.build(USER), 0,
+                        new Date()));
 
         // WHEN & THEN
         mockMvc.perform(post("/posts/postSlug1/comments")
@@ -381,8 +383,10 @@ class PostControllerIT {
         // GIVEN
         when(postService.retrieveComments("postSlug1"))
                 .thenReturn(List.of(
-                        new CommentDTO("commentSlug1", "postSlug1", "Great post!", USER, 0, new Date()),
-                        new CommentDTO("commentSlug2", "postSlug1", "Thanks for sharing", USER, 0, new Date())));
+                        new CommentDTO("commentSlug1", "postSlug1", "Great post!", PublicUserDTO.build(USER), 0,
+                                new Date()),
+                        new CommentDTO("commentSlug2", "postSlug1", "Thanks for sharing", PublicUserDTO.build(USER), 0,
+                                new Date())));
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1/comments"))

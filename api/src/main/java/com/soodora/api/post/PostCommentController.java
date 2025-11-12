@@ -4,6 +4,7 @@ import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CommentPostRequest;
@@ -55,7 +56,7 @@ public class PostCommentController {
     public Set<String> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
         return postService.retrieveCommentLikes(commentSlug).stream()
                 .map(LikeDTO::user)
-                .map(User::getSlug)
+                .map(PublicUserDTO::slug)
                 .collect(toSet());
     }
 

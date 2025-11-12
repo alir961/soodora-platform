@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.CommentDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.user.UserEntity;
 
@@ -51,7 +52,7 @@ public class CommentEntity implements DomainEntityAdapter<CommentDTO> {
                 slug,
                 post.getSlug(),
                 content,
-                user.aggregate(),
+                PublicUserDTO.build(user.aggregate()),
                 likes.size(),
                 createdAt);
     }

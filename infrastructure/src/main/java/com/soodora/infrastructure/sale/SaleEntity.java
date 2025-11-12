@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.sale;
 
 import com.soodora.domain.sale.SaleDTO;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
@@ -60,7 +61,7 @@ public class SaleEntity implements DomainEntityAdapter<SaleDTO> {
                 slug,
                 product.aggregate(),
                 artist.aggregate(),
-                buyer.aggregate(),
+                PublicUserDTO.build(buyer.aggregate()),
                 quantitySold,
                 amount.toDomain(),
                 createdAt);
