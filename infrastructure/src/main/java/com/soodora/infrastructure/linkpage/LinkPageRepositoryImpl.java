@@ -6,10 +6,10 @@ import com.soodora.domain.linkpage.CreateLinkPageCommand;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.linkpage.LinkPageRepository;
 import com.soodora.domain.linkpage.UpdateLinkPageCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +31,10 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
 
     @Override
     @Transactional
-    public LinkPageDTO save(CreateLinkPageCommand command, UserDTO user) {
-        ArtistEntity artistEntity = artistsRepository.findByUserSlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug: #" + user.slug()));
+    public LinkPageDTO save(CreateLinkPageCommand command, User user) {
+        ArtistEntity artistEntity = artistsRepository.findByUserSlug(user.getSlug())
+                .orElseThrow(
+                        () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
         Optional<LinkPageEntity> existingLinkPage = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
 
         if (existingLinkPage.isEmpty()) {
@@ -44,9 +45,9 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
             entity.setSlug(generateUniqueSlug());
             entity.setArtist(artistEntity);
 
-            return repository.save(entity).toDTO();
+            return repository.save(entity).aggregate();
         }
-        throw new LinkPageUnityException("Artist with user slug #" + user.slug() + " already has a link page.");
+        throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a link page.");
     }
 
     @Override
@@ -58,20 +59,20 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
             existingLinkPage.setTitle(command.title());
         if (isNotNullOrBlank(command.description()))
             existingLinkPage.setDescription(command.description());
-        return repository.save(existingLinkPage).toDTO();
+        return repository.save(existingLinkPage).aggregate();
     }
 
     @Override
     @Transactional
     public LinkPageDTO findBySlug(String slug) {
-        return findLinkPageBySlugOrThrow(slug).toDTO();
+        return findLinkPageBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public List<LinkPageDTO> findAll() {
         return repository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

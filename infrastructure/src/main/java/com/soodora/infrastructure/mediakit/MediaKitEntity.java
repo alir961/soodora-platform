@@ -2,7 +2,7 @@ package com.soodora.infrastructure.mediakit;
 
 import com.soodora.domain.mediakit.MediaKitDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.mediakititem.MediaKitItemEntity;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toList;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "media_kits")
-public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
+public class MediaKitEntity implements DomainEntityAdapter<MediaKitDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -65,7 +65,7 @@ public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
     private List<MediaKitItemEntity> items = new ArrayList<>();
 
     @Override
-    public MediaKitDTO toDTO() {
+    public MediaKitDTO aggregate() {
         return new MediaKitDTO(
                 slug,
                 artist.getUser().getUsername(),
@@ -74,7 +74,7 @@ public class MediaKitEntity implements DomainEntity<MediaKitDTO> {
                 longBio,
                 contactEmail,
                 contactPhone,
-                items.stream().map(MediaKitItemEntity::toDTO).collect(toList()));
+                items.stream().map(DomainEntityAdapter::aggregate).collect(toList()));
 
     }
 }

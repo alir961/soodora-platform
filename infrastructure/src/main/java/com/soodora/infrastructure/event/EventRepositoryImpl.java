@@ -7,7 +7,7 @@ import com.soodora.domain.event.EventRepository;
 import com.soodora.domain.user.UnknownIdentifierException;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
 
@@ -43,21 +43,21 @@ public class EventRepositoryImpl implements EventRepository {
         event = eventRepository.save(event);
         artist.getEvents().add(event);
         artistRepository.save(artist);
-        return event.toDTO();
+        return event.aggregate();
     }
 
     @Override
     @Transactional
     public EventDTO find(String slug) {
         return findArtistBySlug(slug)
-                .toDTO();
+                .aggregate();
     }
 
     @Override
     @Transactional
     public List<EventDTO> findAll() {
         return eventRepository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

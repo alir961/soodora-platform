@@ -1,10 +1,13 @@
 package com.soodora.infrastructure.user;
 
-import com.soodora.domain.auth.RoleDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.auth.value.Role;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.AvatarUrl;
+import com.soodora.domain.user.value.Email;
+import com.soodora.domain.user.value.Username;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.auth.RoleEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.playlist.PlaylistEntity;
 import com.soodora.infrastructure.post.CommentEntity;
 import com.soodora.infrastructure.post.LikeEntity;
@@ -22,6 +25,7 @@ import lombok.Setter;
 
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.FetchType.EAGER;
+import static java.util.Collections.emptySet;
 import static java.util.stream.Collectors.toSet;
 
 @Getter
@@ -29,7 +33,7 @@ import static java.util.stream.Collectors.toSet;
 @Entity(name = "users")
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity implements DomainEntity<UserDTO> {
+public class UserEntity implements DomainEntityAdapter<User> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -92,40 +96,59 @@ public class UserEntity implements DomainEntity<UserDTO> {
     @JoinTable(name = "users_followers", joinColumns = @JoinColumn(name = "follower_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     private Set<UserEntity> following;
 
-    public void follow(UserEntity user) {
-        following.add(user);
-        user.followers.add(this);
-    }
-
-    public void unfollow(UserEntity user) {
-        following.remove(user);
-        user.followers.remove(this);
-    }
-
     public boolean isArtist() {
         if (artist == null)
             return false;
-        return roles.stream().map(RoleEntity::toDTO).anyMatch(RoleDTO::isArtistRole);
+        return roles.stream().anyMatch(RoleEntity::isArtistRole);
     }
 
     @Override
-    public UserDTO toDTO() {
-        Set<String> rolesNames = roles.stream()
-                .map(RoleEntity::getName)
-                .map(name -> name.replaceFirst("ROLE_", ""))
+    public User aggregate() {
+        Set<Role> rolesAggregates = roles.stream()
+                .map(DomainEntityAdapter::aggregate)
                 .collect(toSet());
 
-        return new UserDTO(
+        return new User(
                 slug,
-                username,
-                email,
+                new Username(username),
+                new Email(email),
+                password,
                 firstname,
                 lastname,
-                description,
-                avatarUrl,
                 createdAt,
                 updatedAt,
-                rolesNames);
+                description,
+                avatarUrl == null ? null : new AvatarUrl(avatarUrl),
+                rolesAggregates,
+                emptySet(),
+                emptySet());
+    }
+
+    public User aggregateFollowers() {
+        Set<Role> rolesAggregates = roles.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+        Set<User> followersAggregates = followers.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+        Set<User> followingAggregates = following.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+
+        return new User(
+                slug,
+                new Username(username),
+                new Email(email),
+                password,
+                firstname,
+                lastname,
+                createdAt,
+                updatedAt,
+                description,
+                avatarUrl == null ? null : new AvatarUrl(avatarUrl),
+                rolesAggregates,
+                followersAggregates,
+                followingAggregates);
     }
 
 }

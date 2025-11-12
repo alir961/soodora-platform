@@ -1,8 +1,9 @@
 package com.soodora.infrastructure.auth;
 
-import com.soodora.domain.auth.RegisterCommand;
 import com.soodora.domain.auth.RegisterConfirmationRepository;
+import com.soodora.domain.user.User;
 
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,11 +12,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RegisterConfirmationRepositoryImpl implements RegisterConfirmationRepository {
 
-    private final Map<String, RegisterCommand> unconfirmedRegistrations = new HashMap<>();
+    private final Map<String, Map.Entry<User, String>> unconfirmedRegistrations = new HashMap<>();
 
     @Override
-    public void registerConfirmation(String secret, RegisterCommand command) {
-        unconfirmedRegistrations.put(secret, command);
+    public void registerConfirmation(String secret, User user, String external) {
+        unconfirmedRegistrations.put(secret, new AbstractMap.SimpleEntry<>(user, external));
     }
 
     @Override
@@ -24,11 +25,11 @@ public class RegisterConfirmationRepositoryImpl implements RegisterConfirmationR
     }
 
     @Override
-    public RegisterCommand popConfirmation(String secret) {
-        RegisterCommand command = unconfirmedRegistrations.get(secret);
+    public Map.Entry<User, String> popConfirmation(String secret) {
+        Map.Entry<User, String> entry = unconfirmedRegistrations.get(secret);
 
         unconfirmedRegistrations.remove(secret);
-        return command;
+        return entry;
     }
 
 }

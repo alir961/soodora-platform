@@ -2,8 +2,8 @@ package com.soodora.service.artist;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.UserRepository;
+import com.soodora.domain.user.value.Identifier;
 
 import java.util.List;
 
@@ -17,10 +17,6 @@ public class ArtistService {
 
     private final UserRepository userRepository;
     private final ArtistRepository artistRepository;
-
-    public boolean isArtist(Identifier identifier) {
-        return userRepository.retrieveArtist(identifier).isPresent();
-    }
 
     public ArtistDTO retrieveArtist(Identifier identifier) throws UnknownArtistException {
         return userRepository.retrieveArtist(identifier)

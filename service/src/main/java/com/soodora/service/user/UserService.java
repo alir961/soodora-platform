@@ -1,17 +1,17 @@
 package com.soodora.service.user;
 
-import com.soodora.domain.auth.RoleRepository;
-import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.auth.value.Role;
+import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
+import com.soodora.domain.user.value.AvatarUrl;
+import com.soodora.domain.user.value.Identifier;
+import com.soodora.domain.user.value.Username;
 import com.soodora.service.auth.UserPrincipal;
-import com.soodora.service.common.InvalidRequestException;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -26,8 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import static java.util.stream.Collectors.toSet;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromUsername;
 
 @Slf4j
 @Service
@@ -37,13 +36,13 @@ public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
     private final ProductRepository productRepository;
-    private final RoleRepository roleRepository;
+    private final ImageStorageUploader imageStorageUploader;
 
-    public List<UserDTO> retrieveAllUsers() {
+    public Set<User> retrieveAllUsers() {
         return userRepository.findAll();
     }
 
-    public UserDTO retrieveUser(Identifier identifier) throws UnknownIdentifierException {
+    public User retrieveUser(Identifier identifier) throws UnknownIdentifierException {
         try {
             return userRepository.find(identifier);
         } catch (UnknownIdentifierException exception) {
@@ -51,31 +50,32 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public Page<UserDTO> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
+    public Page<User> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
         return userRepository.searchUsersByUsername(usernameQuery, onlyArtists, pageable);
     }
 
-    public boolean existsUser(Identifier identifier) {
-        return userRepository.isUsed(identifier);
-    }
+    public User updateUser(Identifier userIdentifier, UserUpdateCommand updateCommand) {
+        User user = retrieveUser(userIdentifier);
+        Username username = new Username(updateCommand.username());
+        AvatarUrl avatarUrl = null;
 
-    public UserDTO updateUser(UpdateUserCommand command, String slug, FileData fileData) {
-        try {
-            return userRepository.update(command, createFromSlug(slug), fileData);
-        } catch (UnknownSlugException exception) {
-            throw new UserUnityException(exception.getMessage());
+        if (updateCommand.avatar() != null) {
+            String hostedAvatarUrl = imageStorageUploader.upload(updateCommand.avatar());
+
+            avatarUrl = new AvatarUrl(hostedAvatarUrl);
         }
+        user.updateUser(username, updateCommand.firstname(), updateCommand.lastname(),
+                updateCommand.description(), avatarUrl);
+        return userRepository.save(user);
     }
 
     public void updateUserRoles(Identifier identifier, Set<String> roles) {
-        for (String role : roles) {
-            if (roleRepository.findByName("ROLE_" + role.toUpperCase()) == null)
-                throw new InvalidRequestException("Unknown role: " + role);
-        }
+        User user = retrieveUser(identifier);
 
-        userRepository.updateRole(identifier, roles.stream()
-                .map(role -> roleRepository.findByName("ROLE_" + role.toUpperCase()))
+        user.updateRoles(roles.stream()
+                .map(Role::new)
                 .collect(toSet()));
+        userRepository.save(user);
     }
 
     public void deleteUser(Identifier identifier) throws UnknownUserException {
@@ -94,33 +94,49 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public void follow(Identifier follower, Identifier following) throws UnknownUserException {
+    public void follow(Identifier followerId, Identifier followingId) throws UnknownUserException {
         try {
-            userRepository.follow(follower, following);
+            User follower = userRepository.find(followerId);
+            User following = userRepository.find(followingId);
+
+            follower.follow(following);
+
+            userRepository.save(follower);
+            userRepository.save(following);
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public Set<UserDTO> retrieveFollowers(Identifier identifier) throws UnknownUserException {
+    public void unfollow(Identifier followerId, Identifier followingId) throws UnknownUserException {
         try {
-            return userRepository.retrieveFollowers(identifier);
+            User follower = userRepository.find(followerId);
+            User following = userRepository.find(followingId);
+
+            follower.unfollow(following);
+
+            userRepository.save(follower);
+            userRepository.save(following);
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public Set<UserDTO> retrieveFollowing(Identifier identifier) throws UnknownUserException {
+    public Set<User> retrieveFollowers(Identifier identifier) throws UnknownUserException {
         try {
-            return userRepository.retrieveFollowing(identifier);
+            User user = userRepository.findWithFollowers(identifier);
+
+            return user.getFollowers();
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public void unfollow(Identifier follower, Identifier following) throws UnknownUserException {
+    public Set<User> retrieveFollowing(Identifier identifier) throws UnknownUserException {
         try {
-            userRepository.unfollow(follower, following);
+            User user = userRepository.findWithFollowers(identifier);
+
+            return user.getFollowing();
         } catch (UnknownIdentifierException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
@@ -144,9 +160,8 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        UserDTO user = retrieveUser(createFromEmail(username));
+        User user = retrieveUser(createFromUsername(username));
 
-        log.info(user.toString());
         return new UserPrincipal(user);
     }
 

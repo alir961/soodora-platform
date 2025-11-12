@@ -3,7 +3,7 @@ package com.soodora.service.playlist;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.util.List;
 
@@ -19,9 +19,9 @@ public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
 
-    public PlaylistDTO createPlaylist(CreatePlaylistCommand command, UserDTO user, FileData imageFile)
+    public PlaylistDTO createPlaylist(CreatePlaylistCommand command, User user, FileData imageFile)
             throws PlaylistUnityException {
-        if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.slug()))
+        if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.getSlug()))
             throw new PlaylistUnityException("Name is already used");
         return playlistRepository.save(command, user, imageFile);
     }

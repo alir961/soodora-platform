@@ -7,7 +7,7 @@ import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.domain.quotearticle.QuoteArticleRepository;
 import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 
 import java.util.List;
@@ -26,8 +26,8 @@ public class QuoteService {
     private final QuoteArticleRepository quoteArticleRepository;
     private final PdfExporter pdfExporter;
 
-    public QuoteDTO createQuote(CreateQuoteCommand command, UserDTO user) {
-        if (quoteRepository.isQuoteNameUsedByUser(command.name(), user.slug())) {
+    public QuoteDTO createQuote(CreateQuoteCommand command, User user) {
+        if (quoteRepository.isQuoteNameUsedByUser(command.name(), user.getSlug())) {
             throw new QuoteUnityException("Quote name is already used");
         }
         return quoteRepository.save(command, user);

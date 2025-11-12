@@ -3,18 +3,15 @@ package com.soodora.api.user;
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.common.InvalidValueException;
 import com.soodora.domain.post.PostDTO;
 import com.soodora.domain.product.ProductDTO;
-import com.soodora.domain.user.Identifier;
 import com.soodora.domain.user.PublicUserDTO;
-import com.soodora.domain.user.UserDTO;
-import com.soodora.service.common.InvalidRequestException;
+import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.shared.FileDataService;
 import com.soodora.service.user.UnknownUserException;
-import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
 
-import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -32,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 @RestController
 @RequestMapping("/users")
@@ -46,23 +43,26 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
-    public List<UserDTO> getUsers() {
-        return userService.retrieveAllUsers();
+    public Set<UserDTO> getUsers() {
+        return userService.retrieveAllUsers().stream()
+                .map(UserDTO::build)
+                .collect(toSet());
     }
 
     @GetMapping("/{slug}")
     public PublicUserDTO getUser(@PathVariable String slug) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveUser(identifier).toPublic();
+        return PublicUserDTO.build(userService.retrieveUser(identifier));
     }
 
     @GetMapping("/search")
-    public Page<UserDTO> searchUsers(
+    public Page<PublicUserDTO> searchUsers(
             @RequestParam(value = "username") String username,
             @RequestParam(value = "onlyArtists") boolean onlyArtists,
             Pageable pageable) {
-        return userService.searchUsersByUsername(username, onlyArtists, pageable);
+        return userService.searchUsersByUsername(username, onlyArtists, pageable)
+                .map(PublicUserDTO::build);
     }
 
     @PutMapping("/{slug}")
@@ -75,9 +75,9 @@ public class UserController {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
 
-            userService.updateUser(request.toCommand(), slug, fileData);
+            userService.updateUser(createFromSlug(slug), request.toCommand(fileData));
             return new ResponseEntity<>(OK);
-        } catch (InvalidRequestException | UnknownUserException exception) {
+        } catch (InvalidValueException | UnknownUserException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
     }
@@ -110,7 +110,7 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowers(identifier).stream()
-                .map(UserDTO::toPublic)
+                .map(PublicUserDTO::build)
                 .collect(toSet());
     }
 
@@ -119,7 +119,7 @@ public class UserController {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowing(identifier).stream()
-                .map(UserDTO::toPublic)
+                .map(PublicUserDTO::build)
                 .collect(toSet());
     }
 

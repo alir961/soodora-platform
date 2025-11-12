@@ -3,9 +3,9 @@ package com.soodora.service.post;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
+import com.soodora.domain.user.value.Identifier;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static java.util.stream.Collectors.toSet;
+
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 @Service
 @RequiredArgsConstructor
@@ -26,11 +28,11 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public void createPost(CreatePostCommand command, UserDTO user, FileData fileData) {
+    public void createPost(CreatePostCommand command, User user, FileData fileData) {
         postRepository.save(command, user, fileData);
     }
 
-    public void likePost(String postSlug, UserDTO user) throws UnknownPostException {
+    public void likePost(String postSlug, User user) throws UnknownPostException {
         try {
             postRepository.likePost(postSlug, user);
         } catch (UnknownSlugException exception) {
@@ -38,7 +40,7 @@ public class PostService {
         }
     }
 
-    public void unlikePost(String postSlug, UserDTO user) throws UnknownPostException {
+    public void unlikePost(String postSlug, User user) throws UnknownPostException {
         try {
             postRepository.unlikePost(postSlug, user);
         } catch (UnknownSlugException exception) {
@@ -46,7 +48,7 @@ public class PostService {
         }
     }
 
-    public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user)
+    public CommentDTO commentPost(String postSlug, CommentPostCommand command, User user)
             throws UnknownPostException {
         try {
             return postRepository.commentPost(postSlug, command, user);
@@ -55,7 +57,7 @@ public class PostService {
         }
     }
 
-    public void likeComment(String commentSlug, UserDTO user) throws UnknownPostCommentException {
+    public void likeComment(String commentSlug, User user) throws UnknownPostCommentException {
         try {
             postRepository.likeComment(commentSlug, user);
         } catch (UnknownSlugException exception) {
@@ -71,7 +73,7 @@ public class PostService {
         }
     }
 
-    public void unlikeComment(String commentSlug, UserDTO user) throws UnknownPostCommentException {
+    public void unlikeComment(String commentSlug, User user) throws UnknownPostCommentException {
         try {
             postRepository.unlikeComment(commentSlug, user);
         } catch (UnknownSlugException exception) {
@@ -95,7 +97,7 @@ public class PostService {
         }
     }
 
-    public Set<UserDTO> retrieveReposts(String postSlug) throws UnknownPostException {
+    public Set<User> retrieveReposts(String postSlug) throws UnknownPostException {
         try {
             return postRepository.retrieveReposts(postSlug);
         } catch (UnknownSlugException exception) {
@@ -118,7 +120,7 @@ public class PostService {
             return postRepository.findByFilter(filter, pageable);
     }
 
-    public Page<PostDTO> retrieveRecommendedPosts(UserDTO user, Pageable pageable) {
+    public Page<PostDTO> retrieveRecommendedPosts(User user, Pageable pageable) {
         if (user == null)
             return postRepository.findAll(pageable);
         return postRepository.findRecommendedPosts(user, pageable);
@@ -149,11 +151,11 @@ public class PostService {
     }
 
     public Page<PostDTO> retrievePostsFromFollowing(Identifier identifier, Pageable pageable) {
-        List<String> followingSlugs = userRepository
-                .retrieveFollowing(identifier)
+        User user = userRepository.findWithFollowers(identifier);
+        Set<String> followingSlugs = user.getFollowing()
                 .stream()
-                .map(UserDTO::slug)
-                .toList();
+                .map(User::getSlug)
+                .collect(toSet());
 
         return postRepository.findByFollowingSlugs(followingSlugs, pageable);
     }
@@ -166,11 +168,11 @@ public class PostService {
         }
     }
 
-    public void repostPostBySlug(String postSlug, UserDTO user) {
+    public void repostPostBySlug(String postSlug, User user) {
         postRepository.repost(postSlug, user);
     }
 
-    public void unrepostPostBySlug(String postSlug, UserDTO user) {
+    public void unrepostPostBySlug(User user, String postSlug) {
         postRepository.unrepost(postSlug, user);
     }
 

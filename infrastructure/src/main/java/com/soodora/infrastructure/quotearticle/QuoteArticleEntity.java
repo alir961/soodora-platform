@@ -2,7 +2,7 @@ package com.soodora.infrastructure.quotearticle;
 
 import com.soodora.domain.common.Money;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 
@@ -20,7 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "quote_articles")
-public class QuoteArticleEntity implements DomainEntity<QuoteArticleDTO> {
+public class QuoteArticleEntity implements DomainEntityAdapter<QuoteArticleDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -55,7 +55,7 @@ public class QuoteArticleEntity implements DomainEntity<QuoteArticleDTO> {
     }
 
     @Override
-    public QuoteArticleDTO toDTO() {
+    public QuoteArticleDTO aggregate() {
         return new QuoteArticleDTO(
                 quote.getSlug(),
                 slug,
@@ -65,5 +65,4 @@ public class QuoteArticleEntity implements DomainEntity<QuoteArticleDTO> {
                 vatPercent,
                 getTotalPrice());
     }
-
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 @Service
 @RequiredArgsConstructor

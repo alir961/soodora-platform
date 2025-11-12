@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.domain.oauth.OAuthProvider.GOOGLE;
-import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromEmail;
 import static com.soodora.test.TestConstants.*;
 
 @SpringBootTest
@@ -57,8 +57,8 @@ class GoogleOAuthControllerIT {
 
     @BeforeEach
     void setUp() {
-        when(jwtTokenService.getSubjectFromToken(JWT_TOKEN)).thenReturn(USER.email());
-        when(userService.retrieveUser(createFromEmail(USER.email()))).thenReturn(USER);
+        when(jwtTokenService.getSubjectFromToken(JWT_TOKEN)).thenReturn(USER.getEmail().value());
+        when(userService.retrieveUser(createFromEmail(USER.getEmail().value()))).thenReturn(USER);
     }
 
     @Test
@@ -105,8 +105,8 @@ class GoogleOAuthControllerIT {
     @Test
     void deleteGoogleOAuth_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
-        when(userService.existsUser(USER.identifier())).thenReturn(true);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
+        when(userService.retrieveUser(USER.getIdentifier())).thenReturn(USER);
         when(googleFacade.getOAuthAuthorizationFlowURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN

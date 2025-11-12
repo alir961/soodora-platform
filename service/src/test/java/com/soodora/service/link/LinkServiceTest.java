@@ -47,14 +47,14 @@ class LinkServiceTest {
         // GIVEN
         CreateLinkCommand command = new CreateLinkCommand("title", "url", "iconUrl", "description");
 
-        when(linkRepository.save(any(CreateLinkCommand.class), eq(USER.slug()))).thenReturn(LINK_1);
+        when(linkRepository.save(any(CreateLinkCommand.class), eq(USER.getSlug()))).thenReturn(LINK_1);
 
         // WHEN
-        String slug = linkService.createLink(command, USER.slug());
+        String slug = linkService.createLink(command, USER.getSlug());
 
         // THEN
         assertEquals(LINK_1.slug(), slug);
-        verify(linkRepository).save(any(CreateLinkCommand.class), eq(USER.slug()));
+        verify(linkRepository).save(any(CreateLinkCommand.class), eq(USER.getSlug()));
     }
 
     @Test

@@ -2,7 +2,7 @@ package com.soodora.infrastructure.sale;
 
 import com.soodora.domain.sale.SaleDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.user.UserEntity;
@@ -24,7 +24,7 @@ import lombok.Setter;
 @Entity(name = "sales")
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaleEntity implements DomainEntity<SaleDTO> {
+public class SaleEntity implements DomainEntityAdapter<SaleDTO> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -55,12 +55,12 @@ public class SaleEntity implements DomainEntity<SaleDTO> {
     private Date updatedAt;
 
     @Override
-    public SaleDTO toDTO() {
+    public SaleDTO aggregate() {
         return new SaleDTO(
                 slug,
-                product.toDTO(),
-                artist.toDTO(),
-                buyer.toDTO(),
+                product.aggregate(),
+                artist.aggregate(),
+                buyer.aggregate(),
                 quantitySold,
                 amount.toDomain(),
                 createdAt);

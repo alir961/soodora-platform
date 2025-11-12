@@ -1,13 +1,13 @@
 package com.soodora.domain.quote;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface QuoteRepository {
 
-    QuoteDTO save(CreateQuoteCommand command, UserDTO user);
+    QuoteDTO save(CreateQuoteCommand command, User user);
     QuoteDTO update(UpdateQuoteCommand command, String slug);
     QuoteDTO findBySlug(String slug);
     Page<QuoteDTO> findAll(Pageable pageable);

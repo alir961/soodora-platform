@@ -7,7 +7,7 @@ import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistFilter;
 import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.playlist.UpdatePlaylistCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.playlist.*;
 import com.soodora.service.shared.FileDataService;
@@ -40,13 +40,13 @@ public class PlaylistController implements PlaylistResource {
 
     @PostMapping
     public ResponseEntity<JsonResponse> createPlaylist(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestPart("data") CreatePlaylistRequest createPlaylistRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
-
             PlaylistDTO playlistDTO = playlistService.createPlaylist(createPlaylistRequest.toCommand(), user, fileData);
+
             return new ResponseEntity<>(new PlaylistSlugResponse(playlistDTO.slug()), CREATED);
         } catch (InvalidRequestException | PlaylistUnityException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);

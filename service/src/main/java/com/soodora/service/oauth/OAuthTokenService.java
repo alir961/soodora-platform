@@ -3,7 +3,7 @@ package com.soodora.service.oauth;
 import com.soodora.domain.auth.AuthenticationTokenException;
 import com.soodora.domain.auth.TokenRepository;
 import com.soodora.domain.oauth.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.AuthenticationException;
 import com.soodora.service.google.GoogleFacade;
@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.soodora.domain.oauth.OAuthProvider.GOOGLE;
-import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromEmail;
 
 @Slf4j
 @Service
@@ -43,7 +43,7 @@ public class OAuthTokenService {
     public String processGoogleAuthentication(String code, String state) {
         RefreshableAuthorization authorization = googleFacade.exchangeOAuthToken(code);
         String externalId = tokenRepository.getSubjectFromGoogleToken(authorization.externalToken());
-        UserDTO user = processLogin(authorization, state);
+        User user = processLogin(authorization, state);
         String baseUrl = frontUrl + "/authentication";
 
         if (user != null)
@@ -84,44 +84,44 @@ public class OAuthTokenService {
         return googleFacade.getOAuthAuthorizationFlowURI(token);
     }
 
-    public String retrieveUserAccessToken(OAuthProvider provider, UserDTO user) {
-        if (userAccessTokens.containsKey(user.slug()))
-            return userAccessTokens.get(user.slug());
+    public String retrieveUserAccessToken(OAuthProvider provider, User user) {
+        if (userAccessTokens.containsKey(user.getSlug()))
+            return userAccessTokens.get(user.getSlug());
         String refreshToken = retrieveUserRefreshToken(provider, user);
         RefreshableAuthorization authorization = googleFacade.refreshOAuthToken(refreshToken);
 
-        userAccessTokens.put(user.slug(), authorization.accessToken());
+        userAccessTokens.put(user.getSlug(), authorization.accessToken());
         return authorization.accessToken();
     }
 
-    public String retrieveUserRefreshToken(OAuthProvider provider, UserDTO user) {
+    public String retrieveUserRefreshToken(OAuthProvider provider, User user) {
         if (oauthRepository.hasAuthorization(provider, user))
             return oauthRepository.retrieveRefreshToken(provider, user);
         throw new OAuthFlowException(
-                "Unable to retrieve user #" + user.slug() + " refresh externalToken for " + provider);
+                "Unable to retrieve user #" + user.getSlug() + " refresh externalToken for " + provider);
     }
 
-    public UserDTO retrieveUserOrThrows(String token) throws AuthenticationException {
+    public User retrieveUserOrThrows(String token) throws AuthenticationException {
         if (token == null || token.isEmpty())
             throw new AuthenticationException("Token is null or empty");
         String email = tokenRepository.getSubjectFromToken(token);
-        UserDTO user = userRepository.find(createFromEmail(email));
+        User user = userRepository.find(createFromEmail(email));
 
         if (email == null || user == null)
             throw new AuthenticationException("Unable to retrieve user");
         return user;
     }
 
-    public void deleteUserAuthorization(OAuthProvider provider, UserDTO user) {
+    public void deleteUserAuthorization(OAuthProvider provider, User user) {
         oauthRepository.deleteAuthorization(provider, user);
     }
 
-    private UserDTO processLogin(RefreshableAuthorization authorization, String state) {
+    private User processLogin(RefreshableAuthorization authorization, String state) {
         String externalId = tokenRepository.getSubjectFromGoogleToken(authorization.externalToken());
 
         if (loginStates.contains(state)) {
             try {
-                UserDTO user = oauthRepository.retrieveUser(GOOGLE, externalId);
+                User user = oauthRepository.retrieveUser(GOOGLE, externalId);
 
                 loginStates.remove(state);
                 return user;
@@ -132,11 +132,10 @@ public class OAuthTokenService {
         return null;
     }
 
-    private void updateGoogleUserAuthorization(UserDTO user, String externalId,
-            RefreshableAuthorization authorization) {
+    private void updateGoogleUserAuthorization(User user, String externalId, RefreshableAuthorization authorization) {
         if (oauthRepository.hasAuthorization(GOOGLE, user))
             oauthRepository.deleteAuthorization(GOOGLE, user);
-        userAccessTokens.put(user.slug(), authorization.accessToken());
+        userAccessTokens.put(user.getSlug(), authorization.accessToken());
         oauthRepository.createAuthorization(GOOGLE, user, externalId, authorization.refreshToken());
     }
 

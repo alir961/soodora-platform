@@ -5,7 +5,7 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class MediaKitService {
     private final MediaKitItemRepository mediaKitItemRepository;
     private final PdfExporter pdfExporter;
 
-    public MediaKitDTO createMediaKit(CreateMediaKitCommand command, UserDTO user) {
+    public MediaKitDTO createMediaKit(CreateMediaKitCommand command, User user) {
         return mediaKitRepository.save(command, user);
     }
 

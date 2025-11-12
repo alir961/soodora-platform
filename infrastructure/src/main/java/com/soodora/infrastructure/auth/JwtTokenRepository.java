@@ -2,7 +2,7 @@ package com.soodora.infrastructure.auth;
 
 import com.soodora.domain.auth.AuthenticationTokenException;
 import com.soodora.domain.auth.TokenRepository;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.net.URI;
 import java.security.PublicKey;
@@ -49,10 +49,10 @@ public class JwtTokenRepository implements TokenRepository {
     }
 
     @Override
-    public String generateToken(UserDTO user) {
+    public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
 
-        return doGenerateToken(claims, user.email());
+        return doGenerateToken(claims, user.getEmail().value());
     }
 
     private <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {

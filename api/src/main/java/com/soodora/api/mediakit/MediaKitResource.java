@@ -2,7 +2,7 @@ package com.soodora.api.mediakit;
 
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.mediakit.MediaKitDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.mediakit.CreateMediaKitItemRequest;
 import com.soodora.service.mediakit.CreateMediaKitRequest;
 import com.soodora.service.mediakit.UpdateMediaKitItemRequest;
@@ -28,7 +28,7 @@ public interface MediaKitResource {
     })
     ResponseEntity<JsonResponse> createMediaKit(
             @RequestBody(required = true) CreateMediaKitRequest request,
-            UserDTO user);
+            User user);
 
     @Operation(summary = "Update media kit", responses = {
             @ApiResponse(responseCode = "200", description = "Media kit updated"),

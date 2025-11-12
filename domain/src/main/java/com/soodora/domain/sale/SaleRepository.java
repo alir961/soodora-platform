@@ -1,6 +1,6 @@
 package com.soodora.domain.sale;
 
-import com.soodora.domain.user.Identifier;
+import com.soodora.domain.user.value.Identifier;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

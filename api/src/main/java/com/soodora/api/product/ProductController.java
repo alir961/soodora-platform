@@ -5,7 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductFilter;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.product.*;
 import com.soodora.service.shared.FileDataService;
@@ -40,7 +40,7 @@ public class ProductController implements ProductResource {
     @PreAuthorize("hasRole('ARTIST')")
     @PostMapping
     public ResponseEntity<JsonResponse> createProduct(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @RequestPart("data") CreateProductRequest createProductRequest,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {

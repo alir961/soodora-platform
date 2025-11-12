@@ -6,7 +6,7 @@ import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
 import com.soodora.domain.quotearticle.QuoteArticleRepository;
 import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 import com.soodora.infrastructure.quote.QuoteJpaRepository;
@@ -45,7 +45,7 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
         entity.setVatPercent(command.vatPercent());
 
         entity.setSlug(generateUniqueSlug());
-        return quoteArticleRepository.save(entity).toDTO();
+        return quoteArticleRepository.save(entity).aggregate();
     }
 
     @Override
@@ -63,28 +63,28 @@ public class QuoteArticleRepositoryImpl implements QuoteArticleRepository {
         if (command.vatPercent() != null)
             existingEntity.setVatPercent(command.vatPercent());
 
-        return quoteArticleRepository.save(existingEntity).toDTO();
+        return quoteArticleRepository.save(existingEntity).aggregate();
     }
 
     @Override
     @Transactional
     public QuoteArticleDTO findBySlug(String slug) {
         return quoteArticleRepository.findBySlug(slug)
-                .map(QuoteArticleEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .orElseThrow(() -> new UnknownSlugException("QuoteArticle not found with slug: " + slug));
     }
 
     @Override
     @Transactional
     public Page<QuoteArticleDTO> findAll(Pageable pageable) {
-        return quoteArticleRepository.findAll(pageable).map(QuoteArticleEntity::toDTO);
+        return quoteArticleRepository.findAll(pageable).map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public List<QuoteArticleDTO> findAll() {
         return quoteArticleRepository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

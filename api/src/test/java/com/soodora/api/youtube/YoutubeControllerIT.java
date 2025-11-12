@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromEmail;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.YoutubeFactory.buildDefaultYoutubePlaylist;
 
@@ -46,7 +46,7 @@ class YoutubeControllerIT {
     @Test
     void getAuthenticatedUserYoutubePlaylists_Success() throws Exception {
         // GIVEN
-        when(userRepository.find(createFromEmail(USER.email()))).thenReturn(USER);
+        when(userRepository.find(createFromEmail(USER.getEmail().value()))).thenReturn(USER);
         when(youtubeService.getPlaylists(USER)).thenReturn(PLAYLISTS);
 
         // WHEN & THEN

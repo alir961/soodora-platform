@@ -3,7 +3,7 @@ package com.soodora.infrastructure.event;
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.event.EventType;
 import com.soodora.infrastructure.artist.ArtistEntity;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ import static jakarta.persistence.EnumType.STRING;
 @Setter
 @Entity(name = "events")
 @NoArgsConstructor
-public class EventEntity implements DomainEntity<EventDTO> {
+public class EventEntity implements DomainEntityAdapter<EventDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -56,7 +56,7 @@ public class EventEntity implements DomainEntity<EventDTO> {
     private List<ArtistEntity> artists = new ArrayList<>();
 
     @Override
-    public EventDTO toDTO() {
+    public EventDTO aggregate() {
         return new EventDTO(
                 slug,
                 type,
@@ -67,7 +67,7 @@ public class EventEntity implements DomainEntity<EventDTO> {
                 address,
                 dateTime,
                 artists.stream()
-                        .map(DomainEntity::toDTO)
+                        .map(DomainEntityAdapter::aggregate)
                         .toList());
     }
 }

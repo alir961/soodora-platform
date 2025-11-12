@@ -1,6 +1,6 @@
 package com.soodora.api.youtube;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.youtube.YoutubePlaylistDTO;
 import com.soodora.domain.youtube.YoutubePlaylistItemDTO;
 import com.soodora.service.youtube.YoutubeService;
@@ -28,13 +28,13 @@ public class YoutubeController {
     private final YoutubeService youtubeService;
 
     @GetMapping("/playlists")
-    public List<YoutubePlaylistDTO> getAuthenticatedUserYoutubePlaylists(@AuthenticationPrincipal UserDTO user) {
+    public List<YoutubePlaylistDTO> getAuthenticatedUserYoutubePlaylists(@AuthenticationPrincipal User user) {
         return youtubeService.getPlaylists(user);
     }
 
     @GetMapping("/playlists/{id}")
     public List<YoutubePlaylistItemDTO> getYoutubePlaylistItems(
-            @AuthenticationPrincipal UserDTO user,
+            @AuthenticationPrincipal User user,
             @PathVariable String id) {
         return youtubeService.getPlaylistItems(user, id);
     }

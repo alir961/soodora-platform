@@ -1,6 +1,6 @@
 package com.soodora.domain.auth;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 public interface TokenRepository {
 
@@ -8,6 +8,6 @@ public interface TokenRepository {
 
     String getSubjectFromGoogleToken(String token);
 
-    String generateToken(UserDTO user);
+    String generateToken(User user);
 
 }

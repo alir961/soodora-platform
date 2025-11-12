@@ -4,7 +4,7 @@ import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.linkpage.*;
 import com.soodora.domain.user.LinkPageNotFoundException;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.link.LinkUnityException;
 import com.soodora.service.post.MissingUserSlugException;
 import com.soodora.service.user.UnknownUserException;
@@ -23,7 +23,7 @@ public class LinkPageService {
     private final ArtistRepository artistRepository;
     private final LinkPageRepository linkPageRepository;
 
-    public String createLinkPage(CreateLinkPageCommand command, UserDTO user) {
+    public String createLinkPage(CreateLinkPageCommand command, User user) {
         return linkPageRepository.save(command, user).slug();
     }
 

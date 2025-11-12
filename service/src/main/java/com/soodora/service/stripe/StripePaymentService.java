@@ -8,7 +8,7 @@ import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.ProductSaleException;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.product.UnknownProductException;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 import static java.lang.Integer.parseInt;
 import static java.util.Optional.ofNullable;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +59,7 @@ public class StripePaymentService {
                 .orElseThrow(() -> new UnknownProductException("Product not found: " + productSlug));
         ArtistDTO artist = ofNullable(artistRepository.find(vendorSlug))
                 .orElseThrow(() -> new UnknownArtistException("Artist not found: " + vendorSlug));
-        UserDTO user = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
+        User user = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
                 .orElseThrow(() -> new UnknownUserException("User not found: " + buyerSlug));
         Money amount = Money.of(product.price().amount().multiply(BigDecimal.valueOf(quantityBought)),
                 product.price().currency());

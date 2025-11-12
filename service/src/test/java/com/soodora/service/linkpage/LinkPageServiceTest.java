@@ -80,7 +80,7 @@ class LinkPageServiceTest {
     @Test
     void retrieveLinkPage_WithUserSlug_Success() {
         // GIVEN
-        LinkPageFilter filter = new LinkPageFilter(Optional.of(USER.slug()));
+        LinkPageFilter filter = new LinkPageFilter(Optional.of(USER.getSlug()));
         when(artistRepository.retrieveLinkPage(any())).thenReturn(LINKPAGE_1);
 
         // WHEN

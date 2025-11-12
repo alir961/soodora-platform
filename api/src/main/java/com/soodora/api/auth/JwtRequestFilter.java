@@ -1,7 +1,7 @@
 package com.soodora.api.auth;
 
 import com.soodora.domain.auth.TokenRepository;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 
@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import static org.springframework.security.core.context.SecurityContextHolder.getContext;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromEmail;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromEmail;
 
 @Slf4j
 @Component
@@ -61,7 +61,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private void authenticateBearerToken(String token) {
         String email = tokenRepository.getSubjectFromToken(token);
-        UserDTO user = userRepository.find(createFromEmail(email));
+        User user = userRepository.find(createFromEmail(email));
         boolean isAuthenticated = getContext().getAuthentication() != null;
 
         if (email == null || user == null || isAuthenticated)
@@ -69,11 +69,10 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         setContextAuthentication(user);
     }
 
-    private void setContextAuthentication(UserDTO user) {
-        List<SimpleGrantedAuthority> authorities = user.roles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+    private void setContextAuthentication(User user) {
+        List<SimpleGrantedAuthority> authorities = user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.completeRole()))
                 .toList();
-
         Authentication authentication = new UsernamePasswordAuthenticationToken(user, null, authorities);
 
         getContext().setAuthentication(authentication);

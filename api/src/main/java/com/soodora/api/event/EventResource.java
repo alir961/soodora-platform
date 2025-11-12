@@ -1,7 +1,7 @@
 package com.soodora.api.event;
 
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.service.event.CreateEventRequest;
 
 import org.springframework.http.ResponseEntity;
@@ -25,7 +25,7 @@ public interface EventResource {
             @ApiResponse(responseCode = "403", description = "User must be artist")
     })
     ResponseEntity<?> createEvent(
-            UserDTO user,
+            User user,
             @RequestBody(required = true) CreateEventRequest request);
 
     @Operation(summary = "Retrieve filtered events", responses = {
@@ -42,6 +42,6 @@ public interface EventResource {
             @ApiResponse(responseCode = "403", description = "User must be artist")
     })
     ResponseEntity<?> getAuthenticatedArtistEvents(
-            UserDTO user);
+            User user);
 
 }

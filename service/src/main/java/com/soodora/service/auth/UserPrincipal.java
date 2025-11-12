@@ -1,6 +1,6 @@
 package com.soodora.service.auth;
 
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.util.Collection;
 
@@ -8,12 +8,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-public record UserPrincipal(UserDTO user) implements UserDetails {
+public record UserPrincipal(User user) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.roles().stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+        return user.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.value().toUpperCase()))
                 .toList();
     }
 
@@ -26,7 +26,7 @@ public record UserPrincipal(UserDTO user) implements UserDetails {
     public String getUsername() {
         if (user == null)
             return null;
-        return user.email();
+        return user.getUsername().value();
     }
 
 }

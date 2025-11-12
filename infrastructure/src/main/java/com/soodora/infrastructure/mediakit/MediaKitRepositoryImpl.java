@@ -6,10 +6,10 @@ import com.soodora.domain.mediakit.CreateMediaKitCommand;
 import com.soodora.domain.mediakit.MediaKitDTO;
 import com.soodora.domain.mediakit.MediaKitRepository;
 import com.soodora.domain.mediakit.UpdateMediaKitCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
-import com.soodora.infrastructure.common.DomainEntity;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
 
@@ -30,9 +30,10 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKitDTO save(CreateMediaKitCommand command, UserDTO user) {
-        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug: #" + user.slug()));
+    public MediaKitDTO save(CreateMediaKitCommand command, User user) {
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
+                .orElseThrow(
+                        () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
         boolean artistHasMediaKit = mediaKitRepository.findByArtistUserSlug(artistEntity.getUser().getSlug())
                 .isPresent();
 
@@ -47,9 +48,9 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
             mediaKit.setSlug(generateUniqueSlug());
             mediaKit.setArtist(artistEntity);
 
-            return mediaKitRepository.save(mediaKit).toDTO();
+            return mediaKitRepository.save(mediaKit).aggregate();
         } else
-            throw new LinkPageUnityException("Artist with user slug #" + user.slug() + " already has a media kit.");
+            throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a media kit.");
     }
 
     @Override
@@ -67,26 +68,26 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
             mediaKit.setContactEmail(command.contactEmail());
         if (isNotNullOrBlank(command.contactPhone()))
             mediaKit.setContactPhone(command.contactPhone());
-        return mediaKitRepository.save(mediaKit).toDTO();
+        return mediaKitRepository.save(mediaKit).aggregate();
     }
 
     @Override
     @Transactional
     public MediaKitDTO findBySlug(String slug) {
-        return findMediaKitBySlugOrThrow(slug).toDTO();
+        return findMediaKitBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public MediaKitDTO findByArtistSlug(String slug) {
-        return findMediaKitByArtistSlugOrThrow(slug).toDTO();
+        return findMediaKitByArtistSlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
     public List<MediaKitDTO> findAll() {
         return mediaKitRepository.findAll().stream()
-                .map(DomainEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 

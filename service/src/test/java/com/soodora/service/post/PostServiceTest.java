@@ -3,9 +3,9 @@ package com.soodora.service.post;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.post.*;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
+import com.soodora.domain.user.value.Identifier;
 
 import java.util.Date;
 import java.util.List;
@@ -21,12 +21,13 @@ import org.springframework.data.domain.*;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.by;
 
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
 import static com.soodora.test.factory.PostFactory.buildDefaultPostWithoutAudio;
@@ -91,7 +92,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -146,7 +147,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_True() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(true), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.getSlug()), of(true), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -164,7 +165,7 @@ class PostServiceTest {
     @Test
     void retrievePost_FilterUserSlug_FilterHasAudioUrl_False() {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), of(false), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.getSlug()), of(false), empty(), empty(), empty());
 
         List<PostDTO> filteredPosts = List.of(POST_4_WITHOUT_AUDIO);
         Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
@@ -410,7 +411,7 @@ class PostServiceTest {
     @Test
     void retrieveUserLikes_WithUserSlug_ReturnsLikes() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
         List<LikeDTO> expected = List.of(
                 new PostLikeDTO(POST_1.slug(), USER, new Date()),
                 new CommentLikeDTO("comment-slug", USER, new Date()));
@@ -435,7 +436,7 @@ class PostServiceTest {
     @Test
     void retrieveUserComments_WithUserSlug_ReturnsComments() throws MissingUserSlugException {
         // GIVEN
-        PostFilter filter = new PostFilter(of(USER.slug()), empty(), empty(), empty(), empty());
+        PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
         List<CommentDTO> expected = List.of(new CommentDTO("slug", "postSlug", "content", USER, 0, new Date()));
         when(userRepository.retrievePostComments(any())).thenReturn(expected);
 
@@ -461,20 +462,25 @@ class PostServiceTest {
         Identifier identifier = createFromSlug("slug1");
         Pageable pageable = PageRequest.of(0, 50, by("slug").ascending());
 
-        UserDTO user2 = buildDefaultUser(2);
-        UserDTO user3 = buildDefaultUser(3);
+        User user2 = buildDefaultUser(2);
+        User user3 = buildDefaultUser(3);
 
-        Set<UserDTO> followings = Set.of(user2, user3);
-        List<String> followingSlugs = followings.stream()
-                .map(UserDTO::slug)
-                .toList();
+        Set<User> followings = Set.of(user2, user3);
+        Set<String> followingSlugs = followings.stream()
+                .map(User::getSlug)
+                .collect(toSet());
 
         PostDTO post1 = buildDefaultPost("slug2", "title1");
         PostDTO post2 = buildDefaultPost("slug3", "title2");
 
         Page<PostDTO> expectedPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
 
-        when(userRepository.retrieveFollowing(identifier)).thenReturn(followings);
+        User user = USER;
+
+        user.follow(user2);
+        user.follow(user3);
+
+        when(userRepository.findWithFollowers(identifier)).thenReturn(user);
         when(postRepository.findByFollowingSlugs(followingSlugs, pageable)).thenReturn(expectedPage);
 
         // WHEN
@@ -485,7 +491,6 @@ class PostServiceTest {
         assertEquals(expectedPage.getTotalElements(), result.getTotalElements());
         assertEquals(expectedPage.getContent(), result.getContent());
 
-        verify(userRepository).retrieveFollowing(identifier);
         verify(postRepository).findByFollowingSlugs(followingSlugs, pageable);
     }
 

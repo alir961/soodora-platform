@@ -5,10 +5,11 @@ import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.PlaylistRepository;
 import com.soodora.domain.post.*;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.playlist.PlaylistJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -32,7 +34,6 @@ import static java.lang.Math.toIntExact;
 import static java.util.Collections.emptySet;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
-import static com.soodora.infrastructure.common.PlaylistConstants.LIKED_AUDIO_PLAYLIST_NAME;
 
 @Repository
 @RequiredArgsConstructor
@@ -46,11 +47,14 @@ public class PostRepositoryImpl implements PostRepository {
     private final PlaylistRepository playlistRepository;
     private final PlaylistJpaRepository playlistJpaRepository;
 
+    @Value("${playlist.liked.title}")
+    private String likedPlaylistName;
+
     @Override
     @Transactional
-    public PostDTO save(CreatePostCommand command, UserDTO user, FileData fileData) {
+    public PostDTO save(CreatePostCommand command, User user, FileData fileData) {
         PostEntity entity = new PostEntity();
-        ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.slug());
+        ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.getSlug());
 
         entity.setTitle(command.title());
         entity.setContent(command.content());
@@ -65,33 +69,34 @@ public class PostRepositoryImpl implements PostRepository {
         entity.setLikes(emptySet());
         entity.setComments(emptySet());
         entity.setReposts(emptySet());
-        return postRepository.save(entity).toDTO();
+        return postRepository.save(entity).aggregate();
     }
 
     @Override
     @Transactional
     public PostDTO find(String postSlug) {
-        return findPostBySlugOrThrow(postSlug).toDTO();
+        return findPostBySlugOrThrow(postSlug).aggregate();
     }
 
     @Override
     @Transactional
     public Page<PostDTO> findAll(Pageable pageable) {
         Page<PostEntity> page = postRepository.findAll(pageable);
-        return page.map(PostEntity::toDTO);
+
+        return page.map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<PostDTO> findByFilter(PostFilter filter, Pageable pageable) {
         return postRepository.findAll(PostSpecification.build(filter), pageable)
-                .map(PostEntity::toDTO);
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<PostDTO> findRecommendedPosts(UserDTO user, Pageable pageable) {
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+    public Page<PostDTO> findRecommendedPosts(User user, Pageable pageable) {
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         Set<UserEntity> followers = userEntity.getFollowers();
         List<PostEntity> sortedPosts = postRepository.findAll().stream()
                 .sorted((a, b) -> compare(b.getEngagementScore(followers), a.getEngagementScore(followers)))
@@ -99,7 +104,7 @@ public class PostRepositoryImpl implements PostRepository {
         int start = toIntExact(pageable.getOffset());
         int end = min(start + pageable.getPageSize(), sortedPosts.size());
         List<PostDTO> pageContent = sortedPosts.subList(start, end).stream()
-                .map(PostEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
 
         return new PageImpl<>(pageContent, pageable, sortedPosts.size());
@@ -108,28 +113,29 @@ public class PostRepositoryImpl implements PostRepository {
     @Override
     @Transactional
     public Page<PostDTO> findUserPosts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByArtistUserSlug(identifier.getValue(), pageable)
-                .map(PostEntity::toDTO);
+        return postRepository.findByArtistUserSlug(identifier.value(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<PostDTO> findUserReposts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByRepostsSlug(identifier.getValue(), pageable).map(PostEntity::toDTO);
+        return postRepository.findByRepostsSlug(identifier.value(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<PostDTO> findUserAudios(Identifier identifier, Pageable pageable) {
-        return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(identifier.getValue(), pageable)
-                .map(PostEntity::toDTO);
+        return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(identifier.value(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public void likePost(String postSlug, UserDTO userDto) {
+    public void likePost(String postSlug, User user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(userDto.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
         boolean alreadyLiked = post.getLikes().stream()
                 .anyMatch(like -> like.getUser().getId().equals(userEntity.getId()));
@@ -139,11 +145,12 @@ public class PostRepositoryImpl implements PostRepository {
             like.setSlug(generateUniqueSlug());
             like.setUser(userEntity);
             like.setPost(post);
+
             post.getLikes().add(like);
 
             if (post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
                 playlistJpaRepository
-                        .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
+                        .findByUserAndName(userEntity, likedPlaylistName)
                         .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
                                 playlist.getSlug(), postSlug, Pageable.unpaged()));
             }
@@ -154,15 +161,15 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unlikePost(String postSlug, UserDTO user) {
+    public void unlikePost(String postSlug, User user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
         boolean removed = post.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
 
         if (removed && post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
             playlistJpaRepository
-                    .findByUserAndName(userEntity, LIKED_AUDIO_PLAYLIST_NAME)
+                    .findByUserAndName(userEntity, likedPlaylistName)
                     .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
                             playlist.getSlug(), postSlug, Pageable.unpaged()));
         }
@@ -172,9 +179,9 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public CommentDTO commentPost(String postSlug, CommentPostCommand command, UserDTO user) {
+    public CommentDTO commentPost(String postSlug, CommentPostCommand command, User user) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity comment = new CommentEntity();
 
         comment.setSlug(generateUniqueSlug());
@@ -185,13 +192,13 @@ public class PostRepositoryImpl implements PostRepository {
 
         post.getComments().add(comment);
         postRepository.save(post);
-        return comment.toDTO();
+        return comment.aggregate();
     }
 
     @Override
     @Transactional
-    public void likeComment(String commentSlug, UserDTO user) {
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+    public void likeComment(String commentSlug, User user) {
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity commentEntity = findCommentBySlugOrThrow(commentSlug);
         boolean alreadyLiked = commentEntity.getLikes().stream()
                 .anyMatch(like -> like.getUser().getId().equals(userEntity.getId()));
@@ -210,8 +217,8 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unlikeComment(String commentSlug, UserDTO user) {
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+    public void unlikeComment(String commentSlug, User user) {
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity comment = findCommentBySlugOrThrow(commentSlug);
 
         comment.getLikes().removeIf(like -> like.getUser().getId().equals(userEntity.getId()));
@@ -234,17 +241,17 @@ public class PostRepositoryImpl implements PostRepository {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
 
         return postEntity.getLikes().stream()
-                .map(LikeEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 
     @Override
     @Transactional
-    public Set<UserDTO> retrieveReposts(String postSlug) {
+    public Set<User> retrieveReposts(String postSlug) {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
 
         return postEntity.getReposts().stream()
-                .map(UserEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .collect(Collectors.toSet());
     }
 
@@ -254,7 +261,7 @@ public class PostRepositoryImpl implements PostRepository {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
 
         return postEntity.getComments().stream()
-                .map(CommentEntity::toDTO)
+                .map(CommentEntity::aggregate)
                 .toList();
     }
 
@@ -264,7 +271,7 @@ public class PostRepositoryImpl implements PostRepository {
         CommentEntity commentEntity = findCommentBySlugOrThrow(commentSlug);
 
         return commentEntity.getLikes().stream()
-                .map(LikeEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .toList();
     }
 
@@ -278,9 +285,9 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void repost(String postSlug, UserDTO user) {
+    public void repost(String postSlug, User user) {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
         postEntity.getReposts().add(userEntity);
         postRepository.save(postEntity);
@@ -288,18 +295,18 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unrepost(String postSlug, UserDTO user) {
+    public void unrepost(String postSlug, User user) {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
-        UserEntity userEntity = findUserBySlugOrThrow(user.slug());
+        UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
         postEntity.getReposts().remove(userEntity);
         postRepository.save(postEntity);
     }
 
     @Override
-    public Page<PostDTO> findByFollowingSlugs(List<String> followingSlugs, Pageable pageable) {
+    public Page<PostDTO> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable) {
         return postRepository.findByArtistUserSlugIn(followingSlugs, pageable)
-                .map(PostEntity::toDTO);
+                .map(DomainEntityAdapter::aggregate);
     }
 
     protected UserEntity findUserBySlugOrThrow(String slug) {

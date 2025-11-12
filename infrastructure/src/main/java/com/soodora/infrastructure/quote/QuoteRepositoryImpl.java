@@ -2,9 +2,10 @@ package com.soodora.infrastructure.quote;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.quote.*;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
+import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
 
@@ -28,9 +29,9 @@ public class QuoteRepositoryImpl implements QuoteRepository {
 
     @Override
     @Transactional
-    public QuoteDTO save(CreateQuoteCommand command, UserDTO user) {
-        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.slug()));
+    public QuoteDTO save(CreateQuoteCommand command, User user) {
+        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.getSlug()));
 
         QuoteEntity entity = new QuoteEntity();
         entity.setSlug(generateUniqueSlug());
@@ -43,7 +44,7 @@ public class QuoteRepositoryImpl implements QuoteRepository {
         entity.setDescription(command.description());
         entity.setArticles(emptyList());
 
-        return quoteJpaRepository.save(entity).toDTO();
+        return quoteJpaRepository.save(entity).aggregate();
     }
 
     @Override
@@ -65,28 +66,28 @@ public class QuoteRepositoryImpl implements QuoteRepository {
         if (isNotNullOrBlank(command.description()))
             entity.setDescription(command.description());
 
-        return quoteJpaRepository.save(entity).toDTO();
+        return quoteJpaRepository.save(entity).aggregate();
     }
 
     @Override
     @Transactional
     public QuoteDTO findBySlug(String slug) {
         return quoteJpaRepository.findBySlug(slug)
-                .map(QuoteEntity::toDTO)
+                .map(DomainEntityAdapter::aggregate)
                 .orElseThrow(() -> new UnknownSlugException("Quote not found: " + slug));
     }
 
     @Override
     @Transactional
     public Page<QuoteDTO> findAll(Pageable pageable) {
-        return quoteJpaRepository.findAll(pageable).map(QuoteEntity::toDTO);
+        return quoteJpaRepository.findAll(pageable).map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public Page<QuoteDTO> findByFilter(QuoteFilter filter, Pageable pageable) {
         var spec = QuoteSpecification.build(filter);
-        return quoteJpaRepository.findAll(spec, pageable).map(QuoteEntity::toDTO);
+        return quoteJpaRepository.findAll(spec, pageable).map(DomainEntityAdapter::aggregate);
     }
 
     @Override

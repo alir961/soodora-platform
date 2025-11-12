@@ -1,7 +1,7 @@
 package com.soodora.domain.playlist;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 
 import java.util.List;
 
@@ -10,7 +10,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface PlaylistRepository {
 
-    PlaylistDTO save(CreatePlaylistCommand command, UserDTO user, FileData playlistImage);
+    PlaylistDTO save(CreatePlaylistCommand command, User user, FileData playlistImage);
     PlaylistDTO update(UpdatePlaylistCommand command, String slug, FileData playlistImage);
     PlaylistFullDTO findBySlug(String slug, Pageable pageableAudioPosts);
     List<PlaylistDTO> findAll();

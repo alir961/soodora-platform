@@ -3,7 +3,7 @@ package com.soodora.api.linkpage;
 import com.soodora.domain.link.LinkDTO;
 import com.soodora.domain.linkpage.LinkPageDTO;
 import com.soodora.domain.linkpage.LinkPageFilter;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
@@ -61,7 +61,7 @@ class LinkPageControllerIT {
         // GIVEN
         CreateLinkPageRequest request = new CreateLinkPageRequest(LINKPAGE.title(), LINKPAGE.description());
 
-        when(userRepository.find(USER.identifier())).thenReturn(USER);
+        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(post("/linkpages")
@@ -74,7 +74,7 @@ class LinkPageControllerIT {
     @Test
     void createLinkPage_shouldReturnBadRequestOnInvalidRequest() throws Exception {
         // GIVEN
-        when(linkPageService.createLinkPage(any(), any(UserDTO.class)))
+        when(linkPageService.createLinkPage(any(), any(User.class)))
                 .thenThrow(new InvalidRequestException("Invalid data"));
 
         CreateLinkPageRequest request = new CreateLinkPageRequest(LINKPAGE.title(), LINKPAGE.description());
@@ -125,7 +125,7 @@ class LinkPageControllerIT {
 
         // WHEN & THEN
         mockMvc.perform(get("/linkpages")
-                .param("userSlug", USER.slug()))
+                .param("userSlug", USER.getSlug()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.slug").value(LINKPAGE.slug()))
                 .andExpect(jsonPath("$.links.length()").value(LINK_LIST.size()));
@@ -168,7 +168,7 @@ class LinkPageControllerIT {
     @Test
     void addLink_shouldReturnCreated() throws Exception {
         // GIVEN
-        when(linkService.createLink(any(), eq(USER.slug()))).thenReturn(LINK_1.slug());
+        when(linkService.createLink(any(), eq(USER.getSlug()))).thenReturn(LINK_1.slug());
 
         CreateLinkRequest request = new CreateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(),
                 LINK_1.iconUrl());

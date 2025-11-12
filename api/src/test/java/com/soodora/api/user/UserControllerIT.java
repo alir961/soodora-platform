@@ -1,14 +1,14 @@
 package com.soodora.api.user;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.user.Identifier;
-import com.soodora.domain.user.UpdateUserCommand;
-import com.soodora.domain.user.UserDTO;
+import com.soodora.domain.common.InvalidValueException;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.user.UnknownUserException;
-import com.soodora.service.user.UpdateUserRequest;
 import com.soodora.service.user.UserService;
+import com.soodora.service.user.UserUpdateCommand;
 
 import java.util.List;
 import java.util.Set;
@@ -25,7 +25,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
@@ -36,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
-import static com.soodora.domain.user.IdentifierFactory.createFromSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.test.TestConstants.ADMIN;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.UserFactory.buildDefaultUser;
@@ -51,23 +50,21 @@ class UserControllerIT {
     @MockitoBean
     private UserService userService;
 
-    private static final UserDTO USER_1 = buildDefaultUser(1);
-    private static final UserDTO USER_2 = buildDefaultUser(2);
-    private static final UserDTO USER_3 = buildDefaultUser(3);
+    private static final User USER_1 = buildDefaultUser(1);
+    private static final User USER_2 = buildDefaultUser(2);
+    private static final User USER_3 = buildDefaultUser(3);
 
     @Test
     void givenAuthenticatedAdmin_whenRetrieveUsers_thenSuccess() throws Exception {
         // GIVEN
-        when(userService.retrieveAllUsers()).thenReturn(asList(USER_1, USER_2, USER_3));
+        when(userService.retrieveAllUsers()).thenReturn(Set.of(USER_1, USER_2, USER_3));
 
         // WHEN & THEN
         mockMvc.perform(get("/users")
                 .with(user(new UserPrincipal(ADMIN))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
-                .andExpect(jsonPath("$[0].slug").value("slug1"))
-                .andExpect(jsonPath("$[1].slug").value("slug2"))
-                .andExpect(jsonPath("$[2].slug").value("slug3"));
+                .andExpect(jsonPath("$[*].slug", containsInAnyOrder("slug1", "slug2", "slug3")));
     }
 
     @Test
@@ -108,7 +105,7 @@ class UserControllerIT {
                 .when(userService).retrieveUser(identifier);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/" + identifier.getValue()))
+        mockMvc.perform(get("/users/" + identifier.value()))
                 .andExpect(status().isNotFound());
     }
 
@@ -118,8 +115,8 @@ class UserControllerIT {
         String username = "username";
         boolean onlyArtists = true;
         Pageable pageable = PageRequest.of(0, 50);
-        List<UserDTO> userList = List.of(buildDefaultUser(1), buildDefaultUser(2));
-        Page<UserDTO> expectedPage = new PageImpl<>(userList, pageable, userList.size());
+        List<User> userList = List.of(buildDefaultUser(1), buildDefaultUser(2));
+        Page<User> expectedPage = new PageImpl<>(userList, pageable, userList.size());
 
         when(userService.searchUsersByUsername(username, onlyArtists, pageable)).thenReturn(expectedPage);
 
@@ -142,7 +139,8 @@ class UserControllerIT {
                 "newUsername",
                 "firstname",
                 "lastname",
-                "description");
+                "description",
+                "avatar");
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
@@ -157,7 +155,7 @@ class UserControllerIT {
                 "fake-image".getBytes());
 
         // WHEN & THEN
-        mockMvc.perform(multipart("/users/" + USER_1.slug())
+        mockMvc.perform(multipart("/users/" + USER_1.getSlug())
                 .file(jsonPart)
                 .file(filePart)
                 .with(request -> {
@@ -171,7 +169,7 @@ class UserControllerIT {
     @Test
     void givenInvalidRequest_whenUpdateUser_thenBadRequest() throws Exception {
         // GIVEN
-        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "");
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest("", "", "", "", "");
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
                 "",
@@ -187,12 +185,11 @@ class UserControllerIT {
         FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
                 filePart.getContentType());
 
-        doThrow(new InvalidRequestException("Invalid Request"))
-                .when(userService)
-                .updateUser(any(UpdateUserCommand.class), eq(USER_1.slug()), eq(fileData));
+        doThrow(new InvalidValueException("Invalid Request")).when(userService)
+                .updateUser(any(Identifier.class), any(UserUpdateCommand.class));
 
         // WHEN & THEN
-        mockMvc.perform(multipart("/users/" + USER_1.slug())
+        mockMvc.perform(multipart("/users/" + USER_1.getSlug())
                 .file(jsonPart)
                 .file(filePart)
                 .with(request -> {
@@ -211,7 +208,8 @@ class UserControllerIT {
                 "newUsername",
                 "firstname",
                 "lastname",
-                "description");
+                "description",
+                "avatar");
 
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
@@ -312,12 +310,12 @@ class UserControllerIT {
     @Test
     void givenAuthenticatedUser_whenRetrieveFollowers_thenSuccess() throws Exception {
         // GIVEN
-        Set<UserDTO> followers = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+        Set<User> followers = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
 
-        when(userService.retrieveFollowers(USER_1.identifier())).thenReturn(followers);
+        when(userService.retrieveFollowers(any(Identifier.class))).thenReturn(followers);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/" + USER_1.slug() + "/followers")
+        mockMvc.perform(get("/users/" + USER_1.getSlug() + "/followers")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))
@@ -334,12 +332,12 @@ class UserControllerIT {
     @Test
     void givenAuthenticatedUser_whenRetrieveFollowing_thenSuccess() throws Exception {
         // GIVEN
-        Set<UserDTO> following = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
+        Set<User> following = Set.of(buildDefaultUser(0), buildDefaultUser(1), buildDefaultUser(2));
 
-        when(userService.retrieveFollowing(USER_1.identifier())).thenReturn(following);
+        when(userService.retrieveFollowing(any(Identifier.class))).thenReturn(following);
 
         // WHEN & THEN
-        mockMvc.perform(get("/users/" + USER_1.slug() + "/following")
+        mockMvc.perform(get("/users/" + USER_1.getSlug() + "/following")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(3)))

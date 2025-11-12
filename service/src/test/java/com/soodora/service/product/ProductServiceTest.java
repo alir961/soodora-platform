@@ -64,7 +64,7 @@ class ProductServiceTest {
     @Test
     void retrieveProducts_FilteredByUserSlug() {
         // GIVEN
-        ProductFilter filter = new ProductFilter(of(USER.slug()), empty(), empty(), empty());
+        ProductFilter filter = new ProductFilter(of(USER.getSlug()), empty(), empty(), empty());
 
         List<ProductDTO> filteredProducts = List.of(PRODUCT_1, PRODUCT_3);
         Page<ProductDTO> pageFilteredProducts = new PageImpl<>(filteredProducts, PAGEABLE, filteredProducts.size());
@@ -172,7 +172,7 @@ class ProductServiceTest {
     @Test
     void createProduct_Success() {
         // GIVEN
-        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.slug())).thenReturn(false);
+        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.getSlug())).thenReturn(false);
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),
                 "test-image.jpg",
@@ -188,7 +188,7 @@ class ProductServiceTest {
 
     @Test
     void createProduct_NameAlreadyUsed() {
-        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.slug())).thenReturn(true);
+        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.getSlug())).thenReturn(true);
         FileData fileData = new FileData(
                 "dummy image content".getBytes(),
                 "test-image.jpg",
