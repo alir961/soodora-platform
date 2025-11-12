@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
+import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 import static com.soodora.test.factory.ProductFactory.buildDefaultProduct;
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class SaleFactory {
@@ -24,7 +24,7 @@ public class SaleFactory {
                 "slug",
                 buildDefaultProduct(),
                 buildDefaultArtist("id"),
-                PublicUserDTO.build(buildDefaultUser()),
+                PublicUserDTO.build(USER),
                 10,
                 Money.of(BigDecimal.valueOf(10.99), Currency.EUR),
                 new Date());

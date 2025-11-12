@@ -7,11 +7,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PostAnalytics {
 
-    int likes;
-    int comments;
-    int reposts;
-    int subscribedLikes;
-    int subscribedComments;
-    int subscribedReposts;
+    private int likes;
+    private int comments;
+    private int reposts;
+    private int subscribedLikes;
+    private int subscribedComments;
+    private int subscribedReposts;
 
 }

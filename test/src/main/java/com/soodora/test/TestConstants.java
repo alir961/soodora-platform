@@ -2,6 +2,8 @@ package com.soodora.test;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.event.EventDTO;
+import com.soodora.domain.mediakit.MediaKit;
+import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.domain.oauth.RefreshableAuthorization;
 import com.soodora.domain.user.User;
 
@@ -11,12 +13,13 @@ import static lombok.AccessLevel.PRIVATE;
 
 import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 import static com.soodora.test.factory.EventFactory.buildEventDTO;
+import static com.soodora.test.factory.MediaKitFactory.buildDefaultMediaKit;
+import static com.soodora.test.factory.MediaKitItemFactory.buildDefaultMediaKitItem;
 import static com.soodora.test.factory.UserFactory.*;
 
 @NoArgsConstructor(access = PRIVATE)
 public class TestConstants {
 
-    public static final String EXTERNAL_ID = "external-id";
     public static final String EXTERNAL_TOKEN = "external-token";
     public static final String ACCESS_TOKEN = "access-token";
     public static final String REFRESH_TOKEN = "refresh-token";
@@ -30,5 +33,7 @@ public class TestConstants {
     public static final EventDTO EVENT = buildEventDTO("");
     public static final String JWT_TOKEN = "externalToken";
     public static final String REDIRECT_URL = "http://localhost:8080/callback";
+    public static final MediaKit MEDIA_KIT = buildDefaultMediaKit();
+    public static final MediaKitItem MEDIA_KIT_ITEM = buildDefaultMediaKitItem();
 
 }

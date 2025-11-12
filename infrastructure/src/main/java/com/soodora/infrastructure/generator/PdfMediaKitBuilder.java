@@ -1,8 +1,8 @@
 package com.soodora.infrastructure.generator;
 
-import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKit;
 import com.soodora.domain.mediakit.MediaKitGenerationException;
-import com.soodora.domain.mediakititem.MediaKitItemDTO;
+import com.soodora.domain.mediakititem.MediaKitItem;
 
 import java.io.IOException;
 import java.net.URI;
@@ -57,15 +57,15 @@ public class PdfMediaKitBuilder extends LoadFontFromResources {
         }
     }
 
-    public PdfMediaKitBuilder addHeader(MediaKitDTO mediaKit) {
-        String contactText = "Contact: " + mediaKit.contactEmail();
+    public PdfMediaKitBuilder addHeader(MediaKit mediaKit) {
+        String contactText = "Contact: " + mediaKit.getContactEmail();
 
-        if (!mediaKit.contactPhone().isBlank())
-            contactText += " | " + mediaKit.contactPhone();
+        if (!mediaKit.getContactPhone().isBlank())
+            contactText += " | " + mediaKit.getContactPhone();
         try {
-            document.add(new Paragraph(mediaKit.title(), titleFont));
-            document.add(new Paragraph(mediaKit.artistName(), boldFont));
-            document.add(new Paragraph(mediaKit.shortBio(), normalFont));
+            document.add(new Paragraph(mediaKit.getTitle(), titleFont));
+            document.add(new Paragraph(mediaKit.getOwner().getUsername().value(), boldFont));
+            document.add(new Paragraph(mediaKit.getShortBio(), normalFont));
             document.add(new Paragraph(contactText, normalFont));
             return this;
         } catch (DocumentException exception) {
@@ -74,35 +74,35 @@ public class PdfMediaKitBuilder extends LoadFontFromResources {
         }
     }
 
-    public PdfMediaKitBuilder addBiography(MediaKitDTO mediaKit)
+    public PdfMediaKitBuilder addBiography(MediaKit mediaKit)
             throws DocumentException {
         document.add(new Paragraph("\nBiography", boldFont));
-        document.add(new Paragraph(mediaKit.longBio(), normalFont));
+        document.add(new Paragraph(mediaKit.getLongBio(), normalFont));
         return this;
     }
 
-    public PdfMediaKitBuilder addMediaKitItems(Collection<MediaKitItemDTO> items) {
-        for (MediaKitItemDTO item : items) {
+    public PdfMediaKitBuilder addMediaKitItems(Collection<MediaKitItem> items) {
+        for (MediaKitItem item : items) {
             try {
-                document.add(new Paragraph("\n" + item.title(), boldFont));
-                document.add(new Paragraph("Type: " + item.type(), normalFont));
+                document.add(new Paragraph("\n" + item.getTitle(), boldFont));
+                document.add(new Paragraph("Type: " + item.getType(), normalFont));
 
-                switch (item.type().toLowerCase()) {
+                switch (item.getType().toLowerCase()) {
                     case "image" :
-                        Image image = loadImage(item.content());
+                        Image image = loadImage(item.getContent());
 
                         image.scaleToFit(500, 500);
                         document.add(image);
                         break;
 
                     case "video" :
-                        URI uri = validateUrl(item.content());
+                        URI uri = validateUrl(item.getContent());
 
                         document.add(new Paragraph("Video URL: " + uri, normalFont));
                         break;
 
                     default :
-                        document.add(new Paragraph(item.content(), normalFont));
+                        document.add(new Paragraph(item.getContent(), normalFont));
                         break;
                 }
             } catch (DocumentException exception) {

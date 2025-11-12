@@ -3,13 +3,14 @@ package com.soodora.infrastructure.mediakit;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.LinkPageUnityException;
 import com.soodora.domain.mediakit.CreateMediaKitCommand;
-import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKit;
 import com.soodora.domain.mediakit.MediaKitRepository;
 import com.soodora.domain.mediakit.UpdateMediaKitCommand;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.user.UserEntity;
 
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKitDTO save(CreateMediaKitCommand command, User user) {
+    public MediaKit save(CreateMediaKitCommand command, User user) {
         ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
                 .orElseThrow(
                         () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
@@ -49,13 +50,13 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
             mediaKit.setArtist(artistEntity);
 
             return mediaKitRepository.save(mediaKit).aggregate();
-        } else
-            throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a media kit.");
+        }
+        throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a media kit.");
     }
 
     @Override
     @Transactional
-    public MediaKitDTO update(UpdateMediaKitCommand command, String slug) {
+    public MediaKit update(UpdateMediaKitCommand command, String slug) {
         MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
@@ -73,19 +74,19 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKitDTO findBySlug(String slug) {
+    public MediaKit findBySlug(String slug) {
         return findMediaKitBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public MediaKitDTO findByArtistSlug(String slug) {
+    public MediaKit findByArtistSlug(String slug) {
         return findMediaKitByArtistSlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<MediaKitDTO> findAll() {
+    public List<MediaKit> findAll() {
         return mediaKitRepository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
@@ -94,11 +95,20 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
     @Override
     @Transactional
     public void deleteBySlug(String slug) {
-        MediaKitEntity mediaKit = mediaKitRepository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find media kit with slug: #" + slug));
+        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
 
         mediaKit.getArtist().setMediaKit(null);
         mediaKitRepository.delete(mediaKit);
+    }
+
+    @Override
+    public void persistDownload(String slug, User user) {
+        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
+        UserEntity owner = mediaKit.getArtist().getUser();
+        boolean isFollowing = user != null && user.isFollowing(owner.aggregate());
+
+        mediaKit.increaseDownloadCount(isFollowing);
+        mediaKitRepository.save(mediaKit);
     }
 
     protected MediaKitEntity findMediaKitBySlugOrThrow(String slug) {

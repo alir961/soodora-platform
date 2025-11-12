@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 import static lombok.AccessLevel.PROTECTED;
 
 import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
+import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class PlaylistFactory {
@@ -30,7 +30,7 @@ public class PlaylistFactory {
                 0,
                 PUBLIC,
                 "imageUrl",
-                PublicUserDTO.build(buildDefaultUser()),
+                PublicUserDTO.build(USER),
                 new Date(),
                 new Date());
     }
@@ -43,7 +43,7 @@ public class PlaylistFactory {
                 0,
                 PUBLIC,
                 "imageUrl",
-                PublicUserDTO.build(buildDefaultUser()),
+                PublicUserDTO.build(USER),
                 new Date(),
                 new Date());
         List<Post> posts = List.of(

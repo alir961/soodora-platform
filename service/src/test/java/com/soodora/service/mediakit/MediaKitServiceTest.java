@@ -12,12 +12,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 
-import static java.util.List.of;
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.MediaKitFactory.buildMediaKitDTO;
+import static com.soodora.test.TestConstants.*;
 
 class MediaKitServiceTest {
 
@@ -32,7 +31,10 @@ class MediaKitServiceTest {
 
     private MediaKitService mediaKitService;
 
-    private static final MediaKitDTO MEDIA_KIT_DTO = buildMediaKitDTO();
+    private final FileData fileData = new FileData(
+            "dummy image content".getBytes(),
+            "test-image.jpg",
+            "image/jpeg");
 
     @BeforeEach
     void setUp() {
@@ -46,15 +48,15 @@ class MediaKitServiceTest {
     void givenCreateCommand_whenCreateMediaKit_thenReturnDto() {
         // GIVEN
         CreateMediaKitCommand command = new CreateMediaKitCommand("Title", "Short", "Long", "email", "phone");
-        MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "Title", "Short", "Long", "email", "phone", null);
-        when(mediaKitRepository.save(command, USER)).thenReturn(expected);
+
+        when(mediaKitRepository.save(command, USER)).thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKitDTO result = mediaKitService.createMediaKit(command, USER);
+        MediaKit result = mediaKitService.createMediaKit(command, USER);
 
         // THEN
         assertNotNull(result);
-        assertEquals("slug1", result.slug());
+        assertEquals("slug", result.getSlug());
         verify(mediaKitRepository).save(command, USER);
     }
 
@@ -62,14 +64,16 @@ class MediaKitServiceTest {
     void givenUpdateCommand_whenUpdateMediaKit_thenReturnDto() {
         // GIVEN
         UpdateMediaKitCommand command = new UpdateMediaKitCommand("NewTitle", "Short", "Long", "email", "phone");
-        MediaKitDTO expected = new MediaKitDTO("slug1", "artist", "NewTitle", "Short", "Long", "email", "phone", null);
-        when(mediaKitRepository.update(command, "slug1")).thenReturn(expected);
+        MediaKit updated = new MediaKit("slug", ARTIST_USER, "NewTitle", "Short", "Long", "email", "phone", emptyList(),
+                0, 0);
+
+        when(mediaKitRepository.update(command, "slug1")).thenReturn(updated);
 
         // WHEN
-        MediaKitDTO result = mediaKitService.updateMediaKit(command, "slug1");
+        MediaKit result = mediaKitService.updateMediaKit(command, "slug1");
 
         // THEN
-        assertEquals("NewTitle", result.title());
+        assertEquals("NewTitle", result.getTitle());
         verify(mediaKitRepository).update(command, "slug1");
     }
 
@@ -77,13 +81,14 @@ class MediaKitServiceTest {
     void givenSlug_whenRetrieveMediaKitBySlug_thenReturnDto() {
         // GIVEN
         String slug = "test-slug";
-        when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT_DTO);
+
+        when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKitDTO actualDTO = mediaKitService.retrieveMediaKitBySlug(slug);
+        MediaKit actualDTO = mediaKitService.retrieveMediaKitBySlug(slug);
 
         // THEN
-        assertEquals(MEDIA_KIT_DTO, actualDTO);
+        assertEquals(MEDIA_KIT, actualDTO);
         verify(mediaKitRepository).findBySlug(slug);
     }
 
@@ -91,13 +96,14 @@ class MediaKitServiceTest {
     void givenArtistSlug_whenRetrieveMediaKitByArtistSlug_thenReturnDto() {
         // GIVEN
         String artistSlug = "artist-slug";
-        when(mediaKitRepository.findByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT_DTO);
+
+        when(mediaKitRepository.findByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKitDTO actualDTO = mediaKitService.retrieveMediaKitByArtistSlug(artistSlug);
+        MediaKit actualDTO = mediaKitService.retrieveMediaKitByArtistSlug(artistSlug);
 
         // THEN
-        assertEquals(MEDIA_KIT_DTO, actualDTO);
+        assertEquals(MEDIA_KIT, actualDTO);
         verify(mediaKitRepository).findByArtistSlug(artistSlug);
     }
 
@@ -114,18 +120,14 @@ class MediaKitServiceTest {
     void givenCreateItemCommand_whenAddMediaKitItem_thenReturnDto() {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
-        MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
-        when(mediaKitItemRepository.save(command, "artist-slug", fileData)).thenReturn(expected);
+
+        when(mediaKitItemRepository.save(command, "artist-slug", fileData)).thenReturn(MEDIA_KIT_ITEM);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.addMediaKitItem(command, "artist-slug", fileData);
+        MediaKitItem result = mediaKitService.addMediaKitItem(command, "artist-slug", fileData);
 
         // THEN
-        assertEquals("item-slug", result.slug());
+        assertEquals("item-slug", result.getSlug());
         verify(mediaKitItemRepository).save(command, "artist-slug", fileData);
     }
 
@@ -133,18 +135,14 @@ class MediaKitServiceTest {
     void givenUpdateItemCommand_whenUpdateMediaKitItem_thenReturnDto() {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
-        MediaKitItemDTO expected = new MediaKitItemDTO("media-kit-slug", "item-slug", "image", "Title", "url");
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
-        when(mediaKitItemRepository.update(command, "item-slug", fileData)).thenReturn(expected);
+
+        when(mediaKitItemRepository.update(command, "item-slug", fileData)).thenReturn(MEDIA_KIT_ITEM);
 
         // WHEN
-        MediaKitItemDTO result = mediaKitService.updateMediaKitItem(command, "item-slug", fileData);
+        MediaKitItem result = mediaKitService.updateMediaKitItem(command, "item-slug", fileData);
 
         // THEN
-        assertEquals("item-slug", result.slug());
+        assertEquals("item-slug", result.getSlug());
         verify(mediaKitItemRepository).update(command, "item-slug", fileData);
     }
 
@@ -161,24 +159,20 @@ class MediaKitServiceTest {
     void givenSlug_whenExportMediaKitToPdf_thenReturnPdfBytes() throws Exception {
         // GIVEN
         String slug = "kit-slug";
-        MediaKitDTO mediaKit = new MediaKitDTO(slug, "artist", "Title", "Short", "Long", "email", "phone", null);
-        MediaKitItemDTO item = new MediaKitItemDTO(slug, "item1", "image", "Title1", "url1");
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 
-        when(mediaKitRepository.findBySlug(slug)).thenReturn(mediaKit);
-        when(mediaKitItemRepository.findAll()).thenReturn(of(item));
-
         byteArray.write("PDF".getBytes());
-        when(pdfExporter.exportMediaKit(mediaKit, of(item))).thenReturn(byteArray);
+
+        when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT);
+        when(pdfExporter.exportMediaKit(MEDIA_KIT)).thenReturn(byteArray);
 
         // WHEN
-        byte[] result = mediaKitService.exportMediaKitToPdf(slug);
+        byte[] result = mediaKitService.exportMediaKitToPdf(slug, USER);
 
         // THEN
         assertArrayEquals("PDF".getBytes(), result);
         verify(mediaKitRepository).findBySlug(slug);
-        verify(mediaKitItemRepository).findAll();
-        verify(pdfExporter).exportMediaKit(mediaKit, of(item));
+        verify(pdfExporter).exportMediaKit(MEDIA_KIT);
     }
 
     @Test
@@ -189,7 +183,7 @@ class MediaKitServiceTest {
         when(mediaKitRepository.findBySlug(slug)).thenThrow(UnknownMediaKitException.class);
 
         // WHEN
-        Executable executable = () -> mediaKitService.exportMediaKitToPdf(slug);
+        Executable executable = () -> mediaKitService.exportMediaKitToPdf(slug, USER);
 
         // THEN
         assertThrows(UnknownMediaKitException.class, executable);

@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.factory.UserFactory.buildDefaultArtistUser;
+import static com.soodora.test.TestConstants.ARTIST_USER;
 
 @NoArgsConstructor(access = PROTECTED)
 public class PostFactory {
@@ -26,7 +26,7 @@ public class PostFactory {
                 "imageUrl",
                 "my audio",
                 "audioUrl",
-                buildDefaultArtistUser(),
+                ARTIST_USER,
                 emptyList(),
                 emptyList(),
                 emptyList(),
@@ -42,7 +42,7 @@ public class PostFactory {
                 "imageUrl",
                 null,
                 null,
-                buildDefaultArtistUser(),
+                ARTIST_USER,
                 emptyList(),
                 emptyList(),
                 emptyList(),

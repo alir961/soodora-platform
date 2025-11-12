@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.mediakititem;
 
-import com.soodora.domain.mediakititem.MediaKitItemDTO;
+import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
 
@@ -20,7 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "media_kit_items")
-public class MediaKitItemEntity implements DomainEntityAdapter<MediaKitItemDTO> {
+public class MediaKitItemEntity implements DomainEntityAdapter<MediaKitItem> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,9 +46,9 @@ public class MediaKitItemEntity implements DomainEntityAdapter<MediaKitItemDTO> 
     private Date createdAt;
 
     @Override
-    public MediaKitItemDTO aggregate() {
-        return new MediaKitItemDTO(
-                mediaKit.getSlug(),
+    public MediaKitItem aggregate() {
+        return new MediaKitItem(
+                mediaKit.aggregate(),
                 slug,
                 type,
                 title,
