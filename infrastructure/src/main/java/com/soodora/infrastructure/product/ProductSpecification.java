@@ -39,7 +39,7 @@ public class ProductSpecification {
     }
 
     private static Specification<ProductEntity> hasUserSlug(String slug) {
-        return (root, query, cb) -> cb.equal(root.get("user").get("slug"), slug);
+        return (root, query, cb) -> cb.equal(root.get("artist").get("user").get("slug"), slug);
     }
 
     private static Specification<ProductEntity> hasName(String name) {
