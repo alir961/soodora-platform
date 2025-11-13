@@ -117,13 +117,13 @@ const handleLinkHub = async () => {
   try {
     const linkPage = await getUserLinkPage(user.slug);
     if (linkPage) {
-      router.push(`/linkpages/${linkPage.slug}`);
+      await router.push(`/linkhub/${linkPage.slug}`);
       return;
     }
   } catch (error) {
     // User doesn't have a link page yet, redirect to create
   }
-  router.push('/linkpages');
+  await router.push('/linkhub/create');
 };
 
 const handleMediaKit = async () => {
@@ -141,7 +141,7 @@ const handleMediaKit = async () => {
   } catch (error) {
     // User doesn't have a mediakit yet, redirect to create
   }
-  router.push('/mediakits/create');
+  await router.push('/mediakits/create');
 };
 
 const handleQuotes = () => {

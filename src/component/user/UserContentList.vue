@@ -7,12 +7,7 @@ import { IonGrid, IonInfiniteScroll, IonInfiniteScrollContent, IonRow } from '@i
 import PostCard from '@/component/explore/PostCard.vue';
 import TrackCard from '@/component/music/TrackCard.vue';
 import { Post } from '@/entity/Post';
-import {
-  callRetrieveUserAudios,
-  callRetrieveUserPosts,
-  callRetrieveUserProduct,
-  callRetrieveUserReposts,
-} from '@/client/userClient';
+import { callRetrieveUserAudios, callRetrieveUserPosts, callRetrieveUserReposts } from '@/client/userClient';
 import { User } from '@/entity/User';
 import { PostPage } from '@/client/postClient';
 import { Product } from '@/entity/Product';
@@ -21,6 +16,7 @@ import { showToast } from '@/utils';
 import { usePlayerStore } from '@/store/playerStore';
 import { audioPlayerService } from '@/services/audioPlayerService';
 import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
+import { callSearchProducts } from '@/client/productClient';
 
 type Tab = 'posts' | 'reposts' | 'audios' | 'products';
 
@@ -110,8 +106,12 @@ const loadPosts = async (filter: Tab, reset: boolean) => {
 const loadProducts = async (reset: boolean) => {
   if (props.user?.slug) {
     const page = reset ? 0 : currentPostPage.value;
-    const pageable = { page, size: PAGE_SIZE };
-    const productPage = await callRetrieveUserProduct(props.user.slug, pageable);
+    const productPage = await callSearchProducts({
+      userSlug: props.user.slug,
+      page,
+      size: PAGE_SIZE,
+      sort: 'createdAt,desc',
+    });
 
     if (reset) {
       products.value = productPage.content;

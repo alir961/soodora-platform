@@ -4,14 +4,7 @@ import { useRouter } from 'vue-router';
 import { getMySales } from '@/client/saleClient';
 import { Sale } from '@/entity/Sale';
 import { IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonContent } from '@ionic/vue';
-import {
-  closeOutline,
-  personOutline,
-  mailOutline,
-  pricetagOutline,
-  pricetagsOutline,
-  cardOutline,
-} from 'ionicons/icons';
+import { closeOutline, personOutline, pricetagOutline, pricetagsOutline, cardOutline } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { showToast } from '@/utils';
 
@@ -128,10 +121,6 @@ onMounted(async () => {
                 <div class="buyer-row">
                   <ion-icon :icon="personOutline" class="info-icon"></ion-icon>
                   <span class="buyer-name">{{ sale.buyer.username }}</span>
-                </div>
-                <div class="buyer-row">
-                  <ion-icon :icon="mailOutline" class="info-icon"></ion-icon>
-                  <span class="buyer-email">{{ sale.buyer.email }}</span>
                 </div>
               </div>
             </div>
