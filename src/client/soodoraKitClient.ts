@@ -8,7 +8,7 @@ import {
 } from '@/entity/SoodoraKit';
 import { reject } from '@/utils';
 
-const BASE = '/mediakits';
+const BASE = '/media-kits';
 
 export async function createSoodoraKit(request: CreateSoodoraKitRequest): Promise<SoodoraKitDTO> {
   return axios

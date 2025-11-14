@@ -24,14 +24,13 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { usePlayerStore } from '@/store/playerStore';
 import TrackActionsPopup from '@/component/playlist/TrackActionsPopup.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
-import { ref as vueRef } from 'vue';
 import { audioPlayerService } from '@/services/audioPlayerService';
 
 const route = useRoute();
 const router = useRouter();
 const playerStore = usePlayerStore();
 
-const deleteCardRef = vueRef();
+const deleteCardRef = ref();
 const playlist = ref<PlaylistFull | null>(null);
 const posts = ref<Post[]>([]);
 const currentPage = ref(0);
@@ -45,11 +44,11 @@ const trackDurations = ref<Map<string, number>>(new Map());
 
 const authStore = useAuthStore();
 const isOwner = computed(() => {
-  return playlist.value?.playlistSimpleDTO.owner.slug === authStore.getAuthenticatedUserSlug;
+  return playlist.value?.playlist.owner.slug === authStore.getAuthenticatedUserSlug;
 });
 
 const isLikedAudioPlaylist = computed(() => {
-  return playlist.value?.playlistSimpleDTO.name === LIKED_AUDIO_PLAYLIST_NAME;
+  return playlist.value?.playlist.name === LIKED_AUDIO_PLAYLIST_NAME;
 });
 
 // Track count stat for top
@@ -110,11 +109,11 @@ const loadPlaylist = async (slug: string, page = 0) => {
     const data = await fetchPlaylistBySlug(slug, pageable);
     playlist.value = data;
 
-    if (page === 0) posts.value = data.postDTO.content;
-    else posts.value.push(...data.postDTO.content);
+    if (page === 0) posts.value = data.posts.content;
+    else posts.value.push(...data.posts.content);
 
-    currentPage.value = data.postDTO.page.number;
-    totalPages.value = data.postDTO.page.totalPages;
+    currentPage.value = data.posts.page.number;
+    totalPages.value = data.posts.page.totalPages;
 
     // Preload durations for tracks that don't have them yet
     preloadTrackDurations();
@@ -151,7 +150,7 @@ const loadMore = async (event: CustomEvent) => {
   }
 
   if (currentPage.value + 1 < totalPages.value)
-    await loadPlaylist(playlist.value.playlistSimpleDTO.slug, currentPage.value + 1);
+    await loadPlaylist(playlist.value.playlist.slug, currentPage.value + 1);
 
   await infiniteScroll.complete();
 };
@@ -159,7 +158,7 @@ const loadMore = async (event: CustomEvent) => {
 const goToEditPlaylist = () => {
   if (!playlist.value) return;
   (document.activeElement as HTMLElement)?.blur();
-  router.push(`/playlists/${playlist.value.playlistSimpleDTO.slug}/edit`);
+  router.push(`/playlists/${playlist.value.playlist.slug}/edit`);
 };
 
 const goBackToPlaylists = () => {
@@ -181,7 +180,7 @@ const goBackToPlaylists = () => {
 const handleDeletePlaylist = async () => {
   if (!playlist.value) return;
   try {
-    await deletePlaylistBySlug(playlist.value.playlistSimpleDTO.slug);
+    await deletePlaylistBySlug(playlist.value.playlist.slug);
     await router.push(`/playlists/me?t=${Date.now()}`);
   } catch {
     // Error handling already done by client
@@ -190,10 +189,10 @@ const handleDeletePlaylist = async () => {
 
 const removePost = async (postSlug: string) => {
   if (!playlist.value) return;
-  await removePostFromPlaylist(playlist.value.playlistSimpleDTO.slug, postSlug);
+  await removePostFromPlaylist(playlist.value.playlist.slug, postSlug);
   posts.value = posts.value.filter((p) => p.slug !== postSlug);
   // Reload to get fresh data
-  await loadPlaylist(playlist.value.playlistSimpleDTO.slug);
+  await loadPlaylist(playlist.value.playlist.slug);
 };
 
 const openTrackActions = (post: Post, event: MouseEvent) => {
@@ -223,7 +222,7 @@ const playTrack = async (post: Post) => {
 
   // Create context with all tracks in the playlist
   const context = {
-    contextId: `playlist:${playlist.value?.playlistSimpleDTO.slug}`,
+    contextId: `playlist:${playlist.value?.playlist.slug}`,
     tracks: posts.value
       .filter((p) => p.audioUrl)
       .map((p) => ({
@@ -315,7 +314,7 @@ watch(
         <!-- Header with Back Button and Title -->
         <Header
           v-if="playlist"
-          :title="playlist.playlistSimpleDTO.name"
+          :title="playlist.playlist.name"
           :subtitle="trackCountStat"
           :icon="arrowBackOutline"
           :on-icon-click="goBackToPlaylists">
@@ -330,7 +329,7 @@ watch(
               <DeleteCard
                 ref="deleteCardRef"
                 item-type="playlist"
-                :item-slug="playlist.playlistSimpleDTO.slug"
+                :item-slug="playlist.playlist.slug"
                 :delete-function="handleDeletePlaylist" />
             </div>
           </template>
@@ -343,8 +342,8 @@ watch(
             <div class="info-content">
               <div class="playlist-cover-wrapper">
                 <img
-                  v-if="playlist.playlistSimpleDTO.imageUrl"
-                  :src="playlist.playlistSimpleDTO.imageUrl"
+                  v-if="playlist.playlist.imageUrl"
+                  :src="playlist.playlist.imageUrl"
                   alt="Playlist cover"
                   class="playlist-cover" />
                 <div v-else class="playlist-cover-placeholder">
@@ -353,14 +352,14 @@ watch(
               </div>
 
               <div class="playlist-details">
-                <p class="playlist-description" v-if="playlist.playlistSimpleDTO.description">
-                  {{ playlist.playlistSimpleDTO.description }}
+                <p class="playlist-description" v-if="playlist.playlist.description">
+                  {{ playlist.playlist.description }}
                 </p>
 
                 <div class="playlist-meta">
-                  <span class="meta-item" @click="goToUserProfile(playlist.playlistSimpleDTO.owner.slug)">
+                  <span class="meta-item" @click="goToUserProfile(playlist.playlist.owner.slug)">
                     <IonIcon :icon="personOutline" />
-                    {{ playlist.playlistSimpleDTO.owner.username }}
+                    {{ playlist.playlist.owner.username }}
                   </span>
                   <span class="meta-divider">•</span>
                   <span class="meta-item">

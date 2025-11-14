@@ -48,7 +48,7 @@ const checkSaved = async (postSlug: string) => {
 
     for (const pl of playlists.content) {
       const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
-      if (fullPlaylist.postDTO.content.some((p) => p.slug === postSlug)) {
+      if (fullPlaylist.posts.content.some((p) => p.slug === postSlug)) {
         savedPlaylistsSlugs.value.push(pl.slug);
       }
     }
@@ -70,7 +70,7 @@ const loadPlaylists = async () => {
       try {
         const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
         // Use totalElements if available, otherwise fallback to content.length
-        const postCount = fullPlaylist?.postDTO?.page?.totalElements ?? fullPlaylist?.postDTO?.content?.length ?? 0;
+        const postCount = fullPlaylist?.post?.page?.totalElements ?? fullPlaylist?.post?.content?.length ?? 0;
         playlistsWithCounts.push({
           ...pl,
           postCount,

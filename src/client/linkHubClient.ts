@@ -12,7 +12,7 @@ export type UpdateLinkRequest = Partial<CreateLinkRequest>;
 
 export async function createLinkHub(command: CreateLinkHubRequest): Promise<string> {
   return axios
-    .post('/linkpages', command, { headers: await getAuthorizedHeader() })
+    .post('/link-hubs', command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 201 && response.data) return response.data.slug;
       return reject('Unable to create link page');
@@ -22,7 +22,7 @@ export async function createLinkHub(command: CreateLinkHubRequest): Promise<stri
 
 export async function getLinkHub(slug: string): Promise<LinkHub> {
   return axios
-    .get(`/linkpages/${slug}`, { headers: await getAuthorizedHeader() })
+    .get(`/link-hubs/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Unable to retrieve link page');
@@ -32,7 +32,7 @@ export async function getLinkHub(slug: string): Promise<LinkHub> {
 
 export async function getUserLinkHub(userSlug: string): Promise<LinkHub> {
   return axios
-    .get('/linkpages', { headers: await getAuthorizedHeader(), params: { userSlug } })
+    .get('/link-hubs', { headers: await getAuthorizedHeader(), params: { userSlug } })
     .then((response) => {
       if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Not found link page');
@@ -42,7 +42,7 @@ export async function getUserLinkHub(userSlug: string): Promise<LinkHub> {
 
 export async function updateLinkHub(slug: string, command: UpdateLinkHubRequest) {
   return axios
-    .put(`/linkpages/${slug}`, command, { headers: await getAuthorizedHeader() })
+    .put(`/link-hubs/${slug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200) return;
       return reject('Unable to update link page');
@@ -52,7 +52,7 @@ export async function updateLinkHub(slug: string, command: UpdateLinkHubRequest)
 
 export async function deleteLinkHub(slug: string): Promise<void> {
   return axios
-    .delete(`/linkpages/${slug}`, { headers: await getAuthorizedHeader() })
+    .delete(`/link-hubs/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (!response || response.status !== 200) return reject('Unable to delete link page');
     })
@@ -61,7 +61,7 @@ export async function deleteLinkHub(slug: string): Promise<void> {
 
 export async function createLink(linkHubSlug: string, command: CreateLinkRequest): Promise<string> {
   return axios
-    .post(`/linkpages/${linkHubSlug}/links`, command, { headers: await getAuthorizedHeader() })
+    .post(`/link-hubs/${linkHubSlug}/links`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 201 && response.data) return response.data.slug;
       return reject('Unable to create link');
@@ -71,7 +71,7 @@ export async function createLink(linkHubSlug: string, command: CreateLinkRequest
 
 export async function updateLink(linkHubSlug: string, linkSlug: string, command: UpdateLinkRequest) {
   return axios
-    .put(`/linkpages/${linkHubSlug}/links/${linkSlug}`, command, { headers: await getAuthorizedHeader() })
+    .put(`/link-hubs/${linkHubSlug}/links/${linkSlug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200) return;
       return reject('Unable to update link');
@@ -81,7 +81,7 @@ export async function updateLink(linkHubSlug: string, linkSlug: string, command:
 
 export async function deleteLink(linkHubSlug: string, linkSlug: string): Promise<void> {
   return axios
-    .delete(`/linkpages/${linkHubSlug}/links/${linkSlug}`, { headers: await getAuthorizedHeader() })
+    .delete(`/link-hubs/${linkHubSlug}/links/${linkSlug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (!response || response.status !== 200) return reject('Unable to delete link');
     })
