@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.link;
 
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.common.value.Url;
+import com.soodora.domain.link.Link;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.linkhub.LinkHubEntity;
 
@@ -11,14 +12,17 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "links")
-public class LinkEntity implements DomainEntityAdapter<LinkDTO> {
+public class LinkEntity implements DomainEntityAdapter<Link> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -52,12 +56,12 @@ public class LinkEntity implements DomainEntityAdapter<LinkDTO> {
     private Date updatedAt;
 
     @Override
-    public LinkDTO aggregate() {
-        return new LinkDTO(
+    public Link aggregate() {
+        return new Link(
                 slug,
                 title,
                 description,
-                url,
-                iconUrl);
+                new Url(url),
+                new Url(iconUrl));
     }
 }

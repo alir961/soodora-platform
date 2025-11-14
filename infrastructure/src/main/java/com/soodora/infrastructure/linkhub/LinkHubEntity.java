@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.linkhub;
 
-import com.soodora.domain.link.LinkDTO;
-import com.soodora.domain.linkhub.LinkHubDTO;
+import com.soodora.domain.link.Link;
+import com.soodora.domain.linkhub.LinkHub;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.link.LinkEntity;
@@ -25,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "link_hubs")
-public class LinkHubEntity implements DomainEntityAdapter<LinkHubDTO> {
+public class LinkHubEntity implements DomainEntityAdapter<LinkHub> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -55,18 +55,24 @@ public class LinkHubEntity implements DomainEntityAdapter<LinkHubDTO> {
     @Column
     private Date updatedAt;
 
+    @Column
+    private int viewCount;
+
     @Override
-    public LinkHubDTO aggregate() {
-        List<LinkDTO> aggregatedLinks = links.stream()
+    public LinkHub aggregate() {
+        List<Link> aggregatedLinks = links.stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
 
-        return new LinkHubDTO(
+        return new LinkHub(
                 slug,
                 title,
                 description,
+                artist.getUser().aggregate(),
                 aggregatedLinks,
-                artist.aggregate());
+                createdAt,
+                updatedAt,
+                viewCount);
     }
 
 }

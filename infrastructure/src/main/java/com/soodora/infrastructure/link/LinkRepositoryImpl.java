@@ -2,7 +2,7 @@ package com.soodora.infrastructure.link;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.CreateLinkCommand;
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
@@ -33,7 +33,7 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public LinkDTO save(CreateLinkCommand command, String userSlug) {
+    public Link save(CreateLinkCommand command, String userSlug) {
         LinkHubEntity linkHub = linkHubRepository.findByArtistUserSlug(userSlug)
                 .orElseThrow(() -> new UnknownSlugException("Link hub not found for user slug: " + userSlug));
 
@@ -52,7 +52,7 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public LinkDTO update(UpdateLinkCommand command, String slug) {
+    public Link update(UpdateLinkCommand command, String slug) {
         LinkEntity existingLink = findLinkBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
@@ -68,13 +68,13 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public LinkDTO findBySlug(String slug) {
+    public Link findBySlug(String slug) {
         return findLinkBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<LinkDTO> findAll() {
+    public List<Link> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();

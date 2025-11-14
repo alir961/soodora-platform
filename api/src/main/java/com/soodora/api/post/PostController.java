@@ -155,9 +155,9 @@ public class PostController implements PostResource {
 
     @Override
     @GetMapping("/comments")
-    public List<CommentDTO> getUserComments(
-            @RequestParam(value = "userSlug") String userSlug) {
+    public List<CommentDTO> getUserComments(@RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
+
         return postService.retrieveUserComments(filter);
     }
 

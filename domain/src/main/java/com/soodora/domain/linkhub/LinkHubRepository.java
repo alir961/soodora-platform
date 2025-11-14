@@ -6,10 +6,12 @@ import java.util.List;
 
 public interface LinkHubRepository {
 
-    LinkHubDTO save(CreateLinkHubCommand command, User user);
-    LinkHubDTO update(UpdateLinkHubCommand command, String slug);
-    LinkHubDTO findBySlug(String slug);
-    List<LinkHubDTO> findAll();
+    LinkHub save(CreateLinkHubCommand command, User user);
+    LinkHub update(UpdateLinkHubCommand command, String slug);
+    LinkHub findBySlug(String slug);
+    List<LinkHub> findAll();
     void deleteBySlug(String slug);
+
+    void persistView(String slug);
 
 }

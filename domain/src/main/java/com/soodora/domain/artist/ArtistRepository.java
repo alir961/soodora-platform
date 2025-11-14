@@ -1,7 +1,7 @@
 package com.soodora.domain.artist;
 
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.linkhub.LinkHubDTO;
+import com.soodora.domain.linkhub.LinkHub;
 
 import java.util.List;
 
@@ -15,6 +15,6 @@ public interface ArtistRepository {
 
     List<EventDTO> retrieveEvents(String slug);
 
-    LinkHubDTO retrieveLinkHub(String slug);
+    LinkHub retrieveLinkHub(String slug);
 
 }

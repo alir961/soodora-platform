@@ -1,7 +1,7 @@
 package com.soodora.domain.user;
 
 import com.soodora.domain.auth.value.Role;
-import com.soodora.domain.common.value.ImageUrl;
+import com.soodora.domain.common.value.Url;
 import com.soodora.domain.user.value.Email;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.domain.user.value.Username;
@@ -27,7 +27,7 @@ public class User {
     private Date createdAt;
     private Date updatedAt;
     private String description;
-    private ImageUrl avatarUrl;
+    private Url avatarUrl;
 
     private Set<Role> roles;
     private Set<User> followers;
@@ -38,7 +38,7 @@ public class User {
     }
 
     public void updateUser(Username username, String firstname, String lastname, String description,
-            ImageUrl avatarUrl) {
+            Url avatarUrl) {
         this.username = username;
         this.firstname = firstname;
         this.lastname = lastname;

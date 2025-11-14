@@ -4,7 +4,7 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.linkhub.LinkHubDTO;
+import com.soodora.domain.linkhub.LinkHub;
 import com.soodora.domain.user.*;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 
@@ -56,7 +56,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     @Override
     @Transactional
-    public LinkHubDTO retrieveLinkHub(String userSlug) throws LinkHubNotFoundException {
+    public LinkHub retrieveLinkHub(String userSlug) throws LinkHubNotFoundException {
         ArtistEntity artist = findArtistByUserSlug(userSlug);
 
         if (artist.getLinkHub() == null)

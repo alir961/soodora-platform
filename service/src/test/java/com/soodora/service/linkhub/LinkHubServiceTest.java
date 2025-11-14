@@ -2,7 +2,7 @@ package com.soodora.service.linkhub;
 
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.link.Link;
 import com.soodora.domain.linkhub.*;
 import com.soodora.domain.user.LinkHubNotFoundException;
 import com.soodora.service.link.LinkUnityException;
@@ -36,13 +36,13 @@ class LinkHubServiceTest {
 
     private LinkHubService linkHubService;
 
-    private static final LinkDTO LINK_1 = buildDefaultLink("slug1", "Title 1");
-    private static final LinkDTO LINK_2 = buildDefaultLink("slug2", "Title 2");
-    private static final LinkDTO LINK_3 = buildDefaultLink("slug3", "Title 3");
-    private static final List<LinkDTO> LINKS = List.of(LINK_1, LINK_2, LINK_3);
-    private static final LinkHubDTO LINK_HUB_1 = buildDefaultLinkHub("slug1", "Link Hub 1", LINKS);
-    private static final LinkHubDTO LINK_HUB_2 = buildDefaultLinkHub("slug2", "Link Hub 2", LINKS);
-    private static final List<LinkHubDTO> LINK_HUBS = List.of(LINK_HUB_1, LINK_HUB_2);
+    private static final Link LINK_1 = buildDefaultLink("slug1", "Title 1");
+    private static final Link LINK_2 = buildDefaultLink("slug2", "Title 2");
+    private static final Link LINK_3 = buildDefaultLink("slug3", "Title 3");
+    private static final List<Link> LINKS = List.of(LINK_1, LINK_2, LINK_3);
+    private static final LinkHub LINK_HUB_1 = buildDefaultLinkHub("slug1", "Link Hub 1", LINKS);
+    private static final LinkHub LINK_HUB_2 = buildDefaultLinkHub("slug2", "Link Hub 2", LINKS);
+    private static final List<LinkHub> LINK_HUBS = List.of(LINK_HUB_1, LINK_HUB_2);
 
     @BeforeEach
     void setUp() {
@@ -59,7 +59,7 @@ class LinkHubServiceTest {
         String slug = linkHubService.createLinkHub(command, USER);
 
         // THEN
-        assertEquals(LINK_HUB_1.slug(), slug);
+        assertEquals(LINK_HUB_1.getSlug(), slug);
         verify(linkHubRepository).save(command, USER);
     }
 
@@ -69,7 +69,7 @@ class LinkHubServiceTest {
         when(linkHubRepository.findAll()).thenReturn(LINK_HUBS);
 
         // WHEN
-        List<LinkHubDTO> result = linkHubService.retrieveAllLinkHubs();
+        List<LinkHub> result = linkHubService.retrieveAllLinkHubs();
 
         // THEN
         assertEquals(LINK_HUBS, result);
@@ -81,7 +81,7 @@ class LinkHubServiceTest {
         when(artistRepository.retrieveLinkHub(any())).thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHubDTO result = linkHubService.retrieveLinkHubByUserSlug(USER.getSlug());
+        LinkHub result = linkHubService.retrieveLinkHubByUserSlug(USER.getSlug());
 
         // THEN
         assertEquals(LINK_HUB_1, result);
@@ -103,10 +103,10 @@ class LinkHubServiceTest {
     @Test
     void retrieveLinkHubByUserSlugBySlug_Success() {
         // GIVEN
-        when(linkHubRepository.findBySlug(LINK_HUB_1.slug())).thenReturn(LINK_HUB_1);
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug())).thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHubDTO result = linkHubService.retrieveLinkHubBySlug(LINK_HUB_1.slug());
+        LinkHub result = linkHubService.retrieveLinkHubBySlug(LINK_HUB_1.getSlug());
 
         // THEN
         assertEquals(LINK_HUB_1, result);
@@ -128,14 +128,14 @@ class LinkHubServiceTest {
     void updateLinkHub_Success() {
         // GIVEN
         UpdateLinkHubCommand command = new UpdateLinkHubCommand("Updated Title", "Updated Desc");
-        when(linkHubRepository.update(command, LINK_HUB_1.slug())).thenReturn(LINK_HUB_1);
+        when(linkHubRepository.update(command, LINK_HUB_1.getSlug())).thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHubDTO result = linkHubService.updateLinkHub(command, LINK_HUB_1.slug());
+        LinkHub result = linkHubService.updateLinkHub(command, LINK_HUB_1.getSlug());
 
         // THEN
         assertEquals(LINK_HUB_1, result);
-        verify(linkHubRepository).update(command, LINK_HUB_1.slug());
+        verify(linkHubRepository).update(command, LINK_HUB_1.getSlug());
     }
 
     @Test
@@ -154,11 +154,11 @@ class LinkHubServiceTest {
     @Test
     void deleteLinkHubBySlug_Success() {
         // GIVEN
-        doNothing().when(linkHubRepository).deleteBySlug(LINK_HUB_1.slug());
+        doNothing().when(linkHubRepository).deleteBySlug(LINK_HUB_1.getSlug());
 
         // WHEN / THEN
-        assertDoesNotThrow(() -> linkHubService.deleteLinkHubBySlug(LINK_HUB_1.slug()));
-        verify(linkHubRepository).deleteBySlug(LINK_HUB_1.slug());
+        assertDoesNotThrow(() -> linkHubService.deleteLinkHubBySlug(LINK_HUB_1.getSlug()));
+        verify(linkHubRepository).deleteBySlug(LINK_HUB_1.getSlug());
     }
 
     @Test

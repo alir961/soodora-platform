@@ -22,14 +22,14 @@ public class LinkHubService {
     private final LinkHubRepository linkHubRepository;
 
     public String createLinkHub(CreateLinkHubCommand command, User user) {
-        return linkHubRepository.save(command, user).slug();
+        return linkHubRepository.save(command, user).getSlug();
     }
 
-    public List<LinkHubDTO> retrieveAllLinkHubs() {
+    public List<LinkHub> retrieveAllLinkHubs() {
         return linkHubRepository.findAll();
     }
 
-    public LinkHubDTO retrieveLinkHubByUserSlug(String userSlug) throws UnknownLinkHubException {
+    public LinkHub retrieveLinkHubByUserSlug(String userSlug) throws UnknownLinkHubException {
         try {
             return artistRepository.retrieveLinkHub(userSlug);
         } catch (LinkHubNotFoundException exception) {
@@ -37,15 +37,18 @@ public class LinkHubService {
         }
     }
 
-    public LinkHubDTO retrieveLinkHubBySlug(String slug) {
+    public LinkHub retrieveLinkHubBySlug(String slug) {
         try {
-            return linkHubRepository.findBySlug(slug);
+            LinkHub linkHub = linkHubRepository.findBySlug(slug);
+
+            linkHubRepository.persistView(slug);
+            return linkHub;
         } catch (UnknownSlugException exception) {
             throw new UnknownUserException(exception.getMessage());
         }
     }
 
-    public LinkHubDTO updateLinkHub(UpdateLinkHubCommand command, String slug) {
+    public LinkHub updateLinkHub(UpdateLinkHubCommand command, String slug) {
         try {
             return linkHubRepository.update(command, slug);
         } catch (UnknownSlugException exception) {

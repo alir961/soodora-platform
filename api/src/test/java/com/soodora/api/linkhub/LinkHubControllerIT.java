@@ -1,7 +1,7 @@
 package com.soodora.api.linkhub;
 
-import com.soodora.domain.link.LinkDTO;
-import com.soodora.domain.linkhub.LinkHubDTO;
+import com.soodora.domain.link.Link;
+import com.soodora.domain.linkhub.LinkHub;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
@@ -49,16 +49,16 @@ class LinkHubControllerIT {
     @MockitoBean
     private UserRepository userRepository;
 
-    private static final LinkDTO LINK_1 = buildDefaultLink("postSlug1", "Post 1");
-    private static final LinkDTO LINK_2 = buildDefaultLink("postSlug2", "Post 2");
-    private static final LinkDTO LINK_3 = buildDefaultLink("postSlug3", "Post 3");
-    private static final List<LinkDTO> LINK_LIST = Arrays.asList(LINK_1, LINK_2, LINK_3);
-    private static final LinkHubDTO LINKHUB = buildDefaultLinkHub("pageSlug1", "Page 1", LINK_LIST);
+    private static final Link LINK_1 = buildDefaultLink("postSlug1", "Post 1");
+    private static final Link LINK_2 = buildDefaultLink("postSlug2", "Post 2");
+    private static final Link LINK_3 = buildDefaultLink("postSlug3", "Post 3");
+    private static final List<Link> LINK_LIST = Arrays.asList(LINK_1, LINK_2, LINK_3);
+    private static final LinkHub LINK_HUB = buildDefaultLinkHub("pageSlug1", "Page 1", LINK_LIST);
 
     @Test
     void createLinkHub_shouldReturnCreatedWithSlug() throws Exception {
         // GIVEN
-        CreateLinkHubRequest request = new CreateLinkHubRequest(LINKHUB.title(), LINKHUB.description());
+        CreateLinkHubRequest request = new CreateLinkHubRequest(LINK_HUB.getTitle(), LINK_HUB.getDescription());
 
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
@@ -76,7 +76,7 @@ class LinkHubControllerIT {
         when(linkHubService.createLinkHub(any(), any(User.class)))
                 .thenThrow(new InvalidRequestException("Invalid data"));
 
-        CreateLinkHubRequest request = new CreateLinkHubRequest(LINKHUB.title(), LINKHUB.description());
+        CreateLinkHubRequest request = new CreateLinkHubRequest(LINK_HUB.getTitle(), LINK_HUB.getDescription());
 
         // WHEN & THEN
         mockMvc.perform(post("/link-hubs")
@@ -89,12 +89,12 @@ class LinkHubControllerIT {
     @Test
     void updateLinkHub_shouldReturnAccepted() throws Exception {
         // GIVEN
-        doReturn(LINKHUB).when(linkHubService).updateLinkHub(any(), eq(LINKHUB.slug()));
+        doReturn(LINK_HUB).when(linkHubService).updateLinkHub(any(), eq(LINK_HUB.getSlug()));
 
-        UpdateLinkHubRequest request = new UpdateLinkHubRequest(LINKHUB.title(), LINKHUB.description());
+        UpdateLinkHubRequest request = new UpdateLinkHubRequest(LINK_HUB.getTitle(), LINK_HUB.getDescription());
 
         // WHEN & THEN
-        mockMvc.perform(put("/link-hubs/{slug}", LINKHUB.slug())
+        mockMvc.perform(put("/link-hubs/{slug}", LINK_HUB.getSlug())
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
@@ -105,12 +105,12 @@ class LinkHubControllerIT {
     void updateLinkHub_shouldReturnBadRequestOnInvalid() throws Exception {
         // GIVEN
         doThrow(new InvalidRequestException("Invalid update")).when(linkHubService).updateLinkHub(any(),
-                eq(LINKHUB.slug()));
+                eq(LINK_HUB.getSlug()));
 
-        UpdateLinkHubRequest request = new UpdateLinkHubRequest(LINKHUB.title(), LINKHUB.description());
+        UpdateLinkHubRequest request = new UpdateLinkHubRequest(LINK_HUB.getTitle(), LINK_HUB.getDescription());
 
         // WHEN & THEN
-        mockMvc.perform(put("/link-hubs/{slug}", LINKHUB.slug())
+        mockMvc.perform(put("/link-hubs/{slug}", LINK_HUB.getSlug())
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
@@ -120,46 +120,46 @@ class LinkHubControllerIT {
     @Test
     void getUserLinkHub_shouldReturnLinkHub() throws Exception {
         // GIVEN
-        when(linkHubService.retrieveLinkHubByUserSlug(USER.getSlug())).thenReturn(LINKHUB);
+        when(linkHubService.retrieveLinkHubByUserSlug(USER.getSlug())).thenReturn(LINK_HUB);
 
         // WHEN & THEN
         mockMvc.perform(get("/link-hubs")
                 .param("userSlug", USER.getSlug()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.slug").value(LINKHUB.slug()))
+                .andExpect(jsonPath("$.slug").value(LINK_HUB.getSlug()))
                 .andExpect(jsonPath("$.links.length()").value(LINK_LIST.size()));
     }
 
     @Test
     void getLinkHub_shouldReturnLinkHubBySlug() throws Exception {
         // GIVEN
-        when(linkHubService.retrieveLinkHubBySlug(LINKHUB.slug())).thenReturn(LINKHUB);
+        when(linkHubService.retrieveLinkHubBySlug(LINK_HUB.getSlug())).thenReturn(LINK_HUB);
 
         // WHEN & THEN
-        mockMvc.perform(get("/link-hubs/{slug}", LINKHUB.slug()))
+        mockMvc.perform(get("/link-hubs/{slug}", LINK_HUB.getSlug()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.slug").value(LINKHUB.slug()));
+                .andExpect(jsonPath("$.slug").value(LINK_HUB.getSlug()));
     }
 
     @Test
     void getAllLinkHubs_shouldReturnList() throws Exception {
         // GIVEN
-        when(linkHubService.retrieveAllLinkHubs()).thenReturn(List.of(LINKHUB));
+        when(linkHubService.retrieveAllLinkHubs()).thenReturn(List.of(LINK_HUB));
 
         // WHEN & THEN
         mockMvc.perform(get("/link-hubs/link-hubs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].slug").value(LINKHUB.slug()));
+                .andExpect(jsonPath("$[0].slug").value(LINK_HUB.getSlug()));
     }
 
     @Test
     void deleteLinkHub_shouldReturnNoContent() throws Exception {
         // GIVEN
-        doNothing().when(linkHubService).deleteLinkHubBySlug(LINKHUB.slug());
+        doNothing().when(linkHubService).deleteLinkHubBySlug(LINK_HUB.getSlug());
 
         // WHEN & THEN
-        mockMvc.perform(delete("/link-hubs/{slug}", LINKHUB.slug())
+        mockMvc.perform(delete("/link-hubs/{slug}", LINK_HUB.getSlug())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
@@ -167,13 +167,14 @@ class LinkHubControllerIT {
     @Test
     void addLink_shouldReturnCreated() throws Exception {
         // GIVEN
-        when(linkService.createLink(any(), eq(USER.getSlug()))).thenReturn(LINK_1.slug());
+        when(linkService.createLink(any(), eq(USER.getSlug()))).thenReturn(LINK_1.getSlug());
 
-        CreateLinkRequest request = new CreateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(),
-                LINK_1.iconUrl());
+        CreateLinkRequest request = new CreateLinkRequest(LINK_1.getTitle(), LINK_1.getDescription(),
+                LINK_1.getUrl().value(),
+                LINK_1.getIconUrl().value());
 
         // WHEN & THEN
-        mockMvc.perform(post("/link-hubs/{pageSlug}/links", LINKHUB.slug())
+        mockMvc.perform(post("/link-hubs/{pageSlug}/links", LINK_HUB.getSlug())
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
@@ -183,13 +184,14 @@ class LinkHubControllerIT {
     @Test
     void updateLink_shouldReturnAccepted() throws Exception {
         // GIVEN
-        doReturn(LINK_1).when(linkService).updateLink(any(), eq(LINK_1.slug()));
+        doReturn(LINK_1).when(linkService).updateLink(any(), eq(LINK_1.getSlug()));
 
-        UpdateLinkRequest request = new UpdateLinkRequest(LINK_1.title(), LINK_1.description(), LINK_1.url(),
-                LINK_1.iconUrl());
+        UpdateLinkRequest request = new UpdateLinkRequest(LINK_1.getTitle(), LINK_1.getDescription(),
+                LINK_1.getUrl().value(),
+                LINK_1.getIconUrl().value());
 
         // WHEN & THEN
-        mockMvc.perform(put("/link-hubs/{pageSlug}/links/{linkSlug}", LINKHUB.slug(), LINK_1.slug())
+        mockMvc.perform(put("/link-hubs/{pageSlug}/links/{linkSlug}", LINK_HUB.getSlug(), LINK_1.getSlug())
                 .contentType("application/json")
                 .content(asJsonString(request))
                 .with(user(new UserPrincipal(USER))))
@@ -209,20 +211,20 @@ class LinkHubControllerIT {
     @Test
     void getLinkBySlug_shouldReturnLink() throws Exception {
         // GIVEN
-        when(linkService.retrieveLinkBySlug(LINK_1.slug())).thenReturn(LINK_1);
+        when(linkService.retrieveLinkBySlug(LINK_1.getSlug())).thenReturn(LINK_1);
 
         // WHEN & THEN
-        mockMvc.perform(get("/link-hubs/{pageSlug}/links/{linkSlug}", LINKHUB.slug(), LINK_1.slug()))
+        mockMvc.perform(get("/link-hubs/{pageSlug}/links/{linkSlug}", LINK_HUB.getSlug(), LINK_1.getSlug()))
                 .andExpect(status().isOk());
     }
 
     @Test
     void deleteLink_shouldReturnNoContent() throws Exception {
         // GIVEN
-        doNothing().when(linkService).deleteLinkBySlug(LINK_1.slug());
+        doNothing().when(linkService).deleteLinkBySlug(LINK_1.getSlug());
 
         // WHEN & THEN
-        mockMvc.perform(delete("/link-hubs/{pageSlug}/links/{linkSlug}", LINKHUB.slug(), LINK_1.slug())
+        mockMvc.perform(delete("/link-hubs/{pageSlug}/links/{linkSlug}", LINK_HUB.getSlug(), LINK_1.getSlug())
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
