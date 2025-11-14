@@ -1,6 +1,7 @@
 package com.soodora.domain.playlist;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 
 import java.util.List;
@@ -10,15 +11,15 @@ import org.springframework.data.domain.Pageable;
 
 public interface PlaylistRepository {
 
-    PlaylistDTO save(CreatePlaylistCommand command, User user, FileData playlistImage);
-    PlaylistDTO update(UpdatePlaylistCommand command, String slug, FileData playlistImage);
-    PopulatedPlaylistDTO findBySlug(String slug, Pageable pageableAudioPosts);
-    List<PlaylistDTO> findAll();
-    Page<PlaylistDTO> findByFilter(PlaylistFilter filter, Pageable pageable);
+    Playlist save(CreatePlaylistCommand command, User user, FileData playlistImage);
+    Playlist update(UpdatePlaylistCommand command, String slug, FileData playlistImage);
+    Playlist findBySlug(String slug);
+    List<Playlist> findAll();
+    Page<Playlist> findByFilter(PlaylistFilter filter, Pageable pageable);
     boolean isPlaylistNameUsedByUser(String name, String userSlug);
-    PopulatedPlaylistDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
-    PopulatedPlaylistDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts);
-    PopulatedPlaylistDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts);
+    Playlist addPostToPlaylist(String playlistSlug, String postSlug);
+    Playlist removePostFromPlaylist(String playlistSlug, String postSlug);
     void deletePlaylistAndUnlinkPosts(String slug);
+    Page<Post> findPlaylistPosts(String playlistSlug, Pageable pageable);
 
 }

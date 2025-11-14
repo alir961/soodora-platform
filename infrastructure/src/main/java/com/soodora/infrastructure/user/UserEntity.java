@@ -1,8 +1,8 @@
 package com.soodora.infrastructure.user;
 
 import com.soodora.domain.auth.value.Role;
+import com.soodora.domain.common.value.Url;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.AvatarUrl;
 import com.soodora.domain.user.value.Email;
 import com.soodora.domain.user.value.Username;
 import com.soodora.infrastructure.artist.ArtistEntity;
@@ -118,7 +118,7 @@ public class UserEntity implements DomainEntityAdapter<User> {
                 createdAt,
                 updatedAt,
                 description,
-                avatarUrl == null ? null : new AvatarUrl(avatarUrl),
+                avatarUrl == null ? null : new Url(avatarUrl),
                 rolesAggregates,
                 emptySet(),
                 emptySet());
@@ -145,7 +145,7 @@ public class UserEntity implements DomainEntityAdapter<User> {
                 createdAt,
                 updatedAt,
                 description,
-                avatarUrl == null ? null : new AvatarUrl(avatarUrl),
+                avatarUrl == null ? null : new Url(avatarUrl),
                 rolesAggregates,
                 followersAggregates,
                 followingAggregates);

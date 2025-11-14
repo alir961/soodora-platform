@@ -36,7 +36,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistDTO save(CreatePlaylistCommand command, User user, FileData playlistImage) {
+    public Playlist save(CreatePlaylistCommand command, User user, FileData playlistImage) {
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         PlaylistEntity entity = new PlaylistEntity();
 
@@ -55,7 +55,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistDTO update(UpdatePlaylistCommand command, String slug, FileData playlistImage) {
+    public Playlist update(UpdatePlaylistCommand command, String slug, FileData playlistImage) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.name()))
@@ -74,13 +74,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PopulatedPlaylistDTO findBySlug(String slug, Pageable pageableAudioPosts) {
-        return getPlaylistWithPosts(slug, pageableAudioPosts);
+    public Playlist findBySlug(String slug) {
+        return findPlaylistBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<PlaylistDTO> findAll() {
+    public List<Playlist> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
@@ -88,7 +88,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public Page<PlaylistDTO> findByFilter(PlaylistFilter filter, Pageable pageable) {
+    public Page<Playlist> findByFilter(PlaylistFilter filter, Pageable pageable) {
         EntitySpecification<PlaylistEntity> playlistSpecification = new PlaylistSpecification(filter);
 
         return repository.findAll(playlistSpecification.build(), pageable)
@@ -106,27 +106,26 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PopulatedPlaylistDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public Playlist addPostToPlaylist(String playlistSlug, String postSlug) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
         playlist.addPost(post);
         repository.save(playlist);
 
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
+        return playlist.aggregate();
     }
 
     @Override
     @Transactional
-    public PopulatedPlaylistDTO removePostFromPlaylist(String playlistSlug, String postSlug,
-            Pageable pageableAudioPosts) {
+    public Playlist removePostFromPlaylist(String playlistSlug, String postSlug) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
         playlist.removePost(post);
         repository.save(playlist);
 
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
+        return playlist.aggregate();
     }
 
     @Override
@@ -137,17 +136,11 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         repository.delete(playlist);
     }
 
+    @Override
     @Transactional
-    public PopulatedPlaylistDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts) {
-        PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
-
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
-    }
-
-    @Transactional
-    public Page<Post> playlistPostsPage(String playlistSlug, Pageable pageableAudioPosts) {
+    public Page<Post> findPlaylistPosts(String playlistSlug, Pageable pageable) {
         return postRepository
-                .findByPlaylistSlug(playlistSlug, pageableAudioPosts)
+                .findByPlaylistSlug(playlistSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

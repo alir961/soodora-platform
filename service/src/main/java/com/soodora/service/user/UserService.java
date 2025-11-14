@@ -2,12 +2,12 @@ package com.soodora.service.user;
 
 import com.soodora.domain.auth.value.Role;
 import com.soodora.domain.cdn.ImageStorageUploader;
+import com.soodora.domain.common.value.Url;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
-import com.soodora.domain.user.value.AvatarUrl;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.domain.user.value.Username;
 import com.soodora.service.auth.UserPrincipal;
@@ -57,12 +57,12 @@ public class UserService implements UserDetailsService {
     public User updateUser(Identifier userIdentifier, UserUpdateCommand updateCommand) {
         User user = retrieveUser(userIdentifier);
         Username username = new Username(updateCommand.username());
-        AvatarUrl avatarUrl = null;
+        Url avatarUrl = null;
 
         if (updateCommand.avatar() != null) {
             String hostedAvatarUrl = imageStorageUploader.upload(updateCommand.avatar());
 
-            avatarUrl = new AvatarUrl(hostedAvatarUrl);
+            avatarUrl = new Url(hostedAvatarUrl);
         }
         user.updateUser(username, updateCommand.firstname(), updateCommand.lastname(),
                 updateCommand.description(), avatarUrl);

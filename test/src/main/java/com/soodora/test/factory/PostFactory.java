@@ -3,10 +3,6 @@ package com.soodora.test.factory;
 import com.soodora.domain.post.Post;
 
 import java.util.Date;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 
 import lombok.NoArgsConstructor;
 
@@ -48,10 +44,6 @@ public class PostFactory {
                 emptyList(),
                 new Date(),
                 new Date());
-    }
-
-    public static Page<Post> buildPostsPage(List<Post> posts) {
-        return new PageImpl<>(posts);
     }
 
 }

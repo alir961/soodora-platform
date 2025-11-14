@@ -155,7 +155,7 @@ public class PostRepositoryImpl implements PostRepository {
                 playlistJpaRepository
                         .findByUserAndName(userEntity, likedPlaylistName)
                         .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
-                                playlist.getSlug(), postSlug, Pageable.unpaged()));
+                                playlist.getSlug(), postSlug));
             }
 
             postRepository.save(post);
@@ -174,7 +174,7 @@ public class PostRepositoryImpl implements PostRepository {
             playlistJpaRepository
                     .findByUserAndName(userEntity, likedPlaylistName)
                     .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
-                            playlist.getSlug(), postSlug, Pageable.unpaged()));
+                            playlist.getSlug(), postSlug));
         }
 
         postRepository.save(post);

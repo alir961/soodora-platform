@@ -1,7 +1,7 @@
 package com.soodora.domain.user;
 
 import com.soodora.domain.artist.ArtistDTO;
-import com.soodora.domain.playlist.PlaylistDTO;
+import com.soodora.domain.playlist.Playlist;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.value.Identifier;
@@ -27,7 +27,7 @@ public interface UserRepository {
     void deleteAvatar(Identifier identifier);
 
     Optional<ArtistDTO> retrieveArtist(Identifier identifier);
-    List<PlaylistDTO> retrievePlaylists(Identifier identifier);
+    List<Playlist> retrievePlaylists(Identifier identifier);
     List<LikeDTO> retrieveLikes(Identifier identifier);
     List<CommentDTO> retrievePostComments(Identifier identifier);
 

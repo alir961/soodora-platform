@@ -1,4 +1,4 @@
-package com.soodora.domain.user.value;
+package com.soodora.domain.common.value;
 
 import com.soodora.domain.common.InvalidValueException;
 
@@ -6,9 +6,9 @@ import org.apache.commons.validator.routines.UrlValidator;
 
 import static org.apache.commons.validator.routines.UrlValidator.ALLOW_LOCAL_URLS;
 
-public record AvatarUrl(String value) {
+public record Url(String value) {
 
-    public AvatarUrl(String value) {
+    public Url(String value) {
         UrlValidator urlValidator = new UrlValidator(ALLOW_LOCAL_URLS);
 
         if (!urlValidator.isValid(value))

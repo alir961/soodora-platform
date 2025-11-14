@@ -2,10 +2,12 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.value.Role;
-import com.soodora.domain.playlist.PlaylistDTO;
+import com.soodora.domain.playlist.Playlist;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
-import com.soodora.domain.user.*;
+import com.soodora.domain.user.UnknownIdentifierException;
+import com.soodora.domain.user.User;
+import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
@@ -148,7 +150,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     @Transactional
-    public List<PlaylistDTO> retrievePlaylists(Identifier identifier) {
+    public List<Playlist> retrievePlaylists(Identifier identifier) {
         return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
