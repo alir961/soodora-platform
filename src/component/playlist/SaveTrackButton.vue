@@ -82,7 +82,6 @@ const open = async () => {
 
             savedPlaylistsSlugs.value = [...current];
             await checkSaved(props.postSlug);
-            await showToast('Playlists updated!', 'success');
           },
         },
       ],

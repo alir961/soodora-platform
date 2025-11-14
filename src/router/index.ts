@@ -8,23 +8,23 @@ import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
 import CommentView from '@/view/explore/CommentView.vue';
-import LinkHubCreateView from '@/view/create/LinkHubCreateView.vue';
+import LinkHubCreateView from '@/view/linkhub/LinkHubCreateView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
 import ConfirmationView from '@/view/user/ConfirmationView.vue';
-import MediaKitCreateView from '@/view/create/MediaKitCreateView.vue';
+import MediaKitCreateView from '@/view/mediakit/MediaKitFormView.vue';
 import MediaKitEditView from '@/view/mediakit/MediaKitEditView.vue';
-import QuoteCreateView from '@/view/create/QuoteCreateView.vue';
+import MediaItemFormView from '@/view/mediakit/MediaItemFormView.vue';
+import QuoteCreateView from '@/view/quote/QuoteFormView.vue';
 import QuoteDetailsView from '@/view/quote/QuoteDetailsView.vue';
 import QuoteView from '@/view/quote/QuoteView.vue';
+import QuoteItemFormView from '@/view/quote/QuoteItemFormView.vue';
 import ProductFormView from '@/view/marketplace/ProductFormView.vue';
 import PostFormView from '@/view/explore/PostFormView.vue';
-import PlaylistView from '@/view/playlist/PlaylistView.vue';
-import PlaylistCreateView from '@/view/playlist/PlaylistCreateView.vue';
+import PlaylistFormView from '@/view/playlist/PlaylistFormView.vue';
 import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
-import PlaylistMeView from '@/view/playlist/PlaylistMeView.vue';
-import CreateView from '@/view/create/CreateView.vue';
+import PlaylistMeView from '@/view/playlist/PlaylistView.vue';
 import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 
@@ -42,11 +42,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/posts/:slug/comments',
     name: 'CommentView',
     component: CommentView,
-  },
-  {
-    path: '/create',
-    name: 'Create',
-    component: CreateView,
   },
   {
     path: '/linkhub/create',
@@ -122,6 +117,16 @@ const routes: Array<RouteRecordRaw> = [
     component: MediaKitCreateView,
   },
   {
+    path: '/mediakits/:slug/items/new',
+    name: 'MediaItemCreate',
+    component: MediaItemFormView,
+  },
+  {
+    path: '/mediakits/:slug/items/:itemSlug/edit',
+    name: 'MediaItemEdit',
+    component: MediaItemFormView,
+  },
+  {
     path: '/mediakits/:slug',
     name: 'MediaKitEdit',
     component: MediaKitEditView,
@@ -129,12 +134,17 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/playlists',
     name: 'PlaylistView',
-    component: PlaylistView,
+    component: PlaylistMeView,
   },
   {
     path: '/playlists/create',
     name: 'PlaylistCreateView',
-    component: PlaylistCreateView,
+    component: PlaylistFormView,
+  },
+  {
+    path: '/playlists/:slug/edit',
+    name: 'PlaylistEditView',
+    component: PlaylistFormView,
   },
   {
     path: '/playlists/:slug',
@@ -143,8 +153,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/playlists/me',
-    name: 'PlaylistMeView',
-    component: PlaylistMeView,
+    redirect: '/playlists',
   },
   {
     path: '/quotes/create',
@@ -152,9 +161,24 @@ const routes: Array<RouteRecordRaw> = [
     component: QuoteCreateView,
   },
   {
+    path: '/quotes/:slug/edit',
+    name: 'QuoteEditView',
+    component: QuoteCreateView,
+  },
+  {
     path: '/quotes/:slug',
     name: 'QuoteDetailsView',
     component: QuoteDetailsView,
+  },
+  {
+    path: '/quotes/:quoteSlug/items/new',
+    name: 'QuoteItemCreateView',
+    component: QuoteItemFormView,
+  },
+  {
+    path: '/quotes/:quoteSlug/items/:itemSlug/edit',
+    name: 'QuoteItemEditView',
+    component: QuoteItemFormView,
   },
   {
     path: '/quotes/me',

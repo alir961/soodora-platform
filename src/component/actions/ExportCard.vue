@@ -67,7 +67,6 @@ const confirmExport = async () => {
         : await createProductCanvas(props.item as Product, selectedTheme.value);
 
     downloadCanvas(canvas);
-    await showToast(`Succeed to share ${props.type}.`);
     closeModal();
   } catch (error: unknown) {
     const message = `Failed to share ${props.type}. ` + (error instanceof Error ? error.message : '');

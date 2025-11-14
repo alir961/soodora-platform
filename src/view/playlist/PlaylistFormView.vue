@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { createPlaylist } from '@/client/playlistClient';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { createPlaylist, updatePlaylistBySlug, searchPlaylists } from '@/client/playlistClient';
 import { showToast } from '@/utils';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import ImageUploadPreview from '@/component/marketplace/ImageUploadPreview.vue';
 import { IonIcon, IonContent } from '@ionic/vue';
 import { closeOutline, musicalNotesOutline } from 'ionicons/icons';
 
 const router = useRouter();
+const route = useRoute();
 
-const newPlaylist = ref<{ name: string; description: string; privacy: string }>({
+const isEditMode = computed(() => !!route.params.slug);
+const headerTitle = computed(() => (isEditMode.value ? 'Edit Playlist' : 'Create Playlist'));
+const submitButtonText = computed(() => (isEditMode.value ? 'Save Changes' : 'Create Playlist'));
+
+const playlistData = ref<{ name: string; description: string; privacy: string }>({
   name: '',
   description: '',
   privacy: 'PUBLIC',
@@ -18,45 +24,75 @@ const newPlaylist = ref<{ name: string; description: string; privacy: string }>(
 
 const playlistCoverFile = ref<File | null>(null);
 const currentImageUrl = ref<string>('');
+const isLoading = ref(false);
+
+onMounted(async () => {
+  if (isEditMode.value) {
+    isLoading.value = true;
+    const playlistSlug = route.params.slug as string;
+
+    try {
+      const response = await searchPlaylists(undefined, undefined, undefined, 0, 100, 'createdAt,desc');
+      const playlist = response.content.find((p) => p.slug === playlistSlug);
+
+      if (playlist) {
+        playlistData.value = {
+          name: playlist.name,
+          description: playlist.description,
+          privacy: playlist.privacy,
+        };
+        currentImageUrl.value = playlist.imageUrl;
+      } else {
+        throw new Error('Playlist not found');
+      }
+    } catch (error) {
+      console.error('Failed to load playlist:', error);
+      await showToast('Failed to load playlist', 'danger');
+      router.back();
+    } finally {
+      isLoading.value = false;
+    }
+  }
+});
 
 const onPlaylistCoverSelected = (file: File | null) => {
   playlistCoverFile.value = file;
-  if (file) {
-    currentImageUrl.value = URL.createObjectURL(file);
-  } else {
-    currentImageUrl.value = '';
-  }
 };
 
 const closeForm = () => {
   router.back();
 };
 
-const isLoading = ref(false);
-
 const isSubmitDisabled = computed(() => {
   if (isLoading.value) return true;
-  return !newPlaylist.value.name.trim() || !newPlaylist.value.description.trim();
+  if (!playlistData.value.name.trim() || !playlistData.value.description.trim()) return true;
+  return false;
 });
 
-const callCreatePlaylist = async () => {
+const submitForm = async () => {
   try {
     if (isSubmitDisabled.value) return;
 
     isLoading.value = true;
 
     const formData = new FormData();
-    formData.append('data', new Blob([JSON.stringify(newPlaylist.value)], { type: 'application/json' }));
+    formData.append('data', new Blob([JSON.stringify(playlistData.value)], { type: 'application/json' }));
 
     if (playlistCoverFile.value) {
       formData.append('file', playlistCoverFile.value, playlistCoverFile.value.name);
     }
 
-    const createdPlaylist = await createPlaylist(formData);
-    await showToast('Playlist created!');
-    await router.push({ name: 'PlaylistDetailsView', params: { slug: createdPlaylist.slug } });
+    if (isEditMode.value) {
+      const playlistSlug = route.params.slug as string;
+      await updatePlaylistBySlug(playlistSlug, formData);
+      await router.push(`/playlists/${playlistSlug}?t=${Date.now()}`);
+    } else {
+      await createPlaylist(formData);
+      await router.push(`/playlists/me?t=${Date.now()}`);
+    }
   } catch (error: unknown) {
-    const message = 'Failed to create playlist. ' + (error instanceof Error ? error.message : '');
+    const action = isEditMode.value ? 'update' : 'create';
+    const message = `Failed to ${action} playlist. ` + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -65,32 +101,38 @@ const callCreatePlaylist = async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Playlist">
-    <div class="form-header">
-      <h2>Create Playlist</h2>
-      <button class="close-btn" @click="closeForm">
-        <IonIcon :icon="closeOutline" />
-        Close
-      </button>
-    </div>
-
+  <ApplicationViewport :title="headerTitle">
     <IonContent class="form-content-wrapper">
-      <div class="form-content">
+      <Header :title="headerTitle" :subtitle="playlistData.name || 'New playlist'" :icon="musicalNotesOutline">
+        <template #actions>
+          <button class="back-btn" @click="closeForm">
+            <ion-icon :icon="closeOutline" />
+          </button>
+        </template>
+      </Header>
+
+      <div v-if="isLoading" class="loading">
+        <p>Loading playlist...</p>
+      </div>
+
+      <div v-else class="form-content">
         <div class="form-section">
           <div class="section-header">
-            <IonIcon :icon="musicalNotesOutline" class="section-icon" />
-            <h3>Playlist Details</h3>
+            <div style="display: flex; align-items: center; flex: 1; gap: 10px">
+              <IonIcon :icon="musicalNotesOutline" class="section-icon" />
+              <h3>Playlist Details</h3>
+            </div>
           </div>
 
           <div class="form-field">
             <label>Name <span class="required">*</span></label>
-            <input type="text" v-model="newPlaylist.name" placeholder="Give your playlist a name" required />
+            <input type="text" v-model="playlistData.name" placeholder="Give your playlist a name" required />
           </div>
 
           <div class="form-field">
             <label>Description <span class="required">*</span></label>
             <textarea
-              v-model="newPlaylist.description"
+              v-model="playlistData.description"
               placeholder="Describe your playlist"
               rows="4"
               required></textarea>
@@ -98,7 +140,7 @@ const callCreatePlaylist = async () => {
 
           <div class="form-field">
             <label>Privacy <span class="required">*</span></label>
-            <select v-model="newPlaylist.privacy">
+            <select v-model="playlistData.privacy">
               <option value="PUBLIC">Public</option>
               <option value="PRIVATE">Private</option>
               <option value="UNLISTED">Unlisted</option>
@@ -111,8 +153,8 @@ const callCreatePlaylist = async () => {
           </div>
         </div>
 
-        <button class="submit-btn" @click="callCreatePlaylist" :disabled="isSubmitDisabled">
-          {{ isLoading ? 'Creating...' : 'Create Playlist' }}
+        <button class="submit-btn" @click="submitForm" :disabled="isSubmitDisabled">
+          {{ submitButtonText }}
         </button>
       </div>
     </IonContent>
@@ -124,55 +166,101 @@ const callCreatePlaylist = async () => {
   --background: linear-gradient(to bottom, rgba(13, 27, 42, 0.95), rgba(9, 18, 30, 0.92));
 }
 
-.form-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.98), rgba(13, 27, 42, 0.85));
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
+/* Form header styles removed - now using Header component */
 
-.form-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
-.close-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
+.section-icon {
+  font-size: 24px;
   color: #60a5fa;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 14px;
+  flex-shrink: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.delete-icon-btn {
+  appearance: none;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  background: rgba(220, 38, 38, 0.08);
+  color: #ef4444;
+  height: 38px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  padding: 0 0.5rem;
 }
 
-.close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+.delete-icon-btn ion-icon {
+  font-size: 1.2rem;
+  margin-right: 0.35rem;
 }
 
-.close-btn:active {
-  transform: scale(0.98);
+.delete-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #ef4444;
+  margin-left: 0.1rem;
+  white-space: nowrap;
+}
+
+.delete-icon-btn:hover:not(:disabled) {
+  background: rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.5);
+  box-shadow: 0 0 12px rgba(220, 38, 38, 0.2);
+}
+
+.delete-icon-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.delete-icon-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.back-btn {
+  appearance: none;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+}
+
+.back-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
+}
+
+.back-btn:active {
+  transform: scale(0.95);
+}
+
+.back-btn ion-icon {
+  font-size: 22px;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: #9aa3ad;
 }
 
 .form-content {
@@ -200,11 +288,7 @@ const callCreatePlaylist = async () => {
   gap: 10px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.section-icon {
-  font-size: 24px;
-  color: #60a5fa;
+  justify-content: space-between;
 }
 
 .section-header h3 {

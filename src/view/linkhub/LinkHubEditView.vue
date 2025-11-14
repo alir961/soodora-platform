@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { showToast } from '@/utils';
-import { IonIcon, onIonViewDidEnter } from '@ionic/vue';
+import { IonIcon, IonContent, onIonViewDidEnter } from '@ionic/vue';
 import {
   getLinkPage,
   updateLinkPage,
@@ -15,13 +15,15 @@ import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
+import Header from '@/component/AppHeader.vue';
 import {
   copyOutline,
   closeOutline,
   linkOutline,
   addCircleOutline,
   chevronForwardOutline,
-  shareOutline,
+  arrowBackOutline,
+  eyeOutline,
 } from 'ionicons/icons';
 import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
 
@@ -37,17 +39,51 @@ const pageData = ref({
   description: '',
 });
 
+const originalPageData = ref({
+  title: '',
+  description: '',
+});
+
 type EditableLink = CreateLinkRequest & { slug?: string };
 const links = ref<EditableLink[]>([]);
+const originalLinks = ref<EditableLink[]>([]);
 const editingLinkIndex = ref<number | null>(null);
 const deletingLinkIndex = ref<number | null>(null);
+const isSubmitting = ref(false);
 
 const deletePageCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const deleteLinkCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
-const pageUrl = computed(() => (pageSlug.value ? `${window.location.origin}/linkhub/${pageSlug.value}` : ''));
+const pageUrl = computed(() => {
+  if (!pageSlug.value) return '';
+  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/', '') || window.location.origin;
+  return `${baseUrl}/linkhub/${pageSlug.value}`;
+});
 
 const isHubInfoValid = computed(() => pageData.value.title.trim() && pageData.value.description.trim());
+
+const hasPageDataChanged = computed(() => {
+  return (
+    pageData.value.title !== originalPageData.value.title ||
+    pageData.value.description !== originalPageData.value.description
+  );
+});
+
+const hasLinksChanged = computed(() => {
+  if (links.value.length !== originalLinks.value.length) return true;
+  return links.value.some((link, idx) => {
+    const original = originalLinks.value[idx];
+    if (!original) return true;
+    return (
+      link.title !== original.title ||
+      link.description !== original.description ||
+      link.url !== original.url ||
+      link.iconUrl !== original.iconUrl
+    );
+  });
+});
+
+const hasChanges = computed(() => hasPageDataChanged.value || hasLinksChanged.value);
 
 function addLink() {
   links.value.push({ title: '', description: '', url: '', iconUrl: 'other' });
@@ -76,6 +112,9 @@ async function loadPage() {
     const page = await getLinkPage(pageSlug.value);
     pageData.value.title = page.title;
     pageData.value.description = page.description;
+    originalPageData.value.title = page.title;
+    originalPageData.value.description = page.description;
+
     links.value = (page.links || []).map((link) => ({
       slug: link.slug,
       title: link.title,
@@ -83,6 +122,8 @@ async function loadPage() {
       url: link.url,
       iconUrl: link.iconUrl,
     }));
+
+    originalLinks.value = JSON.parse(JSON.stringify(links.value));
     isOwner.value = authStore.getAuthenticatedUserSlug === page.owner.slug;
   } catch (err) {
     console.error(err);
@@ -91,7 +132,9 @@ async function loadPage() {
 }
 
 async function submitUpdate() {
-  if (!pageSlug.value) return;
+  if (!pageSlug.value || isSubmitting.value) return;
+
+  isSubmitting.value = true;
   try {
     await updateLinkPage(pageSlug.value, {
       title: pageData.value.title,
@@ -102,26 +145,36 @@ async function submitUpdate() {
       if (link.slug) {
         await updateLink(pageSlug.value, link.slug, link);
       } else {
-        await createLink(pageSlug.value, link);
+        const createdSlug = await createLink(pageSlug.value, link);
+        link.slug = createdSlug;
       }
     }
 
-    await showToast('Link Hub updated successfully.', 'success');
+    // Collapse the editing link and update original data
+    editingLinkIndex.value = null;
+    originalPageData.value.title = pageData.value.title;
+    originalPageData.value.description = pageData.value.description;
+    originalLinks.value = JSON.parse(JSON.stringify(links.value));
   } catch (err) {
     console.error(err);
     await showToast('Failed to update Link Hub.', 'danger');
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
 function copyPageUrl() {
   if (!pageSlug.value) return;
   navigator.clipboard.writeText(pageUrl.value);
-  showToast('URL copied to clipboard!', 'success');
 }
 
 async function goToPublicLinkHub() {
   if (!pageSlug.value) return;
   await router.push(`/linkhub/${pageSlug.value}`);
+}
+
+function handleBack() {
+  router.back();
 }
 
 const deletePage = () => deletePageCardRef.value?.open();
@@ -145,11 +198,7 @@ async function deleteLinkFunction() {
 }
 
 async function handlePageDeleted() {
-  await router.push('/create');
-}
-
-async function goToCreate() {
-  await router.push('/create');
+  await router.push('/profile');
 }
 
 onIonViewDidEnter(loadPage);
@@ -160,13 +209,18 @@ onMounted(loadPage);
   <ApplicationViewport title="Link Page">
     <ion-content class="form-content-wrapper">
       <div v-if="isOwner">
-        <div class="form-header">
-          <h2>Edit Link Hub</h2>
-          <button class="close-btn" @click="goToCreate">
-            <ion-icon :icon="closeOutline" />
-            Close
-          </button>
-        </div>
+        <Header
+          title="Edit Link Hub"
+          :subtitle="pageData.title || 'Untitled'"
+          :icon="arrowBackOutline"
+          :on-icon-click="handleBack">
+          <template #actions>
+            <button class="visit-btn" @click="goToPublicLinkHub">
+              <ion-icon :icon="eyeOutline" />
+              <span>Visit</span>
+            </button>
+          </template>
+        </Header>
 
         <div class="form-content">
           <div class="url-section">
@@ -176,9 +230,6 @@ onMounted(loadPage);
                 <span class="url-text">{{ pageUrl }}</span>
                 <button class="copy-url-btn" @click="copyPageUrl" title="Copy URL">
                   <ion-icon :icon="copyOutline" />
-                </button>
-                <button class="copy-url-btn" @click="goToPublicLinkHub" title="Go To Public Link Hub">
-                  <ion-icon :icon="shareOutline" />
                 </button>
               </div>
             </div>
@@ -205,7 +256,7 @@ onMounted(loadPage);
             <div class="section-header">
               <div class="header-left">
                 <ion-icon :icon="linkOutline" class="section-icon" />
-                <h3>Your Links</h3>
+                <h3>Your Link Hub</h3>
               </div>
               <button class="add-link-btn" @click="addLink">
                 <ion-icon :icon="addCircleOutline" />
@@ -289,8 +340,8 @@ onMounted(loadPage);
                   </div>
 
                   <div class="link-actions">
-                    <button class="save-link-btn" @click="submitUpdate" :disabled="!isLinkValid(link)">
-                      {{ link.slug ? 'Save Changes' : 'Create Link' }}
+                    <button class="save-link-btn" @click="submitUpdate" :disabled="!isLinkValid(link) || isSubmitting">
+                      {{ isSubmitting ? 'Saving...' : link.slug ? 'Save Changes' : 'Create Link' }}
                     </button>
                     <button class="delete-link-btn" @click="submitLinkDeletion(idx)" title="Delete link">
                       Delete Link
@@ -302,7 +353,9 @@ onMounted(loadPage);
           </div>
 
           <div class="action-buttons">
-            <button class="submit-btn" @click="submitUpdate" :disabled="!isHubInfoValid">Save Changes</button>
+            <button class="submit-btn" @click="submitUpdate" :disabled="!isHubInfoValid || !hasChanges || isSubmitting">
+              {{ isSubmitting ? 'Saving...' : 'Save Changes' }}
+            </button>
             <button class="danger-btn" @click="deletePage">Delete Link Hub</button>
           </div>
         </div>
@@ -330,55 +383,54 @@ onMounted(loadPage);
   --background: linear-gradient(to bottom, rgba(13, 27, 42, 0.95), rgba(9, 18, 30, 0.92));
 }
 
-.form-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.98), rgba(13, 27, 42, 0.85));
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
-.form-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
-.close-btn {
+.back-btn,
+.visit-btn {
   appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
-  color: #60a5fa;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 14px;
+  border: none;
+  height: 38px;
+  padding: 0;
   border-radius: 10px;
+  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
+  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
 }
 
-.close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+.back-btn {
+  width: 38px;
 }
 
-.close-btn:active {
-  transform: scale(0.98);
+.visit-btn {
+  padding: 0 1rem;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.back-btn ion-icon,
+.visit-btn ion-icon {
+  font-size: 22px;
+  padding-bottom: 0;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.back-btn:hover,
+.visit-btn:hover {
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
+  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
+  transform: translateY(-2px);
+}
+
+.back-btn:active,
+.visit-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
 }
 
 .form-content {
@@ -1044,11 +1096,24 @@ onMounted(loadPage);
 
 @media (max-width: 768px) {
   .form-header {
-    padding: 1rem 1.25rem;
+    padding: 1rem;
   }
 
-  .form-header h2 {
-    font-size: 1.2rem;
+  .back-btn {
+    width: 42px;
+    height: 42px;
+  }
+
+  .back-btn ion-icon {
+    font-size: 1.4rem;
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
   }
 
   .form-content {

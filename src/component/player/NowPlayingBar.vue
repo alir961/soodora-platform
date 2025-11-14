@@ -1,11 +1,31 @@
 <script setup lang="ts">
 import { IonIcon } from '@ionic/vue';
-import { play, pause, closeOutline, heart, heartOutline, addOutline } from 'ionicons/icons';
+import { play, pause, closeOutline, heart, heartOutline, addOutline, playForwardOutline } from 'ionicons/icons';
 import { computed, ref, watch, onMounted, onUnmounted, nextTick, createApp } from 'vue';
 import { usePlayerStore } from '@/store/playerStore';
 import { useLikeStore } from '@/store/likeStore';
+import { audioPlayerService } from '@/services/audioPlayerService';
 
 const player = usePlayerStore();
+
+// Initialize audio service
+audioPlayerService.init(player);
+
+// Type for global arrays
+declare global {
+  interface Window {
+    __playlistPosts?: Array<{ slug: string }>;
+    __explorePosts?: Array<{ slug: string }>;
+    __exploreFollowingPosts?: Array<{ slug: string }>;
+  }
+}
+
+function playNextTrack() {
+  if (!player.current) return;
+
+  // Try to play next track from the stored context
+  audioPlayerService.playNext();
+}
 const likeStore = useLikeStore();
 const isLiked = ref(false);
 const barEl = ref<HTMLElement | null>(null);
@@ -17,10 +37,24 @@ const progressBackground = computed(() => {
   return `background: linear-gradient(90deg, var(--ion-color-primary) ${pct}%, rgba(42, 42, 42, 0.5) ${pct}%)`;
 });
 
-const toggle = () => (player.isPlaying ? player.pause() : player.play());
+const toggle = () => {
+  if (player.isPlaying) {
+    audioPlayerService.pause();
+  } else {
+    audioPlayerService.play();
+  }
+};
+
 const onSeek = (e: Event) => {
   const val = Number((e.target as HTMLInputElement).value);
-  player.seek(val);
+  audioPlayerService.seek(val);
+};
+
+const closePlayer = () => {
+  // Stop the audio playback
+  audioPlayerService.stop();
+  // Clear the player store
+  player.clear();
 };
 
 const formatTime = (time: number) => {
@@ -54,18 +88,6 @@ watch(
   () => player.current?.slug,
   () => {
     loadLiked();
-    const slug = player.current?.slug;
-    if (!slug) return;
-    document.querySelectorAll<HTMLAudioElement>('audio[data-post-slug]').forEach((el) => {
-      const elSlug = el.getAttribute('data-post-slug');
-      if (elSlug && elSlug !== slug && !el.paused) {
-        try {
-          el.pause();
-        } catch {
-          /* ignore */
-        }
-      }
-    });
   },
   { immediate: true }
 );
@@ -180,7 +202,7 @@ const openSaveTrack = async () => {
         <button class="aux-btn save-btn" @click="openSaveTrack" aria-label="Save to playlist">
           <ion-icon :icon="addOutline" />
         </button>
-        <button class="close-btn" @click="player.clear" aria-label="Close">
+        <button class="close-btn" @click="closePlayer" aria-label="Close">
           <ion-icon :icon="closeOutline" />
         </button>
       </div>
@@ -190,7 +212,6 @@ const openSaveTrack = async () => {
       <button class="play-btn" @click="toggle" aria-label="Play/Pause">
         <ion-icon :icon="player.isPlaying ? pause : play" />
       </button>
-
       <div class="slider-container">
         <span class="time">{{ formatTime(player.currentTime) }}</span>
         <input
@@ -208,11 +229,32 @@ const openSaveTrack = async () => {
           :style="progressBackground" />
         <span class="time">{{ formatTime(player.duration) }}</span>
       </div>
+      <button class="next-btn" @click="playNextTrack" aria-label="Next Song">
+        <ion-icon :icon="playForwardOutline" />
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
+.next-btn {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.08);
+  color: #60a5fa;
+  width: 48px;
+  height: 25px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.next-btn ion-icon {
+  font-size: 18px;
+}
 .now-playing {
   position: fixed;
   width: 92%;

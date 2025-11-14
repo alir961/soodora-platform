@@ -33,7 +33,6 @@ const login = async () => {
     await saveBearerToken(token);
     authStore.authenticate(await retrieveAuthenticatedProfile());
     await router.push('/explore');
-    await showToast('Login Succeed.');
   } catch (error: unknown) {
     const message = 'Login Failed, invalid credentials !' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
@@ -54,7 +53,6 @@ const register = async () => {
 
     await callRegister(request);
     await router.push('/confirm');
-    await showToast('Sign up Succeeded !');
   } catch (error: unknown) {
     const message = 'Sign up Failed. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');

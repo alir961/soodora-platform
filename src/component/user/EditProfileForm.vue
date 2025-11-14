@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { checkmarkOutline, logOutOutline, trashOutline, cameraOutline, pencilOutline } from 'ionicons/icons';
+import { checkmarkOutline, trashOutline, cameraOutline, pencilOutline } from 'ionicons/icons';
 import { alertController, IonIcon } from '@ionic/vue';
 import { callDeleteProfile, callUpdateProfile } from '@/client/profileClient';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
@@ -17,7 +17,6 @@ const emit = defineEmits(['close']);
 const usernameInput = ref('');
 const firstnameInput = ref('');
 const lastnameInput = ref('');
-const emailInput = ref('');
 const descriptionInput = ref('');
 const avatarFile = ref<File | null>(null);
 const avatarPreview = ref<string>('');
@@ -28,7 +27,6 @@ const originalData = ref({
   username: '',
   firstname: '',
   lastname: '',
-  email: '',
   description: '',
 });
 
@@ -37,18 +35,10 @@ const hasChanges = computed(() => {
     usernameInput.value !== originalData.value.username ||
     firstnameInput.value !== originalData.value.firstname ||
     lastnameInput.value !== originalData.value.lastname ||
-    emailInput.value !== originalData.value.email ||
     descriptionInput.value !== originalData.value.description ||
     avatarFile.value !== null
   );
 });
-
-const logout = async () => {
-  authStore.logout();
-  await deleteBearerToken();
-  await router.push('/authentication');
-  window.location.reload();
-};
 
 const deleteAccount = async () => {
   const alert = await alertController.create({
@@ -62,7 +52,10 @@ const deleteAccount = async () => {
         handler: async () => {
           try {
             await callDeleteProfile();
-            await logout();
+            authStore.logout();
+            await deleteBearerToken();
+            await router.push('/authentication');
+            window.location.reload();
           } catch (error: unknown) {
             const message = 'Failed to delete your account. ' + (error instanceof Error ? error.message : '');
             await showToast(message, 'danger');
@@ -91,7 +84,6 @@ const updateAccount = async () => {
 
     saving.value = true;
     await callUpdateProfile(formData);
-    await showToast('Profile updated successfully!');
     emit('close');
   } catch (error: unknown) {
     const message = 'Failed to update your profile. ' + (error instanceof Error ? error.message : '');
@@ -130,7 +122,6 @@ onMounted(() => {
   usernameInput.value = user.username;
   firstnameInput.value = user.firstname;
   lastnameInput.value = user.lastname;
-  emailInput.value = user.email;
   descriptionInput.value = user.description || '';
 
   const userWithAvatar = user as User & {
@@ -155,7 +146,6 @@ onMounted(() => {
     username: user.username,
     firstname: user.firstname,
     lastname: user.lastname,
-    email: user.email,
     description: user.description || '',
   };
 });
@@ -197,16 +187,9 @@ onMounted(() => {
     <div class="form-section">
       <div class="field-row">
         <div class="field">
-          <label>Email</label>
-          <input v-model="emailInput" type="email" placeholder="you@example.com" @contextmenu.prevent />
-        </div>
-        <div class="field">
           <label>Firstname</label>
           <input v-model="firstnameInput" placeholder="John" @contextmenu.prevent />
         </div>
-      </div>
-
-      <div class="field-row">
         <div class="field">
           <label>Lastname</label>
           <input v-model="lastnameInput" placeholder="Doe" @contextmenu.prevent />
@@ -229,10 +212,6 @@ onMounted(() => {
     </div>
 
     <div class="actions">
-      <button class="action-btn logout" @click="logout">
-        <ion-icon :icon="logOutOutline" />
-        Logout
-      </button>
       <button class="action-btn delete" @click="deleteAccount">
         <ion-icon :icon="trashOutline" />
         Delete Account
@@ -488,11 +467,6 @@ onMounted(() => {
 
 .action-btn ion-icon {
   font-size: 20px;
-}
-
-.action-btn.logout {
-  color: #ffa500;
-  border-color: rgba(255, 165, 0, 0.3);
 }
 
 .action-btn.delete {

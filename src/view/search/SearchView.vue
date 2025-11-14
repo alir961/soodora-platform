@@ -1,23 +1,37 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue';
-import { IonContent, IonList, IonInfiniteScroll, IonInfiniteScrollContent, IonRow } from '@ionic/vue';
+import { ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { IonContent, IonList, IonInfiniteScroll, IonInfiniteScrollContent, IonIcon } from '@ionic/vue';
+import {
+  searchOutline,
+  personOutline,
+  micOutline,
+  documentTextOutline,
+  musicalNotesOutline,
+  albumsOutline,
+} from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import type { User } from '@/entity/User';
 import type { Post } from '@/entity/Post';
 import { callSearchPosts } from '@/client/postClient';
 import { PostSearchParams } from '@/entity/PostSearch';
 import PostCard from '@/component/explore/PostCard.vue';
+import TrackCard from '@/component/music/TrackCard.vue';
 import { callSearchUsers } from '@/client/userClient';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
 import UserListItem from '@/component/user/UserListItem.vue';
 import { Playlist } from '@/entity/Playlist';
 import { searchPlaylists } from '@/client/playlistClient';
 import { PlaylistSearchParams } from '@/entity/PlaylistSearch';
-import PlaylistItem from '@/component/playlist/PlaylistItem.vue';
+import PlaylistCard from '@/component/playlist/PlaylistCard.vue';
+import { usePlayerStore } from '@/store/playerStore';
+import { audioPlayerService } from '@/services/audioPlayerService';
+import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
 
 type SearchMode = '' | 'user' | 'artist' | 'post' | 'music' | 'playlist';
 
 const PAGE_SIZE = 10;
+const playerStore = usePlayerStore();
 
 const searchInput = ref('');
 const searchMode = ref<SearchMode>('');
@@ -51,6 +65,8 @@ const hasMorePlaylists = ref(true);
 const isLoadingPlaylists = ref(false);
 
 const showFilterModal = ref(false);
+const saveTrackCardRef = ref<InstanceType<typeof SaveTrackCard> | null>(null);
+const selectedTrackForSave = ref<Post | null>(null);
 
 const toggleFilters = () => {
   showFilterModal.value = !showFilterModal.value;
@@ -331,6 +347,61 @@ const loadMore = async (ev: CustomEvent) => {
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
 };
 
+// Function to play a track with full context
+import { provide } from 'vue';
+
+const playTrackWithContext = async (post: Post) => {
+  if (!post.audioUrl) return;
+
+  // Create context with all audio tracks from search results
+  const context = {
+    contextId: 'search:audio',
+    tracks: postsAudio.value
+      .filter((p) => p.audioUrl)
+      .map((p) => ({
+        slug: p.slug,
+        title: p.title,
+        audioTitle: p.audioTitle || p.title,
+        artist: p.owner?.username || p.owner?.slug || 'Unknown',
+        imageUrl: p.imageUrl || undefined,
+        audioUrl: p.audioUrl!,
+        duration: 0,
+        owner: p.owner,
+      })),
+  };
+
+  await audioPlayerService.playTrack(
+    {
+      slug: post.slug,
+      title: post.title,
+      audioTitle: post.audioTitle || post.title,
+      artist: post.owner?.username || post.owner?.slug || 'Unknown',
+      imageUrl: post.imageUrl || undefined,
+      audioUrl: post.audioUrl,
+      duration: 0,
+      owner: post.owner,
+    },
+    context
+  );
+};
+
+const openSaveTrack = (post: Post) => {
+  selectedTrackForSave.value = post;
+  saveTrackCardRef.value?.open();
+};
+
+// Provide the function to child components
+provide('playTrackWithContext', playTrackWithContext);
+
+onMounted(() => {
+  // Initialize audio service
+  audioPlayerService.init(playerStore);
+});
+
+onUnmounted(() => {
+  // Cleanup if needed
+});
+
 const searchPlaceholder = computed(() => {
   switch (searchMode.value) {
     case 'artist':
@@ -397,6 +468,8 @@ const noResultsMessage = computed(() => {
         <div class="glow-orb orb-2"></div>
         <div class="glow-orb orb-3"></div>
       </div>
+
+      <Header title="Search" subtitle="Discover music, artists, and more" :icon="searchOutline" />
 
       <SearchBarWithFilters
         v-model="searchInput"
@@ -465,80 +538,114 @@ const noResultsMessage = computed(() => {
         </div>
       </div>
 
-      <template v-if="hasAnyResults && searchInput.trim().length > 0">
+      <div v-if="hasAnyResults && searchInput.trim().length > 0" class="results-container">
+        <div class="ambient-glow">
+          <div class="glow-orb orb-1"></div>
+          <div class="glow-orb orb-2"></div>
+          <div class="glow-orb orb-3"></div>
+        </div>
+
         <template v-if="searchMode === '' || searchMode === 'artist'">
-          <h2 v-if="artists.length" class="section-title">Artists</h2>
-          <ion-list v-if="artists.length" class="name-list">
-            <UserListItem
-              v-for="(artist, index) in artists"
-              :key="artist.slug"
-              :isLast="index === artists.length - 1"
-              :user="artist" />
-          </ion-list>
+          <div v-if="artists.length" class="results-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <ion-icon :icon="micOutline" class="section-icon" />
+              </div>
+              <h2 class="section-title">Artists</h2>
+              <div class="section-count">{{ artists.length }}</div>
+            </div>
+            <div class="section-content">
+              <ion-list class="name-list">
+                <UserListItem v-for="artist in artists" :key="artist.slug" :user="artist" />
+              </ion-list>
+            </div>
+          </div>
         </template>
 
         <template v-if="searchMode === '' || searchMode === 'user'">
-          <h2 v-if="users.length > 0" class="section-title">Users</h2>
-          <ion-list v-if="users.length > 0" class="name-list">
-            <UserListItem
-              v-for="(user, index) in users"
-              :key="user.slug"
-              :isLast="index === users.length - 1"
-              :user="user" />
-          </ion-list>
+          <div v-if="users.length > 0" class="results-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <ion-icon :icon="personOutline" class="section-icon" />
+              </div>
+              <h2 class="section-title">Users</h2>
+              <div class="section-count">{{ users.length }}</div>
+            </div>
+            <div class="section-content">
+              <ion-list class="name-list">
+                <UserListItem v-for="user in users" :key="user.slug" :user="user" />
+              </ion-list>
+            </div>
+          </div>
         </template>
 
         <template v-if="searchMode === '' || searchMode === 'post'">
-          <h2 v-if="postsText.length > 0" class="section-title">Posts</h2>
-          <ion-list v-if="postsText.length > 0">
-            <ion-row>
-              <div
-                v-for="(post, index) in postsText"
-                :key="post.slug"
-                :class="['post-wrapper', index === postsText.length - 1 ? 'last' : '']">
-                <div class="post-separator" v-if="index !== postsText.length - 1"></div>
-                <PostCard
-                  :post="post"
-                  @post-deleted="(slug) => (postsText = postsText.filter((p) => p.slug !== slug))"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="post-card" />
+          <div v-if="postsText.length > 0" class="results-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <ion-icon :icon="documentTextOutline" class="section-icon" />
               </div>
-            </ion-row>
-          </ion-list>
+              <h2 class="section-title">Posts</h2>
+              <div class="section-count">{{ postsText.length }}</div>
+            </div>
+            <div class="section-content">
+              <ion-list class="posts-list">
+                <div v-for="(post, index) in postsText" :key="post.slug" class="post-wrapper">
+                  <PostCard
+                    :post="post"
+                    @post-deleted="(slug) => (postsText = postsText.filter((p) => p.slug !== slug))"
+                    @post-like="post.likeCount++"
+                    @post-unlike="post.likeCount--"
+                    @post-repost="post.repostCount++"
+                    @post-unrepost="post.repostCount--"
+                    class="post-card" />
+                  <div class="post-separator" v-if="index !== postsText.length - 1"></div>
+                </div>
+              </ion-list>
+            </div>
+          </div>
         </template>
 
         <template v-if="searchMode === '' || searchMode === 'music'">
-          <h2 v-if="postsAudio.length > 0" class="section-title">Music</h2>
-          <ion-list v-if="postsAudio.length > 0">
-            <ion-row>
-              <div
-                v-for="(post, index) in postsAudio"
-                :key="post.slug"
-                :class="['post-wrapper', index === postsAudio.length - 1 ? 'last' : '']">
-                <div class="post-separator" v-if="index !== postsAudio.length - 1"></div>
-                <PostCard
-                  :post="post"
-                  @post-deleted="(slug) => (postsAudio = postsAudio.filter((p) => p.slug !== slug))"
-                  @post-like="post.likeCount++"
-                  @post-unlike="post.likeCount--"
-                  @post-repost="post.repostCount++"
-                  @post-unrepost="post.repostCount--"
-                  class="post-card" />
+          <div v-if="postsAudio.length > 0" class="results-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <ion-icon :icon="musicalNotesOutline" class="section-icon" />
               </div>
-            </ion-row>
-          </ion-list>
+              <h2 class="section-title">Music</h2>
+              <div class="section-count">{{ postsAudio.length }}</div>
+            </div>
+            <div class="section-content">
+              <ion-list class="tracks-list">
+                <div v-for="(post, index) in postsAudio" :key="post.slug" class="track-wrapper">
+                  <TrackCard :post="post" @save-track="openSaveTrack(post)" />
+                  <div class="track-separator" v-if="index !== postsAudio.length - 1"></div>
+                </div>
+              </ion-list>
+            </div>
+          </div>
         </template>
 
         <template v-if="searchMode === '' || searchMode === 'playlist'">
-          <h2 v-if="playlists.length > 0" class="section-title">Playlists</h2>
-          <ion-list v-if="playlists.length > 0" class="name-list">
-            <PlaylistItem v-for="pl in playlists" :key="pl.slug" :playlist="pl" />
-          </ion-list>
+          <div v-if="playlists.length > 0" class="results-section">
+            <div class="section-header">
+              <div class="section-icon-wrapper">
+                <ion-icon :icon="albumsOutline" class="section-icon" />
+              </div>
+              <h2 class="section-title">Playlists</h2>
+              <div class="section-count">{{ playlists.length }}</div>
+            </div>
+            <div class="section-content">
+              <ion-list class="playlists-list">
+                <div v-for="(playlist, index) in playlists" :key="playlist.slug" class="playlist-wrapper">
+                  <PlaylistCard :playlist="playlist" />
+                  <div class="playlist-separator" v-if="index !== playlists.length - 1"></div>
+                </div>
+              </ion-list>
+            </div>
+          </div>
         </template>
-      </template>
+      </div>
 
       <ion-infinite-scroll
         @ionInfinite="loadMore"
@@ -557,13 +664,21 @@ const noResultsMessage = computed(() => {
         <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
       </ion-infinite-scroll>
     </ion-content>
+
+    <!-- Save Track Modal -->
+    <SaveTrackCard
+      ref="saveTrackCardRef"
+      :post-slug="selectedTrackForSave?.slug || ''"
+      :audio-title="selectedTrackForSave?.audioTitle"
+      :audio-url="selectedTrackForSave?.audioUrl"
+      :image-url="selectedTrackForSave?.imageUrl" />
   </ApplicationViewport>
 </template>
 
 <style scoped>
 .filter-panel-wrapper {
   width: 90%;
-  margin: 0 auto;
+  margin: 0 auto 1rem auto;
   position: relative;
   z-index: 100;
 }
@@ -661,30 +776,25 @@ const noResultsMessage = computed(() => {
 }
 
 .search-placeholder-message {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 400px;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 0;
+  margin: 4rem auto 2rem auto;
   pointer-events: none;
   animation: fadeIn 0.5s ease;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .search-placeholder-message.pushed-down {
-  transform: translate(-50%, -30%);
+  margin-top: 1rem;
 }
 
 .placeholder-cards {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
 }
 
 .placeholder-card {
@@ -779,20 +889,15 @@ const noResultsMessage = computed(() => {
 }
 
 .no-results-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: 90%;
   max-width: 400px;
-  z-index: 0;
+  margin: 4rem auto 2rem auto;
   pointer-events: none;
   animation: fadeIn 0.4s ease;
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .no-results-container.pushed-down {
-  transform: translate(-50%, -30%);
+  margin-top: 1rem;
 }
 
 .no-results-card {
@@ -869,7 +974,6 @@ const noResultsMessage = computed(() => {
   background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0.08) 50%, transparent 100%);
   top: -150px;
   left: -150px;
-  animation-delay: 0s;
 }
 
 .glow-orb.orb-2 {
@@ -878,7 +982,6 @@ const noResultsMessage = computed(() => {
   background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0.06) 50%, transparent 100%);
   bottom: -100px;
   right: -100px;
-  animation-delay: 2s;
 }
 
 .glow-orb.orb-3 {
@@ -888,7 +991,6 @@ const noResultsMessage = computed(() => {
   top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
-  animation-delay: 4s;
 }
 
 @keyframes glowFloat {
@@ -907,11 +1009,11 @@ const noResultsMessage = computed(() => {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -45%);
+    transform: translateY(-10px);
   }
   to {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: translateY(0);
   }
 }
 
@@ -949,30 +1051,233 @@ const noResultsMessage = computed(() => {
   }
 }
 
-.section-title {
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.results-container {
+  position: relative;
+  padding: 1rem 0 2rem 0;
+  min-height: 50vh;
+}
+
+.results-section {
+  margin: 0 1rem 2rem 1rem;
+  animation: slideUp 0.4s ease;
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.6), rgba(18, 22, 30, 0.5));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+@media (max-width: 640px) {
+  .results-section {
+    margin: 0 0.75rem 2rem 0.75rem;
+  }
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(to bottom, rgba(18, 22, 30, 0.4), transparent);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+}
+
+@media (max-width: 640px) {
+  .section-header {
+    padding: 0.875rem 1rem;
+  }
+}
+
+.section-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent);
+}
+
+.section-content {
+  padding: 0.5rem 0;
+}
+
+.section-icon-wrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(59, 130, 246, 0.2);
+}
+
+@media (max-width: 640px) {
+  .section-icon-wrapper {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+  }
+}
+
+.section-icon {
   font-size: 20px;
+  color: #60a5fa;
+}
+
+@media (max-width: 640px) {
+  .section-icon {
+    font-size: 18px;
+  }
+}
+
+.section-title {
+  font-size: 1.2rem;
   font-weight: 600;
-  padding-top: 1em;
-  padding-left: 1.5em;
-  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+  flex: 1;
+}
+
+@media (max-width: 640px) {
+  .section-title {
+    font-size: 1.1rem;
+  }
+}
+
+.section-count {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.15);
+  padding: 4px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+@media (max-width: 640px) {
+  .section-count {
+    font-size: 0.85rem;
+    padding: 3px 10px;
+  }
 }
 
 .name-list {
-  padding-left: 1em;
-  padding-right: 1em;
+  padding: 0 0.5rem;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .name-list {
+    padding: 0 0.25rem;
+  }
+}
+
+.posts-list {
+  background: transparent;
+  padding: 0;
+}
+
+.tracks-list {
+  background: transparent;
+  padding: 0;
+}
+
+.playlists-list {
+  background: transparent;
+  padding: 0;
 }
 
 .post-wrapper {
-  margin-left: 0.5em;
-  margin-right: 0.5em;
-  width: calc(100% - 1em);
+  width: 100%;
+}
+
+.track-wrapper {
+  width: 100%;
+  padding: 0 1rem;
+}
+
+.playlist-wrapper {
+  width: 100%;
+  padding: 0 1rem;
 }
 
 .post-separator {
   height: 1px;
-  background-color: rgba(255, 255, 255, 0.15);
-  width: calc(100% - 2em);
-  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 10%,
+    rgba(255, 255, 255, 0.1) 90%,
+    transparent 100%
+  );
+  margin: 0.5rem 1rem;
+}
+
+.track-separator {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 10%,
+    rgba(255, 255, 255, 0.1) 90%,
+    transparent 100%
+  );
+  margin: 0.5rem 1rem;
+}
+
+.playlist-separator {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.1) 10%,
+    rgba(255, 255, 255, 0.1) 90%,
+    transparent 100%
+  );
+  margin: 0.5rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .post-separator {
+    margin: 0.5rem 0.75rem;
+  }
+
+  .track-separator {
+    margin: 0.5rem 0.75rem;
+  }
+
+  .playlist-separator {
+    margin: 0.5rem 0.75rem;
+  }
+
+  .track-wrapper {
+    padding: 0 0.75rem;
+  }
+
+  .playlist-wrapper {
+    padding: 0 0.75rem;
+  }
 }
 
 .post-card {
@@ -1001,24 +1306,23 @@ const noResultsMessage = computed(() => {
     font-size: 0.85rem;
   }
 
-  .search-placeholder-message.pushed-down {
-    transform: translate(-50%, -25%);
-  }
-
   .no-results-card {
     padding: 2rem 1.5rem;
   }
+}
 
-  .no-results-icon {
-    font-size: 3rem;
-  }
+/* Header styles removed - now using Header component */
 
-  .no-results-title {
-    font-size: 1.1rem;
-  }
+.header-subtitle {
+  font-size: 0.85rem;
+  color: #9aa3ad;
+  margin: 0;
+  font-weight: 500;
+}
 
-  .no-results-hint {
-    font-size: 0.85rem;
+@media (max-width: 640px) {
+  .header-subtitle {
+    font-size: 0.8rem;
   }
 }
 </style>

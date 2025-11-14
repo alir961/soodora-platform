@@ -5,7 +5,7 @@ import { showToast } from '@/utils';
 const props = defineProps({
   itemType: {
     required: true,
-    type: String as PropType<'post' | 'product' | 'link hub' | 'link'>,
+    type: String as PropType<'post' | 'product' | 'link hub' | 'link' | 'playlist' | 'quote' | 'item'>,
   },
   itemSlug: {
     required: true,
@@ -36,7 +36,6 @@ const confirmDelete = async () => {
   try {
     await props.deleteFunction(props.itemSlug);
     emit('deleted', props.itemSlug);
-    await showToast(`Succeed to delete ${props.itemType}.`);
     showDeleteModal.value = false;
   } catch (error: unknown) {
     const message = `Failed to delete ${props.itemType}. ` + (error instanceof Error ? error.message : '');

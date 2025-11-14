@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonAvatar, IonCard, IonCol, IonIcon } from '@ionic/vue';
 import { Product } from '@/entity/Product';
-import { PropType, ref } from 'vue';
+import { PropType, ref, computed } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct } from '@/client/productClient';
@@ -32,6 +32,10 @@ const showImagePreview = ref(false);
 const modalImageSrc = ref('');
 
 const localProduct = ref<Product>({ ...props.product });
+
+const productImageUrl = computed(() => {
+  return localProduct.value.imageUrl || '/assets/images/png/no-product-image.png';
+});
 
 const quantity = ref(1);
 const maxQuantity = ref(0);
@@ -118,7 +122,7 @@ const handleProductDeleted = (slug: string) => {
   <ion-col size="12" size-md="6" size-lg="4" class="product-col">
     <ion-card class="product-card">
       <div class="card-image-wrapper" @click="openImagePreview">
-        <img :src="localProduct.imageUrl" :alt="`Product ${localProduct.name}`" />
+        <img :src="productImageUrl" :alt="`Product ${localProduct.name}`" />
 
         <div class="card-actions" @click.stop>
           <button class="action-icon export" @click="openExportModal" title="Export">
@@ -167,9 +171,7 @@ const handleProductDeleted = (slug: string) => {
           </div>
         </div>
 
-        <button class="buy-button" @click="openImageModal(localProduct.imageUrl, localProduct.quantity)">
-          Buy Now
-        </button>
+        <button class="buy-button" @click="openImageModal(productImageUrl, localProduct.quantity)">Buy Now</button>
       </div>
     </ion-card>
 
@@ -177,7 +179,7 @@ const handleProductDeleted = (slug: string) => {
       <div v-if="showImagePreview" class="image-preview-overlay" @click="closeImagePreview">
         <div class="image-preview-container" @click.stop>
           <button class="preview-close" @click="closeImagePreview">✕</button>
-          <img :src="localProduct.imageUrl" :alt="localProduct.name" />
+          <img :src="productImageUrl" :alt="localProduct.name" />
         </div>
       </div>
     </transition>
@@ -189,7 +191,7 @@ const handleProductDeleted = (slug: string) => {
             <div class="sheet-handle"></div>
 
             <div class="product-preview">
-              <img :src="localProduct.imageUrl" :alt="localProduct.name" class="preview-image" />
+              <img :src="productImageUrl" :alt="localProduct.name" class="preview-image" />
               <div class="preview-info">
                 <h3>{{ localProduct.name }}</h3>
                 <p class="preview-vendor">by @{{ localProduct.vendor.username }}</p>

@@ -11,7 +11,7 @@ import {
   IonAvatar,
 } from '@ionic/vue';
 import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue';
-import { usePlayerStore } from '@/store/playerStore';
+import { audioPlayerService } from '@/services/audioPlayerService';
 import { Post } from '@/entity/Post';
 import { callDeletePost, callPostUnrepost, callPostRepost, callGetPostReposts } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
@@ -26,10 +26,10 @@ import { showToast } from '@/utils';
 import { useLikeStore } from '@/store/likeStore';
 import customShareIcon from '@/assets/icons/share.svg';
 import customTrashIcon from '@/assets/icons/trash.svg';
-import { addOutline } from 'ionicons/icons';
 import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
 import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
+import TrackCard from '@/component/music/TrackCard.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -52,81 +52,9 @@ const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
 const displayedLikeCount = computed(() => likeStore.likeCount(props.post.slug));
 
-const audioRef = ref<HTMLAudioElement | null>(null);
-const isPlaying = ref(false);
-const duration = ref(0);
-const currentTime = ref(0);
-const player = usePlayerStore();
-
 const isMusicPost = computed(() => {
   return props.post.audioUrl && props.post.audioTitle;
 });
-
-function isCurrentTrack(): boolean {
-  return !!player.current && player.current.slug === props.post.slug;
-}
-
-const onLoadedMetadata = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-  duration.value = audio.duration;
-  if (!props.post.audioUrl) return;
-  if (isCurrentTrack()) {
-    player.updateDuration(audio.duration || 0);
-  }
-};
-
-const onTimeUpdate = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-  currentTime.value = audio.currentTime;
-  if (isCurrentTrack()) {
-    player.updateTime(currentTime.value);
-  }
-};
-
-const onAudioPlay = () => {
-  isPlaying.value = true;
-  document.dispatchEvent(new CustomEvent('post-audio-play', { detail: { slug: props.post.slug } }));
-  if (!props.post.audioUrl) return;
-  const currentEl = audioRef.value;
-  document.querySelectorAll<HTMLAudioElement>('audio[data-post-slug]').forEach((el) => {
-    if (el !== currentEl && !el.paused) {
-      try {
-        el.pause();
-      } catch {
-        /* ignore */
-      }
-    }
-  });
-  if (!isCurrentTrack()) {
-    player.setTrack({
-      slug: props.post.slug,
-      title: props.post.title,
-      audioTitle: props.post.audioTitle,
-      artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
-      imageUrl: props.post.imageUrl || undefined,
-      audioUrl: props.post.audioUrl,
-      duration: duration.value || 0,
-      owner: props.post.owner,
-    });
-  }
-  player.isPlaying = true;
-};
-
-const onAudioPause = () => {
-  isPlaying.value = false;
-  if (isCurrentTrack()) player.isPlaying = false;
-};
-
-const onEnded = () => {
-  isPlaying.value = false;
-  currentTime.value = 0;
-  if (isCurrentTrack()) {
-    player.isPlaying = false;
-    player.updateTime(0);
-  }
-};
 
 const loadLikes = async (postSlug: string) => {
   likeStore.initFromPost(props.post);
@@ -190,17 +118,6 @@ onMounted(() => {
 
   loadLikes(postSlug);
   loadReposts(postSlug);
-  const handleExternalPlay = (e: Event) => {
-    const detail = (e as CustomEvent).detail as { slug?: string } | undefined;
-    const otherSlug = detail?.slug;
-    if (otherSlug && otherSlug !== props.post.slug) {
-      const audio = audioRef.value;
-      if (audio && !audio.paused) {
-        audio.pause();
-      }
-    }
-  };
-  document.addEventListener('post-audio-play', handleExternalPlay as EventListener);
 
   const stopWatch = watch(
     () => [likeStore.liked[props.post.slug], likeStore.counts[props.post.slug]],
@@ -209,33 +126,27 @@ onMounted(() => {
     }
   );
 
-  const handlePlayerControl = (e: Event) => {
-    const { action, slug, time } = (e as CustomEvent).detail || {};
-    const audio = audioRef.value;
-    if (!audio) return;
-    if (slug && slug !== props.post.slug) return;
-
-    if (action === 'play') {
-      audio.play();
-    } else if (action === 'pause') {
-      if (!audio.paused) audio.pause();
-    } else if (action === 'seek' && typeof time === 'number') {
-      audio.currentTime = time;
-    } else if (action === 'stop') {
-      if (!audio.paused) audio.pause();
-      audio.currentTime = 0;
+  // Listen for play-next-track event from NowPlayingBar
+  const handlePlayNext = async (e: Event) => {
+    const { slug } = (e as CustomEvent).detail || {};
+    if (slug === props.post.slug && props.post.audioUrl) {
+      await audioPlayerService.playTrack({
+        slug: props.post.slug,
+        title: props.post.title,
+        audioTitle: props.post.audioTitle || props.post.title,
+        artist: props.post.owner?.username || props.post.owner?.slug || 'Unknown',
+        imageUrl: props.post.imageUrl || undefined,
+        audioUrl: props.post.audioUrl,
+        duration: 0,
+        owner: props.post.owner,
+      });
     }
   };
-  document.addEventListener('player-control', handlePlayerControl as EventListener);
+  document.addEventListener('play-next-track', handlePlayNext as EventListener);
 
   onUnmounted(() => {
-    document.removeEventListener('post-audio-play', handleExternalPlay as EventListener);
     stopWatch();
-    document.removeEventListener('player-control', handlePlayerControl as EventListener);
-    const audio = audioRef.value;
-    if (audio && !audio.paused) {
-      audio.pause();
-    }
+    document.removeEventListener('play-next-track', handlePlayNext as EventListener);
   });
 });
 
@@ -249,12 +160,6 @@ function formatCount(count: number): string {
   }
   return count.toString();
 }
-
-const formatTime = (time: number) => {
-  const minutes = Math.floor(time / 60);
-  const seconds = Math.floor(time % 60);
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-};
 
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
@@ -274,17 +179,6 @@ const openSaveTrack = () => {
 
 const handlePostDeleted = (slug: string) => {
   emit('post-deleted', slug);
-};
-
-const playTrack = () => {
-  const audio = audioRef.value;
-  if (!audio) return;
-
-  if (audio.paused) {
-    audio.play();
-  } else {
-    audio.pause();
-  }
 };
 </script>
 
@@ -358,41 +252,7 @@ const playTrack = () => {
         </template>
 
         <template v-else>
-          <audio
-            :src="post.audioUrl"
-            ref="audioRef"
-            :data-post-slug="post.slug"
-            @loadedmetadata="onLoadedMetadata"
-            @timeupdate="onTimeUpdate"
-            @play="onAudioPlay"
-            @pause="onAudioPause"
-            @ended="onEnded"
-            style="display: none" />
-
-          <div class="track-card" @click="playTrack">
-            <div class="track-cover">
-              <img :src="post.imageUrl || '/assets/images/png/no-album-art.png'" :alt="post.audioTitle" />
-
-              <div class="visualizer-overlay" :class="{ active: isPlaying && isCurrentTrack() }">
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-                <div class="visualizer-bar"></div>
-              </div>
-            </div>
-
-            <div class="track-info">
-              <h3 class="track-title">{{ post.audioTitle }}</h3>
-              <p class="track-artist">{{ post.owner.username || post.owner.slug }}</p>
-            </div>
-
-            <div class="track-meta">
-              <span class="track-duration">{{ formatTime(duration) }}</span>
-              <button class="track-save-btn" @click.stop="openSaveTrack" title="Add to playlist">
-                <ion-icon :icon="addOutline" />
-              </button>
-            </div>
-          </div>
+          <TrackCard :post="post" @save-track="openSaveTrack" />
 
           <div class="settings-container music-actions">
             <div class="post-actions">
@@ -689,240 +549,7 @@ ion-avatar img {
   color: #f87171;
 }
 
-.track-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background: linear-gradient(135deg, rgba(13, 27, 42, 0.6), rgba(9, 18, 30, 0.5));
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  margin-top: 0.75rem;
-}
-
-.track-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), transparent 50%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.track-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(59, 130, 246, 0.1);
-}
-
-.track-card:hover::before {
-  opacity: 1;
-}
-
-.track-card:active {
-  transform: translateY(0);
-}
-
-.track-cover {
-  position: relative;
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.track-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.track-card:hover .track-cover img {
-  transform: scale(1.05);
-}
-
-.visualizer-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  border-radius: 10px;
-}
-
-.visualizer-overlay.active {
-  opacity: 1;
-}
-
-.visualizer-bar {
-  width: 3px;
-  height: 12px;
-  background: linear-gradient(to top, #60a5fa, #93c5fd);
-  border-radius: 2px;
-  transform-origin: bottom;
-  animation: visualize 0.6s ease-in-out infinite;
-}
-
-.visualizer-bar:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.visualizer-bar:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.visualizer-bar:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.visualizer-bar:nth-child(4) {
-  animation-delay: 0.45s;
-}
-
-@keyframes visualize {
-  0%,
-  100% {
-    transform: scaleY(0.5);
-  }
-  50% {
-    transform: scaleY(1.5);
-  }
-}
-
-.track-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.track-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-.track-artist {
-  font-size: 0.85rem;
-  color: #9aa3ad;
-  margin: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.track-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.track-duration {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #9aa3ad;
-  font-variant-numeric: tabular-nums;
-  min-width: 40px;
-  text-align: right;
-}
-
-.track-save-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  background: rgba(59, 130, 246, 0.1);
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: #60a5fa;
-}
-
-.track-save-btn ion-icon {
-  font-size: 20px;
-}
-
-.track-save-btn:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.4);
-  transform: scale(1.05);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.3);
-}
-
-.track-save-btn:active {
-  transform: scale(0.95);
-}
-
 .music-actions {
   margin-top: 0;
-}
-
-@media (max-width: 768px) {
-  .track-card {
-    padding: 0.6rem;
-    gap: 0.875rem;
-    border-radius: 16px;
-  }
-
-  .track-cover {
-    width: 56px;
-    height: 56px;
-  }
-
-  .visualizer-bar {
-    width: 2.5px;
-    height: 10px;
-    gap: 2px;
-  }
-
-  .track-title {
-    font-size: 0.95rem;
-  }
-
-  .track-artist {
-    font-size: 0.8rem;
-  }
-
-  .track-duration {
-    font-size: 0.85rem;
-    min-width: 36px;
-  }
-
-  .track-save-btn {
-    width: 32px;
-    height: 32px;
-  }
-
-  .track-save-btn ion-icon {
-    font-size: 18px;
-  }
 }
 </style>
