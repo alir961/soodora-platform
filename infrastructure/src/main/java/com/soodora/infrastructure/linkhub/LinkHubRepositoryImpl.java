@@ -1,11 +1,11 @@
-package com.soodora.infrastructure.linkpage;
+package com.soodora.infrastructure.linkhub;
 
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.link.LinkPageUnityException;
-import com.soodora.domain.linkpage.CreateLinkPageCommand;
-import com.soodora.domain.linkpage.LinkPageDTO;
-import com.soodora.domain.linkpage.LinkPageRepository;
-import com.soodora.domain.linkpage.UpdateLinkPageCommand;
+import com.soodora.domain.link.LinkHubUnityException;
+import com.soodora.domain.linkhub.CreateLinkHubCommand;
+import com.soodora.domain.linkhub.LinkHubDTO;
+import com.soodora.domain.linkhub.LinkHubRepository;
+import com.soodora.domain.linkhub.UpdateLinkHubCommand;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
@@ -24,21 +24,21 @@ import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 
 @Repository
 @RequiredArgsConstructor
-public class LinkPageRepositoryImpl implements LinkPageRepository {
+public class LinkHubRepositoryImpl implements LinkHubRepository {
 
-    private final LinkPageJpaRepository repository;
+    private final LinkHubJpaRepository repository;
     private final ArtistJpaRepository artistsRepository;
 
     @Override
     @Transactional
-    public LinkPageDTO save(CreateLinkPageCommand command, User user) {
+    public LinkHubDTO save(CreateLinkHubCommand command, User user) {
         ArtistEntity artistEntity = artistsRepository.findByUserSlug(user.getSlug())
                 .orElseThrow(
                         () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
-        Optional<LinkPageEntity> existingLinkPage = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
+        Optional<LinkHubEntity> existingLinkHub = repository.findByArtistUserSlug(artistEntity.getUser().getSlug());
 
-        if (existingLinkPage.isEmpty()) {
-            LinkPageEntity entity = new LinkPageEntity();
+        if (existingLinkHub.isEmpty()) {
+            LinkHubEntity entity = new LinkHubEntity();
 
             entity.setTitle(command.title());
             entity.setDescription(command.description());
@@ -47,30 +47,30 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
 
             return repository.save(entity).aggregate();
         }
-        throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a link page.");
+        throw new LinkHubUnityException("Artist with user slug #" + user.getSlug() + " already has a link hub.");
     }
 
     @Override
     @Transactional
-    public LinkPageDTO update(UpdateLinkPageCommand command, String slug) {
-        LinkPageEntity existingLinkPage = findLinkPageBySlugOrThrow(slug);
+    public LinkHubDTO update(UpdateLinkHubCommand command, String slug) {
+        LinkHubEntity existingLinkHub = findLinkHubBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
-            existingLinkPage.setTitle(command.title());
+            existingLinkHub.setTitle(command.title());
         if (isNotNullOrBlank(command.description()))
-            existingLinkPage.setDescription(command.description());
-        return repository.save(existingLinkPage).aggregate();
+            existingLinkHub.setDescription(command.description());
+        return repository.save(existingLinkHub).aggregate();
     }
 
     @Override
     @Transactional
-    public LinkPageDTO findBySlug(String slug) {
-        return findLinkPageBySlugOrThrow(slug).aggregate();
+    public LinkHubDTO findBySlug(String slug) {
+        return findLinkHubBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<LinkPageDTO> findAll() {
+    public List<LinkHubDTO> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
@@ -79,16 +79,16 @@ public class LinkPageRepositoryImpl implements LinkPageRepository {
     @Override
     @Transactional
     public void deleteBySlug(String slug) {
-        LinkPageEntity linkPage = repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
+        LinkHubEntity linkHub = repository.findBySlug(slug)
+                .orElseThrow(() -> new UnknownSlugException("Unable to find link hub with slug: #" + slug));
 
-        linkPage.getArtist().setLinkPage(null);
-        repository.delete(linkPage);
+        linkHub.getArtist().setLinkHub(null);
+        repository.delete(linkHub);
     }
 
-    protected LinkPageEntity findLinkPageBySlugOrThrow(String slug) {
+    protected LinkHubEntity findLinkHubBySlugOrThrow(String slug) {
         return repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find link page with slug: #" + slug));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find link hub with slug: #" + slug));
     }
 
     private String generateUniqueSlug() {

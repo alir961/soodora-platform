@@ -1,11 +1,7 @@
 package com.soodora.infrastructure.mediakit;
 
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.link.LinkPageUnityException;
-import com.soodora.domain.mediakit.CreateMediaKitCommand;
-import com.soodora.domain.mediakit.MediaKit;
-import com.soodora.domain.mediakit.MediaKitRepository;
-import com.soodora.domain.mediakit.UpdateMediaKitCommand;
+import com.soodora.domain.mediakit.*;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
@@ -51,7 +47,7 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
             return mediaKitRepository.save(mediaKit).aggregate();
         }
-        throw new LinkPageUnityException("Artist with user slug #" + user.getSlug() + " already has a media kit.");
+        throw new MediaKitUnityException("Artist with user slug #" + user.getSlug() + " already has a media kit.");
     }
 
     @Override

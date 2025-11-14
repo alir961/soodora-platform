@@ -1,18 +1,17 @@
-package com.soodora.api.linkpage;
+package com.soodora.api.linkhub;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.link.LinkDTO;
-import com.soodora.domain.linkpage.LinkPageDTO;
-import com.soodora.domain.linkpage.LinkPageFilter;
+import com.soodora.domain.linkhub.LinkHubDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.link.CreateLinkRequest;
 import com.soodora.service.link.LinkService;
 import com.soodora.service.link.UpdateLinkRequest;
-import com.soodora.service.linkpage.CreateLinkPageRequest;
-import com.soodora.service.linkpage.LinkPageService;
-import com.soodora.service.linkpage.UpdateLinkPageRequest;
+import com.soodora.service.linkhub.CreateLinkHubRequest;
+import com.soodora.service.linkhub.LinkHubService;
+import com.soodora.service.linkhub.UpdateLinkHubRequest;
 
 import java.util.List;
 
@@ -25,27 +24,26 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
-import static java.util.Optional.ofNullable;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/linkpages")
-@Tag(name = "Link Page Controller")
-public class LinkPageController {
+@RequestMapping("/link-hubs")
+@Tag(name = "Link Hub Controller")
+public class LinkHubController {
 
-    private final LinkPageService linkPageService;
+    private final LinkHubService linkHubService;
     private final LinkService linkService;
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping
-    public ResponseEntity<JsonResponse> createLinkPage(
+    public ResponseEntity<JsonResponse> createLinkHub(
             @AuthenticationPrincipal User user,
-            @RequestBody CreateLinkPageRequest request) {
+            @RequestBody CreateLinkHubRequest request) {
         try {
-            String slug = linkPageService.createLinkPage(request.toCommand(), user);
+            String slug = linkHubService.createLinkHub(request.toCommand(), user);
 
-            return new ResponseEntity<>(new LinkPageSlugResponse(slug), CREATED);
+            return new ResponseEntity<>(new LinkHubSlugResponse(slug), CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
@@ -53,11 +51,11 @@ public class LinkPageController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updateLinkPage(
+    public ResponseEntity<JsonResponse> updateLinkHub(
             @PathVariable String slug,
-            @RequestBody UpdateLinkPageRequest request) {
+            @RequestBody UpdateLinkHubRequest request) {
         try {
-            linkPageService.updateLinkPage(request.toCommand(), slug);
+            linkHubService.updateLinkHub(request.toCommand(), slug);
             return new ResponseEntity<>(OK);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -65,28 +63,26 @@ public class LinkPageController {
     }
 
     @GetMapping
-    public LinkPageDTO getUserLinkPage(@RequestParam(value = "userSlug", required = false) String userSlug) {
-        LinkPageFilter filter = new LinkPageFilter(ofNullable(userSlug));
-
-        return linkPageService.retrieveLinkPage(filter);
+    public LinkHubDTO getUserLinkHub(@RequestParam(value = "userSlug", required = false) String userSlug) {
+        return linkHubService.retrieveLinkHubByUserSlug(userSlug);
     }
 
     @GetMapping("/{slug}")
-    public LinkPageDTO getLinkPage(
+    public LinkHubDTO getLinkHub(
             @PathVariable String slug) {
-        return linkPageService.retrieveLinkPageBySlug(slug);
+        return linkHubService.retrieveLinkHubBySlug(slug);
     }
 
-    @GetMapping("/linkpages")
-    public List<LinkPageDTO> getAllLinkPages() {
-        return linkPageService.retrieveAllLinkPage();
+    @GetMapping("/link-hubs")
+    public List<LinkHubDTO> getAllLinkHubs() {
+        return linkHubService.retrieveAllLinkHubs();
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{slug}")
-    public void deleteLinkPage(
+    public void deleteLinkHub(
             @PathVariable String slug) {
-        linkPageService.deleteLinkPageBySlug(slug);
+        linkHubService.deleteLinkHubBySlug(slug);
     }
 
     @SecurityRequirement(name = "bearerAuth")

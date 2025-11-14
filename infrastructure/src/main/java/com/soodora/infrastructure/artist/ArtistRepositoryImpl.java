@@ -4,7 +4,7 @@ import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
-import com.soodora.domain.linkpage.LinkPageDTO;
+import com.soodora.domain.linkhub.LinkHubDTO;
 import com.soodora.domain.user.*;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 
@@ -46,8 +46,8 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     @Override
     @Transactional
-    public List<EventDTO> retrieveEvents(String slug) {
-        ArtistEntity entity = findArtistByUserSlug(slug);
+    public List<EventDTO> retrieveEvents(String userSlug) {
+        ArtistEntity entity = findArtistByUserSlug(userSlug);
 
         return entity.getEvents().stream()
                 .map(DomainEntityAdapter::aggregate)
@@ -56,12 +56,12 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     @Override
     @Transactional
-    public LinkPageDTO retrieveLinkPage(String slug) throws LinkPageNotFoundException {
-        ArtistEntity artist = findArtistByUserSlug(slug);
+    public LinkHubDTO retrieveLinkHub(String userSlug) throws LinkHubNotFoundException {
+        ArtistEntity artist = findArtistByUserSlug(userSlug);
 
-        if (artist.getLinkPage() == null)
-            throw new LinkPageNotFoundException("Link Page not found for artist " + slug);
-        return artist.getLinkPage().aggregate();
+        if (artist.getLinkHub() == null)
+            throw new LinkHubNotFoundException("Link Hub not found for artist " + userSlug);
+        return artist.getLinkHub().aggregate();
     }
 
     private ArtistEntity findArtistByUserSlug(String slug) throws UnknownIdentifierException {

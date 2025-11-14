@@ -3,7 +3,7 @@ package com.soodora.infrastructure.artist;
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.event.EventEntity;
-import com.soodora.infrastructure.linkpage.LinkPageEntity;
+import com.soodora.infrastructure.linkhub.LinkHubEntity;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.product.ProductEntity;
@@ -45,7 +45,7 @@ public class ArtistEntity implements DomainEntityAdapter<ArtistDTO> {
     private List<PostEntity> posts;
 
     @OneToOne(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
-    private LinkPageEntity linkPage;
+    private LinkHubEntity linkHub;
 
     @OneToOne(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
     private MediaKitEntity mediaKit;

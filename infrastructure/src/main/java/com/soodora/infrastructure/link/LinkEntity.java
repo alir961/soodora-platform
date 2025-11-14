@@ -2,7 +2,7 @@ package com.soodora.infrastructure.link;
 
 import com.soodora.domain.link.LinkDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
-import com.soodora.infrastructure.linkpage.LinkPageEntity;
+import com.soodora.infrastructure.linkhub.LinkHubEntity;
 
 import java.util.Date;
 import java.util.UUID;
@@ -41,7 +41,7 @@ public class LinkEntity implements DomainEntityAdapter<LinkDTO> {
 
     @ManyToOne
     @JoinColumn
-    private LinkPageEntity linkPage;
+    private LinkHubEntity linkHub;
 
     @CreationTimestamp
     @Column(updatable = false)

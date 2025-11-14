@@ -43,7 +43,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.createMediaKit(any(), eq(USER))).thenReturn(MEDIA_KIT);
 
-        mockMvc.perform(post("/mediakits")
+        mockMvc.perform(post("/media-kits")
                 .with(user(new UserPrincipal(USER)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
@@ -57,7 +57,7 @@ class MediaKitControllerIT {
         when(mediaKitService.createMediaKit(any(), any()))
                 .thenThrow(new InvalidRequestException("Invalid media kit"));
 
-        mockMvc.perform(post("/mediakits")
+        mockMvc.perform(post("/media-kits")
                 .with(user(new UserPrincipal(USER)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
@@ -72,7 +72,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.updateMediaKit(any(), any())).thenReturn(MEDIA_KIT);
 
-        mockMvc.perform(put("/mediakits/" + slug)
+        mockMvc.perform(put("/media-kits/" + slug)
                 .with(user(new UserPrincipal(USER)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
@@ -86,7 +86,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.updateMediaKit(any(), any())).thenThrow(new InvalidRequestException("Invalid update"));
 
-        mockMvc.perform(put("/mediakits/" + slug)
+        mockMvc.perform(put("/media-kits/" + slug)
                 .with(user(new UserPrincipal(USER)))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
@@ -99,7 +99,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.retrieveMediaKitBySlug(slug)).thenReturn(MEDIA_KIT);
 
-        mockMvc.perform(get("/mediakits/" + slug)
+        mockMvc.perform(get("/media-kits/" + slug)
                 .with(user(new UserPrincipal(USER)))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -114,7 +114,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.retrieveMediaKitByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT);
 
-        mockMvc.perform(get("/mediakits/artist/" + artistSlug)
+        mockMvc.perform(get("/media-kits/artist/" + artistSlug)
                 .with(user(new UserPrincipal(USER)))
                 .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -127,7 +127,7 @@ class MediaKitControllerIT {
     void shouldDeleteMediaKit() throws Exception {
         String slug = "slug1";
 
-        mockMvc.perform(delete("/mediakits/" + slug)
+        mockMvc.perform(delete("/media-kits/" + slug)
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
 
@@ -153,7 +153,7 @@ class MediaKitControllerIT {
         when(mediaKitService.addMediaKitItem(any(), eq(ARTIST_USER.getSlug()), any())).thenReturn(MEDIA_KIT_ITEM);
 
         // WHEN + THEN
-        mockMvc.perform(multipart("/mediakits/" + ARTIST_USER.getSlug() + "/items")
+        mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
                 .file(jsonPart)
                 .file(filePart)
                 .with(user(new UserPrincipal(USER))))
@@ -180,7 +180,7 @@ class MediaKitControllerIT {
 
         when(mediaKitService.updateMediaKitItem(any(), any(), any())).thenReturn(MEDIA_KIT_ITEM);
 
-        mockMvc.perform(multipart("/mediakits/items/" + itemSlug)
+        mockMvc.perform(multipart("/media-kits/items/" + itemSlug)
                 .file(jsonPart)
                 .file(filePart)
                 .with(user(new UserPrincipal(USER)))
@@ -206,7 +206,7 @@ class MediaKitControllerIT {
         when(mediaKitService.updateMediaKitItem(any(), any(), any()))
                 .thenThrow(new InvalidRequestException("Invalid update item"));
 
-        mockMvc.perform(multipart("/mediakits/items/" + itemSlug)
+        mockMvc.perform(multipart("/media-kits/items/" + itemSlug)
                 .file(jsonPart)
                 .with(user(new UserPrincipal(USER)))
                 .with(request1 -> {
@@ -220,7 +220,7 @@ class MediaKitControllerIT {
     void shouldDeleteMediaKitItem() throws Exception {
         String itemSlug = "item-slug";
 
-        mockMvc.perform(delete("/mediakits/items/" + itemSlug)
+        mockMvc.perform(delete("/media-kits/items/" + itemSlug)
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
 
@@ -234,7 +234,7 @@ class MediaKitControllerIT {
         when(mediaKitService.exportMediaKitToPdf("slug1", USER))
                 .thenReturn(pdfData);
 
-        mockMvc.perform(get("/mediakits/slug1/export/pdf")
+        mockMvc.perform(get("/media-kits/slug1/export/pdf")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
@@ -246,7 +246,7 @@ class MediaKitControllerIT {
         CreateMediaKitRequest request = new CreateMediaKitRequest("Title", "Short bio", "Long bio", "email@example.com",
                 "+123456789");
 
-        mockMvc.perform(post("/mediakits")
+        mockMvc.perform(post("/media-kits")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(asJsonString(request)))
                 .andExpect(status().isForbidden());
@@ -254,7 +254,7 @@ class MediaKitControllerIT {
 
     @Test
     void shouldReturnForbiddenWithoutAuthOnExport() throws Exception {
-        mockMvc.perform(get("/mediakits/slug1/export/pdf"))
+        mockMvc.perform(get("/media-kits/slug1/export/pdf"))
                 .andExpect(status().isForbidden());
     }
 
@@ -263,7 +263,7 @@ class MediaKitControllerIT {
         when(mediaKitService.exportMediaKitToPdf("slug1", USER))
                 .thenThrow(new RuntimeException("PDF generation failed"));
 
-        mockMvc.perform(get("/mediakits/slug1/export/pdf")
+        mockMvc.perform(get("/media-kits/slug1/export/pdf")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON));

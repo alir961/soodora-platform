@@ -1,9 +1,9 @@
 package com.soodora.test.factory;
 
 import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.playlist.PopulatedPlaylistDTO;
 import com.soodora.domain.post.Post;
+import com.soodora.domain.user.PublicUserDTO;
 
 import java.util.Date;
 import java.util.List;

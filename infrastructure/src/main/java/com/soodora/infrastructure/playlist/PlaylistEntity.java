@@ -2,9 +2,9 @@ package com.soodora.infrastructure.playlist;
 
 import com.soodora.domain.playlist.PlaylistDTO;
 import com.soodora.domain.playlist.PlaylistPrivacy;
-import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.playlist.PopulatedPlaylistDTO;
 import com.soodora.domain.post.Post;
+import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;

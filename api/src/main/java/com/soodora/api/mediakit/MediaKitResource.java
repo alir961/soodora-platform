@@ -7,6 +7,13 @@ import com.soodora.service.mediakit.CreateMediaKitItemRequest;
 import com.soodora.service.mediakit.CreateMediaKitRequest;
 import com.soodora.service.mediakit.UpdateMediaKitItemRequest;
 import com.soodora.service.mediakit.UpdateMediaKitRequest;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,11 +22,6 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Media Kit Controller", description = "Endpoints to manage artist media kits and their items")
@@ -98,14 +100,11 @@ public interface MediaKitResource {
             @Parameter(hidden = true) User user,
             @Parameter(description = "Slug of the media kit to export", required = true) @PathVariable String slug);
 
-    @Operation(
-            summary = "Get analytics for a media kit",
-            description = "Returns analytics for the specified media kit. Only the owner or an admin is allowed to access this endpoint.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Analytics successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitAnalyticsDTO.class))),
-                    @ApiResponse(responseCode = "403", description = "User does not have permission to access these analytics"),
-                    @ApiResponse(responseCode = "404", description = "Media kit not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
-            })
+    @Operation(summary = "Get analytics for a media kit", description = "Returns analytics for the specified media kit. Only the owner or an admin is allowed to access this endpoint.", responses = {
+            @ApiResponse(responseCode = "200", description = "Analytics successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitAnalyticsDTO.class))),
+            @ApiResponse(responseCode = "403", description = "User does not have permission to access these analytics"),
+            @ApiResponse(responseCode = "404", description = "Media kit not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+    })
     MediaKitAnalyticsDTO getMediaKitAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug);
 
 }

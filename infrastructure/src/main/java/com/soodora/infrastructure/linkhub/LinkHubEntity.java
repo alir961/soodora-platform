@@ -1,7 +1,7 @@
-package com.soodora.infrastructure.linkpage;
+package com.soodora.infrastructure.linkhub;
 
 import com.soodora.domain.link.LinkDTO;
-import com.soodora.domain.linkpage.LinkPageDTO;
+import com.soodora.domain.linkhub.LinkHubDTO;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.link.LinkEntity;
@@ -24,8 +24,8 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity(name = "link_pages")
-public class LinkPageEntity implements DomainEntityAdapter<LinkPageDTO> {
+@Entity(name = "link_hubs")
+public class LinkHubEntity implements DomainEntityAdapter<LinkHubDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -44,7 +44,7 @@ public class LinkPageEntity implements DomainEntityAdapter<LinkPageDTO> {
     @JoinColumn
     private ArtistEntity artist;
 
-    @OneToMany(mappedBy = "linkPage", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "linkHub", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LinkEntity> links = new ArrayList<>();
 
     @CreationTimestamp
@@ -56,12 +56,12 @@ public class LinkPageEntity implements DomainEntityAdapter<LinkPageDTO> {
     private Date updatedAt;
 
     @Override
-    public LinkPageDTO aggregate() {
+    public LinkHubDTO aggregate() {
         List<LinkDTO> aggregatedLinks = links.stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
 
-        return new LinkPageDTO(
+        return new LinkHubDTO(
                 slug,
                 title,
                 description,

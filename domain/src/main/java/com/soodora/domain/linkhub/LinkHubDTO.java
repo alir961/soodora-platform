@@ -1,11 +1,11 @@
-package com.soodora.domain.linkpage;
+package com.soodora.domain.linkhub;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.link.LinkDTO;
 
 import java.util.List;
 
-public record LinkPageDTO(
+public record LinkHubDTO(
         String slug,
         String title,
         String description,

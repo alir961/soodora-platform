@@ -24,7 +24,7 @@ import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@RequestMapping("/mediakits")
+@RequestMapping("/media-kits")
 @RequiredArgsConstructor
 public class MediaKitController implements MediaKitResource {
 

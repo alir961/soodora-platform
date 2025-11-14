@@ -1,4 +1,4 @@
-package com.soodora.api.linkpage;
+package com.soodora.api.linkhub;
 
 import com.soodora.api.common.JsonResponse;
 
