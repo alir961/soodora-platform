@@ -4,8 +4,9 @@ import { useRouter } from 'vue-router';
 import { createMediaKit } from '@/client/mediaKitClient';
 import type { MediaKitDTO } from '@/entity/MediaKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { IonIcon } from '@ionic/vue';
-import { closeOutline, documentTextOutline } from 'ionicons/icons';
+import Header from '@/component/AppHeader.vue';
+import { IonIcon, IonContent } from '@ionic/vue';
+import { closeOutline, documentTextOutline, sparklesOutline } from 'ionicons/icons';
 import { showToast } from '@/utils';
 
 const router = useRouter();
@@ -55,21 +56,21 @@ const saveNewMediaKit = async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Media Kit">
-    <div class="form-header">
-      <h2>Create Media Kit</h2>
-      <button class="close-btn" @click="closeForm">
-        <IonIcon :icon="closeOutline" />
-        Close
-      </button>
-    </div>
+  <ApplicationViewport title="Create Soodora Kit">
+    <IonContent class="form-content-wrapper">
+      <Header title="Create Soodora Kit" :subtitle="newMediaKit.title || 'New kit'" :icon="sparklesOutline">
+        <template #actions>
+          <button class="back-btn" @click="closeForm">
+            <IonIcon :icon="closeOutline" />
+          </button>
+        </template>
+      </Header>
 
-    <div class="form-content-wrapper">
       <div class="form-content">
         <div class="form-section">
           <div class="section-header">
             <IonIcon :icon="documentTextOutline" class="section-icon" />
-            <h3>Media Kit Details</h3>
+            <h3>Soodora Kit Details</h3>
           </div>
 
           <div class="form-field">
@@ -99,10 +100,10 @@ const saveNewMediaKit = async () => {
         </div>
 
         <button class="submit-btn" @click="saveNewMediaKit" :disabled="isSubmitDisabled">
-          {{ isLoading ? 'Creating...' : 'Create MediaKit' }}
+          {{ isLoading ? 'Creating...' : 'Create Soodora Kit' }}
         </button>
       </div>
-    </div>
+    </IonContent>
   </ApplicationViewport>
 </template>
 
@@ -114,55 +115,38 @@ const saveNewMediaKit = async () => {
   max-height: calc(100vh - 64px);
 }
 
-.form-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.98), rgba(13, 27, 42, 0.85));
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
+/* Form header styles removed - now using Header component */
 
-.form-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
-.close-btn {
+.back-btn {
   appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
-  color: #60a5fa;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
   font-size: 0.9rem;
   font-weight: 600;
-  padding: 8px 14px;
+  padding: 8px 10px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  justify-content: center;
+  width: 38px;
+  height: 38px;
 }
 
-.close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+.back-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
 }
 
-.close-btn:active {
-  transform: scale(0.98);
+.back-btn:active {
+  transform: scale(0.95);
+}
+
+.back-btn ion-icon {
+  font-size: 22px;
 }
 
 .form-content {

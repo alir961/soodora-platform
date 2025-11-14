@@ -5,7 +5,7 @@ import { showToast } from '@/utils';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { createLinkPage, createLink, CreateLinkPageRequest, CreateLinkRequest } from '@/client/linkPageClient';
 import { IonIcon } from '@ionic/vue';
-import { closeOutline, linkOutline, addCircleOutline } from 'ionicons/icons';
+import { linkOutline, addCircleOutline, arrowBackOutline } from 'ionicons/icons';
 import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
 
 type EditableLink = CreateLinkRequest & { slug?: string };
@@ -40,7 +40,6 @@ const areLinksValid = computed(() => links.value.every(isLinkValid));
 
 async function submitCreate() {
   if (!pageData.value.title.trim() || !pageData.value.description.trim() || !areLinksValid.value) {
-    await showToast('Please fill all required fields and links.', 'danger');
     return;
   }
 
@@ -55,7 +54,6 @@ async function submitCreate() {
       await createLink(createdSlug, link);
     }
 
-    await showToast('Link Hub created successfully!');
     await router.push(`/linkhub/edit/${createdSlug}`);
     pageData.value.title = '';
     pageData.value.description = '';
@@ -71,18 +69,26 @@ async function submitCreate() {
   <ApplicationViewport title="Create Link Hub">
     <ion-content class="form-content-wrapper">
       <div class="form-header">
-        <h2>Create Link Hub</h2>
-        <ion-button class="close-btn" fill="clear" size="small" @click="$router.back()">
-          <ion-icon slot="start" :icon="closeOutline" />
-          Close
-        </ion-button>
+        <div class="header-content">
+          <div class="header-left">
+            <button class="back-btn" @click="$router.back()">
+              <ion-icon :icon="arrowBackOutline" />
+            </button>
+            <div class="header-text">
+              <h1 class="header-title">Create Link Hub</h1>
+              <p class="header-subtitle">{{ pageData.title || 'New hub' }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="form-content">
         <div class="form-section">
           <div class="section-header">
-            <ion-icon :icon="linkOutline" class="section-icon" />
-            <h3>Your Link Hub</h3>
+            <div class="header-left">
+              <ion-icon :icon="linkOutline" class="section-icon" />
+              <h3>Your Link Hub</h3>
+            </div>
           </div>
 
           <div class="form-field">
@@ -102,11 +108,13 @@ async function submitCreate() {
 
         <div class="form-section">
           <div class="section-header">
-            <ion-icon :icon="linkOutline" />
-            <h3>Links</h3>
+            <div class="header-left">
+              <ion-icon :icon="linkOutline" class="section-icon" />
+              <h3>Links</h3>
+            </div>
             <button class="add-link-btn" @click="addLink">
-              <ion-icon slot="start" :icon="addCircleOutline" />
-              Add Link
+              <ion-icon :icon="addCircleOutline" />
+              <span>Add Link</span>
             </button>
           </div>
 
@@ -116,55 +124,53 @@ async function submitCreate() {
 
           <div v-else class="links-grid">
             <div v-for="(link, idx) in links" :key="idx" class="link-wrapper">
-              <ion-card-content>
-                <div class="link-card expanded">
-                  <div class="form-field">
-                    <label>Link Title <span class="required">*</span></label>
-                    <input type="text" v-model="link.title" placeholder="e.g., My Instagram" />
-                  </div>
-
-                  <div class="form-field">
-                    <label>Description <span class="required">*</span></label>
-                    <input type="text" v-model="link.description" placeholder="Brief description" />
-                  </div>
-
-                  <div class="form-field">
-                    <label>Platform</label>
-                    <div class="platform-selector">
-                      <button
-                        v-for="option in iconOptions"
-                        :key="option.value"
-                        type="button"
-                        class="platform-option"
-                        :class="{ active: link.iconUrl === option.value }"
-                        @click="updateLinkUrl(link, option.value)"
-                        :title="option.label">
-                        <ion-icon v-if="platformIcons[option.value]" :src="platformIcons[option.value]" />
-                        <span v-else>{{ option.label.charAt(0) }}</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <div class="form-field">
-                    <label>URL <span class="required">*</span></label>
-                    <div class="url-input-wrapper">
-                      <div class="url-prefix">
-                        <ion-icon
-                          v-if="link.iconUrl !== 'other' && platformIcons[link.iconUrl]"
-                          :src="platformIcons[link.iconUrl]"
-                          class="url-prefix-icon" />
-                        <ion-icon v-else :icon="linkOutline" class="url-prefix-icon" />
-                      </div>
-                      <input
-                        type="url"
-                        v-model="link.url"
-                        :placeholder="link.iconUrl === 'other' ? 'https://...' : platformUrlPrefixes[link.iconUrl]" />
-                    </div>
-                  </div>
-
-                  <button class="delete-link-btn" @click="deleteTempLink(idx)">Delete Link</button>
+              <div class="link-card expanded">
+                <div class="form-field">
+                  <label>Link Title <span class="required">*</span></label>
+                  <input type="text" v-model="link.title" placeholder="e.g., My Instagram" />
                 </div>
-              </ion-card-content>
+
+                <div class="form-field">
+                  <label>Description <span class="required">*</span></label>
+                  <input type="text" v-model="link.description" placeholder="Brief description" />
+                </div>
+
+                <div class="form-field">
+                  <label>Platform</label>
+                  <div class="platform-selector">
+                    <button
+                      v-for="option in iconOptions"
+                      :key="option.value"
+                      type="button"
+                      class="platform-option"
+                      :class="{ active: link.iconUrl === option.value }"
+                      @click="updateLinkUrl(link, option.value)"
+                      :title="option.label">
+                      <ion-icon v-if="platformIcons[option.value]" :src="platformIcons[option.value]" />
+                      <span v-else>{{ option.label.charAt(0) }}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-field">
+                  <label>URL <span class="required">*</span></label>
+                  <div class="url-input-wrapper">
+                    <div class="url-prefix">
+                      <ion-icon
+                        v-if="link.iconUrl !== 'other' && platformIcons[link.iconUrl]"
+                        :src="platformIcons[link.iconUrl]"
+                        class="url-prefix-icon" />
+                      <ion-icon v-else :icon="linkOutline" class="url-prefix-icon" />
+                    </div>
+                    <input
+                      type="url"
+                      v-model="link.url"
+                      :placeholder="link.iconUrl === 'other' ? 'https://...' : platformUrlPrefixes[link.iconUrl]" />
+                  </div>
+                </div>
+
+                <button class="delete-link-btn" @click="deleteTempLink(idx)">Delete Link</button>
+              </div>
             </div>
           </div>
         </div>
@@ -189,51 +195,85 @@ async function submitCreate() {
   position: sticky;
   top: 0;
   z-index: 10;
+  background: rgba(18, 22, 30, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  padding: 0.75rem 1.5rem;
+}
+
+.header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.98), rgba(13, 27, 42, 0.85));
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.form-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
-.close-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
-  color: #60a5fa;
-  font-size: 0.9rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.header-left {
   display: flex;
   align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
 }
 
-.close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+.back-btn {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.75rem;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.close-btn:active {
+.back-btn ion-icon {
+  font-size: 1.5rem;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.back-btn:active {
   transform: scale(0.98);
+}
+
+.header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 0.25rem 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-subtitle {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-content {
@@ -258,10 +298,17 @@ async function submitCreate() {
 .section-header {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
   gap: 10px;
   padding-bottom: 12px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
 }
 
 .section-icon {
@@ -275,6 +322,37 @@ async function submitCreate() {
   color: #ffffff;
   margin: 0;
   letter-spacing: 0.01em;
+}
+
+.add-link-btn {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.add-link-btn ion-icon {
+  font-size: 18px;
+}
+
+.add-link-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.add-link-btn:active {
+  transform: scale(0.98);
 }
 
 .form-field {
@@ -636,11 +714,24 @@ async function submitCreate() {
 
 @media (max-width: 768px) {
   .form-header {
-    padding: 1rem 1.25rem;
+    padding: 1rem;
   }
 
-  .form-header h2 {
-    font-size: 1.2rem;
+  .back-btn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .back-btn ion-icon {
+    font-size: 1.4rem;
+  }
+
+  .header-title {
+    font-size: 1.25rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
   }
 
   .form-content {

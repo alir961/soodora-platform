@@ -2,11 +2,12 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { IonIcon } from '@ionic/vue';
+import { IonIcon, IonContent } from '@ionic/vue';
 import { closeOutline, documentTextOutline } from 'ionicons/icons';
 import { showToast } from '@/utils';
 import { createQuote, getQuote, updateQuote } from '@/client/quoteClient';
 import type { CreateQuoteRequest, UpdateQuoteRequest } from '@/entity/Quote';
+import Header from '@/component/AppHeader.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -26,7 +27,17 @@ const newQuote = ref<CreateQuoteRequest>({
 const isLoading = ref(false);
 
 const closeForm = () => {
-  router.back();
+  // Smart back navigation - avoid going back to form pages
+  const canGoBack = window.history.state?.back;
+  const isFromForm =
+    canGoBack && (canGoBack.includes('/edit') || canGoBack.includes('/create') || canGoBack.includes('/items/'));
+
+  if (canGoBack && !isFromForm) {
+    router.back();
+  } else {
+    // Default to quotes list if no valid history or coming from form
+    router.push('/quotes/me');
+  }
 };
 
 const loadQuote = async () => {
@@ -61,7 +72,7 @@ const saveNewQuote = async () => {
       await router.push(`/quotes/${quoteSlug.value}?t=${Date.now()}`);
     } else {
       const created = await createQuote(newQuote.value);
-      await router.push(`/quotes/${created.slug}?t=${Date.now()}`);
+      await router.replace(`/quotes/${created.slug}?t=${Date.now()}`);
     }
   } catch (error: unknown) {
     const message =
@@ -87,15 +98,17 @@ onMounted(() => {
 
 <template>
   <ApplicationViewport :title="isEditMode ? 'Edit Quote' : 'Create Quote'">
-    <div class="form-header">
-      <h2>{{ isEditMode ? 'Edit Quote' : 'Create Quote' }}</h2>
-      <button class="close-btn" @click="closeForm">
-        <IonIcon :icon="closeOutline" />
-        Close
-      </button>
-    </div>
-
-    <div class="form-content-wrapper">
+    <IonContent class="form-content-wrapper">
+      <Header
+        :title="isEditMode ? 'Edit Quote' : 'Create Quote'"
+        :subtitle="newQuote.name || 'New quote'"
+        :icon="documentTextOutline">
+        <template #actions>
+          <button class="close-btn" @click="closeForm">
+            <IonIcon :icon="closeOutline" />
+          </button>
+        </template>
+      </Header>
       <div class="form-content">
         <div class="form-section">
           <div class="section-header">
@@ -138,7 +151,7 @@ onMounted(() => {
           {{ isLoading ? (isEditMode ? 'Updating...' : 'Creating...') : isEditMode ? 'Update Quote' : 'Create Quote' }}
         </button>
       </div>
-    </div>
+    </IonContent>
   </ApplicationViewport>
 </template>
 
@@ -150,55 +163,36 @@ onMounted(() => {
   max-height: calc(100vh - 64px);
 }
 
-.form-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  background: linear-gradient(to bottom, rgba(13, 27, 42, 0.98), rgba(13, 27, 42, 0.85));
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
-.form-header h2 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: #ffffff;
-  margin: 0;
-  text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-}
-
 .close-btn {
   appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  background: rgba(59, 130, 246, 0.08);
-  color: #60a5fa;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
   font-size: 0.9rem;
   font-weight: 600;
-  padding: 8px 14px;
+  padding: 8px 10px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  justify-content: center;
+  width: 38px;
+  height: 38px;
 }
 
 .close-btn:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-color: rgba(59, 130, 246, 0.35);
-  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
 }
 
 .close-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.95);
+}
+
+.close-btn ion-icon {
+  font-size: 22px;
 }
 
 .form-content {

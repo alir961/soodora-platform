@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { fetchPlaylistBySlug, removePostFromPlaylist, deletePlaylistBySlug } from '@/client/playlistClient';
 import { LIKED_AUDIO_PLAYLIST_NAME, PlaylistFull } from '@/entity/Playlist';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import {
   arrowBackOutline,
   createOutline,
@@ -312,18 +313,14 @@ watch(
 
       <div class="playlist-content">
         <!-- Header with Back Button and Title -->
-        <div class="playlist-header" v-if="playlist">
-          <div class="header-content">
-            <div class="header-left">
-              <button class="back-btn" @click="goBackToPlaylists" tabindex="0">
-                <IonIcon :icon="arrowBackOutline" />
-              </button>
-              <div class="header-text">
-                <h1 class="header-title">{{ playlist.playlistSimpleDTO.name }}</h1>
-                <p class="header-subtitle">{{ trackCountStat }}</p>
-              </div>
-            </div>
-            <div class="header-actions" v-if="isOwner && !isLikedAudioPlaylist">
+        <Header
+          v-if="playlist"
+          :title="playlist.playlistSimpleDTO.name"
+          :subtitle="trackCountStat"
+          :icon="arrowBackOutline"
+          :on-icon-click="goBackToPlaylists">
+          <template #actions>
+            <div v-if="isOwner && !isLikedAudioPlaylist" class="header-actions">
               <button class="edit-fab" @click="goToEditPlaylist" tabindex="0">
                 <IonIcon :icon="createOutline" />
               </button>
@@ -336,8 +333,8 @@ watch(
                 :item-slug="playlist.playlistSimpleDTO.slug"
                 :delete-function="handleDeletePlaylist" />
             </div>
-          </div>
-        </div>
+          </template>
+        </Header>
 
         <!-- Merged Playlist Info + Tracks Card -->
         <div class="playlist-card-merged" v-if="playlist && posts.length">
@@ -533,79 +530,7 @@ watch(
   z-index: 1;
 }
 
-/* Header with Back Button */
-.playlist-header {
-  background: rgba(18, 22, 30, 0.85);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-  padding: 1rem 1rem;
-  margin-bottom: 1.2rem;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.back-btn {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn ion-icon {
-  font-size: 1.5rem;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 0.25rem 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  line-height: 1;
-}
-
+/* Header Actions */
 .header-actions {
   display: flex;
   gap: 0.5rem;
@@ -675,7 +600,7 @@ watch(
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   overflow: hidden;
-  margin: 0 1rem 1.5rem 1rem;
+  margin: 1.5rem 1rem 1.5rem 1rem;
 }
 
 .info-section {

@@ -10,6 +10,7 @@ import {
   albumsOutline,
 } from 'ionicons/icons';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import type { User } from '@/entity/User';
 import type { Post } from '@/entity/Post';
 import { callSearchPosts } from '@/client/postClient';
@@ -468,19 +469,7 @@ const noResultsMessage = computed(() => {
         <div class="glow-orb orb-3"></div>
       </div>
 
-      <div class="search-header">
-        <div class="header-content">
-          <div class="header-left">
-            <div class="header-icon-wrapper">
-              <ion-icon :icon="searchOutline" class="header-icon" />
-            </div>
-            <div class="header-text">
-              <h1 class="header-title">Search</h1>
-              <p class="header-subtitle">Discover music, artists, and more</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <Header title="Search" subtitle="Discover music, artists, and more" :icon="searchOutline" />
 
       <SearchBarWithFilters
         v-model="searchInput"
@@ -1322,94 +1311,7 @@ const noResultsMessage = computed(() => {
   }
 }
 
-.search-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(18, 22, 30, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  padding: 1rem 1.5rem;
-}
-
-@media (max-width: 640px) {
-  .search-header {
-    padding: 1rem;
-  }
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.header-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-}
-
-@media (max-width: 640px) {
-  .header-icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-  }
-}
-
-.header-icon {
-  font-size: 22px;
-  color: #60a5fa;
-}
-
-@media (max-width: 640px) {
-  .header-icon {
-    font-size: 20px;
-  }
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 2px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-@media (max-width: 640px) {
-  .header-title {
-    font-size: 1.25rem;
-  }
-}
+/* Header styles removed - now using Header component */
 
 .header-subtitle {
   font-size: 0.85rem;

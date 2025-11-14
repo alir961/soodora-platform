@@ -22,6 +22,7 @@ import {
   exportQuotePdf as downloadQuotePdf,
   getQuote,
 } from '@/client/quoteClient';
+import Header from '@/component/AppHeader.vue';
 
 const deleteCardRef = vueRef();
 const deleteItemCardRefs = vueRef<Record<string, InstanceType<typeof DeleteCard>>>({});
@@ -57,19 +58,7 @@ const openEditModal = () => {
 
 const goBackToQuotes = () => {
   (document.activeElement as HTMLElement)?.blur();
-
-  // Check if we can go back in history and if the previous page wasn't an edit/item page
-  const canGoBack = window.history.state?.back;
-  const isFromEdit = window.history.state?.back?.includes('/edit');
-  const isFromItems = window.history.state?.back?.includes('/items/');
-
-  if (canGoBack && !isFromEdit && !isFromItems) {
-    // Smart back - go to wherever we came from (quotes list, etc.)
-    router.back();
-  } else {
-    // Default to quotes page if no valid history or came from edit/items
-    router.push(`/quotes/me?t=${Date.now()}`);
-  }
+  router.push(`/quotes/me?t=${Date.now()}`);
 };
 
 const handleDeleteQuote = async () => {
@@ -151,19 +140,14 @@ const calculateSubtotal = () => {
       </div>
 
       <div class="quote-details-wrapper">
-        <!-- Header with Back Button and Actions -->
-        <div class="quote-header" v-if="quote">
-          <div class="header-content">
-            <div class="header-left">
-              <button class="back-btn" @click="goBackToQuotes" tabindex="0">
-                <IonIcon :icon="arrowBackOutline" />
-              </button>
-              <div class="header-text">
-                <h1 class="header-title">{{ quote.name }}</h1>
-                <p class="header-subtitle">Quote Details</p>
-              </div>
-            </div>
-
+        <!-- Header -->
+        <Header
+          v-if="quote"
+          :title="quote.name"
+          subtitle="Quote Details"
+          :icon="arrowBackOutline"
+          :on-icon-click="goBackToQuotes">
+          <template #actions>
             <div class="header-actions" v-if="isOwner">
               <button class="action-btn edit-btn" @click="openEditModal">
                 <IonIcon :icon="createOutline" />
@@ -177,14 +161,13 @@ const calculateSubtotal = () => {
               </button>
               <DeleteCard
                 ref="deleteCardRef"
-                v-if="quote"
                 :itemType="'quote'"
                 :itemSlug="quote.slug"
                 :deleteFunction="handleDeleteQuote"
                 @deleted="showDeleteCard = false" />
             </div>
-          </div>
-        </div>
+          </template>
+        </Header>
 
         <!-- Customer Info Card -->
         <div class="info-card" v-if="quote">
@@ -375,83 +358,7 @@ const calculateSubtotal = () => {
   z-index: 1;
 }
 
-/* Header */
-.quote-header {
-  background: rgba(18, 22, 30, 0.85);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-  padding: 1rem 1rem;
-  margin-bottom: 1.2rem;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.back-btn {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn ion-icon {
-  font-size: 1.5rem;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.back-btn:active {
-  transform: scale(0.95);
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 0.25rem 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  line-height: 1;
-}
-
+/* Header Actions */
 .header-actions {
   display: flex;
   gap: 0.5rem;
@@ -531,7 +438,7 @@ const calculateSubtotal = () => {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 1rem;
   padding: 1.25rem;
-  margin: 0 1rem 1.2rem 1rem;
+  margin: 1.2rem 1rem 1.2rem 1rem;
 }
 
 .info-header {
@@ -921,19 +828,6 @@ const calculateSubtotal = () => {
 
 /* Responsive */
 @media (max-width: 640px) {
-  .header-title {
-    font-size: 1.3rem;
-  }
-
-  .back-btn {
-    width: 42px;
-    height: 42px;
-  }
-
-  .back-btn ion-icon {
-    font-size: 1.3rem;
-  }
-
   .action-btn-text {
     display: none;
   }

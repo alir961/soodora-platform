@@ -8,7 +8,7 @@ import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
 import CommentView from '@/view/explore/CommentView.vue';
-import LinkHubCreateView from '@/view/create/LinkHubCreateView.vue';
+import LinkHubCreateView from '@/view/linkhub/LinkHubCreateView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';

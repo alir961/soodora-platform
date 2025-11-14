@@ -12,6 +12,7 @@ import {
 import { ellipsisHorizontal, storefrontOutline, addCircleOutline, receiptOutline } from 'ionicons/icons';
 
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import ProductCard from '@/component/marketplace/ProductCard.vue';
 import { Product } from '@/entity/Product';
 import { callSearchProducts } from '@/client/productClient';
@@ -151,22 +152,13 @@ watch([searchInput, selectedSort], () => {
         <div class="glow-orb orb-3"></div>
       </div>
 
-      <div class="marketplace-header">
-        <div class="header-content">
-          <div class="header-left">
-            <div class="header-icon-wrapper">
-              <ion-icon :icon="storefrontOutline" class="header-icon" />
-            </div>
-            <div class="header-text">
-              <h1 class="header-title">Marketplace</h1>
-              <p class="header-subtitle">Own a piece of your favorite artist.</p>
-            </div>
-          </div>
+      <Header title="Marketplace" subtitle="Own a piece of your favorite artist." :icon="storefrontOutline">
+        <template #actions>
           <button v-if="canCreateContent" class="actions-button" @click="openActionsPopup">
             <ion-icon :icon="ellipsisHorizontal" />
           </button>
-        </div>
-      </div>
+        </template>
+      </Header>
 
       <ActionsPopup
         v-if="canCreateContent"
@@ -239,75 +231,7 @@ watch([searchInput, selectedSort], () => {
 </template>
 
 <style scoped>
-.marketplace-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(18, 22, 30, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  padding: 1rem 1.5rem;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.header-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-}
-
-.header-icon {
-  font-size: 22px;
-  color: #60a5fa;
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 2px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: #9aa3ad;
-  margin: 0;
-  font-weight: 500;
-}
+/* Header styles removed - now using Header component */
 
 .actions-button {
   appearance: none;

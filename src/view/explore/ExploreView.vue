@@ -13,6 +13,7 @@ import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Swiper as SwiperClass } from 'swiper';
 import 'swiper/css';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { callRetrieveFollowingPosts, callRetrieveRecommendedPosts, PostPage } from '@/client/postClient';
@@ -206,12 +207,8 @@ watch(followingPosts, (newPosts: Post[]) => {
         <div class="glow-orb orb-3"></div>
       </div>
 
-      <div class="explore-header">
-        <div class="header-content">
-          <div v-if="canCreateContent" class="header-icon-wrapper">
-            <ion-icon :icon="compassOutline" class="header-icon" />
-          </div>
-          <div v-else class="header-icon-placeholder"></div>
+      <Header :icon="compassOutline">
+        <template #actions>
           <div class="tab-switcher">
             <div :class="['tab-pill', activeTab === 'for-you' ? 'active' : '']" @click="goToTab('for-you')">
               For You
@@ -223,9 +220,8 @@ watch(followingPosts, (newPosts: Post[]) => {
           <button v-if="canCreateContent" class="create-button" @click="handleCreatePost">
             <ion-icon :icon="addCircleOutline" />
           </button>
-          <div v-else class="create-button-placeholder"></div>
-        </div>
-      </div>
+        </template>
+      </Header>
 
       <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
         <!-- For You Tab -->
@@ -282,56 +278,14 @@ watch(followingPosts, (newPosts: Post[]) => {
 </template>
 
 <style scoped>
-.explore-header {
-  position: sticky;
-  top: 0;
-  z-index: 11;
-  background: rgba(18, 22, 30, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  padding: 0.75rem 1.5rem;
-}
-
-.header-content {
-  display: grid;
-  grid-template-columns: 44px 1fr 44px;
-  align-items: center;
-  gap: 0.75rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.header-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-  justify-self: start;
-}
-
-.header-icon {
-  font-size: 22px;
-  color: #60a5fa;
-}
-
-.header-icon-placeholder {
-  width: 44px;
-  height: 44px;
-  justify-self: start;
-}
+/* Header styles removed - now using Header component */
 
 .tab-switcher {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
   gap: 0.75rem;
-  justify-content: center;
   align-items: center;
 }
 

@@ -38,6 +38,7 @@ import { createPinia } from 'pinia';
 
 const app = createApp(App)
   .use(IonicVue, {
+    mode: 'ios', // Force iOS mode for consistent mobile experience
     navAnimation: fadeTransition,
   })
   .use(router);

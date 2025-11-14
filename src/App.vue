@@ -5,6 +5,7 @@ import { capitalize } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { ref, computed, watchEffect, onMounted } from 'vue';
 import NowPlayingBar from '@/component/player/NowPlayingBar.vue';
+import DesktopWarning from '@/component/DesktopWarning.vue';
 
 interface TabEntry {
   name: string;
@@ -15,7 +16,7 @@ interface TabEntry {
 
 const authStore = useAuthStore();
 const isAdminOrArtist = ref(false);
-const fullscreenRoutes: string[] = ['/auth'];
+const fullscreenRoutes: string[] = ['/auth', '/maintenance'];
 
 const tabs: TabEntry[] = [
   { name: 'explore', icon: compassOutline, requiresAuth: false },
@@ -73,6 +74,7 @@ watchEffect(() => {
 
 <template>
   <ion-app>
+    <DesktopWarning />
     <ion-tabs>
       <ion-router-outlet />
       <NowPlayingBar />

@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { IonContent, IonIcon } from '@ionic/vue';
 import { arrowBackOutline, documentTextOutline, personOutline, addCircleOutline } from 'ionicons/icons';
 import SearchBarWithFilters from '@/component/search/SearchBarWithFilters.vue';
+import Header from '@/component/AppHeader.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -79,17 +80,7 @@ const createNewQuote = () => {
 
 const goBack = () => {
   (document.activeElement as HTMLElement)?.blur();
-
-  // Check if we have valid history to go back to
-  const canGoBack = window.history.state?.back;
-
-  if (canGoBack) {
-    // Smart back - go to wherever we came from (profile, etc.)
-    router.back();
-  } else {
-    // Default to profile if no valid history
-    router.push('/profile/me');
-  }
+  router.push('/profile');
 };
 </script>
 
@@ -104,25 +95,15 @@ const goBack = () => {
       </div>
 
       <div class="quotes-content">
-        <!-- Header with Back Button -->
-        <div class="quotes-header">
-          <div class="header-content">
-            <div class="header-left">
-              <button class="back-btn" @click="goBack" tabindex="0">
-                <IonIcon :icon="arrowBackOutline" />
-              </button>
-              <div class="header-text">
-                <h1 class="header-title">My Quotes</h1>
-                <p class="header-subtitle">{{ quotesCount }}</p>
-              </div>
-            </div>
-
+        <!-- Header -->
+        <Header title="My Quotes" :subtitle="quotesCount" :icon="arrowBackOutline" :on-icon-click="goBack">
+          <template #actions>
             <button class="create-fab" @click="createNewQuote" tabindex="0">
               <IonIcon :icon="addCircleOutline" />
               <span class="create-fab-text">New Quote</span>
             </button>
-          </div>
-        </div>
+          </template>
+        </Header>
 
         <!-- Search Bar -->
         <SearchBarWithFilters
@@ -257,60 +238,7 @@ const goBack = () => {
   z-index: 1;
 }
 
-/* Header */
-.quotes-header {
-  background: rgba(18, 22, 30, 0.85);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-  padding: 1rem 1rem;
-  margin-bottom: 0;
-}
-
-.header-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.back-btn {
-  width: 48px;
-  height: 48px;
-  flex-shrink: 0;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.75rem;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn ion-icon {
-  font-size: 1.5rem;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.back-btn:active {
-  transform: scale(0.95);
-}
-
+/* Create Fab Button */
 .create-fab {
   appearance: none;
   border: none;
@@ -351,29 +279,6 @@ const goBack = () => {
 .create-fab:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 0.25rem 0;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  line-height: 1;
 }
 
 /* Loading State */
@@ -672,19 +577,6 @@ const goBack = () => {
 
 /* Responsive */
 @media (max-width: 640px) {
-  .header-title {
-    font-size: 1.3rem;
-  }
-
-  .back-btn {
-    width: 42px;
-    height: 42px;
-  }
-
-  .back-btn ion-icon {
-    font-size: 1.3rem;
-  }
-
   .create-fab {
     padding: 0;
     width: 38px;

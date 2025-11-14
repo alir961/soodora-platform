@@ -12,6 +12,7 @@ import {
   musicalNoteOutline,
   documentTextOutline,
 } from 'ionicons/icons';
+import Header from '@/component/AppHeader.vue';
 import { onMounted, ref, watch, ref as vueRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
@@ -175,18 +176,12 @@ watch(
 
       <div v-else-if="mediaKit" class="mediakit-wrapper">
         <!-- Header with Back Button and Actions -->
-        <div class="mediakit-header">
-          <div class="header-content">
-            <div class="header-left">
-              <button class="back-btn" @click="goBack" tabindex="0">
-                <IonIcon :icon="arrowBackOutline" />
-              </button>
-              <div class="header-text">
-                <h1 class="header-title">Soodora Kit</h1>
-                <p class="header-subtitle">{{ mediaKit.title || 'Soodora Media Kit' }}</p>
-              </div>
-            </div>
-
+        <Header
+          title="Soodora Kit"
+          :subtitle="mediaKit.title || 'Soodora Media Kit'"
+          :icon="arrowBackOutline"
+          :on-icon-click="goBack">
+          <template #actions>
             <div class="header-actions">
               <button class="action-btn download-btn" @click="downloadPdfHandler">
                 <IonIcon :icon="cloudDownloadOutline" />
@@ -202,8 +197,8 @@ watch(
                 :delete-function="deleteMediaKit"
                 @deleted="router.push('/profile')" />
             </div>
-          </div>
-        </div>
+          </template>
+        </Header>
 
         <!-- Info Card -->
         <div class="info-card">
@@ -214,7 +209,7 @@ watch(
             <h2 class="info-title">Soodora Kit Information</h2>
             <button class="save-btn" :class="{ saved: justSaved }" @click="saveMediaKit" :disabled="isSaving">
               <IonIcon :icon="saveOutline" />
-              <span>{{ isSaving ? 'Saving...' : justSaved ? 'Saved!' : 'Save Changes' }}</span>
+              <span>{{ isSaving ? 'Saving...' : justSaved ? 'Saved!' : 'Save' }}</span>
             </button>
           </div>
 
@@ -436,82 +431,7 @@ watch(
 }
 
 /* Header */
-.mediakit-header {
-  background: rgba(18, 22, 30, 0.85);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
-  padding: 1rem 1rem;
-  margin-bottom: 0;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.back-btn {
-  appearance: none;
-  border: none;
-  background: rgba(255, 255, 255, 0.05);
-  width: 48px;
-  height: 48px;
-  border-radius: 0.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px) saturate(180%);
-}
-
-.back-btn ion-icon {
-  font-size: 1.5rem;
-  color: white;
-}
-
-.back-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: scale(1.05);
-}
-
-.back-btn:active {
-  transform: scale(0.95);
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 0.25rem 0;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0;
-  line-height: 1;
-}
+/* Header styles removed - now using Header component */
 
 .header-actions {
   display: flex;
