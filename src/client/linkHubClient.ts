@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import { LinkHub } from '@/entity/LinkHub';
+import { LinkHubAnalytics, LinkHub } from '@/entity/LinkPage';
 import { Link } from '@/entity/Link';
 import { reject } from '@/utils';
 
@@ -26,6 +26,16 @@ export async function getLinkHub(slug: string): Promise<LinkHub> {
     .then((response) => {
       if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Unable to retrieve link page');
+    })
+    .catch(reject);
+}
+
+export async function getLinkHubAnalytics(slug: string): Promise<LinkHubAnalytics> {
+  return axios
+    .get(`/link-hubs/${slug}/analytics`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response && response.status === 200 && response.data) return response.data as LinkHubAnalytics;
+      return reject('Unable to retrieve link hub analytics');
     })
     .catch(reject);
 }

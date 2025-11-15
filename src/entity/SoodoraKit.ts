@@ -15,6 +15,11 @@ export interface SoodoraKitItemDTO {
   content: string;
 }
 
+export interface MediaKitAnalytics {
+  downloadCount: number;
+  subscriberDownloadCount: number;
+}
+
 export interface CreateSoodoraKitRequest {
   title: string;
   shortBio?: string | null;
