@@ -3,6 +3,7 @@ package com.soodora.service.user;
 import com.soodora.domain.auth.value.Role;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.value.Url;
+import com.soodora.domain.mail.SummaryEmailSender;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.ProductDTO;
@@ -12,6 +13,7 @@ import com.soodora.domain.user.value.Identifier;
 import com.soodora.domain.user.value.Username;
 import com.soodora.service.auth.UserPrincipal;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -25,7 +27,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.data.domain.Pageable.unpaged;
 
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromUsername;
 
 @Slf4j
@@ -37,6 +41,7 @@ public class UserService implements UserDetailsService {
     private final PostRepository postRepository;
     private final ProductRepository productRepository;
     private final ImageStorageUploader imageStorageUploader;
+    private final SummaryEmailSender summaryEmailSender;
 
     public Set<User> retrieveAllUsers() {
         return userRepository.findAll();
@@ -163,6 +168,14 @@ public class UserService implements UserDetailsService {
         User user = retrieveUser(createFromUsername(username));
 
         return new UserPrincipal(user);
+    }
+
+    public void sendPostsSummary(User user) {
+        Identifier identifier = createFromSlug(user.getSlug());
+        List<Post> posts = postRepository.findUserPosts(identifier, unpaged()).stream()
+                .toList();
+
+        summaryEmailSender.sendEmail(user.getEmail().value(), user, posts);
     }
 
 }

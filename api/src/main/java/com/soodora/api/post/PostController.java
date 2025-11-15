@@ -5,12 +5,12 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
+import com.soodora.domain.post.PostAnalytics;
 import com.soodora.domain.post.PostFilter;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
-import com.soodora.service.post.PostAnalytics;
 import com.soodora.service.post.PostService;
 import com.soodora.service.shared.FileDataService;
 

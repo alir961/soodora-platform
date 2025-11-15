@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
-import static java.lang.Math.toIntExact;
 import static java.util.stream.Collectors.toSet;
 
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
@@ -182,22 +181,9 @@ public class PostService {
         Post post = retrievePostBySlug(postSlug);
         User owner = post.getOwner();
 
-        if (owner.getSlug().equals(user.getSlug()) || user.isAdmin()) {
-            int subscribedLikes = countSubscribers(post.getLikedUsers(), owner);
-            int subscribedComments = countSubscribers(post.getCommentedUsers(), owner);
-            int subscribedReposts = countSubscribers(post.getRepostedUsers(), owner);
-
-            return new PostAnalytics(
-                    post.getLikedUsers().size(), post.getCommentedUsers().size(), post.getRepostedUsers().size(),
-                    subscribedLikes, subscribedComments, subscribedReposts);
-        }
+        if (owner.getSlug().equals(user.getSlug()) || user.isAdmin())
+            return post.computeAnalytics();
         throw new InvalidPermissionException("Only the post owner can access the analytics");
-    }
-
-    private int countSubscribers(List<User> users, User target) {
-        return toIntExact(users.stream()
-                .filter(u -> u.isFollowing(target))
-                .count());
     }
 
 }

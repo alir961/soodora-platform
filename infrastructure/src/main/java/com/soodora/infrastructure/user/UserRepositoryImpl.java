@@ -112,6 +112,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Set<User> findAllArtists() {
+        return userRepository.findAll().stream()
+                .filter(UserEntity::isArtist)
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+    }
+
+    @Override
     @Transactional
     public Page<User> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable) {
         if (onlyArtists) {

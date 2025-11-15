@@ -2,6 +2,7 @@ package com.soodora.api.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
+import com.soodora.domain.post.PostAnalytics;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
@@ -9,7 +10,6 @@ import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CommentPostRequest;
 import com.soodora.service.post.CreatePostRequest;
-import com.soodora.service.post.PostAnalytics;
 import com.soodora.service.post.PostService;
 import com.soodora.service.user.UnknownUserException;
 

@@ -1,6 +1,6 @@
 package com.soodora.api.post;
 
-import com.soodora.service.post.PostAnalytics;
+import com.soodora.domain.post.PostAnalytics;
 
 public record PostAnalyticsDTO(
         int likes,

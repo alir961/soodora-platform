@@ -1,4 +1,4 @@
-package com.soodora.service.post;
+package com.soodora.domain.post;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

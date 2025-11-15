@@ -8,6 +8,8 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static java.lang.Math.toIntExact;
+
 @Getter
 @AllArgsConstructor
 public class Post {
@@ -24,5 +26,21 @@ public class Post {
     private List<User> repostedUsers;
     private Date createdAt;
     private Date updatedAt;
+
+    public PostAnalytics computeAnalytics() {
+        int subscribedLikes = countSubscribers(likedUsers, owner);
+        int subscribedComments = countSubscribers(commentedUsers, owner);
+        int subscribedReposts = countSubscribers(repostedUsers, owner);
+
+        return new PostAnalytics(
+                likedUsers.size(), commentedUsers.size(), repostedUsers.size(),
+                subscribedLikes, subscribedComments, subscribedReposts);
+    }
+
+    private static int countSubscribers(List<User> users, User target) {
+        return toIntExact(users.stream()
+                .filter(u -> u.isFollowing(target))
+                .count());
+    }
 
 }
