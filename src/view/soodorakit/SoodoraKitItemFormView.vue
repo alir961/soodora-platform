@@ -6,7 +6,7 @@ import ImageUploadPreview from '@/component/marketplace/ImageUploadPreview.vue';
 import { IonIcon } from '@ionic/vue';
 import { closeOutline, imageOutline } from 'ionicons/icons';
 import { showToast } from '@/utils';
-import { addMediaKitItem, getMediaKitBySlug, updateMediaKitItem } from '@/client/mediaKitClient';
+import { addSoodoraKitItem, getSoodoraKitBySlug, updateSoodoraKitItem } from '@/client/soodoraKitClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 
 const router = useRouter();
@@ -19,7 +19,7 @@ const isEditMode = computed(() => !!route.params.itemSlug);
 const headerTitle = computed(() => (isEditMode.value ? 'Edit Media Item' : 'Add Media Item'));
 const submitButtonText = computed(() => (isEditMode.value ? 'Save Changes' : 'Add Item'));
 
-const mediaKitSlug = computed(() => route.params.slug as string);
+const soodoraKitSlug = computed(() => route.params.slug as string);
 const itemSlug = computed(() => route.params.itemSlug as string);
 
 const itemData = ref<{ type: string; title: string; content: string }>({
@@ -36,8 +36,8 @@ onMounted(async () => {
   if (isEditMode.value) {
     isLoading.value = true;
     try {
-      const mediaKit = await getMediaKitBySlug(mediaKitSlug.value);
-      const item = mediaKit.items?.find((i) => i.slug === itemSlug.value);
+      const soodoraKit = await getSoodoraKitBySlug(soodoraKitSlug.value);
+      const item = soodoraKit.items?.find((i) => i.slug === itemSlug.value);
 
       if (item) {
         itemData.value = {
@@ -92,16 +92,16 @@ const submitForm = async () => {
     }
 
     if (isEditMode.value) {
-      await updateMediaKitItem(itemSlug.value, formData);
+      await updateSoodoraKitItem(itemSlug.value, formData);
     } else {
       const artistSlug = authStore.getAuthenticatedUserSlug;
       if (!artistSlug) {
         throw new Error('User not authenticated');
       }
-      await addMediaKitItem(artistSlug, formData);
+      await addSoodoraKitItem(artistSlug, formData);
     }
 
-    await router.push(`/mediakits/${mediaKitSlug.value}?t=${Date.now()}`);
+    await router.push(`/soodorakits/${soodoraKitSlug.value}?t=${Date.now()}`);
   } catch (error: unknown) {
     const action = isEditMode.value ? 'update' : 'add';
     const message = `Failed to ${action} item. ` + (error instanceof Error ? error.message : '');

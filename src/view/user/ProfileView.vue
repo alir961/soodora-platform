@@ -24,8 +24,8 @@ import {
   chatbubblesOutline,
 } from 'ionicons/icons';
 import ActionsPopup, { type ActionItem } from '@/component/actions/ActionsPopup.vue';
-import { getMediaKitByArtistSlug } from '@/client/mediaKitClient';
-import { getUserLinkPage } from '@/client/linkPageClient';
+import { getSoodoraKitArtistSlug } from '@/client/soodoraKitClient';
+import { getUserLinkHub } from '@/client/linkHubClient';
 
 const route = useRoute();
 const router = useRouter();
@@ -116,33 +116,33 @@ const handleLinkHub = async () => {
   if (!user) return;
 
   try {
-    const linkPage = await getUserLinkPage(user.slug);
-    if (linkPage) {
-      await router.push(`/linkhub/edit/${linkPage.slug}`);
+    const linkHub = await getUserLinkHub(user.slug);
+    if (linkHub) {
+      await router.push(`/linkhub/edit/${linkHub.slug}`);
       return;
     }
   } catch (error) {
-    // User doesn't have a link page yet, redirect to create
+    // User doesn't have a link hub yet, redirect to create
   }
   await router.push('/linkhub/create');
 };
 
-const handleMediaKit = async () => {
+const handleSoodoraKit = async () => {
   const user = authStore.getAuthenticatedUser;
   if (!user) return;
 
   try {
     if (user.roles.includes('ARTIST')) {
-      const mediaKit = await getMediaKitByArtistSlug(user.slug);
-      if (mediaKit) {
-        router.push(`/mediakits/${mediaKit.slug}`);
+      const soodoraKit = await getSoodoraKitArtistSlug(user.slug);
+      if (soodoraKit) {
+        await router.push(`/soodorakits/${soodoraKit.slug}`);
         return;
       }
     }
   } catch (error) {
-    // User doesn't have a mediakit yet, redirect to create
+    // User doesn't have a soodorakit yet, redirect to create
   }
-  await router.push('/mediakits/create');
+  await router.push('/soodorakits/create');
 };
 
 const handleQuotes = () => {
@@ -169,7 +169,7 @@ const actionItems = computed<ActionItem[]>(() => {
       {
         icon: briefcaseOutline,
         label: 'Soodora Kit',
-        action: handleMediaKit,
+        action: handleSoodoraKit,
       },
       {
         icon: chatbubblesOutline,

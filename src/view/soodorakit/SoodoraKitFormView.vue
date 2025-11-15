@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { createMediaKit } from '@/client/mediaKitClient';
-import type { MediaKitDTO } from '@/entity/MediaKit';
+import { createSoodoraKit } from '@/client/soodoraKitClient';
+import type { SoodoraKitDTO } from '@/entity/SoodoraKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import Header from '@/component/AppHeader.vue';
 import { IonIcon, IonContent } from '@ionic/vue';
@@ -11,7 +11,7 @@ import { showToast } from '@/utils';
 
 const router = useRouter();
 
-const newMediaKit = ref<MediaKitDTO>({
+const newSoodoraKit = ref<SoodoraKitDTO>({
   slug: '',
   title: '',
   shortBio: '',
@@ -30,24 +30,24 @@ const closeForm = () => {
 const isSubmitDisabled = computed(() => {
   if (isLoading.value) return true;
   if (
-    !newMediaKit.value.title?.trim() ||
-    !newMediaKit.value.shortBio?.trim() ||
-    !newMediaKit.value.longBio?.trim() ||
-    !newMediaKit.value.contactEmail?.trim() ||
-    !newMediaKit.value.contactPhone?.trim()
+    !newSoodoraKit.value.title?.trim() ||
+    !newSoodoraKit.value.shortBio?.trim() ||
+    !newSoodoraKit.value.longBio?.trim() ||
+    !newSoodoraKit.value.contactEmail?.trim() ||
+    !newSoodoraKit.value.contactPhone?.trim()
   )
     return true;
   return false;
 });
 
-const saveNewMediaKit = async () => {
+const saveNewSoodoraKit = async () => {
   try {
     if (isSubmitDisabled.value) return;
     isLoading.value = true;
-    const created = await createMediaKit(newMediaKit.value);
-    await router.push(`/mediakits/${created.slug}`);
+    const created = await createSoodoraKit(newSoodoraKit.value);
+    await router.push(`/soodorakits/${created.slug}`);
   } catch (error: unknown) {
-    const message = 'Failed to create MediaKit. ' + (error instanceof Error ? error.message : '');
+    const message = 'Failed to create SoodoraKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -58,7 +58,7 @@ const saveNewMediaKit = async () => {
 <template>
   <ApplicationViewport title="Create Soodora Kit">
     <IonContent class="form-content-wrapper">
-      <Header title="Create Soodora Kit" :subtitle="newMediaKit.title || 'New kit'" :icon="sparklesOutline">
+      <Header title="Create Soodora Kit" :subtitle="newSoodoraKit.title || 'New kit'" :icon="sparklesOutline">
         <template #actions>
           <button class="back-btn" @click="closeForm">
             <IonIcon :icon="closeOutline" />
@@ -75,31 +75,31 @@ const saveNewMediaKit = async () => {
 
           <div class="form-field">
             <label>Title <span class="required">*</span></label>
-            <input type="text" v-model="newMediaKit.title" placeholder="Enter media kit title" required />
+            <input type="text" v-model="newSoodoraKit.title" placeholder="Enter soodora kit title" required />
           </div>
 
           <div class="form-field">
             <label>Short Bio <span class="required">*</span></label>
-            <textarea v-model="newMediaKit.shortBio" placeholder="Short bio" rows="3" required></textarea>
+            <textarea v-model="newSoodoraKit.shortBio" placeholder="Short bio" rows="3" required></textarea>
           </div>
 
           <div class="form-field">
             <label>Long Bio <span class="required">*</span></label>
-            <textarea v-model="newMediaKit.longBio" placeholder="Long bio" rows="5" required></textarea>
+            <textarea v-model="newSoodoraKit.longBio" placeholder="Long bio" rows="5" required></textarea>
           </div>
 
           <div class="form-field">
             <label>Contact Email <span class="required">*</span></label>
-            <input type="email" v-model="newMediaKit.contactEmail" placeholder="Contact email" required />
+            <input type="email" v-model="newSoodoraKit.contactEmail" placeholder="Contact email" required />
           </div>
 
           <div class="form-field">
             <label>Contact Phone <span class="required">*</span></label>
-            <input type="tel" v-model="newMediaKit.contactPhone" placeholder="Contact phone" required />
+            <input type="tel" v-model="newSoodoraKit.contactPhone" placeholder="Contact phone" required />
           </div>
         </div>
 
-        <button class="submit-btn" @click="saveNewMediaKit" :disabled="isSubmitDisabled">
+        <button class="submit-btn" @click="saveNewSoodoraKit" :disabled="isSubmitDisabled">
           {{ isLoading ? 'Creating...' : 'Create Soodora Kit' }}
         </button>
       </div>

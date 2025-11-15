@@ -1,16 +1,16 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import { LinkPage } from '@/entity/LinkPage';
+import { LinkHub } from '@/entity/LinkHub';
 import { Link } from '@/entity/Link';
 import { reject } from '@/utils';
 
-export type CreateLinkPageRequest = Omit<Omit<LinkPage, 'slug'>, 'owner' | 'links'>;
-export type UpdateLinkPageRequest = Partial<CreateLinkPageRequest>;
+export type CreateLinkHubRequest = Omit<Omit<LinkHub, 'slug'>, 'owner' | 'links'>;
+export type UpdateLinkHubRequest = Partial<CreateLinkHubRequest>;
 
 export type CreateLinkRequest = Omit<Link, 'slug'>;
 export type UpdateLinkRequest = Partial<CreateLinkRequest>;
 
-export async function createLinkPage(command: CreateLinkPageRequest): Promise<string> {
+export async function createLinkHub(command: CreateLinkHubRequest): Promise<string> {
   return axios
     .post('/linkpages', command, { headers: await getAuthorizedHeader() })
     .then((response) => {
@@ -20,27 +20,27 @@ export async function createLinkPage(command: CreateLinkPageRequest): Promise<st
     .catch(reject);
 }
 
-export async function getLinkPage(slug: string): Promise<LinkPage> {
+export async function getLinkHub(slug: string): Promise<LinkHub> {
   return axios
     .get(`/linkpages/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 200 && response.data) return response.data as LinkPage;
+      if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Unable to retrieve link page');
     })
     .catch(reject);
 }
 
-export async function getUserLinkPage(userSlug: string): Promise<LinkPage> {
+export async function getUserLinkHub(userSlug: string): Promise<LinkHub> {
   return axios
     .get('/linkpages', { headers: await getAuthorizedHeader(), params: { userSlug } })
     .then((response) => {
-      if (response && response.status === 200 && response.data) return response.data as LinkPage;
+      if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Not found link page');
     })
     .catch(reject);
 }
 
-export async function updateLinkPage(slug: string, command: UpdateLinkPageRequest) {
+export async function updateLinkHub(slug: string, command: UpdateLinkHubRequest) {
   return axios
     .put(`/linkpages/${slug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
@@ -50,7 +50,7 @@ export async function updateLinkPage(slug: string, command: UpdateLinkPageReques
     .catch(reject);
 }
 
-export async function deleteLinkPage(slug: string): Promise<void> {
+export async function deleteLinkHub(slug: string): Promise<void> {
   return axios
     .delete(`/linkpages/${slug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
@@ -59,9 +59,9 @@ export async function deleteLinkPage(slug: string): Promise<void> {
     .catch(reject);
 }
 
-export async function createLink(linkPageSlug: string, command: CreateLinkRequest): Promise<string> {
+export async function createLink(linkHubSlug: string, command: CreateLinkRequest): Promise<string> {
   return axios
-    .post(`/linkpages/${linkPageSlug}/links`, command, { headers: await getAuthorizedHeader() })
+    .post(`/linkpages/${linkHubSlug}/links`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 201 && response.data) return response.data.slug;
       return reject('Unable to create link');
@@ -69,9 +69,9 @@ export async function createLink(linkPageSlug: string, command: CreateLinkReques
     .catch(reject);
 }
 
-export async function updateLink(linkPageSlug: string, linkSlug: string, command: UpdateLinkRequest) {
+export async function updateLink(linkHubSlug: string, linkSlug: string, command: UpdateLinkRequest) {
   return axios
-    .put(`/linkpages/${linkPageSlug}/links/${linkSlug}`, command, { headers: await getAuthorizedHeader() })
+    .put(`/linkpages/${linkHubSlug}/links/${linkSlug}`, command, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200) return;
       return reject('Unable to update link');
@@ -79,9 +79,9 @@ export async function updateLink(linkPageSlug: string, linkSlug: string, command
     .catch(reject);
 }
 
-export async function deleteLink(linkPageSlug: string, linkSlug: string): Promise<void> {
+export async function deleteLink(linkHubSlug: string, linkSlug: string): Promise<void> {
   return axios
-    .delete(`/linkpages/${linkPageSlug}/links/${linkSlug}`, { headers: await getAuthorizedHeader() })
+    .delete(`/linkpages/${linkHubSlug}/links/${linkSlug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (!response || response.status !== 200) return reject('Unable to delete link');
     })
