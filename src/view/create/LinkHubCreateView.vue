@@ -3,7 +3,7 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { showToast } from '@/utils';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import { createLinkPage, createLink, CreateLinkPageRequest, CreateLinkRequest } from '@/client/linkPageClient';
+import { createLinkHub, createLink, CreateLinkHubRequest, CreateLinkRequest } from '@/client/linkHubClient';
 import { IonIcon } from '@ionic/vue';
 import { linkOutline, addCircleOutline, arrowBackOutline } from 'ionicons/icons';
 import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
@@ -44,11 +44,11 @@ async function submitCreate() {
   }
 
   try {
-    const pageCommand: CreateLinkPageRequest = {
+    const pageCommand: CreateLinkHubRequest = {
       title: pageData.value.title,
       description: pageData.value.description,
     };
-    const createdSlug = await createLinkPage(pageCommand);
+    const createdSlug = await createLinkHub(pageCommand);
 
     for (const link of links.value) {
       await createLink(createdSlug, link);

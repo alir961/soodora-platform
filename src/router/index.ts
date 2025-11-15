@@ -13,9 +13,9 @@ import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
 import MySaleView from '@/view/marketplace/MySaleView.vue';
 import ConfirmationView from '@/view/user/ConfirmationView.vue';
-import MediaKitCreateView from '@/view/mediakit/MediaKitFormView.vue';
-import MediaKitEditView from '@/view/mediakit/MediaKitEditView.vue';
-import MediaItemFormView from '@/view/mediakit/MediaItemFormView.vue';
+import SoodoraKitFormView from '@/view/soodorakit/SoodoraKitFormView.vue';
+import SoodoraKitEditView from '@/view/soodorakit/SoodoraKitEditView.vue';
+import SoodoraKitItemFormView from '@/view/soodorakit/SoodoraKitItemFormView.vue';
 import QuoteCreateView from '@/view/quote/QuoteFormView.vue';
 import QuoteDetailsView from '@/view/quote/QuoteDetailsView.vue';
 import QuoteView from '@/view/quote/QuoteView.vue';
@@ -112,24 +112,24 @@ const routes: Array<RouteRecordRaw> = [
     component: MySaleView,
   },
   {
-    path: '/mediakits/create',
-    name: 'MediaKitCreation',
-    component: MediaKitCreateView,
+    path: '/soodorakits/create',
+    name: 'SoodoraKitCreation',
+    component: SoodoraKitFormView,
   },
   {
-    path: '/mediakits/:slug/items/new',
-    name: 'MediaItemCreate',
-    component: MediaItemFormView,
+    path: '/soodorakits/:slug/items/new',
+    name: 'SoodoraKitItemCreate',
+    component: SoodoraKitItemFormView,
   },
   {
-    path: '/mediakits/:slug/items/:itemSlug/edit',
-    name: 'MediaItemEdit',
-    component: MediaItemFormView,
+    path: '/soodorakits/:slug/items/:itemSlug/edit',
+    name: 'SoodoraKitItemEdit',
+    component: SoodoraKitItemFormView,
   },
   {
-    path: '/mediakits/:slug',
-    name: 'MediaKitEdit',
-    component: MediaKitEditView,
+    path: '/soodorakits/:slug',
+    name: 'SoodoraKitEdit',
+    component: SoodoraKitEditView,
   },
   {
     path: '/playlists',

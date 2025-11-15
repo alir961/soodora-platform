@@ -16,15 +16,15 @@ import Header from '@/component/AppHeader.vue';
 import { onMounted, ref, watch, ref as vueRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
-  deleteMediaKit,
-  deleteMediaKitItem,
-  exportMediaKitPdf,
-  getMediaKitByArtistSlug,
-  getMediaKitBySlug,
-  updateMediaKit,
-} from '@/client/mediaKitClient';
+  deleteSoodoraKit,
+  deleteSoodoraKitItem,
+  exportSoodoraKitPdf,
+  getSoodoraKitArtistSlug,
+  getSoodoraKitBySlug,
+  updateSoodoraKit,
+} from '@/client/soodoraKitClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import type { MediaKitDTO, MediaKitItemDTO } from '@/entity/MediaKit';
+import type { SoodoraKitDTO, SoodoraKitItemDTO } from '@/entity/SoodoraKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { showToast } from '@/utils';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
@@ -37,8 +37,8 @@ const deleteCardRef = vueRef();
 const deleteItemCardRefs = vueRef<Record<string, InstanceType<typeof DeleteCard>>>({});
 
 const slug = ref<string | undefined>(route.params.slug as string | undefined);
-const mediaKit = ref<MediaKitDTO | null>(null);
-const mediaKitItems = ref<MediaKitItemDTO[]>([]);
+const soodoraKit = ref<SoodoraKitDTO | null>(null);
+const soodoraKitItems = ref<SoodoraKitItemDTO[]>([]);
 const isLoading = ref(false);
 const isSaving = ref(false);
 const justSaved = ref(false);
@@ -58,14 +58,14 @@ const getItemTypeIcon = (type: string) => {
   }
 };
 
-async function fetchMediaKit(slugToLoad: string) {
+async function fetchSoodoraKit(slugToLoad: string) {
   isLoading.value = true;
   try {
-    const mk = await getMediaKitBySlug(slugToLoad);
-    mediaKit.value = mk;
-    mediaKitItems.value = mk.items || [];
+    const mk = await getSoodoraKitBySlug(slugToLoad);
+    soodoraKit.value = mk;
+    soodoraKitItems.value = mk.items || [];
   } catch (error: unknown) {
-    const message = 'Failed to load MediaKit. ' + (error instanceof Error ? error.message : '');
+    const message = 'Failed to load SoodoraKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isLoading.value = false;
@@ -77,18 +77,18 @@ const goBack = () => {
   router.push('/profile');
 };
 
-const saveMediaKit = async () => {
-  if (!mediaKit.value) return;
+const saveSoodoraKit = async () => {
+  if (!soodoraKit.value) return;
   isSaving.value = true;
   justSaved.value = false;
   try {
-    await updateMediaKit(mediaKit.value.slug, mediaKit.value);
+    await updateSoodoraKit(soodoraKit.value.slug, soodoraKit.value);
     justSaved.value = true;
     setTimeout(() => {
       justSaved.value = false;
     }, 2000);
   } catch (error: unknown) {
-    const message = 'Failed to save MediaKit. ' + (error instanceof Error ? error.message : '');
+    const message = 'Failed to save SoodoraKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
   } finally {
     isSaving.value = false;
@@ -96,13 +96,13 @@ const saveMediaKit = async () => {
 };
 
 const downloadPdfHandler = async () => {
-  if (!mediaKit.value) return;
+  if (!soodoraKit.value) return;
   try {
-    const blob = await exportMediaKitPdf(mediaKit.value.slug);
+    const blob = await exportSoodoraKitPdf(soodoraKit.value.slug);
     const url = URL.createObjectURL(blob);
     const link = Object.assign(document.createElement('a'), {
       href: url,
-      download: `mediakit_${mediaKit.value.slug}.pdf`,
+      download: `soodorakit_${soodoraKit.value.slug}.pdf`,
     });
     link.click();
     URL.revokeObjectURL(url);
@@ -114,24 +114,24 @@ const downloadPdfHandler = async () => {
 
 const openAddItemModal = () => {
   (document.activeElement as HTMLElement)?.blur();
-  router.push(`/mediakits/${mediaKit.value?.slug}/items/new`);
+  router.push(`/soodorakits/${soodoraKit.value?.slug}/items/new`);
 };
 
-const openEditItemModal = (item: MediaKitItemDTO) => {
+const openEditItemModal = (item: SoodoraKitItemDTO) => {
   (document.activeElement as HTMLElement)?.blur();
-  router.push(`/mediakits/${mediaKit.value?.slug}/items/${item.slug}/edit`);
+  router.push(`/soodorakits/${soodoraKit.value?.slug}/items/${item.slug}/edit`);
 };
 
 onMounted(async () => {
   if (slug.value) {
-    await fetchMediaKit(slug.value);
+    await fetchSoodoraKit(slug.value);
   } else {
     const artistSlug = authStore.getAuthenticatedUserSlug;
     try {
-      const existing = artistSlug ? await getMediaKitByArtistSlug(artistSlug) : null;
-      if (existing) await router.replace(`/mediakits/${existing.slug}`);
+      const existing = artistSlug ? await getSoodoraKitArtistSlug(artistSlug) : null;
+      if (existing) await router.replace(`/soodorakits/${existing.slug}`);
     } catch (error: unknown) {
-      const message = 'Redirection to MediaKit failed. ' + (error instanceof Error ? error.message : '');
+      const message = 'Redirection to Soodora Kit failed. ' + (error instanceof Error ? error.message : '');
       await showToast(message, 'danger');
     }
   }
@@ -140,10 +140,10 @@ onMounted(async () => {
 watch(
   () => route.params.slug,
   async (newSlug) => {
-    // Only fetch if we're actually on the mediakit edit route
-    if (route.path.startsWith('/mediakits/') && route.name === 'MediaKitEdit') {
+    // Only fetch if we're actually on the soodorakit edit route
+    if (route.path.startsWith('/soodorakits/') && route.name === 'SoodoraKitEdit') {
       slug.value = newSlug as string | undefined;
-      if (slug.value) await fetchMediaKit(slug.value);
+      if (slug.value) await fetchSoodoraKit(slug.value);
     }
   }
 );
@@ -152,16 +152,16 @@ watch(
   () => route.query.t,
   async (newTimestamp) => {
     // Refresh items when returning from item form (timestamp query param changes)
-    if (newTimestamp && slug.value && route.name === 'MediaKitEdit') {
-      await fetchMediaKit(slug.value);
+    if (newTimestamp && slug.value && route.name === 'SoodoraKitEdit') {
+      await fetchSoodoraKit(slug.value);
     }
   }
 );
 </script>
 
 <template>
-  <ApplicationViewport title="Media Kit">
-    <IonContent class="mediakit-content">
+  <ApplicationViewport title="Soodora Kit">
+    <IonContent class="soodorakit-content">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">
         <div class="glow-orb orb-1"></div>
@@ -174,11 +174,11 @@ watch(
         <p class="loading-text">Loading your media kit...</p>
       </div>
 
-      <div v-else-if="mediaKit" class="mediakit-wrapper">
+      <div v-else-if="soodoraKit" class="soodorakit-wrapper">
         <!-- Header with Back Button and Actions -->
         <Header
           title="Soodora Kit"
-          :subtitle="mediaKit.title || 'Soodora Media Kit'"
+          :subtitle="soodoraKit.title || 'Soodora Media Kit'"
           :icon="arrowBackOutline"
           :on-icon-click="goBack">
           <template #actions>
@@ -193,8 +193,8 @@ watch(
               <DeleteCard
                 ref="deleteCardRef"
                 item-type="link hub"
-                :item-slug="mediaKit.slug"
-                :delete-function="deleteMediaKit"
+                :item-slug="soodoraKit.slug"
+                :delete-function="deleteSoodoraKit"
                 @deleted="router.push('/profile')" />
             </div>
           </template>
@@ -207,7 +207,7 @@ watch(
               <IonIcon :icon="documentTextOutline" class="info-icon" />
             </div>
             <h2 class="info-title">Soodora Kit Information</h2>
-            <button class="save-btn" :class="{ saved: justSaved }" @click="saveMediaKit" :disabled="isSaving">
+            <button class="save-btn" :class="{ saved: justSaved }" @click="saveSoodoraKit" :disabled="isSaving">
               <IonIcon :icon="saveOutline" />
               <span>{{ isSaving ? 'Saving...' : justSaved ? 'Saved!' : 'Save' }}</span>
             </button>
@@ -219,12 +219,12 @@ watch(
             <div class="info-grid">
               <div class="info-item full-width">
                 <span class="info-label">Title</span>
-                <IonInput v-model="mediaKit.title" placeholder="Enter media kit title" class="custom-input" />
+                <IonInput v-model="soodoraKit.title" placeholder="Enter soodora kit title" class="custom-input" />
               </div>
               <div class="info-item full-width">
                 <span class="info-label">Short Bio</span>
                 <IonTextarea
-                  v-model="mediaKit.shortBio"
+                  v-model="soodoraKit.shortBio"
                   :rows="3"
                   placeholder="Brief description..."
                   class="custom-textarea" />
@@ -232,7 +232,7 @@ watch(
               <div class="info-item full-width">
                 <span class="info-label">Long Bio</span>
                 <IonTextarea
-                  v-model="mediaKit.longBio"
+                  v-model="soodoraKit.longBio"
                   :rows="5"
                   placeholder="Detailed biography..."
                   class="custom-textarea" />
@@ -247,7 +247,7 @@ watch(
               <div class="info-item">
                 <span class="info-label">Email</span>
                 <IonInput
-                  v-model="mediaKit.contactEmail"
+                  v-model="soodoraKit.contactEmail"
                   type="email"
                   placeholder="contact@example.com"
                   class="custom-input" />
@@ -255,7 +255,7 @@ watch(
               <div class="info-item">
                 <span class="info-label">Phone</span>
                 <IonInput
-                  v-model="mediaKit.contactPhone"
+                  v-model="soodoraKit.contactPhone"
                   type="tel"
                   placeholder="+1 (555) 000-0000"
                   class="custom-input" />
@@ -278,8 +278,8 @@ watch(
           </div>
 
           <!-- Items List -->
-          <div v-if="mediaKitItems.length" class="items-list">
-            <div v-for="item in mediaKitItems" :key="item.slug" class="item-card">
+          <div v-if="soodoraKitItems.length" class="items-list">
+            <div v-for="item in soodoraKitItems" :key="item.slug" class="item-card">
               <div class="item-content">
                 <div class="item-header">
                   <div class="item-left">
@@ -306,8 +306,8 @@ watch(
                       "
                       item-type="item"
                       :item-slug="item.slug"
-                      :delete-function="deleteMediaKitItem"
-                      @deleted="mediaKitItems = mediaKitItems.filter((i) => i.slug !== item.slug)" />
+                      :delete-function="deleteSoodoraKitItem"
+                      @deleted="soodoraKitItems = soodoraKitItems.filter((i) => i.slug !== item.slug)" />
                   </div>
                 </div>
 
@@ -387,12 +387,12 @@ watch(
 }
 
 /* Content */
-.mediakit-content {
+.soodorakit-content {
   --background: transparent;
   position: relative;
 }
 
-.mediakit-wrapper {
+.soodorakit-wrapper {
   position: relative;
   z-index: 1;
   padding-bottom: 100px;

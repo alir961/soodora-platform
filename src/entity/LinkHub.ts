@@ -1,7 +1,7 @@
 import { User } from '@/entity/User';
 import { Link } from '@/entity/Link';
 
-interface LinkPage {
+interface LinkHub {
   slug: string;
   title: string;
   description: string;
@@ -9,4 +9,4 @@ interface LinkPage {
   links: Link[];
 }
 
-export type { LinkPage };
+export type { LinkHub };

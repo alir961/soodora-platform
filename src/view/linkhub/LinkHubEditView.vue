@@ -2,14 +2,14 @@
 import { showToast } from '@/utils';
 import { IonIcon, IonContent, onIonViewDidEnter } from '@ionic/vue';
 import {
-  getLinkPage,
-  updateLinkPage,
+  getLinkHub,
+  updateLinkHub,
   createLink,
   updateLink,
   deleteLink,
-  deleteLinkPage,
+  deleteLinkHub,
   CreateLinkRequest,
-} from '@/client/linkPageClient';
+} from '@/client/linkHubClient';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/store/reactiveStorage';
@@ -109,7 +109,7 @@ function isLinkValid(link: EditableLink) {
 async function loadPage() {
   if (!pageSlug.value) return;
   try {
-    const page = await getLinkPage(pageSlug.value);
+    const page = await getLinkHub(pageSlug.value);
     pageData.value.title = page.title;
     pageData.value.description = page.description;
     originalPageData.value.title = page.title;
@@ -136,7 +136,7 @@ async function submitUpdate() {
 
   isSubmitting.value = true;
   try {
-    await updateLinkPage(pageSlug.value, {
+    await updateLinkHub(pageSlug.value, {
       title: pageData.value.title,
       description: pageData.value.description,
     });
@@ -166,6 +166,7 @@ async function submitUpdate() {
 function copyPageUrl() {
   if (!pageSlug.value) return;
   navigator.clipboard.writeText(pageUrl.value);
+  showToast('Link Hub URL copied to clipboard !', 'success');
 }
 
 async function goToPublicLinkHub() {
@@ -365,7 +366,7 @@ onMounted(loadPage);
     <DeleteCard
       item-type="link hub"
       :item-slug="pageSlug || 'page'"
-      :delete-function="deleteLinkPage"
+      :delete-function="deleteLinkHub"
       @deleted="handlePageDeleted"
       ref="deletePageCardRef" />
 
@@ -650,14 +651,10 @@ onMounted(loadPage);
   font-size: 18px;
 }
 
-.copy-url-btn:hover {
+.copy-url-btn:active {
   background: rgba(59, 130, 246, 0.25);
   border-color: rgba(59, 130, 246, 0.4);
   transform: scale(1.05);
-}
-
-.copy-url-btn:active {
-  transform: scale(0.95);
 }
 
 .header-left {

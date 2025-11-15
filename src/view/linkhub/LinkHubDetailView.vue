@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { showToast } from '@/utils';
 import { IonContent, IonIcon, onIonViewDidEnter } from '@ionic/vue';
-import { getLinkPage } from '@/client/linkPageClient';
+import { getLinkHub } from '@/client/linkHubClient';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed } from 'vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
@@ -37,7 +37,7 @@ const links = ref<PublicLink[]>([]);
 async function loadPage() {
   if (!pageSlug.value) return;
   try {
-    const page = await getLinkPage(pageSlug.value);
+    const page = await getLinkHub(pageSlug.value);
     pageData.value.title = page.title;
     pageData.value.description = page.description;
     pageData.value.owner = {
@@ -71,6 +71,7 @@ async function shareHub() {
       });
     } else {
       await navigator.clipboard.writeText(url);
+      await showToast('Link Hub URL copied to clipboard !', 'success');
     }
   } catch (err) {
     console.error('Error sharing:', err);
@@ -165,25 +166,22 @@ onIonViewDidEnter(loadPage);
   --background: #000000;
 }
 
-.back-btn,
 .share-btn {
   appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
   flex-shrink: 0;
 }
 
-.back-btn ion-icon,
 .share-btn ion-icon {
   font-size: 22px;
   padding-bottom: 0;
@@ -191,17 +189,14 @@ onIonViewDidEnter(loadPage);
   flex-shrink: 0;
 }
 
-.back-btn:hover,
-.share-btn:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
+.share-btn ion-icon {
+  font-size: 18px;
 }
 
-.back-btn:active,
 .share-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
+  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
+  transform: scale(1.05);
 }
 
 @keyframes spin {

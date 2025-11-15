@@ -1,21 +1,21 @@
-export interface MediaKitDTO {
+export interface SoodoraKitDTO {
   slug: string;
   title: string;
   shortBio: string | null;
   longBio: string | null;
   contactEmail: string | null;
   contactPhone: string | null;
-  items?: MediaKitItemDTO[];
+  items?: SoodoraKitItemDTO[];
 }
 
-export interface MediaKitItemDTO {
+export interface SoodoraKitItemDTO {
   slug: string;
   type: 'image' | 'video' | 'audio' | 'text' | string;
   title: string;
   content: string;
 }
 
-export interface CreateMediaKitRequest {
+export interface CreateSoodoraKitRequest {
   title: string;
   shortBio?: string | null;
   longBio?: string | null;
@@ -23,4 +23,4 @@ export interface CreateMediaKitRequest {
   contactPhone?: string | null;
 }
 
-export interface UpdateMediaKitRequest extends CreateMediaKitRequest {}
+export interface UpdateSoodoraKitRequest extends CreateSoodoraKitRequest {}
