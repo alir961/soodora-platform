@@ -52,7 +52,7 @@ public class User {
     }
 
     public void follow(User user) {
-        if (equals(user))
+        if (user.getSlug().equals(slug))
             throw new UserFollowException("User cannot follow itself");
 
         following.add(user);
@@ -63,8 +63,8 @@ public class User {
         if (equals(user))
             throw new UserFollowException("User cannot unfollow itself");
 
-        following.remove(user);
-        user.followers.remove(this);
+        following.removeIf(u -> u.getSlug().equals(user.getSlug()));
+        user.followers.removeIf(u -> u.getSlug().equals(slug));
     }
 
 }

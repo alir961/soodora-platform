@@ -14,6 +14,7 @@ import com.soodora.infrastructure.auth.RoleJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -46,6 +47,16 @@ public class UserRepositoryImpl implements UserRepository {
                 .map(Role::completeRole)
                 .map(roleRepository::findByName)
                 .collect(toSet());
+        Set<UserEntity> followers = user.getFollowers().stream()
+                .map(u -> userRepository.findBySlug(u.getSlug()))
+                .map(o -> o.orElse(null))
+                .filter(Objects::nonNull)
+                .collect(toSet());
+        Set<UserEntity> following = user.getFollowing().stream()
+                .map(u -> userRepository.findBySlug(u.getSlug()))
+                .map(o -> o.orElse(null))
+                .filter(Objects::nonNull)
+                .collect(toSet());
 
         if (!userEntity.isArtist() && roles.stream().anyMatch(RoleEntity::isArtistRole)) {
             ArtistEntity artist = new ArtistEntity();
@@ -66,6 +77,8 @@ public class UserRepositoryImpl implements UserRepository {
         userEntity.setDescription(user.getDescription());
         userEntity.setAvatarUrl(user.getAvatarUrl() == null ? null : user.getAvatarUrl().value());
         userEntity.setRoles(roles);
+        userEntity.setFollowers(followers);
+        userEntity.setFollowing(following);
 
         return userRepository.save(userEntity).aggregate();
     }

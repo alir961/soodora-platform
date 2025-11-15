@@ -96,8 +96,8 @@ public class UserService implements UserDetailsService {
 
     public void follow(Identifier followerId, Identifier followingId) throws UnknownUserException {
         try {
-            User follower = userRepository.find(followerId);
-            User following = userRepository.find(followingId);
+            User follower = userRepository.findWithFollowers(followerId);
+            User following = userRepository.findWithFollowers(followingId);
 
             follower.follow(following);
 
@@ -110,8 +110,8 @@ public class UserService implements UserDetailsService {
 
     public void unfollow(Identifier followerId, Identifier followingId) throws UnknownUserException {
         try {
-            User follower = userRepository.find(followerId);
-            User following = userRepository.find(followingId);
+            User follower = userRepository.findWithFollowers(followerId);
+            User following = userRepository.findWithFollowers(followingId);
 
             follower.unfollow(following);
 
