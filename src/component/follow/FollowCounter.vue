@@ -4,10 +4,13 @@ import { User } from '@/entity/User';
 import { callRetrieveFollowers, callRetrieveFollowing } from '@/client/userClient';
 import { useRoute, useRouter } from 'vue-router';
 import FollowButton from '@/component/follow/FollowButton.vue';
+import { useAuthStore } from '@/store/reactiveStorage';
 
 const followers = ref<User[]>([]);
 const following = ref<User[]>([]);
 const showList = ref<'followers' | 'following' | null>(null);
+
+const authStore = useAuthStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -106,7 +109,12 @@ defineExpose({ closeList });
           <div class="user-username">@{{ user.username }}</div>
           <div class="user-fullname">{{ user.firstname }} {{ user.lastname }}</div>
         </div>
-        <FollowButton :user="user" @click.stop @toggle="() => handleFollowToggle(user.slug)" class="follow-btn" />
+        <FollowButton
+          v-if="user.slug !== authStore.getAuthenticatedUserSlug"
+          :user="user"
+          @click.stop
+          @toggle="() => handleFollowToggle(user.slug)"
+          class="follow-btn" />
       </div>
 
       <div v-if="(showList === 'followers' ? followers : following).length === 0" class="empty-state">
