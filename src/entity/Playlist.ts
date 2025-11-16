@@ -14,8 +14,8 @@ export interface Playlist {
 }
 
 export interface PlaylistFull {
-  playlistSimpleDTO: Playlist;
-  postDTO: {
+  playlist: Playlist;
+  posts: {
     content: Post[];
     page: {
       size: number;

@@ -9,6 +9,7 @@ import {
   deleteLink,
   deleteLinkHub,
   CreateLinkRequest,
+  getLinkHubAnalytics,
 } from '@/client/linkHubClient';
 import { useRoute, useRouter } from 'vue-router';
 import { ref, computed, onMounted } from 'vue';
@@ -24,8 +25,10 @@ import {
   chevronForwardOutline,
   arrowBackOutline,
   eyeOutline,
+  statsChart,
 } from 'ionicons/icons';
 import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
+import { LinkHubAnalytics } from '@/entity/LinkHub';
 
 const route = useRoute();
 const router = useRouter();
@@ -34,6 +37,7 @@ const authStore = useAuthStore();
 const pageSlug = computed(() => route.params.slug as string | undefined);
 const isOwner = ref(false);
 
+const linkHubAnalytics = ref<LinkHubAnalytics | null>(null);
 const pageData = ref({
   title: '',
   description: '',
@@ -110,6 +114,8 @@ async function loadPage() {
   if (!pageSlug.value) return;
   try {
     const page = await getLinkHub(pageSlug.value);
+
+    linkHubAnalytics.value = await getLinkHubAnalytics(pageSlug.value);
     pageData.value.title = page.title;
     pageData.value.description = page.description;
     originalPageData.value.title = page.title;
@@ -349,6 +355,22 @@ onMounted(loadPage);
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="analytics-section" v-if="linkHubAnalytics">
+            <div class="section-header">
+              <div class="header-left">
+                <ion-icon :icon="statsChart" class="section-icon" />
+                <h3>Analytics</h3>
+              </div>
+            </div>
+
+            <div class="analytics-grid">
+              <div class="analytics-box">
+                <span class="analytics-label">Total Views</span>
+                <span class="analytics-value">{{ linkHubAnalytics.viewCount }}</span>
               </div>
             </div>
           </div>
@@ -1173,5 +1195,34 @@ onMounted(loadPage);
   .link-actions {
     flex-direction: column;
   }
+}
+
+.analytics-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.analytics-box {
+  flex: 1;
+  min-width: 150px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  margin-top: 12px;
+}
+
+.analytics-label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.analytics-value {
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 </style>

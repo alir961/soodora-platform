@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
-import { Post, Comment, populatePost } from '@/entity/Post';
+import { Post, Comment, populatePost, PostAnalytics } from '@/entity/Post';
 import { PostSearchResponse } from '@/entity/PostSearch';
 import { Pageable, SortPageable } from '@/entity/PageableParams';
 
@@ -232,6 +232,15 @@ async function callSearchPosts(
   }
 }
 
+async function callRetrievePostAnalytics(slug: string): Promise<PostAnalytics> {
+  const response = await axios.get(`/posts/${slug}/analytics`, {
+    headers: await getAuthorizedHeader(),
+  });
+
+  if (response.status === 200 && response.data) return response.data as PostAnalytics;
+  return reject('Failed to retrieve post analytics.');
+}
+
 export type { CreatePostRequest, PostPage };
 export {
   callCreatePost,
@@ -251,4 +260,5 @@ export {
   callLikeComment,
   callUnlikeComment,
   callSearchPosts,
+  callRetrievePostAnalytics,
 };

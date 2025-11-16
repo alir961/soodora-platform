@@ -4,27 +4,29 @@ import {
   addCircleOutline,
   arrowBackOutline,
   cloudDownloadOutline,
-  trashOutline,
   createOutline,
-  saveOutline,
-  imageOutline,
-  videocamOutline,
-  musicalNoteOutline,
   documentTextOutline,
+  imageOutline,
+  musicalNoteOutline,
+  saveOutline,
+  statsChart,
+  trashOutline,
+  videocamOutline,
 } from 'ionicons/icons';
 import Header from '@/component/AppHeader.vue';
-import { onMounted, ref, watch, ref as vueRef } from 'vue';
+import { onMounted, ref, ref as vueRef, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   deleteSoodoraKit,
   deleteSoodoraKitItem,
   exportSoodoraKitPdf,
   getSoodoraKitArtistSlug,
+  getMediaKitAnalyticsBySlug,
   getSoodoraKitBySlug,
   updateSoodoraKit,
 } from '@/client/soodoraKitClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import type { SoodoraKitDTO, SoodoraKitItemDTO } from '@/entity/SoodoraKit';
+import type { MediaKitAnalytics, SoodoraKitDTO, SoodoraKitItemDTO } from '@/entity/SoodoraKit';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { showToast } from '@/utils';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
@@ -39,6 +41,7 @@ const deleteItemCardRefs = vueRef<Record<string, InstanceType<typeof DeleteCard>
 const slug = ref<string | undefined>(route.params.slug as string | undefined);
 const soodoraKit = ref<SoodoraKitDTO | null>(null);
 const soodoraKitItems = ref<SoodoraKitItemDTO[]>([]);
+const mediaKitAnalytics = ref<MediaKitAnalytics | null>(null);
 const isLoading = ref(false);
 const isSaving = ref(false);
 const justSaved = ref(false);
@@ -61,9 +64,12 @@ const getItemTypeIcon = (type: string) => {
 async function fetchSoodoraKit(slugToLoad: string) {
   isLoading.value = true;
   try {
-    const mk = await getSoodoraKitBySlug(slugToLoad);
-    soodoraKit.value = mk;
-    soodoraKitItems.value = mk.items || [];
+    const fetchMediaKit = await getSoodoraKitBySlug(slugToLoad);
+    const analytics = await getMediaKitAnalyticsBySlug(slugToLoad);
+
+    soodoraKit.value = fetchMediaKit;
+    soodoraKitItems.value = fetchMediaKit.items || [];
+    mediaKitAnalytics.value = analytics;
   } catch (error: unknown) {
     const message = 'Failed to load SoodoraKit. ' + (error instanceof Error ? error.message : '');
     await showToast(message, 'danger');
@@ -324,6 +330,32 @@ watch(
             <h3 class="empty-title">No Media Items Yet</h3>
             <p class="empty-description">Add images, videos, audio or text content</p>
           </div>
+        </div>
+
+        <div class="analytics-container" v-if="mediaKitAnalytics">
+          <IonCard class="analytics-card">
+            <IonCardHeader class="section-header">
+              <div class="section-header-left">
+                <IonIcon :icon="statsChart" class="section-header-icon" />
+                <IonCardTitle class="section-header-title">Analytics</IonCardTitle>
+              </div>
+              <IonCardSubtitle class="section-header-subtitle">Media Kit Performance</IonCardSubtitle>
+            </IonCardHeader>
+
+            <IonCardContent>
+              <div class="analytics-grid">
+                <div class="analytics-box">
+                  <span class="analytics-label">Total Downloads</span>
+                  <span class="analytics-value">{{ mediaKitAnalytics.downloadCount }}</span>
+                </div>
+
+                <div class="analytics-box">
+                  <span class="analytics-label">Follower Downloads</span>
+                  <span class="analytics-value">{{ mediaKitAnalytics.subscriberDownloadCount }}</span>
+                </div>
+              </div>
+            </IonCardContent>
+          </IonCard>
         </div>
       </div>
     </IonContent>
@@ -900,6 +932,76 @@ watch(
   color: rgba(255, 255, 255, 0.4);
   margin: 0;
   line-height: 1.5;
+}
+
+.analytics-card {
+  margin-top: 20px;
+  border-radius: 16px;
+}
+
+.analytics-grid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.analytics-box {
+  flex: 1;
+  min-width: 150px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 16px;
+  border-radius: 12px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+}
+
+.analytics-label {
+  display: block;
+  font-size: 0.9rem;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+
+.analytics-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.analytics-container {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.section-header {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.section-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-header-icon {
+  font-size: 20px;
+  color: var(--ion-color-primary);
+}
+
+.section-header-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.section-header-subtitle {
+  font-size: 14px;
+  opacity: 0.6;
+  margin-top: 4px;
 }
 
 /* Responsive */

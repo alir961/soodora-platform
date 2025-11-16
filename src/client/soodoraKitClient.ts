@@ -5,10 +5,11 @@ import {
   SoodoraKitDTO,
   SoodoraKitItemDTO,
   UpdateSoodoraKitRequest,
+  MediaKitAnalytics,
 } from '@/entity/SoodoraKit';
 import { reject } from '@/utils';
 
-const BASE = '/mediakits';
+const BASE = '/media-kits';
 
 export async function createSoodoraKit(request: CreateSoodoraKitRequest): Promise<SoodoraKitDTO> {
   return axios
@@ -26,6 +27,16 @@ export async function getSoodoraKitBySlug(slug: string): Promise<SoodoraKitDTO> 
     .then((response) => {
       if (response && response.status === 200 && response.data) return response.data;
       return reject('SoodoraKit not found');
+    })
+    .catch(reject);
+}
+
+export async function getMediaKitAnalyticsBySlug(slug: string): Promise<MediaKitAnalytics> {
+  return axios
+    .get(`${BASE}/${slug}/analytics`, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response?.status === 200 && response.data) return response.data;
+      return reject('MediaKit not found');
     })
     .catch(reject);
 }

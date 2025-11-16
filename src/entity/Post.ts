@@ -24,6 +24,15 @@ interface Comment {
   createdAt: Date;
 }
 
+interface PostAnalytics {
+  likes: number;
+  comments: number;
+  reposts: number;
+  subscribedLikes: number;
+  subscribedComments: number;
+  subscribedReposts: number;
+}
+
 function populatePost(post: Post): Post {
   return {
     ...post,
@@ -32,4 +41,4 @@ function populatePost(post: Post): Post {
 }
 
 export { populatePost };
-export type { Post, Comment };
+export type { Post, Comment, PostAnalytics };

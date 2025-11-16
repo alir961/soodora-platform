@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Product } from '@/entity/Product';
+import { Product, ProductAnalytics } from '@/entity/Product';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 import { ProductSearchParams } from '@/entity/ProductSearch';
@@ -52,5 +52,14 @@ async function callDeleteProduct(slug: string): Promise<void> {
     .catch(reject);
 }
 
+async function callRetrieveProductAnalytics(slug: string): Promise<ProductAnalytics> {
+  const response = await axios.get(`/products/${slug}/analytics`, {
+    headers: await getAuthorizedHeader(),
+  });
+
+  if (response.status === 200 && response.data) return response.data as ProductAnalytics;
+  return reject('Failed to retrieve post analytics.');
+}
+
 export type { ProductPage };
-export { callSearchProducts, createProduct, callDeleteProduct, updateProduct };
+export { callSearchProducts, createProduct, callDeleteProduct, updateProduct, callRetrieveProductAnalytics };

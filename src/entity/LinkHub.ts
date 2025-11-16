@@ -9,4 +9,8 @@ interface LinkHub {
   links: Link[];
 }
 
-export type { LinkHub };
+interface LinkHubAnalytics {
+  viewCount: number;
+}
+
+export type { LinkHub, LinkHubAnalytics };

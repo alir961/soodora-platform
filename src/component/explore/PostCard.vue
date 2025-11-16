@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  IonAvatar,
   IonButton,
   IonCard,
   IonCardContent,
@@ -8,12 +9,17 @@ import {
   IonIcon,
   IonImg,
   IonNote,
-  IonAvatar,
 } from '@ionic/vue';
-import { PropType, Ref, ref, watch, computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, PropType, ref, Ref, watch } from 'vue';
 import { audioPlayerService } from '@/services/audioPlayerService';
-import { Post } from '@/entity/Post';
-import { callDeletePost, callPostUnrepost, callPostRepost, callGetPostReposts } from '@/client/postClient';
+import { Post, PostAnalytics } from '@/entity/Post';
+import {
+  callDeletePost,
+  callGetPostReposts,
+  callPostRepost,
+  callPostUnrepost,
+  callRetrievePostAnalytics,
+} from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { Router, useRouter } from 'vue-router';
 import customLikeIcon from '@/assets/icons/like.svg';
@@ -30,6 +36,8 @@ import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
 import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
 import TrackCard from '@/component/music/TrackCard.vue';
+import { statsChartOutline } from 'ionicons/icons';
+import PostAnalyticsCard from '@/component/actions/PostAnalyticsCard.vue';
 
 const router: Router = useRouter();
 const authStore = useAuthStore();
@@ -51,6 +59,8 @@ const likeStore = useLikeStore();
 const isLiked: Ref<boolean> = ref(false);
 const isReposted: Ref<boolean> = ref(false);
 const displayedLikeCount = computed(() => likeStore.likeCount(props.post.slug));
+
+const postAnalytics = ref<PostAnalytics | null>(null);
 
 const isMusicPost = computed(() => {
   return props.post.audioUrl && props.post.audioTitle;
@@ -113,11 +123,14 @@ watch(
   { immediate: true }
 );
 
-onMounted(() => {
+onMounted(async () => {
   const postSlug = props.post.slug;
 
-  loadLikes(postSlug);
-  loadReposts(postSlug);
+  await loadLikes(postSlug);
+  await loadReposts(postSlug);
+
+  if (props.post?.owner.slug === authStore.getAuthenticatedUserSlug)
+    postAnalytics.value = await callRetrievePostAnalytics(postSlug);
 
   const stopWatch = watch(
     () => [likeStore.liked[props.post.slug], likeStore.counts[props.post.slug]],
@@ -164,6 +177,7 @@ function formatCount(count: number): string {
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const saveTrackCardRef = ref<InstanceType<typeof SaveTrackCard> | null>(null);
+const postAnalyticsCardRef = ref<InstanceType<typeof PostAnalyticsCard> | null>(null);
 
 const openExportModal = () => {
   exportCardRef.value?.open();
@@ -175,6 +189,10 @@ const openDeleteConfirm = () => {
 
 const openSaveTrack = () => {
   saveTrackCardRef.value?.open();
+};
+
+const openAnalytics = () => {
+  postAnalyticsCardRef.value?.open();
 };
 
 const handlePostDeleted = (slug: string) => {
@@ -240,14 +258,24 @@ const handlePostDeleted = (slug: string) => {
               </ion-button>
             </div>
 
-            <ion-button
-              v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
-              class="delete-button"
-              fill="clear"
-              size="default"
-              @click.stop="openDeleteConfirm">
-              <ion-icon :src="customTrashIcon" />
-            </ion-button>
+            <div>
+              <ion-button
+                v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
+                class="analytics-button"
+                fill="clear"
+                size="default"
+                @click.stop="openAnalytics">
+                <ion-icon :src="statsChartOutline" />
+              </ion-button>
+              <ion-button
+                v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
+                class="delete-button"
+                fill="clear"
+                size="default"
+                @click.stop="openDeleteConfirm">
+                <ion-icon :src="customTrashIcon" />
+              </ion-button>
+            </div>
           </div>
         </template>
 
@@ -295,14 +323,24 @@ const handlePostDeleted = (slug: string) => {
               </ion-button>
             </div>
 
-            <ion-button
-              v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
-              class="delete-button"
-              fill="clear"
-              size="default"
-              @click.stop="openDeleteConfirm">
-              <ion-icon :src="customTrashIcon" />
-            </ion-button>
+            <div>
+              <ion-button
+                v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
+                class="analytics-button"
+                fill="clear"
+                size="default"
+                @click.stop="openAnalytics">
+                <ion-icon :src="statsChartOutline" />
+              </ion-button>
+              <ion-button
+                v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
+                class="delete-button"
+                fill="clear"
+                size="default"
+                @click.stop="openDeleteConfirm">
+                <ion-icon :src="customTrashIcon" />
+              </ion-button>
+            </div>
           </div>
         </template>
       </ion-card-content>
@@ -325,6 +363,8 @@ const handlePostDeleted = (slug: string) => {
       :image-url="post.imageUrl"
       :current-playlist-slug="currentPlaylistSlug"
       ref="saveTrackCardRef" />
+
+    <PostAnalyticsCard v-if="postAnalytics" :analytics="postAnalytics" ref="postAnalyticsCardRef" />
   </ion-col>
 </template>
 
