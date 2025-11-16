@@ -36,7 +36,7 @@ async function updateProduct(slug: string, formData: FormData): Promise<Product>
   return axios
     .put(`/products/${slug}`, formData, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response.status === 200 && response.data) return response.data.productDTO;
+      if (response.status === 200 && response.data) return response.data;
       return reject('Unable to update product');
     })
     .catch(reject);

@@ -15,7 +15,7 @@ export async function createSoodoraKit(request: CreateSoodoraKitRequest): Promis
   return axios
     .post(BASE, request, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 201 && response.data?.mediaKitDTO) return response.data.mediaKitDTO;
+      if (response && response.status === 201 && response.data) return response.data;
       return reject('Failed to create SoodoraKit');
     })
     .catch(reject);
@@ -55,7 +55,7 @@ export async function updateSoodoraKit(slug: string, request: UpdateSoodoraKitRe
   return axios
     .put(`${BASE}/${slug}`, request, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 200 && response.data?.mediaKitDTO) return response.data.mediaKitDTO;
+      if (response && response.status === 200 && response.data) return response.data;
       return reject('Failed to update SoodoraKit');
     })
     .catch(reject);
@@ -75,7 +75,7 @@ export async function addSoodoraKitItem(artistSlug: string, request: FormData): 
   return axios
     .post(`${BASE}/${artistSlug}/items`, request, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 201 && response.data?.mediaKitItemDTO) return response.data.mediaKitItemDTO;
+      if (response && response.status === 201 && response.data) return response.data;
       return reject('Failed to add SoodoraKit item');
     })
     .catch(reject);
@@ -85,7 +85,7 @@ export async function updateSoodoraKitItem(itemSlug: string, request: FormData):
   return axios
     .put(`${BASE}/items/${itemSlug}`, request, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (response && response.status === 200 && response.data?.mediaKitItemDTO) return response.data.mediaKitItemDTO;
+      if (response && response.status === 200 && response.data) return response.data;
       return reject('Failed to update SoodoraKit item');
     })
     .catch(reject);
