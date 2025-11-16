@@ -80,8 +80,8 @@ public interface UserResource {
     @Operation(summary = "Get products of a user")
     Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable);
 
-    @Operation(summary = "Send weekly posts summary email")
     @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Send weekly posts summary email")
     void retrievePostsSummary(@AuthenticationPrincipal User user);
 
 }

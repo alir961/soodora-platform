@@ -164,7 +164,6 @@ public class UserController implements UserResource {
 
     @Override
     @PostMapping("/summary")
-    @SecurityRequirement(name = "bearerAuth")
     public void retrievePostsSummary(@AuthenticationPrincipal User user) {
         if (user == null)
             return;
