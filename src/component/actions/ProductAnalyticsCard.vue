@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType, ref } from 'vue';
 import { ProductAnalytics } from '@/entity/Product';
-import DateDisplay from '@/component/date/DateDisplay.vue';
+import DurationDisplay from '@/component/date/DurationDisplay.vue';
 
 defineProps({
   analytics: {
@@ -57,7 +57,7 @@ defineExpose({
             <div class="analytics-row">
               <span class="analytics-label">Duration Until First Sale</span>
               <span class="analytics-value">
-                <DateDisplay :date="new Date(Date.now() - analytics.durationUntilFirstSale)" class="post-date" />
+                <DurationDisplay :duration="analytics.durationUntilFirstSale" />
               </span>
             </div>
           </div>
