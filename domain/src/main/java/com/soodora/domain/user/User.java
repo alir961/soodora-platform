@@ -72,7 +72,8 @@ public class User {
     }
 
     public boolean isFollowing(User user) {
-        return following.contains(user);
+        return following.stream()
+                .anyMatch(u -> u.getSlug().equals(user.getSlug()));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.Post;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.playlist.PlaylistEntity;
@@ -96,6 +97,18 @@ public class PostEntity implements DomainEntityAdapter<Post> {
 
     @Override
     public Post aggregate() {
+        List<User> likedUsers = likes.stream()
+                .map(LikeEntity::getUser)
+                .map(UserEntity::aggregateFollowers)
+                .toList();
+        List<User> commentedUsers = comments.stream()
+                .map(CommentEntity::getUser)
+                .map(UserEntity::aggregateFollowers)
+                .toList();
+        List<User> repostedUsers = reposts.stream()
+                .map(UserEntity::aggregateFollowers)
+                .toList();
+
         return new Post(
                 slug,
                 title,
@@ -104,9 +117,9 @@ public class PostEntity implements DomainEntityAdapter<Post> {
                 audioTitle,
                 audioUrl,
                 artist.getUser().aggregate(),
-                likes.stream().map(LikeEntity::getUser).map(DomainEntityAdapter::aggregate).toList(),
-                comments.stream().map(CommentEntity::getUser).map(DomainEntityAdapter::aggregate).toList(),
-                reposts.stream().map(DomainEntityAdapter::aggregate).toList(),
+                likedUsers,
+                commentedUsers,
+                repostedUsers,
                 createdAt,
                 updatedAt);
     }
