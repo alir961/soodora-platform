@@ -1,7 +1,0 @@
-package com.soodora.domain.event;
-
-public enum EventType {
-
-    CONCERT, FESTIVAL, COMPETITION, PERFORMANCE_SHOW, COMMUNITY_EDUCATIONAL, DANCE_MUSIC, RELIGIOUS_SPIRITUAL, OTHER
-
-}
