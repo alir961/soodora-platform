@@ -171,7 +171,7 @@ class LinkHubControllerIT {
 
         CreateLinkRequest request = new CreateLinkRequest(LINK_1.getTitle(), LINK_1.getDescription(),
                 LINK_1.getUrl().value(),
-                LINK_1.getIconUrl().value());
+                LINK_1.getIconUrl());
 
         // WHEN & THEN
         mockMvc.perform(post("/link-hubs/{pageSlug}/links", LINK_HUB.getSlug())
@@ -188,7 +188,7 @@ class LinkHubControllerIT {
 
         UpdateLinkRequest request = new UpdateLinkRequest(LINK_1.getTitle(), LINK_1.getDescription(),
                 LINK_1.getUrl().value(),
-                LINK_1.getIconUrl().value());
+                LINK_1.getIconUrl());
 
         // WHEN & THEN
         mockMvc.perform(put("/link-hubs/{pageSlug}/links/{linkSlug}", LINK_HUB.getSlug(), LINK_1.getSlug())

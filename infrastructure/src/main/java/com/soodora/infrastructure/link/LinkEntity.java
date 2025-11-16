@@ -62,6 +62,6 @@ public class LinkEntity implements DomainEntityAdapter<Link> {
                 title,
                 description,
                 new Url(url),
-                new Url(iconUrl));
+                iconUrl);
     }
 }

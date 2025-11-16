@@ -16,7 +16,7 @@ public class LinkFactory {
                 name,
                 "Description",
                 new Url("https://soodora.com/"),
-                new Url("https://soodora.com/icon.jpg"));
+                "insta");
     }
 
 }

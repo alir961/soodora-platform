@@ -13,6 +13,6 @@ public class Link {
     private String title;
     private String description;
     private Url url;
-    private Url iconUrl;
+    private String iconUrl;
 
 }

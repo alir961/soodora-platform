@@ -15,7 +15,7 @@ public record LinkDTO(
                 link.getTitle(),
                 link.getDescription(),
                 link.getUrl() == null ? null : link.getUrl().value(),
-                link.getIconUrl() == null ? null : link.getIconUrl().value());
+                link.getIconUrl());
     }
 
 }
