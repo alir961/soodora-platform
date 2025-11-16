@@ -1,0 +1,17 @@
+CREATE SEQUENCE roles_seq INCREMENT BY 50 START WITH 1;
+
+CREATE TABLE roles
+(
+    id   BIGINT       NOT NULL,
+    name VARCHAR(255) NULL,
+    CONSTRAINT pk_roles PRIMARY KEY (id)
+);
+
+CREATE TABLE users_roles
+(
+    user_id UUID   NOT NULL,
+    role_id BIGINT NOT NULL
+);
+
+ALTER TABLE users_roles
+    ADD CONSTRAINT FK_USERS_ROLES_ON_USER FOREIGN KEY (user_id) REFERENCES users (id);
