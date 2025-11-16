@@ -7,10 +7,10 @@ import org.springframework.data.domain.Pageable;
 
 public interface SaleRepository {
 
-    SaleDTO save(SaveSaleCommand sale);
-    SaleDTO findBySlug(String slug);
-    Page<SaleDTO> findAll(Pageable pageable);
-    Page<SaleDTO> findArtistSales(Identifier identifier, Pageable pageable);
+    Sale save(SaveSaleCommand sale);
+    Sale findBySlug(String slug);
+    Page<Sale> findAll(Pageable pageable);
+    Page<Sale> findArtistSales(Identifier identifier, Pageable pageable);
     void deleteSaleBySlug(String slug);
 
 }

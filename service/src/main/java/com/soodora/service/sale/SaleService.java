@@ -1,7 +1,8 @@
 package com.soodora.service.sale;
 
-import com.soodora.domain.sale.SaleDTO;
+import com.soodora.domain.sale.Sale;
 import com.soodora.domain.sale.SaleRepository;
+import com.soodora.domain.user.value.Identifier;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,7 +18,7 @@ public class SaleService {
 
     private final SaleRepository saleRepository;
 
-    public Page<SaleDTO> getAllSales(Pageable pageable) {
+    public Page<Sale> getAllSales(Pageable pageable) {
         try {
             return saleRepository.findAll(pageable);
         } catch (Exception e) {
@@ -25,9 +26,11 @@ public class SaleService {
         }
     }
 
-    public Page<SaleDTO> getUserSales(Pageable pageable, String userSlug) {
+    public Page<Sale> getUserSales(Pageable pageable, String userSlug) {
         try {
-            return saleRepository.findArtistSales(createFromSlug(userSlug), pageable);
+            Identifier identifier = createFromSlug(userSlug);
+
+            return saleRepository.findArtistSales(identifier, pageable);
         } catch (Exception e) {
             throw new UnknownSaleException(e.getMessage());
         }

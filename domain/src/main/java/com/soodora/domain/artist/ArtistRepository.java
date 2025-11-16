@@ -2,14 +2,15 @@ package com.soodora.domain.artist;
 
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.linkhub.LinkHub;
+import com.soodora.domain.user.User;
 
 import java.util.List;
 
 public interface ArtistRepository {
 
-    ArtistDTO find(String slug);
+    User find(String slug);
 
-    List<ArtistDTO> findAll();
+    List<User> findAll();
 
     void delete(String slug);
 

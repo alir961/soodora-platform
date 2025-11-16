@@ -7,13 +7,15 @@ import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.quote.QuoteEntity;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.UUID;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.RoundingMode.HALF_UP;
 
 @Getter
 @Setter
@@ -48,10 +50,10 @@ public class QuoteArticleEntity implements DomainEntityAdapter<QuoteArticleDTO> 
 
     @Transient
     public Money getTotalPrice() {
-        BigDecimal totalHT = unitPrice.toDomain().amount().multiply(BigDecimal.valueOf(quantity));
-        BigDecimal totalTTC = totalHT.multiply(
-                BigDecimal.ONE.add(vatPercent.divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_UP)));
-        return Money.of(totalTTC.setScale(2, RoundingMode.HALF_UP), unitPrice.toDomain().currency());
+        BigDecimal totalHT = unitPrice.getAmount().multiply(BigDecimal.valueOf(quantity));
+        BigDecimal totalTTC = totalHT.multiply(ONE.add(vatPercent.divide(BigDecimal.valueOf(100), 4, HALF_UP)));
+
+        return Money.of(totalTTC.setScale(2, HALF_UP), unitPrice.getCurrency());
     }
 
     @Override
@@ -61,7 +63,7 @@ public class QuoteArticleEntity implements DomainEntityAdapter<QuoteArticleDTO> 
                 slug,
                 description,
                 quantity,
-                unitPrice.toDomain(),
+                unitPrice.aggregate(),
                 vatPercent,
                 getTotalPrice());
     }

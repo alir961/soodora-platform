@@ -1,13 +1,9 @@
 package com.soodora.api.sale;
 
-import com.soodora.domain.common.Currency;
-import com.soodora.domain.common.Money;
-import com.soodora.domain.sale.SaleDTO;
+import com.soodora.domain.sale.Sale;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.sale.SaleService;
 
-import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -17,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,13 +24,18 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import static com.soodora.test.TestConstants.SALE;
 import static com.soodora.test.TestConstants.USER;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class SaleControllerIT {
+
+    private static final Pageable PAGEABLE = PageRequest.of(0, 10);
+    private static final Page<Sale> SALES_PAGE = new PageImpl<>(List.of(SALE), PAGEABLE, 1);
 
     @Autowired
     private MockMvc mockMvc;
@@ -44,19 +46,8 @@ class SaleControllerIT {
     @Test
     void shouldReturnAllSales() throws Exception {
         // GIVEN
-        SaleDTO sale = new SaleDTO(
-                "slug1",
-                null,
-                null,
-                null,
-                2L,
-                Money.of(BigDecimal.valueOf(20.99), Currency.EUR),
-                new Date());
-
-        Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
-
         when(saleService.getAllSales(any(PageRequest.class)))
-                .thenReturn(page);
+                .thenReturn(SALES_PAGE);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales")
@@ -64,25 +55,14 @@ class SaleControllerIT {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value("slug1"));
+                .andExpect(jsonPath("$.content[0].slug").value("slug"));
     }
 
     @Test
     void shouldReturnUserSales() throws Exception {
         // GIVEN
-        SaleDTO sale = new SaleDTO(
-                "slug2",
-                null,
-                null,
-                null,
-                1L,
-                Money.of(BigDecimal.valueOf(20.99), Currency.EUR),
-                new Date());
-
-        Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
-
         when(saleService.getUserSales(any(PageRequest.class), eq("user-slug")))
-                .thenReturn(page);
+                .thenReturn(SALES_PAGE);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales/user-slug")
@@ -90,25 +70,14 @@ class SaleControllerIT {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value("slug2"));
+                .andExpect(jsonPath("$.content[0].slug").value("slug"));
     }
 
     @Test
     void shouldReturnLoggedArtistSales() throws Exception {
         // GIVEN
-        SaleDTO sale = new SaleDTO(
-                "slug3",
-                null,
-                null,
-                null,
-                5L,
-                Money.of(BigDecimal.valueOf(20.99), Currency.EUR),
-                new Date());
-
-        Page<SaleDTO> page = new PageImpl<>(List.of(sale), PageRequest.of(0, 10), 1);
-
         when(saleService.getUserSales(any(PageRequest.class), eq("slug")))
-                .thenReturn(page);
+                .thenReturn(SALES_PAGE);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales/:me")
@@ -116,7 +85,7 @@ class SaleControllerIT {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value("slug3"));
+                .andExpect(jsonPath("$.content[0].slug").value("slug"));
     }
 
     @Test

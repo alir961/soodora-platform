@@ -1,11 +1,12 @@
 package com.soodora.infrastructure.artist;
 
-import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.event.EventDTO;
 import com.soodora.domain.linkhub.LinkHub;
-import com.soodora.domain.user.*;
+import com.soodora.domain.user.LinkHubNotFoundException;
+import com.soodora.domain.user.UnknownIdentifierException;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 
 import java.util.List;
@@ -23,15 +24,17 @@ public class ArtistRepositoryImpl implements ArtistRepository {
 
     @Override
     @Transactional
-    public ArtistDTO find(String slug) {
+    public User find(String slug) {
         return findArtistByUserSlug(slug)
+                .getUser()
                 .aggregate();
     }
 
     @Override
     @Transactional
-    public List<ArtistDTO> findAll() {
+    public List<User> findAll() {
         return repository.findAll().stream()
+                .map(ArtistEntity::getUser)
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
     }

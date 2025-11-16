@@ -2,7 +2,7 @@ package com.soodora.api.user;
 
 import com.soodora.api.common.JsonResponse;
 import com.soodora.api.post.PostDTO;
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.api.product.ProductDTO;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 

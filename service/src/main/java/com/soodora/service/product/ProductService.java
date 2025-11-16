@@ -24,11 +24,11 @@ public class ProductService {
         productRepository.save(command, user, fileData);
     }
 
-    public Page<ProductDTO> retrieveAllProducts(Pageable pageable) {
+    public Page<Product> retrieveAllProducts(Pageable pageable) {
         return productRepository.findAll(pageable);
     }
 
-    public Page<ProductDTO> retrieveProducts(ProductFilter filter, Pageable pageable) {
+    public Page<Product> retrieveProducts(ProductFilter filter, Pageable pageable) {
         boolean isFilterEmpty = filter.isEmpty();
 
         if (isFilterEmpty)
@@ -37,7 +37,7 @@ public class ProductService {
             return productRepository.findByFilter(filter, pageable);
     }
 
-    public ProductDTO retrieveProduct(String slug) {
+    public Product retrieveProduct(String slug) {
         try {
             return productRepository.findBySlug(slug);
         } catch (UnknownSlugException exception) {
@@ -45,7 +45,7 @@ public class ProductService {
         }
     }
 
-    public ProductDTO updateProduct(UpdateProductCommand command, String slug, FileData fileData) {
+    public Product updateProduct(UpdateProductCommand command, String slug, FileData fileData) {
         try {
             return productRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {

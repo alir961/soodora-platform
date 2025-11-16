@@ -1,7 +1,6 @@
 package com.soodora.infrastructure.sale;
 
-import com.soodora.domain.sale.SaleDTO;
-import com.soodora.domain.user.PublicUserDTO;
+import com.soodora.domain.sale.Sale;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
@@ -25,7 +24,8 @@ import lombok.Setter;
 @Entity(name = "sales")
 @NoArgsConstructor
 @AllArgsConstructor
-public class SaleEntity implements DomainEntityAdapter<SaleDTO> {
+public class SaleEntity implements DomainEntityAdapter<Sale> {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -37,13 +37,15 @@ public class SaleEntity implements DomainEntityAdapter<SaleDTO> {
     private ProductEntity product;
 
     @ManyToOne
-    private ArtistEntity artist;
+    private ArtistEntity vendor;
 
     @ManyToOne
     private UserEntity buyer;
 
+    @Column
     private long quantitySold;
 
+    @Column
     @Embedded
     private MoneyEmbeddable amount;
 
@@ -51,20 +53,21 @@ public class SaleEntity implements DomainEntityAdapter<SaleDTO> {
     @Column(updatable = false)
     private Date createdAt;
 
-    @UpdateTimestamp
     @Column
+    @UpdateTimestamp
     private Date updatedAt;
 
     @Override
-    public SaleDTO aggregate() {
-        return new SaleDTO(
+    public Sale aggregate() {
+        return new Sale(
                 slug,
                 product.aggregate(),
-                artist.aggregate(),
-                PublicUserDTO.build(buyer.aggregate()),
+                vendor.getUser().aggregate(),
+                buyer.aggregate(),
                 quantitySold,
-                amount.toDomain(),
-                createdAt);
+                amount.aggregate(),
+                createdAt,
+                updatedAt);
     }
 
 }

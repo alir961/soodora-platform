@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.sale;
 
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.sale.SaleDTO;
+import com.soodora.domain.sale.Sale;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
 import com.soodora.domain.user.value.Identifier;
@@ -36,41 +36,42 @@ public class SaleRepositoryImpl implements SaleRepository {
 
     @Override
     @Transactional
-    public SaleDTO save(SaveSaleCommand sale) {
+    public Sale save(SaveSaleCommand sale) {
         SaleEntity entity = new SaleEntity();
         UserEntity buyerEntity = userRepository.findBySlug(sale.buyer().getSlug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find user #" + sale.buyer().getSlug()));
-        ArtistEntity artistEntity = artistRepository.findByUserSlug(sale.artist().slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find artist #" + sale.artist().slug()));
-        ProductEntity productEntity = productRepository.findBySlug(sale.product().slug())
-                .orElseThrow(() -> new UnknownSlugException("Unable to find product#" + sale.product().slug()));
+        ArtistEntity vendorEntity = artistRepository.findByUserSlug(sale.vendor().getSlug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find artist #" + sale.vendor().getSlug()));
+        ProductEntity productEntity = productRepository.findBySlug(sale.product().getSlug())
+                .orElseThrow(() -> new UnknownSlugException("Unable to find product#" + sale.product().getSlug()));
 
         entity.setProduct(productEntity);
         entity.setQuantitySold(sale.quantitySold());
         entity.setAmount(new MoneyEmbeddable(sale.amount().amount(), sale.amount().currency()));
         entity.setSlug(generateUniqueSlug());
-        entity.setArtist(artistEntity);
+        entity.setVendor(vendorEntity);
         entity.setBuyer(buyerEntity);
         return repository.save(entity).aggregate();
     }
 
     @Override
     @Transactional
-    public SaleDTO findBySlug(String slug) {
+    public Sale findBySlug(String slug) {
         return findSaleBySlugOrThrow(slug).aggregate();
 
     }
 
     @Override
     @Transactional
-    public Page<SaleDTO> findAll(Pageable pageable) {
-        return repository.findAll(pageable).map(DomainEntityAdapter::aggregate);
+    public Page<Sale> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<SaleDTO> findArtistSales(Identifier identifier, Pageable pageable) {
-        return repository.findByArtistUserSlug(identifier.value(), pageable)
+    public Page<Sale> findArtistSales(Identifier identifier, Pageable pageable) {
+        return repository.findByVendorUserSlug(identifier.value(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

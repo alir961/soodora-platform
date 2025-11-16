@@ -1,8 +1,7 @@
 package com.soodora.api.product;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.common.Currency;
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductFilter;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
@@ -10,6 +9,7 @@ import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.product.CreateProductRequest;
 import com.soodora.service.product.ProductService;
 import com.soodora.service.product.UpdateProductRequest;
+import com.soodora.service.user.UserService;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -35,9 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
-import static com.soodora.test.TestConstants.ARTIST_USER;
-import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.ProductFactory.buildDefaultProduct;
+import static com.soodora.domain.common.Currency.EUR;
+import static com.soodora.test.TestConstants.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,8 +50,8 @@ class ProductControllerIT {
 
     @MockitoBean
     private UserRepository userRepository;
-
-    private static final ProductDTO A_PRODUCT = buildDefaultProduct();
+    @Autowired
+    private UserService userService;
 
     @Test
     void givenArtistUser_whenCreateProduct_thenSuccess() throws Exception {
@@ -62,7 +61,7 @@ class ProductControllerIT {
                 "Description",
                 "category",
                 BigDecimal.valueOf(100.99),
-                Currency.EUR,
+                EUR,
                 10);
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -96,7 +95,7 @@ class ProductControllerIT {
                 null,
                 "category",
                 BigDecimal.valueOf(0.0),
-                Currency.EUR,
+                EUR,
                 0);
 
         FileData fileData = new FileData(
@@ -124,7 +123,7 @@ class ProductControllerIT {
                 "Description",
                 "category",
                 BigDecimal.valueOf(100.99),
-                Currency.EUR,
+                EUR,
                 10);
 
         MockMultipartFile dataPart = new MockMultipartFile(
@@ -143,7 +142,8 @@ class ProductControllerIT {
     @Test
     void givenValidPage_whenGetProducts_thenSuccess() throws Exception {
         // GIVEN
-        Page<ProductDTO> productsPage = new PageImpl<>(List.of(A_PRODUCT));
+        Page<Product> productsPage = new PageImpl<>(List.of(PRODUCT));
+
         when(productService.retrieveProducts(any(ProductFilter.class), any(Pageable.class))).thenReturn(productsPage);
 
         // WHEN & THEN
@@ -153,15 +153,15 @@ class ProductControllerIT {
                 .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(A_PRODUCT.slug()))
-                .andExpect(jsonPath("$.content[0].name").value(A_PRODUCT.name()));
+                .andExpect(jsonPath("$.content[0].slug").value(PRODUCT.getSlug()))
+                .andExpect(jsonPath("$.content[0].name").value(PRODUCT.getName()));
     }
 
     @Test
     void givenValidSlug_whenGetProduct_thenSuccess() throws Exception {
         // GIVEN
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        when(productService.retrieveProduct("slug")).thenReturn(A_PRODUCT);
+        when(productService.retrieveProduct("slug")).thenReturn(PRODUCT);
 
         mockMvc.perform(get("/products/slug")
                 .with(user(new UserPrincipal(USER))))
@@ -176,7 +176,7 @@ class ProductControllerIT {
                 "Updated Description",
                 "Updated Category",
                 BigDecimal.valueOf(10.99),
-                Currency.EUR,
+                EUR,
                 20L);
 
         MockMultipartFile jsonPart = new MockMultipartFile(
@@ -191,10 +191,10 @@ class ProductControllerIT {
                 "image/jpeg",
                 "dummy updated image".getBytes());
 
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
+        when(productService.updateProduct(any(), eq(PRODUCT.getSlug()), any())).thenReturn(PRODUCT);
 
         // WHEN & THEN
-        mockMvc.perform(multipart("/products/productSlug1")
+        mockMvc.perform(multipart("/products/" + PRODUCT.getSlug())
                 .file(jsonPart)
                 .file(filePart)
                 .with(user(new UserPrincipal(USER)))
@@ -213,7 +213,7 @@ class ProductControllerIT {
                 "",
                 "",
                 BigDecimal.valueOf(100.99),
-                Currency.EUR,
+                EUR,
                 0L);
 
         MockMultipartFile dataPart = new MockMultipartFile(

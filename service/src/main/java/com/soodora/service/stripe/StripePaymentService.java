@@ -1,9 +1,8 @@
 package com.soodora.service.stripe;
 
-import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.Money;
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.ProductSaleException;
 import com.soodora.domain.sale.SaleRepository;
@@ -55,22 +54,23 @@ public class StripePaymentService {
         String vendorSlug = session.getMetadata().get("vendorSlug");
         String buyerSlug = session.getMetadata().get("buyerSlug");
 
-        ProductDTO product = ofNullable(productRepository.findBySlug(productSlug))
+        Product product = ofNullable(productRepository.findBySlug(productSlug))
                 .orElseThrow(() -> new UnknownProductException("Product not found: " + productSlug));
-        ArtistDTO artist = ofNullable(artistRepository.find(vendorSlug))
-                .orElseThrow(() -> new UnknownArtistException("Artist not found: " + vendorSlug));
-        User user = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
-                .orElseThrow(() -> new UnknownUserException("User not found: " + buyerSlug));
-        Money amount = Money.of(product.price().amount().multiply(BigDecimal.valueOf(quantityBought)),
-                product.price().currency());
+        User vendor = ofNullable(artistRepository.find(vendorSlug))
+                .orElseThrow(() -> new UnknownArtistException("Vendor not found: " + vendorSlug));
+        User buyer = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
+                .orElseThrow(() -> new UnknownUserException("Buyer not found: " + buyerSlug));
+        Money price = product.getPrice();
+        Money amount = Money.of(price.amount().multiply(BigDecimal.valueOf(quantityBought)), price.currency());
 
-        if (product.quantity() > 0) {
-            SaveSaleCommand sale = new SaveSaleCommand(product, artist, user, quantityBought, amount);
+        if (product.getQuantity() >= quantityBought) {
+            SaveSaleCommand sale = new SaveSaleCommand(product, vendor, buyer, quantityBought, amount);
 
-            productRepository.updateQuantity(productSlug, product.quantity() - quantityBought);
+            productRepository.updateQuantity(productSlug, product.getQuantity() - quantityBought);
             saleRepository.save(sale);
-        } else
-            throw new ProductSaleException("No product quantity remaining");
+            return;
+        }
+        throw new ProductSaleException("No product quantity remaining");
     }
 
 }

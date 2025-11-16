@@ -1,7 +1,6 @@
 package com.soodora.api.product;
 
 import com.soodora.api.common.JsonResponse;
-import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.product.CreateProductRequest;
 import com.soodora.service.product.UpdateProductRequest;
@@ -23,6 +22,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Product Controller")
 public interface ProductResource {
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create a new product", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "201", description = "Product created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @io.swagger.v3.oas.annotations.media.Content)
@@ -42,12 +42,14 @@ public interface ProductResource {
             @RequestParam(value = "category") Optional<String> category,
             Pageable pageable);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get product by slug", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Product retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @io.swagger.v3.oas.annotations.media.Content)
     })
     ProductDTO getProduct(@PathVariable String slug);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update a product", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Product updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @io.swagger.v3.oas.annotations.media.Content)
@@ -57,6 +59,7 @@ public interface ProductResource {
             @RequestPart("data") UpdateProductRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Delete a product", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @io.swagger.v3.oas.annotations.media.Content)

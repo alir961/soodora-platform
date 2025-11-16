@@ -3,9 +3,9 @@ package com.soodora.api.user;
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.api.post.PostDTO;
+import com.soodora.api.product.ProductDTO;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.InvalidValueException;
-import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.value.Identifier;
@@ -158,7 +158,8 @@ public class UserController implements UserResource {
     public Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable) {
         Identifier identifier = createFromSlug(slug);
 
-        return userService.retrieveProducts(identifier, pageable);
+        return userService.retrieveProducts(identifier, pageable)
+                .map(ProductDTO::build);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.product;
 
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.common.value.Url;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductStatus;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @Entity(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
+public class ProductEntity implements DomainEntityAdapter<Product> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,7 +54,7 @@ public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
 
     @ManyToOne
     @JoinColumn
-    private ArtistEntity artist;
+    private ArtistEntity vendor;
 
     @Column
     private ProductStatus status;
@@ -67,17 +68,19 @@ public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
     private Date updatedAt;
 
     @Override
-    public ProductDTO aggregate() {
-        return new ProductDTO(
+    public Product aggregate() {
+        return new Product(
                 slug,
                 name,
                 description,
-                imageUrl,
+                new Url(imageUrl),
                 category,
-                price.toDomain(),
+                price.aggregate(),
                 quantity,
-                artist.aggregate(),
-                createdAt);
+                vendor.getUser().aggregate(),
+                status,
+                createdAt,
+                updatedAt);
     }
 
 }

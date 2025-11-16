@@ -1,10 +1,6 @@
 package com.soodora.service.stripe;
 
-import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.artist.ArtistRepository;
-import com.soodora.domain.common.Currency;
-import com.soodora.domain.common.Money;
-import com.soodora.domain.product.ProductDTO;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
@@ -12,7 +8,6 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.service.product.UnknownProductException;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class StripePaymentServiceTest {
@@ -83,35 +78,26 @@ class StripePaymentServiceTest {
         when(event.getType()).thenReturn("checkout.session.completed");
         when(event.getDataObjectDeserializer()).thenReturn(deserializer);
 
-        ProductDTO product = new ProductDTO(productSlug, "name", "desc", "image", "cd",
-                Money.of(BigDecimal.valueOf(149.99), Currency.EUR), 20,
-                new ArtistDTO("artist-slug", "Artist Name", null, null), new Date());
-        ArtistDTO artist = new ArtistDTO(vendorSlug, "Artist Name", null, null);
-        // UserDTO userDTO = new UserDTO(buyerSlug, "username", "email@example.com",
-        // null, null, null, null, new Date(),
-        // new Date(),
-        // emptySet());
-
-        when(productRepository.findBySlug(productSlug)).thenReturn(product);
-        when(artistRepository.find(vendorSlug)).thenReturn(artist);
+        when(productRepository.findBySlug(productSlug)).thenReturn(PRODUCT);
+        when(artistRepository.find(any())).thenReturn(ARTIST_USER);
         when(userRepository.find(any())).thenReturn(USER);
 
         // WHEN
         stripePaymentService.handleStripeEvent(event);
 
         // THEN
-        verify(productRepository).updateQuantity(productSlug, product.quantity() - quantity);
+        verify(productRepository).updateQuantity(productSlug, PRODUCT.getQuantity() - quantity);
 
         ArgumentCaptor<SaveSaleCommand> saleCmdCaptor = ArgumentCaptor.forClass(SaveSaleCommand.class);
 
         verify(saleRepository).save(saleCmdCaptor.capture());
 
         SaveSaleCommand saveSaleCommand = saleCmdCaptor.getValue();
-        assertEquals(product, saveSaleCommand.product());
-        assertEquals(artist, saveSaleCommand.artist());
+        assertEquals(PRODUCT, saveSaleCommand.product());
+        assertEquals(ARTIST_USER, saveSaleCommand.vendor());
         assertEquals(USER, saveSaleCommand.buyer());
         assertEquals(quantity, saveSaleCommand.quantitySold());
-        assertEquals(product.price().amount().multiply(BigDecimal.valueOf(quantity)),
+        assertEquals(PRODUCT.getPrice().amount().multiply(BigDecimal.valueOf(quantity)),
                 saveSaleCommand.amount().amount());
     }
 
@@ -136,6 +122,7 @@ class StripePaymentServiceTest {
     void handleStripeEvent_nonCheckoutEvent_doesNothing() {
         // GIVEN
         Event event = mock(Event.class);
+
         when(event.getType()).thenReturn("some.other.event");
 
         // WHEN

@@ -39,29 +39,32 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO save(CreateProductCommand command, User user, FileData fileData) {
+    public Product save(CreateProductCommand command, User user, FileData fileData) {
         ProductEntity entity = new ProductEntity();
-        ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
+        ArtistEntity vendorEntity = artistRepository.findByUserSlug(user.getSlug())
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist with user slug #" + user.getSlug()));
 
         entity.setName(command.name());
         entity.setPrice(new MoneyEmbeddable(command.price(), command.currency()));
         entity.setDescription(command.description());
-        if (fileData != null && fileData.content() != null) {
-            String imageUrl = imageStorageUploader.upload(fileData);
-            entity.setImageUrl(imageUrl);
-        }
         entity.setCategory(command.category());
         entity.setQuantity(command.quantity());
         entity.setSlug(generateUniqueSlug());
-        entity.setArtist(artistEntity);
+        entity.setVendor(vendorEntity);
         entity.setStatus(ACTIVE);
+
+        if (fileData != null && fileData.content() != null) {
+            String imageUrl = imageStorageUploader.upload(fileData);
+
+            entity.setImageUrl(imageUrl);
+        }
+
         return repository.save(entity).aggregate();
     }
 
     @Override
     @Transactional
-    public ProductDTO update(UpdateProductCommand command, String slug, FileData fileData) {
+    public Product update(UpdateProductCommand command, String slug, FileData fileData) {
         ProductEntity existingProduct = findProductBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.name()))
@@ -94,20 +97,20 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public ProductDTO findBySlug(String slug) {
+    public Product findBySlug(String slug) {
         return findProductBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public Page<ProductDTO> findAll(Pageable pageable) {
+    public Page<Product> findAll(Pageable pageable) {
         return repository.findByStatus(ACTIVE, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable) {
+    public Page<Product> findByFilter(ProductFilter filter, Pageable pageable) {
         EntitySpecification<ProductEntity> productSpecification = new ProductSpecification(filter);
 
         return repository.findAll(productSpecification.build(), pageable)
@@ -116,8 +119,8 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByArtistUserSlug(identifier.value(), pageable)
+    public Page<Product> findUserProducts(Identifier identifier, Pageable pageable) {
+        return repository.findByVendorUserSlug(identifier.value(), pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
@@ -151,7 +154,7 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     protected List<ProductEntity> findProductsByUserSlugOrThrow(String slug) {
-        return repository.findProductsByArtistUserSlug(slug)
+        return repository.findProductsByVendorUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find product with user slug: #" + slug));
     }
 

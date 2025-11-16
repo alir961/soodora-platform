@@ -33,16 +33,16 @@ class ProductServiceTest {
 
     private ProductService productService;
 
-    private static final ProductDTO PRODUCT_1 = buildProduct("1");
-    private static final ProductDTO PRODUCT_2 = buildProduct("2");
-    private static final ProductDTO PRODUCT_3 = buildProduct("3");
+    private static final Product PRODUCT_1 = buildProduct("1");
+    private static final Product PRODUCT_2 = buildProduct("2");
+    private static final Product PRODUCT_3 = buildProduct("3");
     private static final String SLUG_1 = "slug1";
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
-    private static final List<ProductDTO> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
-    private static final Page<ProductDTO> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
+    private static final List<Product> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
+    private static final Page<Product> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
     private static final CreateProductCommand COMMAND = new CreateProductCommand(
-            PRODUCT_1.name(), PRODUCT_1.description(), PRODUCT_1.category(), PRODUCT_1.price().amount(),
-            PRODUCT_1.price().currency(), PRODUCT_1.quantity());
+            PRODUCT_1.getName(), PRODUCT_1.getDescription(), PRODUCT_1.getCategory(), PRODUCT_1.getPrice().amount(),
+            PRODUCT_1.getPrice().currency(), PRODUCT_1.getQuantity());
 
     @BeforeEach
     void setUp() {
@@ -55,7 +55,7 @@ class ProductServiceTest {
         when(productRepository.findAll(PAGEABLE)).thenReturn(PRODUCTS_PAGE);
 
         // WHEN
-        Page<ProductDTO> retrievedProducts = productService.retrieveAllProducts(PAGEABLE);
+        Page<Product> retrievedProducts = productService.retrieveAllProducts(PAGEABLE);
 
         // THEN
         assertEquals(PRODUCTS, retrievedProducts.getContent());
@@ -66,13 +66,13 @@ class ProductServiceTest {
         // GIVEN
         ProductFilter filter = new ProductFilter(of(USER.getSlug()), empty(), empty(), empty());
 
-        List<ProductDTO> filteredProducts = List.of(PRODUCT_1, PRODUCT_3);
-        Page<ProductDTO> pageFilteredProducts = new PageImpl<>(filteredProducts, PAGEABLE, filteredProducts.size());
+        List<Product> filteredProducts = List.of(PRODUCT_1, PRODUCT_3);
+        Page<Product> pageFilteredProducts = new PageImpl<>(filteredProducts, PAGEABLE, filteredProducts.size());
 
         when(productRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredProducts);
 
         // WHEN
-        Page<ProductDTO> retrievedProducts = productService.retrieveProducts(filter, PAGEABLE);
+        Page<Product> retrievedProducts = productService.retrieveProducts(filter, PAGEABLE);
 
         // THEN
         assertEquals(2, retrievedProducts.getContent().size());
@@ -83,10 +83,10 @@ class ProductServiceTest {
     @Test
     void retrieveProduct_Success() {
         // GIVEN
-        when(productRepository.findBySlug(PRODUCT_1.slug())).thenReturn(PRODUCT_1);
+        when(productRepository.findBySlug(PRODUCT_1.getSlug())).thenReturn(PRODUCT_1);
 
         // WHEN
-        ProductDTO retrievedProduct = productService.retrieveProduct(PRODUCT_1.slug());
+        Product retrievedProduct = productService.retrieveProduct(PRODUCT_1.getSlug());
 
         // THEN
         assertEquals(PRODUCT_1, retrievedProduct);
@@ -119,7 +119,7 @@ class ProductServiceTest {
                 "image/jpeg");
         when(productRepository.update(updateCommand, SLUG_1, fileData)).thenReturn(PRODUCT_1);
 
-        ProductDTO updatedProduct = productService.updateProduct(updateCommand, SLUG_1, fileData);
+        Product updatedProduct = productService.updateProduct(updateCommand, SLUG_1, fileData);
 
         assertEquals(PRODUCT_1, updatedProduct);
         verify(productRepository).update(any(UpdateProductCommand.class), eq(SLUG_1), eq(fileData));
@@ -147,14 +147,14 @@ class ProductServiceTest {
     @Test
     void deleteProduct_Success() {
         // GIVEN
-        doNothing().when(productRepository).deleteProductBySlug(PRODUCT_1.slug());
+        doNothing().when(productRepository).deleteProductBySlug(PRODUCT_1.getSlug());
 
         // WHEN
-        Executable executable = () -> productService.deleteProductBySlug(PRODUCT_1.slug());
+        Executable executable = () -> productService.deleteProductBySlug(PRODUCT_1.getSlug());
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(productRepository).deleteProductBySlug(PRODUCT_1.slug());
+        verify(productRepository).deleteProductBySlug(PRODUCT_1.getSlug());
     }
 
     @Test

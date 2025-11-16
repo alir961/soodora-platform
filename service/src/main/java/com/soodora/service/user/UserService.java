@@ -6,7 +6,7 @@ import com.soodora.domain.common.value.Url;
 import com.soodora.domain.mail.SummaryEmailSender;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
 import com.soodora.domain.user.value.Identifier;
@@ -159,7 +159,7 @@ public class UserService implements UserDetailsService {
         return postRepository.findUserAudios(identifier, pageable);
     }
 
-    public Page<ProductDTO> retrieveProducts(Identifier identifier, Pageable pageable) {
+    public Page<Product> retrieveProducts(Identifier identifier, Pageable pageable) {
         return productRepository.findUserProducts(identifier, pageable);
     }
 

@@ -35,10 +35,10 @@ public class ArtistEntity implements DomainEntityAdapter<ArtistDTO> {
     @OneToOne
     private UserEntity user;
 
-    @OneToMany(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
+    @OneToMany(mappedBy = "vendor", orphanRemoval = true, cascade = ALL)
     private List<ProductEntity> products;
 
-    @OneToMany(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
+    @OneToMany(mappedBy = "vendor", orphanRemoval = true, cascade = ALL)
     private List<SaleEntity> sales;
 
     @OneToMany(mappedBy = "artist", orphanRemoval = true, cascade = ALL)
