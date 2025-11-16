@@ -23,8 +23,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-
 import lombok.RequiredArgsConstructor;
 
 import static java.util.stream.Collectors.toSet;
