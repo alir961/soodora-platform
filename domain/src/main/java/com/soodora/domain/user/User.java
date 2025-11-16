@@ -1,7 +1,7 @@
 package com.soodora.domain.user;
 
 import com.soodora.domain.auth.value.Role;
-import com.soodora.domain.user.value.AvatarUrl;
+import com.soodora.domain.common.value.Url;
 import com.soodora.domain.user.value.Email;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.domain.user.value.Username;
@@ -27,7 +27,7 @@ public class User {
     private Date createdAt;
     private Date updatedAt;
     private String description;
-    private AvatarUrl avatarUrl;
+    private Url avatarUrl;
 
     private Set<Role> roles;
     private Set<User> followers;
@@ -38,7 +38,7 @@ public class User {
     }
 
     public void updateUser(Username username, String firstname, String lastname, String description,
-            AvatarUrl avatarUrl) {
+            Url avatarUrl) {
         this.username = username;
         this.firstname = firstname;
         this.lastname = lastname;
@@ -49,6 +49,10 @@ public class User {
 
     public void updateRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public boolean isAdmin() {
+        return roles.stream().anyMatch(Role::isAdmin);
     }
 
     public void follow(User user) {
@@ -65,6 +69,10 @@ public class User {
 
         following.removeIf(u -> u.getSlug().equals(user.getSlug()));
         user.followers.removeIf(u -> u.getSlug().equals(slug));
+    }
+
+    public boolean isFollowing(User user) {
+        return following.contains(user);
     }
 
 }

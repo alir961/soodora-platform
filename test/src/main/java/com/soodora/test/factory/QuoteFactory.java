@@ -18,7 +18,7 @@ import static lombok.AccessLevel.PROTECTED;
 public class QuoteFactory {
 
     public static QuoteDTO buildDefaultQuote(String id) {
-        ArtistDTO artist = ArtistFactory.buildArtistDTO("123");
+        ArtistDTO artist = ArtistFactory.buildDefaultArtist("123");
 
         List<QuoteArticleDTO> articles = List.of(
                 QuoteArticleFactory.buildDefaultQuoteArticle());

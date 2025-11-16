@@ -1,6 +1,6 @@
 package com.soodora.api.sale;
 
-import com.soodora.domain.sale.SaleDTO;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.user.User;
 import com.soodora.service.sale.SaleService;
 
@@ -23,19 +23,34 @@ public class SaleController {
 
     private final SaleService saleService;
 
-    @GetMapping()
+    @GetMapping
     public Page<SaleDTO> getSales(Pageable pageable) {
-        return saleService.getAllSales(pageable);
+        return saleService.getAllSales(pageable)
+                .map(sale -> {
+                    Product product = saleService.getSaleProduct(sale.getSlug());
+
+                    return SaleDTO.build(sale, product);
+                });
     }
 
     @GetMapping("/{userSlug}")
     public Page<SaleDTO> getUserSales(@PathVariable String userSlug, Pageable pageable) {
-        return saleService.getUserSales(pageable, userSlug);
+        return saleService.getUserSales(pageable, userSlug)
+                .map(sale -> {
+                    Product product = saleService.getSaleProduct(sale.getSlug());
+
+                    return SaleDTO.build(sale, product);
+                });
     }
 
     @GetMapping(":me")
     public Page<SaleDTO> getLoggedArtistSales(@AuthenticationPrincipal User user, Pageable pageable) {
-        return saleService.getUserSales(pageable, user.getSlug());
+        return saleService.getUserSales(pageable, user.getSlug())
+                .map(sale -> {
+                    Product product = saleService.getSaleProduct(sale.getSlug());
+
+                    return SaleDTO.build(sale, product);
+                });
     }
 
 }

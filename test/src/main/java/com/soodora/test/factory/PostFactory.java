@@ -1,54 +1,49 @@
 package com.soodora.test.factory;
 
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 
 import java.util.Date;
-import java.util.List;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 
 import lombok.NoArgsConstructor;
 
+import static java.util.Collections.emptyList;
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.factory.ArtistFactory.buildArtistDTO;
+import static com.soodora.test.TestConstants.ARTIST_USER;
 
 @NoArgsConstructor(access = PROTECTED)
 public class PostFactory {
 
-    public static PostDTO buildDefaultPost(String slug, String title) {
-        return new PostDTO(
+    public static Post buildDefaultPost(String slug, String title) {
+        return new Post(
                 slug,
                 title,
                 "Content",
                 "imageUrl",
                 "my audio",
                 "audioUrl",
-                buildArtistDTO("id"),
-                0,
-                0,
-                0,
+                ARTIST_USER,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                new Date(),
                 new Date());
     }
 
-    public static PostDTO buildDefaultPostWithoutAudio(String slug, String title) {
-        return new PostDTO(
+    public static Post buildDefaultPostWithoutAudio(String slug, String title) {
+        return new Post(
                 slug,
                 title,
                 "Content",
                 "imageUrl",
                 null,
                 null,
-                buildArtistDTO("id"),
-                0,
-                0,
-                0,
+                ARTIST_USER,
+                emptyList(),
+                emptyList(),
+                emptyList(),
+                new Date(),
                 new Date());
-    }
-
-    public static Page<PostDTO> buildPostsPage(List<PostDTO> posts) {
-        return new PageImpl<>(posts);
     }
 
 }

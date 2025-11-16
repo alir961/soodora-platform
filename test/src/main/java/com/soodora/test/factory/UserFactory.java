@@ -69,7 +69,7 @@ public class UserFactory {
 
     public static User buildDefaultArtistUser() {
         return new User(
-                "slug",
+                "artist",
                 new Username("username"),
                 new Email("user@example.com"),
                 "password",
@@ -86,7 +86,7 @@ public class UserFactory {
 
     public static User buildDefaultAdminUser() {
         return new User(
-                "slug",
+                "admin",
                 new Username("username"),
                 new Email("user@example.com"),
                 "password",

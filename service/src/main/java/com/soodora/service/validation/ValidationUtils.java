@@ -55,14 +55,14 @@ public class ValidationUtils {
     }
 
     public static void validateLink(String title, String description, String url, String iconUrl) {
-        validateLinkPage(title, description);
+        validateLinkHub(title, description);
         if (url == null || url.isEmpty() || !isStringValid(url, 5000, false))
             throw new InvalidRequestException("Link Url cannot exceed 5000 characters or be empty");
         if (iconUrl == null || iconUrl.isEmpty() || !isStringValid(iconUrl, 5000, false))
             throw new InvalidRequestException("Icon Url cannot exceed 5000 characters or be empty");
     }
 
-    public static void validateLinkPage(String title, String description) {
+    public static void validateLinkHub(String title, String description) {
         if (title == null || title.isEmpty() || !isStringValid(title, 255, false))
             throw new InvalidRequestException("Title cannot exceed 255 characters or be empty");
         if (description == null || description.isEmpty() || !isStringValid(description, 255, false))

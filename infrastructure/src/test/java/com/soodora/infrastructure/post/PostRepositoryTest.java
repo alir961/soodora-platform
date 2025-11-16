@@ -2,7 +2,7 @@ package com.soodora.infrastructure.post;
 
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.playlist.PlaylistRepository;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
@@ -27,10 +27,12 @@ import static java.util.Date.from;
 import static java.util.List.of;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.IntStream.range;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
+import static com.soodora.infrastructure.post.PostEntityFactory.buildDefaultCommentEntity;
+import static com.soodora.infrastructure.post.PostEntityFactory.buildDefaultPostLikeEntity;
 import static com.soodora.infrastructure.user.UserEntityFactory.buildDefaultUserEntity;
 
 @ExtendWith(MockitoExtension.class)
@@ -80,12 +82,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -97,12 +99,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -114,12 +116,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -131,12 +133,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -148,12 +150,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p1.getSlug(), result[0].slug());
-        assertEquals(p2.getSlug(), result[1].slug());
+        assertEquals(p1.getSlug(), result[0].getSlug());
+        assertEquals(p2.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -165,12 +167,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p1.getSlug(), result[0].slug());
-        assertEquals(p2.getSlug(), result[1].slug());
+        assertEquals(p1.getSlug(), result[0].getSlug());
+        assertEquals(p2.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -182,12 +184,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -199,12 +201,12 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p2.getSlug(), result[0].slug());
-        assertEquals(p1.getSlug(), result[1].slug());
+        assertEquals(p2.getSlug(), result[0].getSlug());
+        assertEquals(p1.getSlug(), result[1].getSlug());
     }
 
     @Test
@@ -217,22 +219,22 @@ class PostRepositoryTest {
         when(postJpaRepository.findAll()).thenReturn(of(p1, p2, p3));
 
         // WHEN
-        PostDTO[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
-                .toArray(PostDTO[]::new);
+        Post[] result = postRepository.findRecommendedPosts(currentUser.aggregate(), PAGE).get()
+                .toArray(Post[]::new);
 
         // THEN
-        assertEquals(p3.getSlug(), result[0].slug());
-        assertEquals(p2.getSlug(), result[1].slug());
-        assertEquals(p1.getSlug(), result[2].slug());
+        assertEquals(p3.getSlug(), result[0].getSlug());
+        assertEquals(p2.getSlug(), result[1].getSlug());
+        assertEquals(p1.getSlug(), result[2].getSlug());
     }
 
     private PostEntity createPost(int likes, int comments, int reposts, int ageInHours, boolean isFollowed) {
         PostEntity post = new PostEntity();
 
         post.setSlug(generateSlug());
-        post.setLikes(range(0, likes).mapToObj(i -> new LikeEntity()).collect(toSet()));
-        post.setComments(range(0, comments).mapToObj(i -> new CommentEntity()).collect(toSet()));
-        post.setReposts(range(0, reposts).mapToObj(i -> new UserEntity()).collect(toSet()));
+        post.setLikes(range(0, likes).mapToObj(i -> buildDefaultPostLikeEntity()).collect(toSet()));
+        post.setComments(range(0, comments).mapToObj(i -> buildDefaultCommentEntity()).collect(toSet()));
+        post.setReposts(range(0, reposts).mapToObj(i -> buildDefaultUserEntity()).collect(toSet()));
         post.setCreatedAt(from(now().minus(ageInHours, HOURS)));
 
         ArtistEntity artist = new ArtistEntity();

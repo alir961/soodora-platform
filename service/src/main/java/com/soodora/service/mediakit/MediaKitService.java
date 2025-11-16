@@ -5,10 +5,9 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.mediakit.*;
 import com.soodora.domain.mediakititem.*;
+import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
-
-import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -22,11 +21,11 @@ public class MediaKitService {
     private final MediaKitItemRepository mediaKitItemRepository;
     private final PdfExporter pdfExporter;
 
-    public MediaKitDTO createMediaKit(CreateMediaKitCommand command, User user) {
+    public MediaKit createMediaKit(CreateMediaKitCommand command, User user) {
         return mediaKitRepository.save(command, user);
     }
 
-    public MediaKitDTO retrieveMediaKitBySlug(String slug) {
+    public MediaKit retrieveMediaKitBySlug(String slug) {
         try {
             return mediaKitRepository.findBySlug(slug);
         } catch (UnknownSlugException exception) {
@@ -34,7 +33,7 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitDTO retrieveMediaKitByArtistSlug(String slug) {
+    public MediaKit retrieveMediaKitByArtistSlug(String slug) {
         try {
             return mediaKitRepository.findByArtistSlug(slug);
         } catch (UnknownSlugException exception) {
@@ -42,7 +41,7 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitDTO updateMediaKit(UpdateMediaKitCommand command, String slug) {
+    public MediaKit updateMediaKit(UpdateMediaKitCommand command, String slug) {
         try {
             return mediaKitRepository.update(command, slug);
         } catch (UnknownSlugException exception) {
@@ -58,7 +57,7 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitItemDTO addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
+    public MediaKitItem addMediaKitItem(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
         try {
             return mediaKitItemRepository.save(command, artistSlug, fileData);
         } catch (UnknownSlugException exception) {
@@ -66,7 +65,7 @@ public class MediaKitService {
         }
     }
 
-    public MediaKitItemDTO updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
+    public MediaKitItem updateMediaKitItem(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
         try {
             return mediaKitItemRepository.update(command, slug, fileData);
         } catch (UnknownSlugException exception) {
@@ -82,18 +81,16 @@ public class MediaKitService {
         }
     }
 
-    public byte[] exportMediaKitToPdf(String slug) {
+    public byte[] exportMediaKitToPdf(String slug, User user) {
         try {
-            MediaKitDTO mediaKit = retrieveMediaKitBySlug(slug);
-            List<MediaKitItemDTO> items = mediaKitItemRepository.findAll()
-                    .stream()
-                    .filter(i -> i.mediaKitSlug().equals(slug))
-                    .toList();
+            MediaKit mediaKit = retrieveMediaKitBySlug(slug);
+            byte[] file = pdfExporter.exportMediaKit(mediaKit).toByteArray();
 
-            return pdfExporter.exportMediaKit(mediaKit, items)
-                    .toByteArray();
-        } catch (MediaKitGenerationException e) {
-            throw new InvalidRequestException("Failed to export MediaKit to PDF: " + e.getMessage());
+            mediaKitRepository.persistDownload(slug, user);
+            return file;
+        } catch (MediaKitGenerationException exception) {
+            // TODO: it's an internal error not an invalid request
+            throw new InvalidRequestException("Failed to export MediaKit to PDF: " + exception.getMessage());
         }
     }
 

@@ -13,36 +13,36 @@ import static org.junit.jupiter.api.Assertions.*;
 public class ValidationUtilsTest {
 
     @Test
-    void givenValidTitleAndDescription_whenValidateLinkPage_thenNoException() {
+    void givenValidTitleAndDescription_whenValidateLinkHub_thenNoException() {
         // GIVEN
         String title = "Valid Title";
         String description = "Valid description";
 
         // WHEN / THEN
-        assertDoesNotThrow(() -> ValidationUtils.validateLinkPage(title, description));
+        assertDoesNotThrow(() -> ValidationUtils.validateLinkHub(title, description));
     }
 
     @Test
-    void givenNullTitle_whenValidateLinkPage_thenThrowsException() {
+    void givenNullTitle_whenValidateLinkHub_thenThrowsException() {
         // GIVEN
         String title = null;
         String description = "Valid description";
 
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
-                () -> ValidationUtils.validateLinkPage(title, description));
+                () -> ValidationUtils.validateLinkHub(title, description));
         assertEquals("Title cannot exceed 255 characters or be empty", ex.getMessage());
     }
 
     @Test
-    void givenTooLongDescription_whenValidateLinkPage_thenThrowsException() {
+    void givenTooLongDescription_whenValidateLinkHub_thenThrowsException() {
         // GIVEN
         String title = "Valid Title";
         String description = "d".repeat(256);
 
         // WHEN / THEN
         InvalidRequestException ex = assertThrows(InvalidRequestException.class,
-                () -> ValidationUtils.validateLinkPage(title, description));
+                () -> ValidationUtils.validateLinkHub(title, description));
         assertEquals("Description cannot exceed 255 characters or be empty", ex.getMessage());
     }
 

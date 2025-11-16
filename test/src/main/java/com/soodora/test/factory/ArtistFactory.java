@@ -9,7 +9,7 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 public class ArtistFactory {
 
-    public static ArtistDTO buildArtistDTO(String id) {
+    public static ArtistDTO buildDefaultArtist(String id) {
         return new ArtistDTO(
                 "slug" + id,
                 "username" + id,

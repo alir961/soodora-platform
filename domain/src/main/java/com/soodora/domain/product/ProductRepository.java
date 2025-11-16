@@ -9,13 +9,13 @@ import org.springframework.data.domain.Pageable;
 
 public interface ProductRepository {
 
-    ProductDTO save(CreateProductCommand command, User user, FileData fileData);
-    ProductDTO update(UpdateProductCommand command, String slug, FileData fileData);
+    Product save(CreateProductCommand command, User user, FileData fileData);
+    Product update(UpdateProductCommand command, String slug, FileData fileData);
     void updateQuantity(String slug, long quantity);
-    ProductDTO findBySlug(String slug);
-    Page<ProductDTO> findAll(Pageable pageable);
-    Page<ProductDTO> findByFilter(ProductFilter filter, Pageable pageable);
-    Page<ProductDTO> findUserProducts(Identifier identifier, Pageable pageable);
+    Product findBySlug(String slug);
+    Page<Product> findAll(Pageable pageable);
+    Page<Product> findByFilter(ProductFilter filter, Pageable pageable);
+    Page<Product> findUserProducts(Identifier identifier, Pageable pageable);
     void deleteProductBySlug(String slug);
     boolean isProductNameUsedByUser(String name, String userSlug);
 

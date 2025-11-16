@@ -13,7 +13,7 @@ public interface SaleJpaRepository extends JpaRepository<SaleEntity, UUID> {
 
     Optional<SaleEntity> findBySlug(String slug);
 
-    Page<SaleEntity> findByArtistUserSlug(String slug, Pageable pageable);
+    Page<SaleEntity> findByVendorUserSlug(String slug, Pageable pageable);
 
     boolean existsByProduct(ProductEntity product);
 

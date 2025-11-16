@@ -1,12 +1,16 @@
 package com.soodora.infrastructure.product;
 
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.common.value.Url;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductStatus;
+import com.soodora.domain.sale.Sale;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
+import com.soodora.infrastructure.sale.SaleEntity;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,12 +22,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import static java.util.stream.Collectors.toSet;
+
 @Getter
 @Setter
 @Entity(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
+public class ProductEntity implements DomainEntityAdapter<Product> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -53,7 +59,7 @@ public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
 
     @ManyToOne
     @JoinColumn
-    private ArtistEntity artist;
+    private ArtistEntity vendor;
 
     @Column
     private ProductStatus status;
@@ -62,22 +68,32 @@ public class ProductEntity implements DomainEntityAdapter<ProductDTO> {
     @Column(updatable = false)
     private Date createdAt;
 
-    @UpdateTimestamp
     @Column
+    @UpdateTimestamp
     private Date updatedAt;
 
+    @OneToMany(mappedBy = "product")
+    private Set<SaleEntity> sales;
+
     @Override
-    public ProductDTO aggregate() {
-        return new ProductDTO(
+    public Product aggregate() {
+        Set<Sale> saleAggregates = sales.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+
+        return new Product(
                 slug,
                 name,
                 description,
-                imageUrl,
+                new Url(imageUrl),
                 category,
-                price.toDomain(),
+                price.aggregate(),
                 quantity,
-                artist.aggregate(),
-                createdAt);
+                vendor.getUser().aggregate(),
+                status,
+                createdAt,
+                updatedAt,
+                saleAggregates);
     }
 
 }

@@ -2,8 +2,6 @@ package com.soodora.api.playlist;
 
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
-import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.playlist.PlaylistFullDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.playlist.CreatePlaylistRequest;
 import com.soodora.service.playlist.UpdatePlaylistRequest;
@@ -52,7 +50,7 @@ public interface PlaylistResource {
             @ApiResponse(responseCode = "200", description = "Playlist retrieved successfully"),
             @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    PlaylistFullDTO getPlaylist(
+    PopulatedPlaylistDTO getPlaylist(
             @PathVariable String slug,
             Pageable pageableAudioPosts);
 
@@ -79,8 +77,7 @@ public interface PlaylistResource {
     })
     ResponseEntity<JsonResponse> addPostToPlaylist(
             @PathVariable String playlistSlug,
-            @PathVariable String postSlug,
-            Pageable pageableAudioPosts);
+            @PathVariable String postSlug);
 
     @Operation(summary = "Remove a post from a playlist", responses = {
             @ApiResponse(responseCode = "200", description = "Post removed from playlist"),
@@ -88,7 +85,6 @@ public interface PlaylistResource {
     })
     ResponseEntity<JsonResponse> removePostFromPlaylist(
             @PathVariable String playlistSlug,
-            @PathVariable String postSlug,
-            Pageable pageableAudioPosts);
+            @PathVariable String postSlug);
 
 }

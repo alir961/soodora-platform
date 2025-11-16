@@ -2,12 +2,12 @@ package com.soodora.infrastructure.link;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.CreateLinkCommand;
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
-import com.soodora.infrastructure.linkpage.LinkPageEntity;
-import com.soodora.infrastructure.linkpage.LinkPageJpaRepository;
+import com.soodora.infrastructure.linkhub.LinkHubEntity;
+import com.soodora.infrastructure.linkhub.LinkHubJpaRepository;
 
 import java.util.List;
 
@@ -24,7 +24,7 @@ import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 public class LinkRepositoryImpl implements LinkRepository {
 
     private final LinkJpaRepository repository;
-    private final LinkPageJpaRepository linkPageRepository;
+    private final LinkHubJpaRepository linkHubRepository;
 
     protected LinkEntity findLinkBySlugOrThrow(String slug) {
         return repository.findBySlug(slug)
@@ -33,9 +33,9 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public LinkDTO save(CreateLinkCommand command, String userSlug) {
-        LinkPageEntity linkPage = linkPageRepository.findByArtistUserSlug(userSlug)
-                .orElseThrow(() -> new UnknownSlugException("Link page not found for user slug: " + userSlug));
+    public Link save(CreateLinkCommand command, String userSlug) {
+        LinkHubEntity linkHub = linkHubRepository.findByArtistUserSlug(userSlug)
+                .orElseThrow(() -> new UnknownSlugException("Link hub not found for user slug: " + userSlug));
 
         LinkEntity entity = new LinkEntity();
         entity.setTitle(command.title());
@@ -43,16 +43,16 @@ public class LinkRepositoryImpl implements LinkRepository {
         entity.setUrl(command.url());
         entity.setIconUrl(command.iconUrl());
         entity.setSlug(generateUniqueSlug());
-        entity.setLinkPage(linkPage);
+        entity.setLinkHub(linkHub);
 
-        linkPage.getLinks().add(entity);
+        linkHub.getLinks().add(entity);
 
         return repository.save(entity).aggregate();
     }
 
     @Override
     @Transactional
-    public LinkDTO update(UpdateLinkCommand command, String slug) {
+    public Link update(UpdateLinkCommand command, String slug) {
         LinkEntity existingLink = findLinkBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
@@ -68,13 +68,13 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public LinkDTO findBySlug(String slug) {
+    public Link findBySlug(String slug) {
         return findLinkBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<LinkDTO> findAll() {
+    public List<Link> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();

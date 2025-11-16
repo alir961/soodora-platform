@@ -2,16 +2,18 @@ package com.soodora.service.user;
 
 import com.soodora.domain.auth.value.Role;
 import com.soodora.domain.cdn.ImageStorageUploader;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.common.value.Url;
+import com.soodora.domain.mail.SummaryEmailSender;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
-import com.soodora.domain.product.ProductDTO;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.*;
-import com.soodora.domain.user.value.AvatarUrl;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.domain.user.value.Username;
 import com.soodora.service.auth.UserPrincipal;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -25,7 +27,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.data.domain.Pageable.unpaged;
 
+import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromUsername;
 
 @Slf4j
@@ -37,6 +41,7 @@ public class UserService implements UserDetailsService {
     private final PostRepository postRepository;
     private final ProductRepository productRepository;
     private final ImageStorageUploader imageStorageUploader;
+    private final SummaryEmailSender summaryEmailSender;
 
     public Set<User> retrieveAllUsers() {
         return userRepository.findAll();
@@ -57,12 +62,12 @@ public class UserService implements UserDetailsService {
     public User updateUser(Identifier userIdentifier, UserUpdateCommand updateCommand) {
         User user = retrieveUser(userIdentifier);
         Username username = new Username(updateCommand.username());
-        AvatarUrl avatarUrl = null;
+        Url avatarUrl = null;
 
         if (updateCommand.avatar() != null) {
             String hostedAvatarUrl = imageStorageUploader.upload(updateCommand.avatar());
 
-            avatarUrl = new AvatarUrl(hostedAvatarUrl);
+            avatarUrl = new Url(hostedAvatarUrl);
         }
         user.updateUser(username, updateCommand.firstname(), updateCommand.lastname(),
                 updateCommand.description(), avatarUrl);
@@ -142,19 +147,19 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public Page<PostDTO> retrievePosts(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrievePosts(Identifier identifier, Pageable pageable) {
         return postRepository.findUserPosts(identifier, pageable);
     }
 
-    public Page<PostDTO> retrieveReposts(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrieveReposts(Identifier identifier, Pageable pageable) {
         return postRepository.findUserReposts(identifier, pageable);
     }
 
-    public Page<PostDTO> retrieveAudios(Identifier identifier, Pageable pageable) {
+    public Page<Post> retrieveAudios(Identifier identifier, Pageable pageable) {
         return postRepository.findUserAudios(identifier, pageable);
     }
 
-    public Page<ProductDTO> retrieveProducts(Identifier identifier, Pageable pageable) {
+    public Page<Product> retrieveProducts(Identifier identifier, Pageable pageable) {
         return productRepository.findUserProducts(identifier, pageable);
     }
 
@@ -163,6 +168,14 @@ public class UserService implements UserDetailsService {
         User user = retrieveUser(createFromUsername(username));
 
         return new UserPrincipal(user);
+    }
+
+    public void sendPostsSummary(User user) {
+        Identifier identifier = createFromSlug(user.getSlug());
+        List<Post> posts = postRepository.findUserPosts(identifier, unpaged()).stream()
+                .toList();
+
+        summaryEmailSender.sendEmail(user.getEmail().value(), user, posts);
     }
 
 }

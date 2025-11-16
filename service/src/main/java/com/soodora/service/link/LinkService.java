@@ -2,7 +2,7 @@ package com.soodora.service.link;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.CreateLinkCommand;
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
 
@@ -19,18 +19,18 @@ public class LinkService {
     private final LinkRepository linkRepository;
 
     public String createLink(CreateLinkCommand command, String userSlug) throws UnknownSlugException {
-        return linkRepository.save(command, userSlug).slug();
+        return linkRepository.save(command, userSlug).getSlug();
     }
 
-    public List<LinkDTO> retrieveAllLinks() {
+    public List<Link> retrieveAllLinks() {
         return linkRepository.findAll();
     }
 
-    public LinkDTO retrieveLinkBySlug(String slug) {
+    public Link retrieveLinkBySlug(String slug) {
         return linkRepository.findBySlug(slug);
     }
 
-    public LinkDTO updateLink(UpdateLinkCommand command, String slug) {
+    public Link updateLink(UpdateLinkCommand command, String slug) {
         try {
             return linkRepository.update(command, slug);
         } catch (UnknownSlugException exception) {

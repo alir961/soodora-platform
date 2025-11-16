@@ -18,7 +18,7 @@ public class SaleEntityFactory {
         return new SaleEntity(
                 randomUUID(),
                 "slug",
-                buildDefaultProductEntity(buildDefaultArtistEntity()),
+                buildDefaultProductEntity(),
                 buildDefaultArtistEntity(),
                 buildDefaultUserEntity(),
                 100,

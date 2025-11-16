@@ -10,4 +10,8 @@ public record Role(String value) {
         return "ROLE_" + value;
     }
 
+    public boolean isAdmin() {
+        return value.equals("ADMIN");
+    }
+
 }

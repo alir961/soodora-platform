@@ -32,7 +32,6 @@ import static org.mockito.Mockito.*;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.infrastructure.user.UserEntityFactory.buildDefaultUserEntity;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
 import static com.soodora.test.factory.UserFactory.buildNewUser;
 
 @ExtendWith(MockitoExtension.class)
@@ -64,8 +63,7 @@ class UserRepositoryImplTest {
         // GIVEN
         User user = buildNewUser();
 
-        when(userJpaRepository.findBySlug(null)).thenReturn(empty());
-        when(userJpaRepository.findBySlug(anyString())).thenReturn(empty());
+        when(userJpaRepository.findBySlug(any())).thenReturn(empty());
         when(userJpaRepository.save(any(UserEntity.class))).thenReturn(userEntity);
 
         // WHEN
@@ -78,16 +76,14 @@ class UserRepositoryImplTest {
     @Test
     void givenExistingUser_whenSave_thenUserIsUpdated() {
         // GIVEN
-        User user = buildDefaultUser();
-
-        when(userJpaRepository.findBySlug(user.getSlug())).thenReturn(of(userEntity));
+        when(userJpaRepository.findBySlug(USER.getSlug())).thenReturn(of(userEntity));
         when(userJpaRepository.save(any(UserEntity.class))).thenReturn(userEntity);
 
         // WHEN
-        User updated = userRepository.save(user);
+        User updated = userRepository.save(USER);
 
         // THEN
-        assertEquals(user.getSlug(), updated.getSlug());
+        assertEquals(USER.getSlug(), updated.getSlug());
     }
 
     @Test
@@ -112,6 +108,7 @@ class UserRepositoryImplTest {
         // THEN
         verify(artistJpaRepository).save(any(ArtistEntity.class));
         verify(userJpaRepository).save(any(UserEntity.class));
+        user.updateRoles(emptySet());
     }
 
     @Test
@@ -142,8 +139,6 @@ class UserRepositoryImplTest {
     @Test
     void givenDefaultUser_whenFindAll_thenReturnUsers() {
         // GIVEN
-        User user = buildDefaultUser();
-
         when(userJpaRepository.findAll()).thenReturn(singletonList(userEntity));
 
         // WHEN
@@ -153,7 +148,7 @@ class UserRepositoryImplTest {
         User firstUser = users.iterator().next();
 
         assertEquals(1, users.size());
-        assertEquals(user.getSlug(), firstUser.getSlug());
+        assertEquals(USER.getSlug(), firstUser.getSlug());
     }
 
     @Test

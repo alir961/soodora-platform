@@ -2,10 +2,10 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.test.factory.UserFactory;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 import static java.util.UUID.randomUUID;
 
 public class UserEntityFactory extends UserFactory {
@@ -24,12 +24,12 @@ public class UserEntityFactory extends UserFactory {
                 "Description",
                 null,
                 null,
-                emptyList(),
-                emptyList(),
+                new ArrayList<>(),
+                new ArrayList<>(),
                 null,
-                emptySet(),
-                emptySet(),
-                emptySet());
+                new HashSet<>(),
+                new HashSet<>(),
+                new HashSet<>());
     }
 
 }

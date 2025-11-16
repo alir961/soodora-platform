@@ -22,8 +22,8 @@ public interface ProductJpaRepository
 
     Page<ProductEntity> findByStatus(ProductStatus status, Pageable pageable);
 
-    Optional<List<ProductEntity>> findProductsByArtistUserSlug(String slug);
+    Optional<List<ProductEntity>> findProductsByVendorUserSlug(String slug);
 
-    Page<ProductEntity> findByArtistUserSlug(String slug, Pageable pageable);
+    Page<ProductEntity> findByVendorUserSlug(String slug, Pageable pageable);
 
 }

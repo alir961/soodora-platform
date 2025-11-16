@@ -1,9 +1,8 @@
 package com.soodora.infrastructure.generator;
 
 import com.soodora.domain.generator.PdfExporter;
-import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKit;
 import com.soodora.domain.mediakit.MediaKitGenerationException;
-import com.soodora.domain.mediakititem.MediaKitItemDTO;
 import com.soodora.domain.quote.QuoteDTO;
 import com.soodora.domain.quote.QuoteGenerationException;
 import com.soodora.domain.quotearticle.QuoteArticleDTO;
@@ -32,7 +31,7 @@ public class PdfExporterImpl implements PdfExporter {
     private static final String LOGO_URL = "https://app.soodora.com/assets/images/png/banner-dark.png";
 
     @Override
-    public ByteArrayOutputStream exportMediaKit(MediaKitDTO mediaKit, List<MediaKitItemDTO> items)
+    public ByteArrayOutputStream exportMediaKit(MediaKit mediaKit)
             throws MediaKitGenerationException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         Document document = new Document();
@@ -47,7 +46,7 @@ public class PdfExporterImpl implements PdfExporter {
                     .addBanner(LOGO_URL)
                     .addHeader(mediaKit)
                     .addBiography(mediaKit)
-                    .addMediaKitItems(items);
+                    .addMediaKitItems(mediaKit.getItems());
 
             document.close();
         } catch (DocumentException exception) {

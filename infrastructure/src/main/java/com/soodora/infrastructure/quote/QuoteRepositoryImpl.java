@@ -6,6 +6,7 @@ import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.common.EntitySpecification;
 
 import java.util.List;
 
@@ -86,8 +87,10 @@ public class QuoteRepositoryImpl implements QuoteRepository {
     @Override
     @Transactional
     public Page<QuoteDTO> findByFilter(QuoteFilter filter, Pageable pageable) {
-        var spec = QuoteSpecification.build(filter);
-        return quoteJpaRepository.findAll(spec, pageable).map(DomainEntityAdapter::aggregate);
+        EntitySpecification<QuoteEntity> specification = new QuoteSpecification(filter);
+
+        return quoteJpaRepository.findAll(specification.build(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override

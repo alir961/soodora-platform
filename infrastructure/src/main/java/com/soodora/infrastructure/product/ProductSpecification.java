@@ -1,21 +1,22 @@
 package com.soodora.infrastructure.product;
 
 import com.soodora.domain.product.ProductFilter;
+import com.soodora.infrastructure.common.EntitySpecification;
 
 import java.util.Optional;
 
 import org.springframework.data.jpa.domain.Specification;
 
-import lombok.NoArgsConstructor;
-
-import static lombok.AccessLevel.PRIVATE;
+import lombok.RequiredArgsConstructor;
 
 import static com.soodora.domain.product.ProductStatus.ACTIVE;
 
-@NoArgsConstructor(access = PRIVATE)
-public class ProductSpecification {
+@RequiredArgsConstructor
+public class ProductSpecification extends EntitySpecification<ProductEntity> {
 
-    public static Specification<ProductEntity> build(ProductFilter filter) {
+    private final ProductFilter filter;
+
+    public Specification<ProductEntity> build() {
         Specification<ProductEntity> specification = isActive();
         Optional<String> userSlugFilter = filter.userSlug();
         Optional<String> nameFilter = filter.name();
@@ -31,11 +32,6 @@ public class ProductSpecification {
         if (categoryFilter.isPresent())
             specification = append(specification, hasCategory(categoryFilter.get()));
         return specification;
-    }
-
-    private static Specification<ProductEntity> append(Specification<ProductEntity> base,
-            Specification<ProductEntity> addition) {
-        return base == null ? addition : base.and(addition);
     }
 
     private static Specification<ProductEntity> hasUserSlug(String slug) {

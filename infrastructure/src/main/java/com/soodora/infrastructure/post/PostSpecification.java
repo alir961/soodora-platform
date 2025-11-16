@@ -1,47 +1,47 @@
 package com.soodora.infrastructure.post;
 
 import com.soodora.domain.post.PostFilter;
+import com.soodora.infrastructure.common.EntitySpecification;
+
+import java.util.Optional;
 
 import org.springframework.data.jpa.domain.Specification;
 
 import jakarta.persistence.criteria.Expression;
+import lombok.RequiredArgsConstructor;
 
-public class PostSpecification {
+@RequiredArgsConstructor
+public class PostSpecification extends EntitySpecification<PostEntity> {
 
-    public static Specification<PostEntity> build(PostFilter filter) {
-        Specification<PostEntity> spec = null;
+    private final PostFilter filter;
 
-        if (filter.userSlug().isPresent())
-            spec = appendSpec(spec, hasUserSlug(filter.userSlug().get()));
+    @Override
+    public Specification<PostEntity> build() {
+        Specification<PostEntity> specification = null;
+        Optional<String> userSlug = filter.userSlug();
+        Optional<Boolean> hasAudio = filter.hasAudio();
+        Optional<String> title = filter.title();
+        Optional<String> audioTitle = filter.audioTitle();
+        Optional<String> description = filter.description();
 
-        if (filter.hasAudio().isPresent())
-            spec = appendSpec(spec, hasAudio(filter.hasAudio().get()));
-
-        if (filter.title().isPresent())
-            spec = appendSpec(spec, hasTitle(filter.title().get()));
-
-        if (filter.audioTitle().isPresent())
-            spec = appendSpec(spec, hasAudioTitle(filter.audioTitle().get()));
-
-        if (filter.description().isPresent())
-            spec = appendSpec(spec, hasDescription(filter.description().get()));
-
-        return spec;
-    }
-
-    private static Specification<PostEntity> appendSpec(Specification<PostEntity> base,
-            Specification<PostEntity> addition) {
-        if (base == null) {
-            return addition;
-        }
-        return base.and(addition);
+        if (userSlug.isPresent())
+            specification = append(null, hasUserSlug(userSlug.get()));
+        if (hasAudio.isPresent())
+            specification = append(specification, hasAudio(hasAudio.get()));
+        if (title.isPresent())
+            specification = append(specification, hasTitle(title.get()));
+        if (audioTitle.isPresent())
+            specification = append(specification, hasAudioTitle(audioTitle.get()));
+        if (description.isPresent())
+            specification = append(specification, hasDescription(description.get()));
+        return specification;
     }
 
     private static Specification<PostEntity> hasUserSlug(String slug) {
         return (root, query, cb) -> cb.equal(root.get("user").get("slug"), slug);
     }
 
-    private static Specification<PostEntity> hasAudio(Boolean hasAudio) {
+    private static Specification<PostEntity> hasAudio(boolean hasAudio) {
         return (root, query, cb) -> {
             Expression<String> audioUrl = root.get("audioUrl");
 

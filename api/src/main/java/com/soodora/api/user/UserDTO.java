@@ -2,14 +2,11 @@ package com.soodora.api.user;
 
 import com.soodora.domain.auth.value.Role;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.Identifier;
 
 import java.util.Date;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
-
-import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 public record UserDTO(
         String slug,
@@ -32,10 +29,6 @@ public record UserDTO(
         return new UserDTO(user.getSlug(), user.getUsername().value(), user.getEmail().value(), user.getFirstname(),
                 user.getLastname(), user.getDescription(), avatarUrl, user.getCreatedAt(),
                 user.getUpdatedAt(), roles);
-    }
-
-    public Identifier identifier() {
-        return createFromSlug(slug);
     }
 
 }

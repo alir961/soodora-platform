@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.mediakit;
 
-import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKit;
+import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.mediakititem.MediaKitItemEntity;
@@ -20,14 +21,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import static jakarta.persistence.CascadeType.ALL;
-import static java.util.stream.Collectors.toList;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity(name = "media_kits")
-public class MediaKitEntity implements DomainEntityAdapter<MediaKitDTO> {
+public class MediaKitEntity implements DomainEntityAdapter<MediaKit> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -64,17 +64,35 @@ public class MediaKitEntity implements DomainEntityAdapter<MediaKitDTO> {
     @OneToMany(mappedBy = "mediaKit", cascade = ALL, orphanRemoval = true)
     private List<MediaKitItemEntity> items = new ArrayList<>();
 
+    @Column
+    private int downloadCount;
+
+    @Column
+    private int subscriberDownloadCount;
+
+    public void increaseDownloadCount(boolean subscriber) {
+        if (subscriber)
+            subscriberDownloadCount++;
+        downloadCount++;
+    }
+
     @Override
-    public MediaKitDTO aggregate() {
-        return new MediaKitDTO(
+    public MediaKit aggregate() {
+        List<MediaKitItem> itemAggregates = items.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .toList();
+
+        return new MediaKit(
                 slug,
-                artist.getUser().getUsername(),
+                artist.getUser().aggregate(),
                 title,
                 shortBio,
                 longBio,
                 contactEmail,
                 contactPhone,
-                items.stream().map(DomainEntityAdapter::aggregate).collect(toList()));
-
+                itemAggregates,
+                downloadCount,
+                subscriberDownloadCount);
     }
+
 }

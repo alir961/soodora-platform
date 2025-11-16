@@ -4,14 +4,11 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
-import com.soodora.domain.mediakititem.MediaKitItemDTO;
+import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.domain.mediakititem.MediaKitItemRepository;
 import com.soodora.domain.mediakititem.UpdateMediaKitItemCommand;
-import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.mediakit.MediaKitEntity;
 import com.soodora.infrastructure.mediakit.MediaKitJpaRepository;
-
-import java.util.List;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +22,13 @@ import static com.soodora.domain.common.StringValidator.isNotNullOrBlank;
 @RequiredArgsConstructor
 public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
 
-    private final MediaKitItemJpaRepository repository;
     private final MediaKitJpaRepository mediaKitRepository;
+    private final MediaKitItemJpaRepository mediaKitItemRepository;
     private final ImageStorageUploader imageStorageUploader;
 
     @Override
     @Transactional
-    public MediaKitItemDTO save(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
+    public MediaKitItem save(CreateMediaKitItemCommand command, String artistSlug, FileData fileData) {
         MediaKitEntity mediaKit = mediaKitRepository.findByArtistUserSlug(artistSlug)
                 .orElseThrow(() -> new UnknownSlugException("Media Kit not found for artist with slug #" + artistSlug));
         MediaKitItemEntity mediaKitItem = new MediaKitItemEntity();
@@ -39,8 +36,9 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
         mediaKitItem.setTitle(command.title());
         mediaKitItem.setType(command.type());
 
-        if ("IMAGE".equalsIgnoreCase(command.type()) && fileData != null && fileData.content() != null) {
+        if (command.type().equalsIgnoreCase("IMAGE") && fileData != null && fileData.content() != null) {
             String imageUrl = imageStorageUploader.upload(fileData);
+
             mediaKitItem.setContent(imageUrl);
         } else {
             mediaKitItem.setContent(command.content());
@@ -51,12 +49,12 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
 
         mediaKit.getItems().add(mediaKitItem);
 
-        return repository.save(mediaKitItem).aggregate();
+        return mediaKitItemRepository.save(mediaKitItem).aggregate();
     }
 
     @Override
     @Transactional
-    public MediaKitItemDTO update(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
+    public MediaKitItem update(UpdateMediaKitItemCommand command, String slug, FileData fileData) {
         MediaKitItemEntity existingMediaKitItem = findMediaKitItemBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.title()))
@@ -65,45 +63,32 @@ public class MediaKitItemRepositoryImpl implements MediaKitItemRepository {
             existingMediaKitItem.setType(command.type());
         if (isNotNullOrBlank(command.content()))
             existingMediaKitItem.setContent(command.content());
-        if ("IMAGE".equalsIgnoreCase(command.type()) && fileData != null && fileData.content() != null) {
+        if (command.type().equalsIgnoreCase("IMAGE") && fileData != null && fileData.content() != null) {
             String imageUrl = imageStorageUploader.upload(fileData);
+
             existingMediaKitItem.setContent(imageUrl);
         }
-        return repository.save(existingMediaKitItem).aggregate();
-    }
-
-    @Override
-    @Transactional
-    public MediaKitItemDTO findBySlug(String slug) {
-        return findMediaKitItemBySlugOrThrow(slug).aggregate();
-    }
-
-    @Override
-    @Transactional
-    public List<MediaKitItemDTO> findAll() {
-        return repository.findAll().stream()
-                .map(DomainEntityAdapter::aggregate)
-                .toList();
+        return mediaKitItemRepository.save(existingMediaKitItem).aggregate();
     }
 
     @Override
     @Transactional
     public void deleteBySlug(String slug) {
-        MediaKitItemEntity mediaKitItem = repository.findBySlug(slug)
+        MediaKitItemEntity mediaKitItem = mediaKitItemRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find media kit item with slug: #" + slug));
 
-        repository.delete(mediaKitItem);
+        mediaKitItemRepository.delete(mediaKitItem);
     }
 
-    protected MediaKitItemEntity findMediaKitItemBySlugOrThrow(String slug) {
-        return repository.findBySlug(slug)
+    private MediaKitItemEntity findMediaKitItemBySlugOrThrow(String slug) {
+        return mediaKitItemRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find media kit item with slug: #" + slug));
     }
 
     private String generateUniqueSlug() {
         String slug = generateSlug();
 
-        while (repository.findBySlug(slug).isPresent())
+        while (mediaKitItemRepository.findBySlug(slug).isPresent())
             slug = generateSlug();
         return slug;
     }

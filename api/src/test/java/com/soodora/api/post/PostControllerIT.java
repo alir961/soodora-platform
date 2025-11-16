@@ -2,6 +2,7 @@ package com.soodora.api.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
+import com.soodora.domain.post.PostAnalytics;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
@@ -31,13 +32,11 @@ import static java.util.Optional.of;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
 import static com.soodora.test.TestConstants.ARTIST_USER;
@@ -58,9 +57,9 @@ class PostControllerIT {
     @MockitoBean
     private UserRepository userRepository;
 
-    private static final PostDTO POST_1 = buildDefaultPost("postSlug1", "Post 1");
-    private static final PostDTO POST_2 = buildDefaultPost("postSlug2", "Post 2");
-    private static final PostDTO POST_3 = buildDefaultPost("postSlug3", "Post 3");
+    private static final Post POST_1 = buildDefaultPost("postSlug1", "Post 1");
+    private static final Post POST_2 = buildDefaultPost("postSlug2", "Post 2");
+    private static final Post POST_3 = buildDefaultPost("postSlug3", "Post 3");
 
     private static final User USER_1 = buildDefaultUser(1);
     private static final User USER_2 = buildDefaultUser(2);
@@ -124,7 +123,7 @@ class PostControllerIT {
     @Test
     void retrievePost_Success() throws Exception {
         // GIVEN
-        Page<PostDTO> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
+        Page<Post> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
         when(postService.retrievePosts(any(), any())).thenReturn(postsPage);
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
@@ -133,15 +132,16 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()))
-                .andExpect(jsonPath("$.content[1].slug").value(POST_2.slug()))
-                .andExpect(jsonPath("$.content[2].slug").value(POST_3.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()))
+                .andExpect(jsonPath("$.content[1].slug").value(POST_2.getSlug()))
+                .andExpect(jsonPath("$.content[2].slug").value(POST_3.getSlug()));
     }
 
     @Test
     void retrievePosts_Empty() throws Exception {
         // GIVEN
-        Page<PostDTO> emptyPage = new PageImpl<>(List.of());
+        Page<Post> emptyPage = new PageImpl<>(List.of());
+
         when(postService.retrievePosts(any(), any())).thenReturn(emptyPage);
         when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
@@ -185,7 +185,7 @@ class PostControllerIT {
         boolean hasAudio = true;
         String audioTitle = "audioTitle1";
         String description = "description1";
-        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
         PostFilter postFilter = new PostFilter(
                 of(userSlug),
@@ -206,7 +206,7 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
     }
 
     @Test
@@ -216,7 +216,7 @@ class PostControllerIT {
         boolean hasAudio = false;
         String title = "title1";
         String description = "description1";
-        Page<PostDTO> filteredPage = new PageImpl<>(List.of(POST_1));
+        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
         PostFilter postFilter = new PostFilter(
                 of(userSlug),
@@ -237,7 +237,7 @@ class PostControllerIT {
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.slug()));
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
     }
 
     @Test
@@ -319,7 +319,7 @@ class PostControllerIT {
         // GIVEN
         when(postService.retrieveLikes("postSlug1"))
                 .thenReturn(List.of(
-                        new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER_1), new Date()),
+                        new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER_1), new Date()),
                         new PostLikeDTO("postSlug1", PublicUserDTO.build(USER_2), new Date())));
 
         // WHEN & THEN
@@ -439,6 +439,32 @@ class PostControllerIT {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenGetPostAnalytics_thenForbidden() throws Exception {
+        mockMvc.perform(get("/posts/post-slug/analytics"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedRequest_whenGetPostAnalytics_thenOk() throws Exception {
+        // GIVEN
+        String postSlug = "post-slug";
+        PostAnalytics analytics = new PostAnalytics(1, 2, 3, 0, 1, 2);
+
+        when(postService.computePostAnalytics(USER, postSlug)).thenReturn(analytics);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/post-slug/analytics")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likes").value(1))
+                .andExpect(jsonPath("$.comments").value(2))
+                .andExpect(jsonPath("$.reposts").value(3))
+                .andExpect(jsonPath("$.subscribedLikes").value(0))
+                .andExpect(jsonPath("$.subscribedComments").value(1))
+                .andExpect(jsonPath("$.subscribedReposts").value(2));
     }
 
 }

@@ -1,6 +1,6 @@
 package com.soodora.test.factory;
 
-import com.soodora.domain.mediakit.MediaKitDTO;
+import com.soodora.domain.mediakit.MediaKit;
 
 import java.util.ArrayList;
 
@@ -8,19 +8,23 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
+import static com.soodora.test.TestConstants.ARTIST_USER;
+
 @NoArgsConstructor(access = PROTECTED)
 public class MediaKitFactory {
 
-    public static MediaKitDTO buildMediaKitDTO() {
-        return new MediaKitDTO(
+    public static MediaKit buildDefaultMediaKit() {
+        return new MediaKit(
                 "slug",
-                "artist",
-                "title",
-                "shortBio",
-                "longBio",
+                ARTIST_USER,
+                "Title",
+                "ShortBio",
+                "LongBio",
                 "contactEmail",
                 "contactPhone",
-                new ArrayList<>());
+                new ArrayList<>(),
+                0,
+                0);
     }
 
 }

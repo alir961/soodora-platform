@@ -5,7 +5,7 @@ import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.PostAnalytics;
 import com.soodora.domain.post.PostFilter;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
@@ -26,7 +26,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
@@ -41,14 +40,14 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @RequiredArgsConstructor
 @RequestMapping("/posts")
 @Tag(name = "Post Controller")
-public class PostController {
+public class PostController implements PostResource {
 
     private final PostService postService;
     private final FileDataService fileDataService;
 
+    @Override
     @PostMapping
     @PreAuthorize("hasRole('ARTIST')")
-    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<JsonResponse> createPost(
             @AuthenticationPrincipal User user,
             @RequestPart("data") CreatePostRequest createPostRequest,
@@ -63,6 +62,7 @@ public class PostController {
         }
     }
 
+    @Override
     @GetMapping("/search")
     public Page<PostDTO> searchPosts(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
@@ -73,31 +73,42 @@ public class PostController {
             Pageable pageable) {
         PostFilter filter = new PostFilter(userSlug, hasAudio, title, audioTitle, description);
 
-        return postService.retrievePosts(filter, pageable);
+        return postService.retrievePosts(filter, pageable)
+                .map(PostDTO::build);
     }
 
+    @Override
     @GetMapping("/explore")
     public Page<PostDTO> getRecommendedPosts(@AuthenticationPrincipal User user, Pageable pageable) {
-        return postService.retrieveRecommendedPosts(user, pageable);
+        return postService.retrieveRecommendedPosts(user, pageable)
+                .map(PostDTO::build);
     }
 
+    @Override
     @GetMapping("/{postSlug}")
     public PostDTO getPost(@PathVariable String postSlug) {
-        return postService.retrievePostBySlug(postSlug);
+        return PostDTO.build(postService.retrievePostBySlug(postSlug));
     }
 
+    @Override
     @DeleteMapping("/{postSlug}")
-    @SecurityRequirement(name = "bearerAuth")
     public void deletePost(@PathVariable("postSlug") String slug) {
         postService.deletePostBySlug(slug);
     }
 
+    @Override
     @PostMapping("/{postSlug}/likes")
-    @SecurityRequirement(name = "bearerAuth")
     public void likePost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         postService.likePost(postSlug, user);
     }
 
+    @Override
+    @DeleteMapping("/{slug}/likes")
+    public void unlikePost(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        postService.unlikePost(slug, user);
+    }
+
+    @Override
     @GetMapping("/{postSlug}/likes")
     public Set<String> getLikes(@PathVariable String postSlug) {
         return postService.retrieveLikes(postSlug).stream()
@@ -106,18 +117,19 @@ public class PostController {
                 .collect(toSet());
     }
 
-    @DeleteMapping("/{slug}/likes")
-    @SecurityRequirement(name = "bearerAuth")
-    public void unlikePost(@AuthenticationPrincipal User user, @PathVariable String slug) {
-        postService.unlikePost(slug, user);
-    }
-
+    @Override
     @PostMapping("/{postSlug}/reposts")
-    @SecurityRequirement(name = "bearerAuth")
     public void repostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         postService.repostPostBySlug(postSlug, user);
     }
 
+    @Override
+    @DeleteMapping("/{postSlug}/reposts")
+    public void unrepostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
+        postService.unrepostPostBySlug(user, postSlug);
+    }
+
+    @Override
     @GetMapping("/{postSlug}/reposts")
     public Set<String> getReposts(@PathVariable String postSlug) {
         return postService.retrieveReposts(postSlug).stream()
@@ -125,12 +137,15 @@ public class PostController {
                 .collect(toSet());
     }
 
-    @DeleteMapping("/{postSlug}/reposts")
-    @SecurityRequirement(name = "bearerAuth")
-    public void unrepostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
-        postService.unrepostPostBySlug(user, postSlug);
+    @Override
+    @GetMapping("/{postSlug}/analytics")
+    public PostAnalyticsDTO getPostAnalytics(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
+        PostAnalytics postAnalytics = postService.computePostAnalytics(user, postSlug);
+
+        return PostAnalyticsDTO.build(postAnalytics);
     }
 
+    @Override
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(@RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
@@ -138,10 +153,11 @@ public class PostController {
         return postService.retrieveUserLikes(filter);
     }
 
+    @Override
     @GetMapping("/comments")
-    public List<CommentDTO> getUserComments(
-            @RequestParam(value = "userSlug") String userSlug) {
+    public List<CommentDTO> getUserComments(@RequestParam(value = "userSlug") String userSlug) {
         PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
+
         return postService.retrieveUserComments(filter);
     }
 

@@ -25,7 +25,6 @@ import static org.mockito.Mockito.*;
 import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static com.soodora.test.TestConstants.USER;
 import static com.soodora.test.factory.PlaylistFactory.buildDefaultPlaylist;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPlaylistFull;
 
 @ExtendWith(MockitoExtension.class)
 class PlaylistServiceTest {
@@ -35,12 +34,11 @@ class PlaylistServiceTest {
 
     private PlaylistService playlistService;
 
-    private static final PlaylistDTO PLAYLIST_1 = buildDefaultPlaylist("slug1", "Name 1");
-    private static final PlaylistDTO PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
-    private static final PlaylistDTO PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
-    private static final PlaylistFullDTO FULL_PLAYLIST = buildDefaultPlaylistFull("slug1", "Name 1");
     private static final String SLUG_1 = "slug1";
-    private static final List<PlaylistDTO> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
+    private static final Playlist PLAYLIST_1 = buildDefaultPlaylist(SLUG_1, "Name 1");
+    private static final Playlist PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
+    private static final Playlist PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
+    private static final List<Playlist> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
     private static final FileData FILE_DATA = new FileData(
             "dummy image content".getBytes(),
             "test-image.jpg",
@@ -59,7 +57,7 @@ class PlaylistServiceTest {
         when(playlistRepository.save(any(), eq(USER), eq(FILE_DATA))).thenReturn(PLAYLIST_1);
 
         // WHEN
-        PlaylistDTO createdPlaylist = playlistService.createPlaylist(command, USER, FILE_DATA);
+        Playlist createdPlaylist = playlistService.createPlaylist(command, USER, FILE_DATA);
 
         // THEN
         assertNotNull(createdPlaylist);
@@ -86,7 +84,7 @@ class PlaylistServiceTest {
         when(playlistRepository.update(updateCommand, SLUG_1, FILE_DATA)).thenReturn(PLAYLIST_1);
 
         // WHEN
-        PlaylistDTO updatedPlaylist = playlistService.updatePlaylist(updateCommand, SLUG_1, FILE_DATA);
+        Playlist updatedPlaylist = playlistService.updatePlaylist(updateCommand, SLUG_1, FILE_DATA);
 
         // THEN
         assertEquals(PLAYLIST_1, updatedPlaylist);
@@ -111,7 +109,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findAll()).thenReturn(PLAYLISTS);
 
         // WHEN
-        List<PlaylistDTO> retrievedPlaylists = playlistService.retrieveAllPlaylists();
+        List<Playlist> retrievedPlaylists = playlistService.retrieveAllPlaylists();
 
         // THEN
         assertEquals(PLAYLISTS, retrievedPlaylists);
@@ -123,7 +121,7 @@ class PlaylistServiceTest {
         when(playlistRepository.findAll()).thenReturn(emptyList());
 
         // WHEN
-        List<PlaylistDTO> retrievedPlaylists = playlistService.retrieveAllPlaylists();
+        List<Playlist> retrievedPlaylists = playlistService.retrieveAllPlaylists();
 
         // THEN
         assertTrue(retrievedPlaylists.isEmpty());
@@ -133,11 +131,11 @@ class PlaylistServiceTest {
     void givenNoFilter_whenRetrievePlaylists_thenReturnAllPlaylistsPage() {
         // GIVEN
         PlaylistFilter noFilter = new PlaylistFilter(empty(), empty(), empty());
-        Page<PlaylistDTO> page = new PageImpl<>(PLAYLISTS);
+        Page<Playlist> page = new PageImpl<>(PLAYLISTS);
         when(playlistRepository.findByFilter(eq(noFilter), any(Pageable.class))).thenReturn(page);
 
         // WHEN
-        Page<PlaylistDTO> retrievedPlaylists = playlistService.retrievePlaylists(noFilter, Pageable.unpaged());
+        Page<Playlist> retrievedPlaylists = playlistService.retrievePlaylists(noFilter, Pageable.unpaged());
 
         // THEN
         assertEquals(PLAYLISTS, retrievedPlaylists.getContent());
@@ -146,24 +144,23 @@ class PlaylistServiceTest {
     @Test
     void givenExistingPlaylistSlug_whenRetrievePlaylistBySlug_thenReturnFullPlaylist() {
         // GIVEN
-        when(playlistRepository.findBySlug(eq(SLUG_1), any(Pageable.class))).thenReturn(FULL_PLAYLIST);
+        when(playlistRepository.findBySlug(SLUG_1)).thenReturn(PLAYLIST_1);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.retrievePlaylistBySlug(SLUG_1, Pageable.unpaged());
+        Playlist result = playlistService.retrievePlaylistBySlug(SLUG_1);
 
         // THEN
-        assertEquals(FULL_PLAYLIST, result);
+        assertEquals(PLAYLIST_1, result);
     }
 
     @Test
     void givenUnknownPlaylistSlug_whenRetrievePlaylistBySlug_thenThrowUnknownSlugException() {
         // GIVEN
-        when(playlistRepository.findBySlug(eq(SLUG_1), any(Pageable.class)))
-                .thenThrow(new UnknownSlugException("not found"));
+        when(playlistRepository.findBySlug(SLUG_1)).thenThrow(new UnknownSlugException("Not found"));
 
         // WHEN / THEN
         assertThrows(UnknownSlugException.class,
-                () -> playlistService.retrievePlaylistBySlug(SLUG_1, Pageable.unpaged()));
+                () -> playlistService.retrievePlaylistBySlug(SLUG_1));
     }
 
     @Test
@@ -190,49 +187,49 @@ class PlaylistServiceTest {
     @Test
     void givenValidPost_whenAddPostToPlaylist_thenPostIsAdded() {
         // GIVEN
-        when(playlistRepository.addPostToPlaylist(eq(SLUG_1), eq("postSlug1"), any(Pageable.class)))
-                .thenReturn(FULL_PLAYLIST);
+        when(playlistRepository.addPostToPlaylist(SLUG_1, "postSlug1"))
+                .thenReturn(PLAYLIST_1);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.addPostToPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
+        Playlist result = playlistService.addPostToPlaylist(SLUG_1, "postSlug1");
 
         // THEN
-        assertEquals(FULL_PLAYLIST, result);
+        assertEquals(PLAYLIST_1, result);
     }
 
     @Test
     void givenUnknownPlaylistSlug_whenAddPostToPlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
-        when(playlistRepository.addPostToPlaylist(eq(SLUG_1), eq("postSlug1"), any(Pageable.class)))
+        when(playlistRepository.addPostToPlaylist(eq(SLUG_1), eq("postSlug1")))
                 .thenThrow(new UnknownSlugException("not found"));
 
         // WHEN / THEN
         assertThrows(PlaylistUnityException.class,
-                () -> playlistService.addPostToPlaylist(SLUG_1, "postSlug1", Pageable.unpaged()));
+                () -> playlistService.addPostToPlaylist(SLUG_1, "postSlug1"));
     }
 
     @Test
     void givenValidPost_whenRemovePostFromPlaylist_thenPostIsRemoved() {
         // GIVEN
-        when(playlistRepository.removePostFromPlaylist(eq(SLUG_1), eq("postSlug1"), any(Pageable.class)))
-                .thenReturn(FULL_PLAYLIST);
+        when(playlistRepository.removePostFromPlaylist(eq(SLUG_1), eq("postSlug1")))
+                .thenReturn(PLAYLIST_1);
 
         // WHEN
-        PlaylistFullDTO result = playlistService.removePostFromPlaylist(SLUG_1, "postSlug1", Pageable.unpaged());
+        Playlist result = playlistService.removePostFromPlaylist(SLUG_1, "postSlug1");
 
         // THEN
-        assertEquals(FULL_PLAYLIST, result);
+        assertEquals(PLAYLIST_1, result);
     }
 
     @Test
     void givenUnknownPlaylistSlug_whenRemovePostFromPlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
-        when(playlistRepository.removePostFromPlaylist(eq(SLUG_1), eq("postSlug1"), any(Pageable.class)))
-                .thenThrow(new UnknownSlugException("not found"));
+        when(playlistRepository.removePostFromPlaylist(SLUG_1, "postSlug1"))
+                .thenThrow(new UnknownSlugException("Not found"));
 
         // WHEN / THEN
         assertThrows(PlaylistUnityException.class,
-                () -> playlistService.removePostFromPlaylist(SLUG_1, "postSlug1", Pageable.unpaged()));
+                () -> playlistService.removePostFromPlaylist(SLUG_1, "postSlug1"));
     }
 
 }

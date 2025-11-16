@@ -7,6 +7,7 @@ import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Date;
 import java.util.List;
@@ -29,7 +30,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.by;
 
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 import static com.soodora.test.factory.PostFactory.buildDefaultPost;
 import static com.soodora.test.factory.PostFactory.buildDefaultPostWithoutAudio;
 import static com.soodora.test.factory.UserFactory.buildDefaultUser;
@@ -45,13 +46,13 @@ class PostServiceTest {
 
     private PostService postService;
 
-    private static final PostDTO POST_1 = buildDefaultPost("slug1", "Post 1");
-    private static final PostDTO POST_2 = buildDefaultPost("slug2", "Post 2");
-    private static final PostDTO POST_3 = buildDefaultPost("slug3", "Post 3");
-    private static final PostDTO POST_4_WITHOUT_AUDIO = buildDefaultPostWithoutAudio("slug4", "Post 4");
+    private static final Post POST_1 = buildDefaultPost("slug1", "Post 1");
+    private static final Post POST_2 = buildDefaultPost("slug2", "Post 2");
+    private static final Post POST_3 = buildDefaultPost("slug3", "Post 3");
+    private static final Post POST_4_WITHOUT_AUDIO = buildDefaultPostWithoutAudio("slug4", "Post 4");
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
-    private static final List<PostDTO> POST_LIST = List.of(POST_1, POST_2, POST_3);
-    private static final Page<PostDTO> POSTS = new PageImpl<>(POST_LIST, PAGEABLE, POST_LIST.size());
+    private static final List<Post> POST_LIST = List.of(POST_1, POST_2, POST_3);
+    private static final Page<Post> POSTS = new PageImpl<>(POST_LIST, PAGEABLE, POST_LIST.size());
 
     @BeforeEach
     void setUp() {
@@ -84,7 +85,7 @@ class PostServiceTest {
         when(postRepository.findAll(PAGEABLE)).thenReturn(POSTS);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(noFilter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(noFilter, PAGEABLE);
 
         // THEN
         assertEquals(POSTS, retrievedPosts);
@@ -95,13 +96,13 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
 
-        List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
-        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+        List<Post> filteredPosts = List.of(POST_1, POST_3);
+        Page<Post> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
 
         when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
         assertEquals(2, retrievedPosts.getContent().size());
@@ -114,13 +115,13 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(empty(), of(true), empty(), empty(), empty());
 
-        List<PostDTO> postsWithAudio = List.of(POST_1, POST_2);
-        Page<PostDTO> pageWithAudio = new PageImpl<>(postsWithAudio, PAGEABLE, postsWithAudio.size());
+        List<Post> postsWithAudio = List.of(POST_1, POST_2);
+        Page<Post> pageWithAudio = new PageImpl<>(postsWithAudio, PAGEABLE, postsWithAudio.size());
 
         when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageWithAudio);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
         assertEquals(postsWithAudio.size(), retrievedPosts.getContent().size());
@@ -132,13 +133,13 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(empty(), of(false), empty(), empty(), empty());
 
-        List<PostDTO> postsWithoutAudio = List.of(POST_4_WITHOUT_AUDIO);
-        Page<PostDTO> pageWithoutAudio = new PageImpl<>(postsWithoutAudio, PAGEABLE, postsWithoutAudio.size());
+        List<Post> postsWithoutAudio = List.of(POST_4_WITHOUT_AUDIO);
+        Page<Post> pageWithoutAudio = new PageImpl<>(postsWithoutAudio, PAGEABLE, postsWithoutAudio.size());
 
         when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageWithoutAudio);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
         assertEquals(postsWithoutAudio.size(), retrievedPosts.getContent().size());
@@ -150,13 +151,13 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), of(true), empty(), empty(), empty());
 
-        List<PostDTO> filteredPosts = List.of(POST_1, POST_3);
-        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+        List<Post> filteredPosts = List.of(POST_1, POST_3);
+        Page<Post> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
 
         when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
         assertEquals(filteredPosts.size(), retrievedPosts.getContent().size());
@@ -168,13 +169,13 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), of(false), empty(), empty(), empty());
 
-        List<PostDTO> filteredPosts = List.of(POST_4_WITHOUT_AUDIO);
-        Page<PostDTO> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
+        List<Post> filteredPosts = List.of(POST_4_WITHOUT_AUDIO);
+        Page<Post> pageFilteredPosts = new PageImpl<>(filteredPosts, PAGEABLE, filteredPosts.size());
 
         when(postRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredPosts);
 
         // WHEN
-        Page<PostDTO> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
+        Page<Post> retrievedPosts = postService.retrievePosts(filter, PAGEABLE);
 
         // THEN
         assertEquals(filteredPosts.size(), retrievedPosts.getContent().size());
@@ -198,23 +199,23 @@ class PostServiceTest {
     @Test
     void deletePostBySlug_Success() {
         // GIVEN
-        doNothing().when(postRepository).delete(POST_1.slug());
+        doNothing().when(postRepository).delete(POST_1.getSlug());
 
         // WHEN
-        Executable executable = () -> postService.deletePostBySlug(POST_1.slug());
+        Executable executable = () -> postService.deletePostBySlug(POST_1.getSlug());
 
         // THEN
         assertDoesNotThrow(executable);
-        verify(postRepository).delete(POST_1.slug());
+        verify(postRepository).delete(POST_1.getSlug());
     }
 
     @Test
     void deletePostBySlug_Unknown() {
         // GIVEN
-        doThrow(UnknownSlugException.class).when(postRepository).delete(POST_1.slug());
+        doThrow(UnknownSlugException.class).when(postRepository).delete(POST_1.getSlug());
 
         // WHEN
-        Executable executable = () -> postService.deletePostBySlug(POST_1.slug());
+        Executable executable = () -> postService.deletePostBySlug(POST_1.getSlug());
 
         // THEN
         assertThrows(UnknownPostException.class, executable);
@@ -223,13 +224,13 @@ class PostServiceTest {
     @Test
     void likePost_Success() {
         // GIVEN
-        doNothing().when(postRepository).likePost(POST_1.slug(), USER);
+        doNothing().when(postRepository).likePost(POST_1.getSlug(), USER);
 
         // WHEN
-        assertDoesNotThrow(() -> postService.likePost(POST_1.slug(), USER));
+        assertDoesNotThrow(() -> postService.likePost(POST_1.getSlug(), USER));
 
         // THEN
-        verify(postRepository).likePost(POST_1.slug(), USER);
+        verify(postRepository).likePost(POST_1.getSlug(), USER);
     }
 
     @Test
@@ -244,13 +245,13 @@ class PostServiceTest {
     @Test
     void unlikePost_Success() {
         // GIVEN
-        doNothing().when(postRepository).unlikePost(POST_1.slug(), USER);
+        doNothing().when(postRepository).unlikePost(POST_1.getSlug(), USER);
 
         // WHEN
-        assertDoesNotThrow(() -> postService.unlikePost(POST_1.slug(), USER));
+        assertDoesNotThrow(() -> postService.unlikePost(POST_1.getSlug(), USER));
 
         // THEN
-        verify(postRepository).unlikePost(POST_1.slug(), USER);
+        verify(postRepository).unlikePost(POST_1.getSlug(), USER);
     }
 
     @Test
@@ -268,14 +269,14 @@ class PostServiceTest {
         CommentPostCommand command = new CommentPostCommand("Nice post");
         CommentDTO expectedComment = new CommentDTO("slug", "postSlug", "content", PublicUserDTO.build(USER), 0,
                 new Date());
-        when(postRepository.commentPost(POST_1.slug(), command, USER)).thenReturn(expectedComment);
+        when(postRepository.commentPost(POST_1.getSlug(), command, USER)).thenReturn(expectedComment);
 
         // WHEN
-        CommentDTO result = postService.commentPost(POST_1.slug(), command, USER);
+        CommentDTO result = postService.commentPost(POST_1.getSlug(), command, USER);
 
         // THEN
         assertEquals(expectedComment, result);
-        verify(postRepository).commentPost(POST_1.slug(), command, USER);
+        verify(postRepository).commentPost(POST_1.getSlug(), command, USER);
     }
 
     @Test
@@ -369,11 +370,11 @@ class PostServiceTest {
     @Test
     void retrieveLikes_Success() {
         // GIVEN
-        List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER), new Date()));
-        when(postRepository.retrieveLikes(POST_1.slug())).thenReturn(expectedLikes);
+        List<LikeDTO> expectedLikes = List.of(new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER), new Date()));
+        when(postRepository.retrieveLikes(POST_1.getSlug())).thenReturn(expectedLikes);
 
         // WHEN
-        List<LikeDTO> result = postService.retrieveLikes(POST_1.slug());
+        List<LikeDTO> result = postService.retrieveLikes(POST_1.getSlug());
 
         // THEN
         assertEquals(expectedLikes, result);
@@ -393,10 +394,10 @@ class PostServiceTest {
         // GIVEN
         List<CommentDTO> expectedComments = List
                 .of(new CommentDTO("slug", "postSlug", "content", PublicUserDTO.build(USER), 0, new Date()));
-        when(postRepository.retrieveComments(POST_1.slug())).thenReturn(expectedComments);
+        when(postRepository.retrieveComments(POST_1.getSlug())).thenReturn(expectedComments);
 
         // WHEN
-        List<CommentDTO> result = postService.retrieveComments(POST_1.slug());
+        List<CommentDTO> result = postService.retrieveComments(POST_1.getSlug());
 
         // THEN
         assertEquals(expectedComments, result);
@@ -416,7 +417,7 @@ class PostServiceTest {
         // GIVEN
         PostFilter filter = new PostFilter(of(USER.getSlug()), empty(), empty(), empty(), empty());
         List<LikeDTO> expected = List.of(
-                new PostLikeDTO(POST_1.slug(), PublicUserDTO.build(USER), new Date()),
+                new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER), new Date()),
                 new CommentLikeDTO("comment-slug", PublicUserDTO.build(USER), new Date()));
         when(userRepository.retrieveLikes(any())).thenReturn(expected);
 
@@ -474,10 +475,10 @@ class PostServiceTest {
                 .map(User::getSlug)
                 .collect(toSet());
 
-        PostDTO post1 = buildDefaultPost("slug2", "title1");
-        PostDTO post2 = buildDefaultPost("slug3", "title2");
+        Post post1 = buildDefaultPost("slug2", "title1");
+        Post post2 = buildDefaultPost("slug3", "title2");
 
-        Page<PostDTO> expectedPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
+        Page<Post> expectedPage = new PageImpl<>(List.of(post1, post2), pageable, 2);
 
         User user = USER;
 
@@ -488,7 +489,7 @@ class PostServiceTest {
         when(postRepository.findByFollowingSlugs(followingSlugs, pageable)).thenReturn(expectedPage);
 
         // WHEN
-        Page<PostDTO> result = postService.retrievePostsFromFollowing(identifier, pageable);
+        Page<Post> result = postService.retrievePostsFromFollowing(identifier, pageable);
 
         // THEN
         assertNotNull(result);
@@ -496,6 +497,42 @@ class PostServiceTest {
         assertEquals(expectedPage.getContent(), result.getContent());
 
         verify(postRepository).findByFollowingSlugs(followingSlugs, pageable);
+    }
+
+    @Test
+    void givenOwnerUser_whenComputePostAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        PostAnalytics analytics = postService.computePostAnalytics(ARTIST_USER, POST_1.getSlug());
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenAdminUser_whenComputePostAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        PostAnalytics analytics = postService.computePostAnalytics(ADMIN, POST_1.getSlug());
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenInvalidUser_whenComputePostAnalytics_thenThrowsInvalidPermissionException() {
+        // GIVEN
+        when(postRepository.find(POST_1.getSlug())).thenReturn(POST_1);
+
+        // WHEN
+        Executable executable = () -> postService.computePostAnalytics(USER, POST_1.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the post owner can access the analytics");
     }
 
 }

@@ -2,7 +2,7 @@ package com.soodora.api.user;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.InvalidValueException;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.auth.UserPrincipal;
@@ -297,11 +297,11 @@ class ProfileControllerIT {
     @Test
     void givenAuthenticatedUser_whenGetFollowingPosts_thenStatusOk() throws Exception {
         // GIVEN
-        PostDTO post1 = buildDefaultPost("slug1", "Title 1");
-        PostDTO post2 = buildDefaultPost("slug2", "Title 2");
-        List<PostDTO> posts = List.of(post1, post2);
+        Post post1 = buildDefaultPost("slug1", "Title 1");
+        Post post2 = buildDefaultPost("slug2", "Title 2");
+        List<Post> posts = List.of(post1, post2);
         Pageable pageable = PageRequest.of(0, 50);
-        Page<PostDTO> pageWithPosts = new PageImpl<>(posts, pageable, posts.size());
+        Page<Post> pageWithPosts = new PageImpl<>(posts, pageable, posts.size());
 
         when(postService.retrievePostsFromFollowing(any(Identifier.class), any(Pageable.class)))
                 .thenReturn(pageWithPosts);

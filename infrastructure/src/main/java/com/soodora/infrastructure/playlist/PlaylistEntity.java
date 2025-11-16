@@ -1,10 +1,9 @@
 package com.soodora.infrastructure.playlist;
 
-import com.soodora.domain.playlist.PlaylistDTO;
-import com.soodora.domain.playlist.PlaylistFullDTO;
+import com.soodora.domain.common.value.Url;
+import com.soodora.domain.playlist.Playlist;
 import com.soodora.domain.playlist.PlaylistPrivacy;
-import com.soodora.domain.post.PostDTO;
-import com.soodora.domain.user.PublicUserDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.user.UserEntity;
@@ -13,7 +12,6 @@ import java.util.*;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.domain.Page;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,7 +24,7 @@ import lombok.Setter;
 @Entity(name = "playlists")
 @NoArgsConstructor
 @AllArgsConstructor
-public class PlaylistEntity implements DomainEntityAdapter<PlaylistDTO> {
+public class PlaylistEntity implements DomainEntityAdapter<Playlist> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -78,21 +76,22 @@ public class PlaylistEntity implements DomainEntityAdapter<PlaylistDTO> {
     }
 
     @Override
-    public PlaylistDTO aggregate() {
-        return new PlaylistDTO(
+    public Playlist aggregate() {
+        Url url = imageUrl == null ? null : new Url(imageUrl);
+        List<Post> postAggregates = posts.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .toList();
+
+        return new Playlist(
                 slug,
                 name,
                 description,
-                posts.size(),
                 privacy,
-                imageUrl,
-                PublicUserDTO.build(user.aggregate()),
+                url,
+                user.aggregate(),
+                postAggregates,
                 createdAt,
                 updatedAt);
-    }
-
-    public PlaylistFullDTO toFullDTO(Page<PostDTO> postsPage) {
-        return new PlaylistFullDTO(aggregate(), postsPage);
     }
 
 }

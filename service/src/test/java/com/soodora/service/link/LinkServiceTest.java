@@ -2,7 +2,7 @@ package com.soodora.service.link;
 
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.CreateLinkCommand;
-import com.soodora.domain.link.LinkDTO;
+import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
 
@@ -32,10 +32,10 @@ class LinkServiceTest {
 
     private LinkService linkService;
 
-    private static final LinkDTO LINK_1 = buildDefaultLink("slug1", "Title 1");
-    private static final LinkDTO LINK_2 = buildDefaultLink("slug2", "Title 2");
-    private static final LinkDTO LINK_3 = buildDefaultLink("slug3", "Title 3");
-    private static final List<LinkDTO> LINKS = List.of(LINK_1, LINK_2, LINK_3);
+    private static final Link LINK_1 = buildDefaultLink("slug1", "Title 1");
+    private static final Link LINK_2 = buildDefaultLink("slug2", "Title 2");
+    private static final Link LINK_3 = buildDefaultLink("slug3", "Title 3");
+    private static final List<Link> LINKS = List.of(LINK_1, LINK_2, LINK_3);
 
     @BeforeEach
     void setUp() {
@@ -53,7 +53,7 @@ class LinkServiceTest {
         String slug = linkService.createLink(command, USER.getSlug());
 
         // THEN
-        assertEquals(LINK_1.slug(), slug);
+        assertEquals(LINK_1.getSlug(), slug);
         verify(linkRepository).save(any(CreateLinkCommand.class), eq(USER.getSlug()));
     }
 
@@ -63,7 +63,7 @@ class LinkServiceTest {
         when(linkRepository.findAll()).thenReturn(LINKS);
 
         // WHEN
-        List<LinkDTO> retrievedLinks = linkService.retrieveAllLinks();
+        List<Link> retrievedLinks = linkService.retrieveAllLinks();
 
         // THEN
         assertEquals(LINKS, retrievedLinks);
@@ -75,7 +75,7 @@ class LinkServiceTest {
         when(linkRepository.findAll()).thenReturn(emptyList());
 
         // WHEN
-        List<LinkDTO> retrievedLinks = linkService.retrieveAllLinks();
+        List<Link> retrievedLinks = linkService.retrieveAllLinks();
 
         // THEN
         assertTrue(retrievedLinks.isEmpty());
@@ -84,11 +84,11 @@ class LinkServiceTest {
     @Test
     void retrieveLinkBySlug_Success() {
         // GIVEN
-        String slug = LINK_1.slug();
+        String slug = LINK_1.getSlug();
         when(linkRepository.findBySlug(slug)).thenReturn(LINK_1);
 
         // WHEN
-        LinkDTO link = linkService.retrieveLinkBySlug(slug);
+        Link link = linkService.retrieveLinkBySlug(slug);
 
         // THEN
         assertEquals(LINK_1, link);
@@ -102,7 +102,7 @@ class LinkServiceTest {
         when(linkRepository.findBySlug(unknownSlug)).thenReturn(null);
 
         // WHEN
-        LinkDTO link = linkService.retrieveLinkBySlug(unknownSlug);
+        Link link = linkService.retrieveLinkBySlug(unknownSlug);
 
         // THEN
         assertNull(link);
@@ -112,12 +112,12 @@ class LinkServiceTest {
     void updateLink_Success() {
         // GIVEN
         UpdateLinkCommand command = new UpdateLinkCommand("new title", "new url", "new iconUrl", "new description");
-        String slug = LINK_1.slug();
+        String slug = LINK_1.getSlug();
 
         when(linkRepository.update(command, slug)).thenReturn(LINK_1);
 
         // WHEN
-        LinkDTO updatedLink = linkService.updateLink(command, slug);
+        Link updatedLink = linkService.updateLink(command, slug);
 
         // THEN
         assertEquals(LINK_1, updatedLink);
@@ -141,7 +141,7 @@ class LinkServiceTest {
     @Test
     void deleteLinkBySlug_Success() throws UnknownSlugException {
         // GIVEN
-        String slug = LINK_1.slug();
+        String slug = LINK_1.getSlug();
         doNothing().when(linkRepository).deleteBySlug(slug);
 
         // WHEN
@@ -155,7 +155,7 @@ class LinkServiceTest {
     @Test
     void deleteLinkBySlug_Unknown_ThrowsUnknownLinkException() throws UnknownSlugException {
         // GIVEN
-        String slug = LINK_1.slug();
+        String slug = LINK_1.getSlug();
 
         doThrow(UnknownSlugException.class).when(linkRepository).deleteBySlug(slug);
 

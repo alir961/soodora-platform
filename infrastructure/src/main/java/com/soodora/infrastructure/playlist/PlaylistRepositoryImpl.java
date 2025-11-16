@@ -4,9 +4,10 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
-import com.soodora.domain.post.PostDTO;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
+import com.soodora.infrastructure.common.EntitySpecification;
 import com.soodora.infrastructure.post.PostEntity;
 import com.soodora.infrastructure.post.PostJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
@@ -35,7 +36,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistDTO save(CreatePlaylistCommand command, User user, FileData playlistImage) {
+    public Playlist save(CreatePlaylistCommand command, User user, FileData playlistImage) {
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         PlaylistEntity entity = new PlaylistEntity();
 
@@ -54,7 +55,7 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistDTO update(UpdatePlaylistCommand command, String slug, FileData playlistImage) {
+    public Playlist update(UpdatePlaylistCommand command, String slug, FileData playlistImage) {
         PlaylistEntity existingPlaylist = findPlaylistBySlugOrThrow(slug);
 
         if (isNotNullOrBlank(command.name()))
@@ -73,13 +74,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public PlaylistFullDTO findBySlug(String slug, Pageable pageableAudioPosts) {
-        return getPlaylistWithPosts(slug, pageableAudioPosts);
+    public Playlist findBySlug(String slug) {
+        return findPlaylistBySlugOrThrow(slug).aggregate();
     }
 
     @Override
     @Transactional
-    public List<PlaylistDTO> findAll() {
+    public List<Playlist> findAll() {
         return repository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
@@ -87,40 +88,44 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public Page<PlaylistDTO> findByFilter(PlaylistFilter filter, Pageable pageable) {
-        return repository.findAll(PlaylistSpecification.build(filter), pageable).map(DomainEntityAdapter::aggregate);
+    public Page<Playlist> findByFilter(PlaylistFilter filter, Pageable pageable) {
+        EntitySpecification<PlaylistEntity> playlistSpecification = new PlaylistSpecification(filter);
+
+        return repository.findAll(playlistSpecification.build(), pageable)
+                .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
     public boolean isPlaylistNameUsedByUser(String name, String userSlug) {
         UserEntity user = findUserBySlugOrThrow(userSlug);
+
         return user.getPlaylists().stream()
                 .anyMatch(playlist -> playlist.getName().equalsIgnoreCase(name));
     }
 
     @Override
     @Transactional
-    public PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public Playlist addPostToPlaylist(String playlistSlug, String postSlug) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
         playlist.addPost(post);
         repository.save(playlist);
 
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
+        return playlist.aggregate();
     }
 
     @Override
     @Transactional
-    public PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public Playlist removePostFromPlaylist(String playlistSlug, String postSlug) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
         playlist.removePost(post);
         repository.save(playlist);
 
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
+        return playlist.aggregate();
     }
 
     @Override
@@ -131,17 +136,11 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         repository.delete(playlist);
     }
 
+    @Override
     @Transactional
-    public PlaylistFullDTO getPlaylistWithPosts(String playlistSlug, Pageable pageableAudioPosts) {
-        PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
-
-        return playlist.toFullDTO(playlistPostsPage(playlistSlug, pageableAudioPosts));
-    }
-
-    @Transactional
-    public Page<PostDTO> playlistPostsPage(String playlistSlug, Pageable pageableAudioPosts) {
+    public Page<Post> findPlaylistPosts(String playlistSlug, Pageable pageable) {
         return postRepository
-                .findByPlaylistSlug(playlistSlug, pageableAudioPosts)
+                .findByPlaylistSlug(playlistSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

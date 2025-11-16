@@ -3,6 +3,7 @@ package com.soodora.service.playlist;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
+import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 
 import java.util.List;
@@ -19,26 +20,30 @@ public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
 
-    public PlaylistDTO createPlaylist(CreatePlaylistCommand command, User user, FileData imageFile)
+    public Playlist createPlaylist(CreatePlaylistCommand command, User user, FileData imageFile)
             throws PlaylistUnityException {
         if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.getSlug()))
             throw new PlaylistUnityException("Name is already used");
         return playlistRepository.save(command, user, imageFile);
     }
 
-    public List<PlaylistDTO> retrieveAllPlaylists() {
+    public List<Playlist> retrieveAllPlaylists() {
         return playlistRepository.findAll();
     }
 
-    public Page<PlaylistDTO> retrievePlaylists(PlaylistFilter filter, Pageable pageable) {
+    public Page<Playlist> retrievePlaylists(PlaylistFilter filter, Pageable pageable) {
         return playlistRepository.findByFilter(filter, pageable);
     }
 
-    public PlaylistFullDTO retrievePlaylistBySlug(String slug, Pageable pageableAudioPosts) {
-        return playlistRepository.findBySlug(slug, pageableAudioPosts);
+    public Playlist retrievePlaylistBySlug(String slug) {
+        return playlistRepository.findBySlug(slug);
     }
 
-    public PlaylistDTO updatePlaylist(UpdatePlaylistCommand command, String slug, FileData imageFile)
+    public Page<Post> retrievePlaylistPostsBySlug(String playlistSlug, Pageable pageable) {
+        return playlistRepository.findPlaylistPosts(playlistSlug, pageable);
+    }
+
+    public Playlist updatePlaylist(UpdatePlaylistCommand command, String slug, FileData imageFile)
             throws PlaylistUnityException {
         try {
             return playlistRepository.update(command, slug, imageFile);
@@ -55,17 +60,17 @@ public class PlaylistService {
         }
     }
 
-    public PlaylistFullDTO addPostToPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public Playlist addPostToPlaylist(String playlistSlug, String postSlug) {
         try {
-            return playlistRepository.addPostToPlaylist(playlistSlug, postSlug, pageableAudioPosts);
+            return playlistRepository.addPostToPlaylist(playlistSlug, postSlug);
         } catch (UnknownSlugException exception) {
             throw new PlaylistUnityException(exception.getMessage());
         }
     }
 
-    public PlaylistFullDTO removePostFromPlaylist(String playlistSlug, String postSlug, Pageable pageableAudioPosts) {
+    public Playlist removePostFromPlaylist(String playlistSlug, String postSlug) {
         try {
-            return playlistRepository.removePostFromPlaylist(playlistSlug, postSlug, pageableAudioPosts);
+            return playlistRepository.removePostFromPlaylist(playlistSlug, postSlug);
         } catch (UnknownSlugException exception) {
             throw new PlaylistUnityException(exception.getMessage());
         }
