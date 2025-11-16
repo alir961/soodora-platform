@@ -4,13 +4,19 @@ const props = defineProps({
     required: true,
     type: Number,
   },
+  sales: {
+    required: true,
+    type: Number,
+  },
 });
 
 function formatDuration(): string {
   const diffMs = props.duration;
   const diffMinutes = Math.floor(diffMs / (1000 * 60));
 
-  if (diffMinutes < 1) return 'instantly';
+  if (diffMinutes < 1 && props.sales <= 0) return 'no sales yet...';
+
+  if (diffMinutes < 1) return 'instantaneously';
   if (diffMinutes < 60) return `${diffMinutes}m`;
 
   const diffHours = Math.floor(diffMinutes / 60);

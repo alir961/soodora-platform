@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import { computed, onMounted, ref, Ref } from 'vue';
-import { closeOutline, personCircleOutline } from 'ionicons/icons';
+import { briefcaseOutline, closeOutline, ellipsisHorizontal, linkOutline, personCircleOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/vue';
 import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
 import { callRetrieveUser } from '@/client/userClient';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
 import UserContentList from '@/component/user/UserContentList.vue';
+import ActionsPopup, { ActionItem } from '@/component/actions/ActionsPopup.vue';
+import { getUserLinkHub } from '@/client/linkHubClient';
+import { exportSoodoraKitPdf, getSoodoraKitArtistSlug } from '@/client/soodoraKitClient';
+import { showToast } from '@/utils';
 
 const route = useRoute();
 const router = useRouter();
@@ -15,6 +19,10 @@ const router = useRouter();
 const user = ref(null) as Ref<User | null>;
 const showFollowList = ref<{ showing: boolean; type?: 'followers' | 'following' }>({ showing: false });
 const profileComponentRef = ref<InstanceType<typeof ProfileComponent> | null>(null);
+
+const showActionsPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
 
 onMounted(async () => {
   const userSlug = route.params.slug as string;
@@ -58,6 +66,68 @@ const userRole = computed(() => {
   if (user.value.roles.includes('ADMIN')) return 'Admin';
   return 'User';
 });
+
+const handleLinkHub = async () => {
+  const userSlug = route.params.slug as string;
+
+  try {
+    const linkHub = await getUserLinkHub(userSlug);
+    if (linkHub) {
+      await router.push(`/linkhub/${linkHub.slug}`);
+      return;
+    }
+  } catch (error: unknown) {
+    await showToast('Artist may not have a Soodora Kit', 'warning');
+  }
+};
+
+const openSettingsPopup = (event: MouseEvent) => {
+  const button = event.currentTarget as HTMLElement;
+  const rect = button.getBoundingClientRect();
+  popupX.value = rect.right - 220;
+  popupY.value = rect.bottom + 8;
+  showActionsPopup.value = true;
+};
+
+const handleSoodoraKit = async () => {
+  const userSlug = route.params.slug as string;
+  const soodoraKit = await getSoodoraKitArtistSlug(userSlug);
+
+  try {
+    const blob = await exportSoodoraKitPdf(soodoraKit.slug);
+    const url = URL.createObjectURL(blob);
+    const link = Object.assign(document.createElement('a'), {
+      href: url,
+      download: `soodorakit_${soodoraKit.slug}.pdf`,
+    });
+    link.click();
+    URL.revokeObjectURL(url);
+  } catch (error: unknown) {
+    const message = 'Failed to download PDF. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'danger');
+  }
+};
+
+const actionItems = computed<ActionItem[]>(() => {
+  const items: ActionItem[] = [];
+  items.push(
+    {
+      icon: linkOutline,
+      label: 'Link Hub',
+      action: handleLinkHub,
+    },
+    {
+      icon: briefcaseOutline,
+      label: 'Soodora Kit',
+      action: handleSoodoraKit,
+    }
+  );
+  return items;
+});
+
+const closeActionsPopup = () => {
+  showActionsPopup.value = false;
+};
 </script>
 
 <template>
@@ -79,6 +149,18 @@ const userRole = computed(() => {
             <p class="header-subtitle">{{ userRole }}</p>
           </div>
         </div>
+
+        <button class="about-btn" @click="openSettingsPopup($event)">
+          <ion-icon :icon="ellipsisHorizontal" />
+        </button>
+
+        <ActionsPopup
+          :is-open="showActionsPopup"
+          :x="popupX"
+          :y="popupY"
+          :actions="actionItems"
+          @close="closeActionsPopup" />
+
         <button class="back-button" @click="handleBackButton">
           <ion-icon :icon="closeOutline" />
         </button>
@@ -304,5 +386,37 @@ const userRole = computed(() => {
   .back-button ion-icon {
     font-size: 19px;
   }
+}
+.about-btn {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.about-btn ion-icon {
+  font-size: 22px;
+  padding-bottom: 0;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.about-btn ion-icon {
+  font-size: 18px;
+}
+
+.about-btn:active {
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
+  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
+  transform: scale(1.05);
 }
 </style>

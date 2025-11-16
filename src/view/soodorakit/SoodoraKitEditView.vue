@@ -339,7 +339,7 @@ watch(
                 <IonIcon :icon="statsChart" class="section-header-icon" />
                 <IonCardTitle class="section-header-title">Analytics</IonCardTitle>
               </div>
-              <IonCardSubtitle class="section-header-subtitle">Media Kit Performance</IonCardSubtitle>
+              <IonCardSubtitle class="section-header-subtitle">Soodora Kit Performance</IonCardSubtitle>
             </IonCardHeader>
 
             <IonCardContent>

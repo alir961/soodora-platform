@@ -57,7 +57,7 @@ defineExpose({
             <div class="analytics-row">
               <span class="analytics-label">Duration Until First Sale</span>
               <span class="analytics-value">
-                <DurationDisplay :duration="analytics.durationUntilFirstSale" />
+                <DurationDisplay :duration="analytics.durationUntilFirstSale" :sales="analytics.salesCount" />
               </span>
             </div>
           </div>

@@ -139,8 +139,6 @@ const submitForm = async () => {
             <select v-model="itemData.type" required>
               <option value="" disabled>Select type</option>
               <option value="Image">Image</option>
-              <option value="Video">Video</option>
-              <option value="Audio">Audio</option>
               <option value="Text">Text</option>
             </select>
           </div>
