@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { IonAvatar, IonCard, IonCol, IonIcon } from '@ionic/vue';
 import { Product, ProductAnalytics } from '@/entity/Product';
-import { computed, PropType, ref, watch } from 'vue';
+import { computed, onMounted, PropType, ref, watch } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callDeleteProduct, callRetrieveProductAnalytics } from '@/client/productClient';
@@ -124,6 +124,13 @@ const openEditModal = () => {
 const handleProductDeleted = (slug: string) => {
   emit('product-deleted', slug);
 };
+
+onMounted(async () => {
+  const product: Product = props.product;
+
+  if (product && product.vendor.slug === authStore.getAuthenticatedUserSlug)
+    productAnalytics.value = await callRetrieveProductAnalytics(product.slug);
+});
 
 watch(
   () => authStore.getAuthenticatedUserSlug,
