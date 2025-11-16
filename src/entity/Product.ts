@@ -22,4 +22,13 @@ interface ProductCreationData {
   quantity: number;
 }
 
-export type { Product, ProductCreationData };
+interface ProductAnalytics {
+  currentQuantity: number;
+  soldQuantity: number;
+  totalRevenue: number;
+  salesCount: number;
+  durationUntilFirstSale: number;
+  currency: string;
+}
+
+export type { Product, ProductCreationData, ProductAnalytics };

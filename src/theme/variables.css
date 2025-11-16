@@ -117,7 +117,7 @@ ion-app {
   ion-footer {
     --ion-toolbar-background: var(--ion-background-color);
   }
-  
+
   /* Keep mobile-style navigation */
   ion-tab-bar {
     display: flex !important;

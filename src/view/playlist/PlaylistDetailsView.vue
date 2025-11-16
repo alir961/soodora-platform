@@ -149,8 +149,7 @@ const loadMore = async (event: CustomEvent) => {
     return;
   }
 
-  if (currentPage.value + 1 < totalPages.value)
-    await loadPlaylist(playlist.value.playlist.slug, currentPage.value + 1);
+  if (currentPage.value + 1 < totalPages.value) await loadPlaylist(playlist.value.playlist.slug, currentPage.value + 1);
 
   await infiniteScroll.complete();
 };

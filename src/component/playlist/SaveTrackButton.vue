@@ -32,10 +32,9 @@ const checkSaved = async (postSlug: string) => {
     const playlists = await searchPlaylists(userSlug);
 
     for (const pl of playlists.content) {
-      const fullPlaylist = await fetchPlaylistBySlug(pl.slug, defaultPage);
-      if (fullPlaylist.postDTO.content.some((p) => p.slug === postSlug)) {
-        savedPlaylistsSlugs.value.push(pl.slug);
-      }
+      const playlist = await fetchPlaylistBySlug(pl.slug, defaultPage);
+
+      if (playlist.posts.content.some((p) => p.slug === postSlug)) savedPlaylistsSlugs.value.push(pl.slug);
     }
   } catch (error) {
     console.error('Failed to check saved playlists', error);

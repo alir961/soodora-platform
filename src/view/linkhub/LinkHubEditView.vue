@@ -28,7 +28,7 @@ import {
   statsChart,
 } from 'ionicons/icons';
 import { iconOptions, platformIcons, platformUrlPrefixes } from '@/entity/Link';
-import { LinkHubAnalytics } from '@/entity/LinkPage';
+import { LinkHubAnalytics } from '@/entity/LinkHub';
 
 const route = useRoute();
 const router = useRouter();

@@ -129,7 +129,8 @@ onMounted(async () => {
   await loadLikes(postSlug);
   await loadReposts(postSlug);
 
-  postAnalytics.value = await callRetrievePostAnalytics(postSlug);
+  if (props.post?.owner.slug === authStore.getAuthenticatedUserSlug)
+    postAnalytics.value = await callRetrievePostAnalytics(postSlug);
 
   const stopWatch = watch(
     () => [likeStore.liked[props.post.slug], likeStore.counts[props.post.slug]],

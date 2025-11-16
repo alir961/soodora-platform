@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getAuthorizedHeader } from '@/client/authenticationClient';
-import { LinkHubAnalytics, LinkHub } from '@/entity/LinkPage';
+import { LinkHubAnalytics, LinkHub } from '@/entity/LinkHub';
 import { Link } from '@/entity/Link';
 import { reject } from '@/utils';
 

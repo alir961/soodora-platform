@@ -151,7 +151,7 @@ watch(
       slug.value = newSlug as string | undefined;
       if (slug.value) await fetchSoodoraKit(slug.value);
     }
-  },
+  }
 );
 
 watch(
@@ -161,7 +161,7 @@ watch(
     if (newTimestamp && slug.value && route.name === 'SoodoraKitEdit') {
       await fetchSoodoraKit(slug.value);
     }
-  },
+  }
 );
 </script>
 

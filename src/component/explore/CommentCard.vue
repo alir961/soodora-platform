@@ -100,7 +100,7 @@ watch(
         </div>
       </ion-label>
     </ion-item>
-    <ion-item-options side="end">
+    <ion-item-options v-if="comment.user.slug === authStore.getAuthenticatedUserSlug" side="end">
       <ion-item-option color="danger" expandable @click="handleDelete(comment.slug)">
         <img :src="trashIcon" alt="delete" class="delete-icon" />
       </ion-item-option>

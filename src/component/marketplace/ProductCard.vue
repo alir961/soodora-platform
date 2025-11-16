@@ -1,20 +1,21 @@
 <script setup lang="ts">
 import { IonAvatar, IonCard, IonCol, IonIcon } from '@ionic/vue';
-import { Product } from '@/entity/Product';
-import { PropType, ref, computed } from 'vue';
+import { Product, ProductAnalytics } from '@/entity/Product';
+import { computed, PropType, ref, watch } from 'vue';
 import UsernameTag from '@/component/user/UsernameTag.vue';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { callDeleteProduct } from '@/client/productClient';
+import { callDeleteProduct, callRetrieveProductAnalytics } from '@/client/productClient';
 import Avatar from '@/component/user/AvatarItem.vue';
 import { createCheckoutSession } from '@/client/paymentClient';
 import { showToast } from '@/utils';
-import { pencil } from 'ionicons/icons';
+import { pencil, statsChartOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import customShareIcon from '@/assets/icons/share.svg';
 import customTrashIcon from '@/assets/icons/trash.svg';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
+import ProductAnalyticsCard from '@/component/actions/ProductAnalyticsCard.vue';
 
 const props = defineProps({
   product: {
@@ -41,13 +42,20 @@ const quantity = ref(1);
 const maxQuantity = ref(0);
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
+const productAnalyticsCardRef = ref<InstanceType<typeof ProductAnalyticsCard> | null>(null);
 
-const openExportModal = () => {
-  exportCardRef.value?.open();
-};
+const productAnalytics = ref<ProductAnalytics | null>(null);
 
 const openDeleteConfirm = () => {
   deleteCardRef.value?.open();
+};
+
+const openAnalyticsModal = () => {
+  productAnalyticsCardRef.value?.open();
+};
+
+const openExportModal = () => {
+  exportCardRef.value?.open();
 };
 
 const openImageModal = (src: string, productQuantity: number | null) => {
@@ -116,6 +124,16 @@ const openEditModal = () => {
 const handleProductDeleted = (slug: string) => {
   emit('product-deleted', slug);
 };
+
+watch(
+  () => authStore.getAuthenticatedUserSlug,
+  async () => {
+    const product: Product = props.product;
+
+    if (product && product.vendor.slug === authStore.getAuthenticatedUserSlug)
+      productAnalytics.value = await callRetrieveProductAnalytics(product.slug);
+  }
+);
 </script>
 
 <template>
@@ -130,6 +148,10 @@ const handleProductDeleted = (slug: string) => {
           </button>
 
           <template v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug">
+            <button class="action-icon analytics" @click="openAnalyticsModal" title="Analytics">
+              <ion-icon :src="statsChartOutline" />
+            </button>
+
             <button class="action-icon edit" @click="openEditModal" title="Edit">
               <ion-icon :src="pencil" />
             </button>
@@ -244,6 +266,8 @@ const handleProductDeleted = (slug: string) => {
       @deleted="handleProductDeleted"
       ref="deleteCardRef" />
   </ion-col>
+
+  <ProductAnalyticsCard v-if="productAnalytics" :analytics="productAnalytics" ref="productAnalyticsCardRef" />
 </template>
 
 <style scoped>
@@ -335,12 +359,21 @@ const handleProductDeleted = (slug: string) => {
   color: #60a5fa;
 }
 
+.action-icon.analytics {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+t .action-icon.analytics ion-icon {
+  color: #a78bfa;
+}
+
 .action-icon.edit {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.3);
 }
 
-.action-icon.edit ion-icon {
+t .action-icon.edit ion-icon {
   color: #a78bfa;
 }
 
