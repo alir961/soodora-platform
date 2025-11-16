@@ -48,7 +48,7 @@ public class MediaKitItemEntity implements DomainEntityAdapter<MediaKitItem> {
     @Override
     public MediaKitItem aggregate() {
         return new MediaKitItem(
-                mediaKit.aggregate(),
+                mediaKit.getSlug(),
                 slug,
                 type,
                 title,

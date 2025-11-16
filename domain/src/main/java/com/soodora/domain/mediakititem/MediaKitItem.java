@@ -1,7 +1,5 @@
 package com.soodora.domain.mediakititem;
 
-import com.soodora.domain.mediakit.MediaKit;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -9,7 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MediaKitItem {
 
-    private MediaKit mediaKit;
+    private String mediaKitSlug;
     private String slug;
     private String type;
     private String title;

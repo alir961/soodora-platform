@@ -13,7 +13,7 @@ public class MediaKitItemFactory {
 
     public static MediaKitItem buildDefaultMediaKitItem() {
         return new MediaKitItem(
-                MEDIA_KIT,
+                MEDIA_KIT.getSlug(),
                 "item-slug",
                 "type",
                 "Title",
