@@ -9,6 +9,7 @@ import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.product.*;
 import com.soodora.service.shared.FileDataService;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Optional;
 
@@ -91,6 +92,16 @@ public class ProductController implements ProductResource {
     @DeleteMapping("/{slug}")
     public void deleteProduct(@PathVariable("slug") String slug) {
         service.deleteProductBySlug(slug);
+    }
+
+    @Override
+    @GetMapping("/{slug}/analytics")
+    public ProductAnalyticsDTO getProductAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        Product product = service.retrieveProduct(slug);
+
+        if (product.getVendor().getSlug().equals(user.getSlug()) || user.isAdmin())
+            return ProductAnalyticsDTO.build(service.computeProductAnalytics(slug));
+        throw new InvalidPermissionException("Only the product vendor can access the analytics");
     }
 
 }

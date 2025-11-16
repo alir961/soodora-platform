@@ -1,5 +1,6 @@
 package com.soodora.service.sale;
 
+import com.soodora.domain.product.Product;
 import com.soodora.domain.sale.Sale;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.user.value.Identifier;
@@ -34,6 +35,10 @@ public class SaleService {
         } catch (Exception e) {
             throw new UnknownSaleException(e.getMessage());
         }
+    }
+
+    public Product getSaleProduct(String saleSlug) {
+        return saleRepository.findProductBySaleSlug(saleSlug);
     }
 
 }

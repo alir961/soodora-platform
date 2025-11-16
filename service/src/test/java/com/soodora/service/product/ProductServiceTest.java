@@ -4,7 +4,6 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
-import com.soodora.service.user.UnknownUserException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -101,7 +100,7 @@ class ProductServiceTest {
         Executable executable = () -> productService.retrieveProduct("unknown-slug");
 
         // THEN
-        assertThrows(UnknownUserException.class, executable);
+        assertThrows(UnknownProductException.class, executable);
     }
 
     @Test

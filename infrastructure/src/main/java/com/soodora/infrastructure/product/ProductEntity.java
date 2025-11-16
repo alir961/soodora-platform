@@ -3,11 +3,14 @@ package com.soodora.infrastructure.product;
 import com.soodora.domain.common.value.Url;
 import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductStatus;
+import com.soodora.domain.sale.Sale;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
+import com.soodora.infrastructure.sale.SaleEntity;
 
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,6 +21,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import static java.util.stream.Collectors.toSet;
 
 @Getter
 @Setter
@@ -63,12 +68,19 @@ public class ProductEntity implements DomainEntityAdapter<Product> {
     @Column(updatable = false)
     private Date createdAt;
 
-    @UpdateTimestamp
     @Column
+    @UpdateTimestamp
     private Date updatedAt;
+
+    @OneToMany(mappedBy = "product")
+    private Set<SaleEntity> sales;
 
     @Override
     public Product aggregate() {
+        Set<Sale> saleAggregates = sales.stream()
+                .map(DomainEntityAdapter::aggregate)
+                .collect(toSet());
+
         return new Product(
                 slug,
                 name,
@@ -80,7 +92,8 @@ public class ProductEntity implements DomainEntityAdapter<Product> {
                 vendor.getUser().aggregate(),
                 status,
                 createdAt,
-                updatedAt);
+                updatedAt,
+                saleAggregates);
     }
 
 }

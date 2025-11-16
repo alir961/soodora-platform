@@ -2,6 +2,7 @@ package com.soodora.api.sale;
 
 import com.soodora.api.product.ProductDTO;
 import com.soodora.domain.common.Money;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.sale.Sale;
 import com.soodora.domain.user.PublicUserDTO;
 
@@ -11,14 +12,14 @@ public record SaleDTO(String slug, ProductDTO product, PublicUserDTO vendor, Pub
         Money amount,
         Date createdAt) {
 
-    public static SaleDTO build(Sale sale) {
+    public static SaleDTO build(Sale sale, Product product) {
         return new SaleDTO(
                 sale.getSlug(),
-                ProductDTO.build(sale.getProduct()),
+                ProductDTO.build(product),
                 PublicUserDTO.build(sale.getVendor()),
                 PublicUserDTO.build(sale.getBuyer()),
-                sale.getQuantitySold(),
-                sale.getAmount(),
+                sale.getSoldQuantity(),
+                sale.getPrice(),
                 sale.getCreatedAt());
     }
 

@@ -27,8 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import static com.soodora.test.TestConstants.SALE;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,8 +45,9 @@ class SaleControllerIT {
     @Test
     void shouldReturnAllSales() throws Exception {
         // GIVEN
-        when(saleService.getAllSales(any(PageRequest.class)))
+        when(saleService.getAllSales(any(Pageable.class)))
                 .thenReturn(SALES_PAGE);
+        when(saleService.getSaleProduct(SALE.getSlug())).thenReturn(PRODUCT);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales")
@@ -61,8 +61,9 @@ class SaleControllerIT {
     @Test
     void shouldReturnUserSales() throws Exception {
         // GIVEN
-        when(saleService.getUserSales(any(PageRequest.class), eq("user-slug")))
+        when(saleService.getUserSales(any(Pageable.class), eq("user-slug")))
                 .thenReturn(SALES_PAGE);
+        when(saleService.getSaleProduct(SALE.getSlug())).thenReturn(PRODUCT);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales/user-slug")
@@ -76,8 +77,9 @@ class SaleControllerIT {
     @Test
     void shouldReturnLoggedArtistSales() throws Exception {
         // GIVEN
-        when(saleService.getUserSales(any(PageRequest.class), eq("slug")))
+        when(saleService.getUserSales(any(Pageable.class), eq("slug")))
                 .thenReturn(SALES_PAGE);
+        when(saleService.getSaleProduct(SALE.getSlug())).thenReturn(PRODUCT);
 
         // WHEN & THEN
         mockMvc.perform(get("/sales/:me")

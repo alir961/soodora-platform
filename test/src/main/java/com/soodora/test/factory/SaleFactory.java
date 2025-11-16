@@ -13,7 +13,6 @@ import static lombok.AccessLevel.PROTECTED;
 
 import static com.soodora.test.TestConstants.ARTIST_USER;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.ProductFactory.buildDefaultProduct;
 
 @NoArgsConstructor(access = PROTECTED)
 public class SaleFactory {
@@ -21,7 +20,6 @@ public class SaleFactory {
     public static Sale buildDefaultSale() {
         return new Sale(
                 "slug",
-                buildDefaultProduct(),
                 ARTIST_USER,
                 USER,
                 10,

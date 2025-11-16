@@ -61,7 +61,6 @@ public class SaleEntity implements DomainEntityAdapter<Sale> {
     public Sale aggregate() {
         return new Sale(
                 slug,
-                product.aggregate(),
                 vendor.getUser().aggregate(),
                 buyer.aggregate(),
                 quantitySold,

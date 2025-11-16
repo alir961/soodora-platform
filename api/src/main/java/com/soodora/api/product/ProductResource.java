@@ -66,4 +66,12 @@ public interface ProductResource {
     })
     void deleteProduct(@PathVariable("slug") String slug);
 
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Retrieve product analytics", description = "Retrieve sales analytics for a specific product. Only the product vendor or admins can access this data.", responses = {
+            @ApiResponse(responseCode = "200", description = "Analytics successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Forbidden — user not allowed to view analytics"),
+            @ApiResponse(responseCode = "404", description = "Product not found")
+    })
+    ProductAnalyticsDTO getProductAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug);
+
 }

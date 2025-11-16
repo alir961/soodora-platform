@@ -14,6 +14,7 @@ import com.soodora.infrastructure.common.MoneyEmbeddable;
 import com.soodora.infrastructure.sale.SaleJpaRepository;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -52,6 +53,7 @@ public class ProductRepositoryImpl implements ProductRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setVendor(vendorEntity);
         entity.setStatus(ACTIVE);
+        entity.setSales(new HashSet<>());
 
         if (fileData != null && fileData.content() != null) {
             String imageUrl = imageStorageUploader.upload(fileData);

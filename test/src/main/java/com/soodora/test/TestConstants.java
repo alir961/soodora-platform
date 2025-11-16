@@ -41,7 +41,7 @@ public class TestConstants {
     public static final EventDTO EVENT = buildEventDTO("");
     public static final MediaKit MEDIA_KIT = buildDefaultMediaKit();
     public static final MediaKitItem MEDIA_KIT_ITEM = buildDefaultMediaKitItem();
-    public static final Product PRODUCT = buildDefaultProduct();
     public static final Sale SALE = buildDefaultSale();
+    public static final Product PRODUCT = buildDefaultProduct();
 
 }

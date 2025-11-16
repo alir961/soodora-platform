@@ -1,6 +1,7 @@
 package com.soodora.infrastructure.sale;
 
 import com.soodora.domain.common.UnknownSlugException;
+import com.soodora.domain.product.Product;
 import com.soodora.domain.sale.Sale;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
@@ -13,8 +14,6 @@ import com.soodora.infrastructure.product.ProductEntity;
 import com.soodora.infrastructure.product.ProductJpaRepository;
 import com.soodora.infrastructure.user.UserEntity;
 import com.soodora.infrastructure.user.UserJpaRepository;
-
-import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,13 +55,6 @@ public class SaleRepositoryImpl implements SaleRepository {
 
     @Override
     @Transactional
-    public Sale findBySlug(String slug) {
-        return findSaleBySlugOrThrow(slug).aggregate();
-
-    }
-
-    @Override
-    @Transactional
     public Page<Sale> findAll(Pageable pageable) {
         return repository.findAll(pageable)
                 .map(DomainEntityAdapter::aggregate);
@@ -78,9 +70,17 @@ public class SaleRepositoryImpl implements SaleRepository {
     @Override
     @Transactional
     public void deleteSaleBySlug(String slug) {
-        Optional<SaleEntity> sale = repository.findBySlug(slug);
+        SaleEntity sale = findSaleBySlugOrThrow(slug);
 
-        repository.deleteById(sale.orElseThrow().getId());
+        repository.deleteById(sale.getId());
+    }
+
+    @Override
+    @Transactional
+    public Product findProductBySaleSlug(String slug) {
+        SaleEntity sale = findSaleBySlugOrThrow(slug);
+
+        return sale.getProduct().aggregate();
     }
 
     protected SaleEntity findSaleBySlugOrThrow(String slug) {
