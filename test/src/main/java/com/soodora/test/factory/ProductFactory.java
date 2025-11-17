@@ -2,7 +2,6 @@ package com.soodora.test.factory;
 
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.Money;
-import com.soodora.domain.common.value.Url;
 import com.soodora.domain.product.Product;
 
 import java.math.BigDecimal;

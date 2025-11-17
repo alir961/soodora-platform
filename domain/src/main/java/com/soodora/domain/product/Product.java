@@ -1,7 +1,6 @@
 package com.soodora.domain.product;
 
 import com.soodora.domain.common.Money;
-import com.soodora.domain.common.value.Url;
 import com.soodora.domain.sale.Sale;
 import com.soodora.domain.user.User;
 

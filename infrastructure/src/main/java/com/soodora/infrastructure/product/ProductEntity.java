@@ -1,6 +1,5 @@
 package com.soodora.infrastructure.product;
 
-import com.soodora.domain.common.value.Url;
 import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductStatus;
 import com.soodora.domain.sale.Sale;
