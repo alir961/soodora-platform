@@ -1,9 +1,0 @@
-CREATE TABLE users_followers
-(
-    user_id     UUID NOT NULL,
-    follower_id UUID NOT NULL
-);
-
-ALTER TABLE users_followers
-    ADD CONSTRAINT FK_USERS_FOLLOWERS_ON_USER FOREIGN KEY (user_id) REFERENCES users (id),
-    ADD CONSTRAINT FK_USERS_FOLLOWERS_ON_FOLLOWER FOREIGN KEY (follower_id) REFERENCES users (id)
