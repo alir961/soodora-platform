@@ -85,7 +85,7 @@ public class ProductEntity implements DomainEntityAdapter<Product> {
                 slug,
                 name,
                 description,
-                new Url(imageUrl),
+                imageUrl == null ? null : new Url(imageUrl),
                 category,
                 price.aggregate(),
                 quantity,

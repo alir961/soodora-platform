@@ -12,7 +12,7 @@ public record Url(String value) {
         UrlValidator urlValidator = new UrlValidator(ALLOW_LOCAL_URLS);
 
         if (!urlValidator.isValid(value))
-            throw new InvalidValueException("Avatar URL is not valid");
+            throw new InvalidValueException("URL is not valid: " + value);
         this.value = value.trim();
     }
 

@@ -2,6 +2,7 @@ package com.soodora.api.product;
 
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.common.Money;
+import com.soodora.domain.common.value.Url;
 import com.soodora.domain.product.Product;
 import com.soodora.domain.user.PublicUserDTO;
 
@@ -20,12 +21,13 @@ public record ProductDTO(
 
     public static ProductDTO build(Product product) {
         PublicUserDTO vendor = PublicUserDTO.build(product.getVendor());
+        Url url = product.getImageUrl();
 
         return new ProductDTO(
                 product.getSlug(),
                 product.getName(),
                 product.getDescription(),
-                product.getImageUrl().value(),
+                url == null ? null : url.value(),
                 product.getCategory(),
                 product.getPrice(),
                 product.getQuantity(),
