@@ -98,6 +98,7 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
     }
 
     @Override
+    @Transactional
     public void persistDownload(String slug, User user) {
         MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
         UserEntity owner = mediaKit.getArtist().getUser();

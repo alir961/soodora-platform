@@ -85,6 +85,7 @@ public class LinkHubRepositoryImpl implements LinkHubRepository {
     }
 
     @Override
+    @Transactional
     public void persistView(String slug) {
         LinkHubEntity linkHub = findLinkHubBySlugOrThrow(slug);
 

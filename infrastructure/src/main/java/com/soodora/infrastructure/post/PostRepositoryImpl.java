@@ -307,6 +307,7 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     @Override
+    @Transactional
     public Page<Post> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable) {
         return postRepository.findByArtistUserSlugIn(followingSlugs, pageable)
                 .map(DomainEntityAdapter::aggregate);

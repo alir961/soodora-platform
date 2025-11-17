@@ -102,6 +102,7 @@ public class QuoteRepositoryImpl implements QuoteRepository {
     }
 
     @Override
+    @Transactional
     public boolean isQuoteNameUsedByUser(String name, String userSlug) {
         List<QuoteEntity> userQuotes = findQuoteByUserSlugOrThrow(userSlug);
 
