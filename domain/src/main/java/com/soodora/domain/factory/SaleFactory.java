@@ -1,4 +1,4 @@
-package com.soodora.test.factory;
+package com.soodora.domain.factory;
 
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.Money;
@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.TestConstants.ARTIST_USER;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.domain.factory.UserFactory.buildDefaultArtistUser;
+import static com.soodora.domain.factory.UserFactory.buildDefaultUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class SaleFactory {
@@ -20,8 +20,8 @@ public class SaleFactory {
     public static Sale buildDefaultSale() {
         return new Sale(
                 "slug",
-                ARTIST_USER,
-                USER,
+                buildDefaultArtistUser(),
+                buildDefaultUser(),
                 10,
                 Money.of(BigDecimal.valueOf(10.99), Currency.EUR),
                 new Date(),

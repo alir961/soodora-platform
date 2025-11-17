@@ -1,4 +1,4 @@
-package com.soodora.test.factory;
+package com.soodora.domain.factory;
 
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.Money;
@@ -13,9 +13,9 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
+import static com.soodora.domain.factory.SaleFactory.buildDefaultSale;
+import static com.soodora.domain.factory.UserFactory.buildDefaultArtistUser;
 import static com.soodora.domain.product.ProductStatus.ACTIVE;
-import static com.soodora.test.TestConstants.ARTIST_USER;
-import static com.soodora.test.TestConstants.SALE;
 
 @NoArgsConstructor(access = PROTECTED)
 public class ProductFactory {
@@ -29,11 +29,11 @@ public class ProductFactory {
                 "category",
                 Money.of(BigDecimal.valueOf(100.99), Currency.EUR),
                 10,
-                ARTIST_USER,
+                buildDefaultArtistUser(),
                 ACTIVE,
                 new Date(),
                 new Date(),
-                Set.of(SALE));
+                Set.of(buildDefaultSale()));
     }
 
     public static Product buildProduct(String suffix) {
@@ -45,11 +45,11 @@ public class ProductFactory {
                 "category",
                 Money.of(BigDecimal.valueOf(100.99), Currency.EUR),
                 10,
-                ARTIST_USER,
+                buildDefaultArtistUser(),
                 ACTIVE,
                 new Date(),
                 new Date(),
-                Set.of(SALE));
+                Set.of(buildDefaultSale()));
     }
 
 }

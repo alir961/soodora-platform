@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.user;
 
-import com.soodora.test.factory.UserFactory;
+import com.soodora.domain.factory.UserFactory;
 
 import java.util.ArrayList;
 import java.util.Date;

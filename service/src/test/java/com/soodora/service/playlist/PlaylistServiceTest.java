@@ -24,9 +24,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import static com.soodora.domain.factory.PlaylistFactory.buildDefaultPublicPlaylist;
 import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPublicPlaylist;
 
 @ExtendWith(MockitoExtension.class)
 class PlaylistServiceTest {

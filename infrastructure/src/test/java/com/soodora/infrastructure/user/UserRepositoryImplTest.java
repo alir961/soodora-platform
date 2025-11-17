@@ -29,10 +29,10 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import static com.soodora.domain.factory.UserFactory.buildNewUser;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.infrastructure.user.UserEntityFactory.buildDefaultUserEntity;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.UserFactory.buildNewUser;
 
 @ExtendWith(MockitoExtension.class)
 class UserRepositoryImplTest {

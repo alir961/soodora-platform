@@ -29,9 +29,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import static com.soodora.api.JsonStringify.asJsonString;
+import static com.soodora.domain.factory.LinkFactory.buildDefaultLink;
+import static com.soodora.domain.factory.LinkHubFactory.buildDefaultLinkHub;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.LinkFactory.buildDefaultLink;
-import static com.soodora.test.factory.LinkHubFactory.buildDefaultLinkHub;
 
 @SpringBootTest
 @AutoConfigureMockMvc

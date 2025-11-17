@@ -1,4 +1,4 @@
-package com.soodora.test.factory;
+package com.soodora.domain.factory;
 
 import com.soodora.domain.common.value.Url;
 import com.soodora.domain.link.Link;

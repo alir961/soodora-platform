@@ -21,9 +21,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+import static com.soodora.domain.factory.LinkFactory.buildDefaultLink;
+import static com.soodora.domain.factory.LinkHubFactory.buildDefaultLinkHub;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.LinkFactory.buildDefaultLink;
-import static com.soodora.test.factory.LinkHubFactory.buildDefaultLinkHub;
 
 @ExtendWith(MockitoExtension.class)
 class LinkHubServiceTest {

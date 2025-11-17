@@ -1,4 +1,4 @@
-package com.soodora.test.factory;
+package com.soodora.domain.factory;
 
 import com.soodora.domain.link.Link;
 import com.soodora.domain.linkhub.LinkHub;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.TestConstants.ARTIST_USER;
+import static com.soodora.domain.factory.UserFactory.buildDefaultArtistUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class LinkHubFactory {
@@ -20,7 +20,7 @@ public class LinkHubFactory {
                 slug,
                 name,
                 "Description",
-                ARTIST_USER,
+                buildDefaultArtistUser(),
                 links,
                 new Date(),
                 new Date(),

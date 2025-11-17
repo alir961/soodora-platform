@@ -21,8 +21,8 @@ import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import static com.soodora.domain.factory.ProductFactory.buildProduct;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.ProductFactory.buildProduct;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {

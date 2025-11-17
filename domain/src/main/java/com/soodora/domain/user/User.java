@@ -56,7 +56,7 @@ public class User {
     }
 
     public void follow(User user) {
-        if (user.getSlug().equals(slug))
+        if (isSame(user))
             throw new UserFollowException("User cannot follow itself");
 
         following.add(user);
@@ -67,13 +67,13 @@ public class User {
         if (equals(user))
             throw new UserFollowException("User cannot unfollow itself");
 
-        following.removeIf(u -> u.getSlug().equals(user.getSlug()));
-        user.followers.removeIf(u -> u.getSlug().equals(slug));
+        following.removeIf(u -> u.isSame(user));
+        user.followers.removeIf(this::isSame);
     }
 
     public boolean isFollowing(User user) {
         return following.stream()
-                .anyMatch(u -> u.getSlug().equals(user.getSlug()));
+                .anyMatch(u -> u.isSame(user));
     }
 
     public boolean isSame(User user) {

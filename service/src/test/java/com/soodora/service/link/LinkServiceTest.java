@@ -21,8 +21,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+import static com.soodora.domain.factory.LinkFactory.buildDefaultLink;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.LinkFactory.buildDefaultLink;
 
 @ExtendWith(MockitoExtension.class)
 class LinkServiceTest {

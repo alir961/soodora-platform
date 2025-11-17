@@ -1,7 +1,7 @@
 package com.soodora.infrastructure.playlist;
 
+import com.soodora.domain.factory.PlaylistFactory;
 import com.soodora.infrastructure.user.UserEntity;
-import com.soodora.test.factory.PlaylistFactory;
 
 import java.util.Date;
 

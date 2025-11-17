@@ -39,10 +39,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
+import static com.soodora.domain.factory.PostFactory.buildDefaultPost;
+import static com.soodora.domain.factory.UserFactory.buildDefaultUser;
 import static com.soodora.test.TestConstants.ARTIST_USER;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.PostFactory.buildDefaultPost;
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
 
 @SpringBootTest
 @AutoConfigureMockMvc

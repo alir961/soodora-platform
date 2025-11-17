@@ -29,11 +29,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.data.domain.Sort.by;
 
+import static com.soodora.domain.factory.PostFactory.buildDefaultPost;
+import static com.soodora.domain.factory.PostFactory.buildDefaultPostWithoutAudio;
+import static com.soodora.domain.factory.UserFactory.buildDefaultUser;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.test.TestConstants.*;
-import static com.soodora.test.factory.PostFactory.buildDefaultPost;
-import static com.soodora.test.factory.PostFactory.buildDefaultPostWithoutAudio;
-import static com.soodora.test.factory.UserFactory.buildDefaultUser;
 
 @ExtendWith(MockitoExtension.class)
 class PostServiceTest {

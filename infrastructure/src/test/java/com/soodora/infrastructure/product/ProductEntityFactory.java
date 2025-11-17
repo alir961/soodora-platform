@@ -1,8 +1,8 @@
 package com.soodora.infrastructure.product;
 
 import com.soodora.domain.common.Currency;
+import com.soodora.domain.factory.ProductFactory;
 import com.soodora.infrastructure.common.MoneyEmbeddable;
-import com.soodora.test.factory.ProductFactory;
 
 import java.math.BigDecimal;
 import java.util.Date;

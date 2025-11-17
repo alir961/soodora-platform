@@ -34,9 +34,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
+import static com.soodora.domain.factory.PlaylistFactory.buildDefaultPrivatePlaylist;
+import static com.soodora.domain.factory.PlaylistFactory.buildDefaultPublicPlaylist;
 import static com.soodora.test.TestConstants.*;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPrivatePlaylist;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPublicPlaylist;
 
 @SpringBootTest
 @AutoConfigureMockMvc

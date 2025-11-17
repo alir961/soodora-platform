@@ -1,6 +1,6 @@
 package com.soodora.infrastructure.post;
 
-import com.soodora.test.factory.PostFactory;
+import com.soodora.domain.factory.PostFactory;
 
 import java.util.Date;
 

@@ -13,13 +13,13 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PRIVATE;
 
+import static com.soodora.domain.factory.MediaKitFactory.buildDefaultMediaKit;
+import static com.soodora.domain.factory.MediaKitItemFactory.buildDefaultMediaKitItem;
+import static com.soodora.domain.factory.ProductFactory.buildDefaultProduct;
+import static com.soodora.domain.factory.SaleFactory.buildDefaultSale;
+import static com.soodora.domain.factory.UserFactory.*;
 import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
 import static com.soodora.test.factory.EventFactory.buildEventDTO;
-import static com.soodora.test.factory.MediaKitFactory.buildDefaultMediaKit;
-import static com.soodora.test.factory.MediaKitItemFactory.buildDefaultMediaKitItem;
-import static com.soodora.test.factory.ProductFactory.buildDefaultProduct;
-import static com.soodora.test.factory.SaleFactory.buildDefaultSale;
-import static com.soodora.test.factory.UserFactory.*;
 
 @NoArgsConstructor(access = PRIVATE)
 public class TestConstants {

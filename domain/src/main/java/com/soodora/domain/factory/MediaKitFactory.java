@@ -1,4 +1,4 @@
-package com.soodora.test.factory;
+package com.soodora.domain.factory;
 
 import com.soodora.domain.mediakit.MediaKit;
 
@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 import static lombok.AccessLevel.PROTECTED;
 
-import static com.soodora.test.TestConstants.ARTIST_USER;
+import static com.soodora.domain.factory.UserFactory.buildDefaultArtistUser;
 
 @NoArgsConstructor(access = PROTECTED)
 public class MediaKitFactory {
@@ -16,7 +16,7 @@ public class MediaKitFactory {
     public static MediaKit buildDefaultMediaKit() {
         return new MediaKit(
                 "slug",
-                ARTIST_USER,
+                buildDefaultArtistUser(),
                 "Title",
                 "ShortBio",
                 "LongBio",
