@@ -23,13 +23,13 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Playlist Controller")
-@SecurityRequirement(name = "bearerAuth")
 public interface PlaylistResource {
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create a new playlist", responses = {
-            @ApiResponse(responseCode = "201", description = "Playlist created successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request or playlist already exists", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "201", description = "Playlist created successfully", content = @Content(schema = @Schema(implementation = PlaylistSlugResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request or playlist name already used", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content)
     })
     ResponseEntity<JsonResponse> createPlaylist(
             @AuthenticationPrincipal User user,
@@ -37,8 +37,7 @@ public interface PlaylistResource {
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
     @Operation(summary = "Search playlists with optional filters", responses = {
-            @ApiResponse(responseCode = "200", description = "Playlists retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")
+            @ApiResponse(responseCode = "200", description = "Playlists retrieved successfully")
     })
     Page<PlaylistDTO> searchPlaylists(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
@@ -48,43 +47,52 @@ public interface PlaylistResource {
 
     @Operation(summary = "Get a playlist by its slug", responses = {
             @ApiResponse(responseCode = "200", description = "Playlist retrieved successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden (private playlist)", content = @Content),
             @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     PopulatedPlaylistDTO getPlaylist(
+            @AuthenticationPrincipal User user,
             @PathVariable String slug,
             Pageable pageableAudioPosts);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update a playlist", responses = {
             @ApiResponse(responseCode = "200", description = "Playlist updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid update request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
-            @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content)
     })
     ResponseEntity<JsonResponse> updatePlaylist(
-            @PathVariable String slug,
+            @AuthenticationPrincipal User user, @PathVariable String slug,
             @RequestPart("data") UpdatePlaylistRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Delete a playlist by slug", responses = {
-            @ApiResponse(responseCode = "204", description = "Playlist deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
+            @ApiResponse(responseCode = "200", description = "Playlist deleted successfully"),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Playlist not found", content = @Content)
     })
-    void deletePlaylist(@PathVariable("slug") String slug);
+    void deletePlaylist(@AuthenticationPrincipal User user, @PathVariable("slug") String slug);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Add a post to a playlist", responses = {
-            @ApiResponse(responseCode = "201", description = "Post added to playlist"),
-            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Post added to playlist", content = @Content(schema = @Schema(implementation = PopulatedPlaylistDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Playlist or post not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     ResponseEntity<JsonResponse> addPostToPlaylist(
-            @PathVariable String playlistSlug,
+            @AuthenticationPrincipal User user, @PathVariable String playlistSlug,
             @PathVariable String postSlug);
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Remove a post from a playlist", responses = {
-            @ApiResponse(responseCode = "200", description = "Post removed from playlist"),
+            @ApiResponse(responseCode = "200", description = "Post removed from playlist", content = @Content(schema = @Schema(implementation = PopulatedPlaylistDTO.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content),
             @ApiResponse(responseCode = "404", description = "Playlist or post not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     ResponseEntity<JsonResponse> removePostFromPlaylist(
-            @PathVariable String playlistSlug,
+            @AuthenticationPrincipal User user, @PathVariable String playlistSlug,
             @PathVariable String postSlug);
 
 }

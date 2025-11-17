@@ -76,4 +76,8 @@ public class User {
                 .anyMatch(u -> u.getSlug().equals(user.getSlug()));
     }
 
+    public boolean isSame(User user) {
+        return slug.equals(user.getSlug());
+    }
+
 }

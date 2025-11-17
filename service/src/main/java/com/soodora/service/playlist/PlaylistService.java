@@ -5,6 +5,7 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
+import com.soodora.service.post.UnknownPostException;
 
 import java.util.List;
 
@@ -36,7 +37,11 @@ public class PlaylistService {
     }
 
     public Playlist retrievePlaylistBySlug(String slug) {
-        return playlistRepository.findBySlug(slug);
+        try {
+            return playlistRepository.findBySlug(slug);
+        } catch (UnknownSlugException exception) {
+            throw new UnknownPlaylistException(exception.getMessage());
+        }
     }
 
     public Page<Post> retrievePlaylistPostsBySlug(String playlistSlug, Pageable pageable) {
@@ -60,19 +65,19 @@ public class PlaylistService {
         }
     }
 
-    public Playlist addPostToPlaylist(String playlistSlug, String postSlug) {
+    public Playlist addPostToPlaylist(Playlist playlist, String postSlug) {
         try {
-            return playlistRepository.addPostToPlaylist(playlistSlug, postSlug);
+            return playlistRepository.addPostToPlaylist(playlist, postSlug);
         } catch (UnknownSlugException exception) {
-            throw new PlaylistUnityException(exception.getMessage());
+            throw new UnknownPostException(exception.getMessage());
         }
     }
 
-    public Playlist removePostFromPlaylist(String playlistSlug, String postSlug) {
+    public Playlist removePostFromPlaylist(Playlist playlist, String postSlug) {
         try {
-            return playlistRepository.removePostFromPlaylist(playlistSlug, postSlug);
+            return playlistRepository.removePostFromPlaylist(playlist, postSlug);
         } catch (UnknownSlugException exception) {
-            throw new PlaylistUnityException(exception.getMessage());
+            throw new UnknownPostException(exception.getMessage());
         }
     }
 

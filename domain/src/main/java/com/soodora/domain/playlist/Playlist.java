@@ -24,4 +24,10 @@ public class Playlist {
     private Date createdAt;
     private Date updatedAt;
 
+    public boolean hasAccess(User user) {
+        if (user == null)
+            return false;
+        return owner.isSame(user) || user.isAdmin();
+    }
+
 }

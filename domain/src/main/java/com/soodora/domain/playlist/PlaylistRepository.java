@@ -17,8 +17,8 @@ public interface PlaylistRepository {
     List<Playlist> findAll();
     Page<Playlist> findByFilter(PlaylistFilter filter, Pageable pageable);
     boolean isPlaylistNameUsedByUser(String name, String userSlug);
-    Playlist addPostToPlaylist(String playlistSlug, String postSlug);
-    Playlist removePostFromPlaylist(String playlistSlug, String postSlug);
+    Playlist addPostToPlaylist(Playlist playlist, String postSlug);
+    Playlist removePostFromPlaylist(Playlist playlist, String postSlug);
     void deletePlaylistAndUnlinkPosts(String slug);
     Page<Post> findPlaylistPosts(String playlistSlug, Pageable pageable);
 

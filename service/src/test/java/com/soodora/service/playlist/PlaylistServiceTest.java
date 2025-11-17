@@ -3,6 +3,7 @@ package com.soodora.service.playlist;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.*;
+import com.soodora.service.post.UnknownPostException;
 
 import java.util.List;
 
@@ -19,12 +20,13 @@ import org.springframework.data.domain.Pageable;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.empty;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
 import static com.soodora.test.TestConstants.USER;
-import static com.soodora.test.factory.PlaylistFactory.buildDefaultPlaylist;
+import static com.soodora.test.factory.PlaylistFactory.buildDefaultPublicPlaylist;
 
 @ExtendWith(MockitoExtension.class)
 class PlaylistServiceTest {
@@ -35,9 +37,9 @@ class PlaylistServiceTest {
     private PlaylistService playlistService;
 
     private static final String SLUG_1 = "slug1";
-    private static final Playlist PLAYLIST_1 = buildDefaultPlaylist(SLUG_1, "Name 1");
-    private static final Playlist PLAYLIST_2 = buildDefaultPlaylist("slug2", "Name 2");
-    private static final Playlist PLAYLIST_3 = buildDefaultPlaylist("slug3", "Name 3");
+    private static final Playlist PLAYLIST_1 = buildDefaultPublicPlaylist(SLUG_1, "Name 1");
+    private static final Playlist PLAYLIST_2 = buildDefaultPublicPlaylist("slug2", "Name 2");
+    private static final Playlist PLAYLIST_3 = buildDefaultPublicPlaylist("slug3", "Name 3");
     private static final List<Playlist> PLAYLISTS = List.of(PLAYLIST_1, PLAYLIST_2, PLAYLIST_3);
     private static final FileData FILE_DATA = new FileData(
             "dummy image content".getBytes(),
@@ -53,6 +55,7 @@ class PlaylistServiceTest {
     void givenValidCreatePlaylistCommand_whenCreatePlaylist_thenPlaylistIsSaved() {
         // GIVEN
         CreatePlaylistCommand command = new CreatePlaylistCommand("New Playlist", "Description", PUBLIC);
+
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.getSlug())).thenReturn(false);
         when(playlistRepository.save(any(), eq(USER), eq(FILE_DATA))).thenReturn(PLAYLIST_1);
 
@@ -68,6 +71,7 @@ class PlaylistServiceTest {
     void givenPlaylistNameAlreadyUsed_whenCreatePlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
         CreatePlaylistCommand command = new CreatePlaylistCommand("Existing Playlist", "Description", PUBLIC);
+
         when(playlistRepository.isPlaylistNameUsedByUser(command.name(), USER.getSlug())).thenReturn(true);
 
         // WHEN
@@ -81,6 +85,7 @@ class PlaylistServiceTest {
     void givenValidUpdateCommand_whenUpdatePlaylist_thenPlaylistIsUpdated() {
         // GIVEN
         UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand("Updated Name", "Updated Description", PUBLIC);
+
         when(playlistRepository.update(updateCommand, SLUG_1, FILE_DATA)).thenReturn(PLAYLIST_1);
 
         // WHEN
@@ -95,6 +100,7 @@ class PlaylistServiceTest {
     void givenUnknownSlug_whenUpdatePlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
         UpdatePlaylistCommand updateCommand = new UpdatePlaylistCommand("Updated Name", "Updated Description", PUBLIC);
+
         when(playlistRepository.update(updateCommand, SLUG_1, FILE_DATA))
                 .thenThrow(new UnknownSlugException("Slug not found"));
 
@@ -158,9 +164,11 @@ class PlaylistServiceTest {
         // GIVEN
         when(playlistRepository.findBySlug(SLUG_1)).thenThrow(new UnknownSlugException("Not found"));
 
-        // WHEN / THEN
-        assertThrows(UnknownSlugException.class,
-                () -> playlistService.retrievePlaylistBySlug(SLUG_1));
+        // WHEN
+        Executable executable = () -> playlistService.retrievePlaylistBySlug(SLUG_1);
+
+        // THEN
+        assertThrows(UnknownPlaylistException.class, executable);
     }
 
     @Test
@@ -178,20 +186,24 @@ class PlaylistServiceTest {
     @Test
     void givenUnknownPlaylistSlug_whenDeletePlaylist_thenThrowsUnknownPlaylistException() {
         // GIVEN
-        doThrow(new UnknownSlugException("not found")).when(playlistRepository).deletePlaylistAndUnlinkPosts(SLUG_1);
+        doThrow(new UnknownSlugException("Not found"))
+                .when(playlistRepository).deletePlaylistAndUnlinkPosts(SLUG_1);
 
-        // WHEN / THEN
-        assertThrows(UnknownPlaylistException.class, () -> playlistService.deletePlaylistBySlug(SLUG_1));
+        // WHEN
+        Executable executable = () -> playlistService.deletePlaylistBySlug(SLUG_1);
+
+        // THEN
+        assertThrows(UnknownPlaylistException.class, executable);
     }
 
     @Test
     void givenValidPost_whenAddPostToPlaylist_thenPostIsAdded() {
         // GIVEN
-        when(playlistRepository.addPostToPlaylist(SLUG_1, "postSlug1"))
+        when(playlistRepository.addPostToPlaylist(PLAYLIST_1, "postSlug1"))
                 .thenReturn(PLAYLIST_1);
 
         // WHEN
-        Playlist result = playlistService.addPostToPlaylist(SLUG_1, "postSlug1");
+        Playlist result = playlistService.addPostToPlaylist(PLAYLIST_1, "postSlug1");
 
         // THEN
         assertEquals(PLAYLIST_1, result);
@@ -200,22 +212,24 @@ class PlaylistServiceTest {
     @Test
     void givenUnknownPlaylistSlug_whenAddPostToPlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
-        when(playlistRepository.addPostToPlaylist(eq(SLUG_1), eq("postSlug1")))
+        when(playlistRepository.addPostToPlaylist(PLAYLIST_1, "postSlug1"))
                 .thenThrow(new UnknownSlugException("not found"));
 
-        // WHEN / THEN
-        assertThrows(PlaylistUnityException.class,
-                () -> playlistService.addPostToPlaylist(SLUG_1, "postSlug1"));
+        // WHEN
+        Executable executable = () -> playlistService.addPostToPlaylist(PLAYLIST_1, "postSlug1");
+
+        // THEN
+        assertThrows(UnknownPostException.class, executable);
     }
 
     @Test
     void givenValidPost_whenRemovePostFromPlaylist_thenPostIsRemoved() {
         // GIVEN
-        when(playlistRepository.removePostFromPlaylist(eq(SLUG_1), eq("postSlug1")))
+        when(playlistRepository.removePostFromPlaylist(PLAYLIST_1, "postSlug1"))
                 .thenReturn(PLAYLIST_1);
 
         // WHEN
-        Playlist result = playlistService.removePostFromPlaylist(SLUG_1, "postSlug1");
+        Playlist result = playlistService.removePostFromPlaylist(PLAYLIST_1, "postSlug1");
 
         // THEN
         assertEquals(PLAYLIST_1, result);
@@ -224,12 +238,14 @@ class PlaylistServiceTest {
     @Test
     void givenUnknownPlaylistSlug_whenRemovePostFromPlaylist_thenThrowsPlaylistUnityException() {
         // GIVEN
-        when(playlistRepository.removePostFromPlaylist(SLUG_1, "postSlug1"))
+        when(playlistRepository.removePostFromPlaylist(PLAYLIST_1, "postSlug1"))
                 .thenThrow(new UnknownSlugException("Not found"));
 
-        // WHEN / THEN
-        assertThrows(PlaylistUnityException.class,
-                () -> playlistService.removePostFromPlaylist(SLUG_1, "postSlug1"));
+        // WHEN
+        Executable executable = () -> playlistService.removePostFromPlaylist(PLAYLIST_1, "postSlug1");
+
+        // THEN
+        assertThrows(UnknownPostException.class, executable);
     }
 
 }

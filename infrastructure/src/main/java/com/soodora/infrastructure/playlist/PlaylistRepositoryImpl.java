@@ -43,12 +43,14 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
         entity.setName(command.name());
         entity.setDescription(command.description());
         entity.setPrivacy(command.privacy());
-        if (playlistImage != null && playlistImage.content() != null) {
-            String imageUrl = imageStorageUploader.upload(playlistImage);
-            entity.setImageUrl(imageUrl);
-        }
         entity.setSlug(generateUniqueSlug());
         entity.setUser(userEntity);
+
+        if (playlistImage != null && playlistImage.content() != null) {
+            String imageUrl = imageStorageUploader.upload(playlistImage);
+
+            entity.setImageUrl(imageUrl);
+        }
 
         return repository.save(entity).aggregate();
     }
@@ -62,12 +64,13 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
             existingPlaylist.setName(command.name());
         if (isNotNullOrBlank(command.description()))
             existingPlaylist.setDescription(command.description());
-        if (playlistImage != null && playlistImage.content() != null) {
-            String imageUrl = imageStorageUploader.upload(playlistImage);
-            existingPlaylist.setImageUrl(imageUrl);
-        }
         if (command.privacyState() != null)
             existingPlaylist.setPrivacy(command.privacyState());
+        if (playlistImage != null && playlistImage.content() != null) {
+            String imageUrl = imageStorageUploader.upload(playlistImage);
+
+            existingPlaylist.setImageUrl(imageUrl);
+        }
 
         return repository.save(existingPlaylist).aggregate();
     }
@@ -106,32 +109,31 @@ public class PlaylistRepositoryImpl implements PlaylistRepository {
 
     @Override
     @Transactional
-    public Playlist addPostToPlaylist(String playlistSlug, String postSlug) {
-        PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
+    public Playlist addPostToPlaylist(Playlist playlist, String postSlug) {
+        PlaylistEntity playlistEntity = findPlaylistBySlugOrThrow(playlist.getSlug());
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
-        playlist.addPost(post);
-        repository.save(playlist);
-
-        return playlist.aggregate();
+        playlistEntity.addPost(post);
+        playlistEntity = repository.save(playlistEntity);
+        return playlistEntity.aggregate();
     }
 
     @Override
     @Transactional
-    public Playlist removePostFromPlaylist(String playlistSlug, String postSlug) {
-        PlaylistEntity playlist = findPlaylistBySlugOrThrow(playlistSlug);
+    public Playlist removePostFromPlaylist(Playlist playlist, String postSlug) {
+        PlaylistEntity playlistEntity = findPlaylistBySlugOrThrow(playlist.getSlug());
         PostEntity post = findPostBySlugOrThrow(postSlug);
 
-        playlist.removePost(post);
-        repository.save(playlist);
-
-        return playlist.aggregate();
+        playlistEntity.removePost(post);
+        playlistEntity = repository.save(playlistEntity);
+        return playlistEntity.aggregate();
     }
 
     @Override
     @Transactional
     public void deletePlaylistAndUnlinkPosts(String slug) {
         PlaylistEntity playlist = findPlaylistBySlugOrThrow(slug);
+
         playlist.clearPosts();
         repository.delete(playlist);
     }

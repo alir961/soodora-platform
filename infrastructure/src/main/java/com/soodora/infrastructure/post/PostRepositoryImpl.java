@@ -154,8 +154,8 @@ public class PostRepositoryImpl implements PostRepository {
             if (post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
                 playlistJpaRepository
                         .findByUserAndName(userEntity, likedPlaylistName)
-                        .ifPresent(playlist -> playlistRepository.addPostToPlaylist(
-                                playlist.getSlug(), postSlug));
+                        .map(DomainEntityAdapter::aggregate)
+                        .ifPresent(playlist -> playlistRepository.addPostToPlaylist(playlist, postSlug));
             }
 
             postRepository.save(post);
@@ -173,8 +173,8 @@ public class PostRepositoryImpl implements PostRepository {
         if (removed && post.getAudioTitle() != null && !post.getAudioTitle().isEmpty()) {
             playlistJpaRepository
                     .findByUserAndName(userEntity, likedPlaylistName)
-                    .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(
-                            playlist.getSlug(), postSlug));
+                    .map(DomainEntityAdapter::aggregate)
+                    .ifPresent(playlist -> playlistRepository.removePostFromPlaylist(playlist, postSlug));
         }
 
         postRepository.save(post);
