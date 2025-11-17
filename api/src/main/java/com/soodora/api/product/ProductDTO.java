@@ -25,7 +25,7 @@ public record ProductDTO(
                 product.getSlug(),
                 product.getName(),
                 product.getDescription(),
-                product.getImageUrl().value(),
+                product.getImageUrl(),
                 product.getCategory(),
                 product.getPrice(),
                 product.getQuantity(),

@@ -18,7 +18,7 @@ public class Product {
     private String slug;
     private String name;
     private String description;
-    private Url imageUrl;
+    private String imageUrl;
     private String category;
     private Money price;
     private long quantity;
