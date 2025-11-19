@@ -142,7 +142,7 @@ const openAvatarPopup = (event: MouseEvent) => {
           const user = authStore.getAuthenticatedUser;
           if (user) {
             const userWithAvatar = user as User & { avatarUrl?: string };
-            userWithAvatar.avatarUrl = undefined;
+            userWithAvatar.avatarUrl = '';
           }
         } catch (error) {
           const message = 'Failed to delete profile picture. ' + (error instanceof Error ? error.message : '');
