@@ -27,5 +27,10 @@ const redirectToProfile = async () => {
   color: white;
   cursor: pointer;
   font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  display: inline-block;
 }
 </style>

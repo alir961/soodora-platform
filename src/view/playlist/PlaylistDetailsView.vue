@@ -989,7 +989,7 @@ watch(
   backdrop-filter: blur(40px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 1rem;
-  margin: 0 1rem 1.5rem 1rem;
+  margin: 1rem 1rem 1.5rem 1rem;
 }
 
 .empty-icon-wrapper {

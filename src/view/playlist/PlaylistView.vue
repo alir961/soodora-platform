@@ -300,7 +300,7 @@ onActivated(() => {
 
 .empty-icon {
   font-size: 56px;
-  color: rgba(251, 146, 60, 0.6);
+  color: rgb(251, 146, 60);
   opacity: 0.8;
 }
 

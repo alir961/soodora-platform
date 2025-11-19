@@ -42,8 +42,12 @@ const redirectToProfile = async () => {
     <ion-avatar slot="start">
       <Avatar :user="user" />
     </ion-avatar>
-    <UsernameTag :user="user" />
-    <FollowButton v-if="canFollow" slot="end" :user="user" @click.stop />
+    <div class="username-wrapper">
+      <UsernameTag :user="user" />
+    </div>
+    <div v-if="canFollow" slot="end" class="follow-button-wrapper">
+      <FollowButton :user="user" />
+    </div>
   </ion-item>
   <div class="item-separator" />
 </template>
@@ -65,6 +69,12 @@ ion-item {
     height: 48px;
     margin-right: 0.75rem;
   }
+}
+
+.username-wrapper {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12px;
 }
 
 @media (max-width: 640px) {

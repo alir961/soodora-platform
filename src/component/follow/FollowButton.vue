@@ -4,10 +4,12 @@ import { User } from '@/entity/User';
 import { computed, onMounted, PropType, ref } from 'vue';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { callRetrieveFollowers } from '@/client/userClient';
+import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
 
 const authStore = useAuthStore();
 
 const followers = ref<User[]>([]);
+const unauthActionCardRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
 
 const props = defineProps({
   user: {
@@ -16,7 +18,10 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['toggle']);
+const emit = defineEmits<{
+  toggle: [wasFollowing: boolean];
+  click: [];
+}>();
 
 const isFollowing = computed(() => {
   const authenticatedUser = authStore.getAuthenticatedUser;
@@ -32,27 +37,37 @@ const reloadFollowers = () => {
 };
 
 const toggleFollow = async () => {
+  if (!authStore.isAuthenticated) {
+    unauthActionCardRef.value?.open();
+    return;
+  }
+
   try {
     const slug = props.user.slug;
+    const wasFollowing = isFollowing.value;
 
-    if (isFollowing.value) await callUnfollowUser(slug);
+    if (wasFollowing) await callUnfollowUser(slug);
     else await callFollowUser(slug);
     reloadFollowers();
-    emit('toggle');
+    emit('toggle', wasFollowing);
   } catch (error) {
     console.error(error);
   }
 };
 
 onMounted(() => {
-  reloadFollowers();
+  if (authStore.isAuthenticated) {
+    reloadFollowers();
+  }
 });
 </script>
 
 <template>
-  <button class="follow-button" :class="{ 'is-following': isFollowing }" @click="toggleFollow">
+  <button class="follow-button" :class="{ 'is-following': isFollowing }" @click.stop="toggleFollow">
     {{ isFollowing ? 'Unfollow' : 'Follow' }}
   </button>
+
+  <UnauthenticatedActionCard ref="unauthActionCardRef" />
 </template>
 
 <style scoped>

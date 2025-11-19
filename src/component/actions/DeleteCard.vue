@@ -5,7 +5,7 @@ import { showToast } from '@/utils';
 const props = defineProps({
   itemType: {
     required: true,
-    type: String as PropType<'post' | 'product' | 'link hub' | 'link' | 'playlist' | 'quote' | 'item'>,
+    type: String as PropType<'post' | 'product' | 'link hub' | 'link' | 'playlist' | 'quote' | 'item' | 'account'>,
   },
   itemSlug: {
     required: true,

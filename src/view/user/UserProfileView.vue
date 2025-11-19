@@ -113,12 +113,12 @@ const actionItems = computed<ActionItem[]>(() => {
   items.push(
     {
       icon: linkOutline,
-      label: 'Link Hub',
+      label: 'Visit Link Hub',
       action: handleLinkHub,
     },
     {
       icon: briefcaseOutline,
-      label: 'Soodora Kit',
+      label: 'Download Soodora Kit',
       action: handleSoodoraKit,
     }
   );

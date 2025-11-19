@@ -5,6 +5,8 @@ import { addOutline } from 'ionicons/icons';
 import { Post } from '@/entity/Post';
 import { usePlayerStore } from '@/store/playerStore';
 import { audioPlayerService } from '@/services/audioPlayerService';
+import { useAuthStore } from '@/store/reactiveStorage';
+import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
 
 const props = defineProps({
   post: {
@@ -19,8 +21,10 @@ const props = defineProps({
 
 const emit = defineEmits(['save-track']);
 
+const authStore = useAuthStore();
 const player = usePlayerStore();
 const trackDuration = ref<number>(0);
+const unauthActionCardRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
 
 // Try to inject the play function with context from parent view
 const playTrackWithContext = inject<((post: Post) => Promise<void>) | null>('playTrackWithContext', null);
@@ -70,6 +74,12 @@ const formatTime = (time: number) => {
 
 const handleSaveTrack = (event: Event) => {
   event.stopPropagation();
+
+  if (!authStore.isAuthenticated) {
+    unauthActionCardRef.value?.open();
+    return;
+  }
+
   emit('save-track');
 };
 
@@ -115,6 +125,8 @@ onMounted(() => {
       </button>
     </div>
   </div>
+
+  <UnauthenticatedActionCard ref="unauthActionCardRef" />
 </template>
 
 <style scoped>

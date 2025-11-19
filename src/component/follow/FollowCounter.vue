@@ -39,9 +39,22 @@ const reloadFollowing = () => {
     .catch((error) => console.error(error));
 };
 
-const handleFollowToggle = (userSlug: string) => {
-  if (showList.value === 'following') {
+const handleFollowToggle = (userSlug: string, wasFollowing: boolean) => {
+  // Only remove from list if:
+  // 1. We're viewing the "following" list
+  // 2. It's the authenticated user's own profile (they just unfollowed someone)
+  // 3. The user was following (they clicked unfollow)
+  const isOwnProfile = authStore.getAuthenticatedUserSlug === props.user.slug;
+
+  if (showList.value === 'following' && isOwnProfile && wasFollowing) {
     following.value = following.value.filter((user) => user.slug !== userSlug);
+  } else {
+    // For other cases, reload the lists to reflect the updated follow state
+    if (showList.value === 'followers') {
+      reloadFollowers();
+    } else if (showList.value === 'following') {
+      reloadFollowing();
+    }
   }
 };
 
@@ -109,12 +122,12 @@ defineExpose({ closeList });
           <div class="user-username">@{{ user.username }}</div>
           <div class="user-fullname">{{ user.firstname }} {{ user.lastname }}</div>
         </div>
-        <FollowButton
-          v-if="user.slug !== authStore.getAuthenticatedUserSlug"
-          :user="user"
-          @click.stop
-          @toggle="() => handleFollowToggle(user.slug)"
-          class="follow-btn" />
+        <div v-if="user.slug !== authStore.getAuthenticatedUserSlug" class="follow-btn">
+          <FollowButton
+            :user="user"
+            @click.stop
+            @toggle="(wasFollowing) => handleFollowToggle(user.slug, wasFollowing)" />
+        </div>
       </div>
 
       <div v-if="(showList === 'followers' ? followers : following).length === 0" class="empty-state">

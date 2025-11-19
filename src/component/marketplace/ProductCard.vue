@@ -8,14 +8,16 @@ import { callDeleteProduct, callRetrieveProductAnalytics } from '@/client/produc
 import Avatar from '@/component/user/AvatarItem.vue';
 import { createCheckoutSession } from '@/client/paymentClient';
 import { showToast } from '@/utils';
-import { pencil, statsChartOutline } from 'ionicons/icons';
+import { pencil, statsChartOutline, ellipsisHorizontalOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import customShareIcon from '@/assets/icons/share.svg';
 import customTrashIcon from '@/assets/icons/trash.svg';
+import ActionsPopup from '@/component/actions/ActionsPopup.vue';
 import DateDisplay from '@/component/date/DateDisplay.vue';
 import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
 import ProductAnalyticsCard from '@/component/actions/ProductAnalyticsCard.vue';
+import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
 
 const props = defineProps({
   product: {
@@ -43,6 +45,7 @@ const maxQuantity = ref(0);
 const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const productAnalyticsCardRef = ref<InstanceType<typeof ProductAnalyticsCard> | null>(null);
+const unauthActionCardRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
 
 const productAnalytics = ref<ProductAnalytics | null>(null);
 
@@ -59,6 +62,11 @@ const openExportModal = () => {
 };
 
 const openImageModal = (src: string, productQuantity: number | null) => {
+  if (!authStore.isAuthenticated) {
+    unauthActionCardRef.value?.open();
+    return;
+  }
+
   modalImageSrc.value = src;
   maxQuantity.value = productQuantity ?? 1;
   quantity.value = 1;
@@ -141,6 +149,47 @@ watch(
       productAnalytics.value = await callRetrieveProductAnalytics(product.slug);
   }
 );
+
+// Actions popup state (reuse the marketplace pattern)
+const showActionsPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
+interface ActionItem {
+  icon: string;
+  label: string;
+  action: () => void;
+  destructive?: boolean;
+}
+
+const actions = ref<ActionItem[]>([]);
+
+const openActionsPopup = (event: Event) => {
+  const target = (event.currentTarget || event.target) as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  popupX.value = rect.left + rect.width / 2;
+  popupY.value = rect.top + rect.height;
+
+  actions.value = [
+    {
+      icon: pencil,
+      label: 'Edit',
+      action: () => openEditModal(),
+    },
+    {
+      icon: statsChartOutline,
+      label: 'Analytics',
+      action: () => openAnalyticsModal(),
+    },
+    {
+      icon: customTrashIcon,
+      label: 'Delete',
+      destructive: true,
+      action: () => openDeleteConfirm(),
+    },
+  ];
+
+  showActionsPopup.value = true;
+};
 </script>
 
 <template>
@@ -155,16 +204,8 @@ watch(
           </button>
 
           <template v-if="localProduct.vendor.slug === authStore.getAuthenticatedUserSlug">
-            <button class="action-icon analytics" @click="openAnalyticsModal" title="Analytics">
-              <ion-icon :src="statsChartOutline" />
-            </button>
-
-            <button class="action-icon edit" @click="openEditModal" title="Edit">
-              <ion-icon :src="pencil" />
-            </button>
-
-            <button class="action-icon delete" @click="openDeleteConfirm" title="Delete">
-              <ion-icon :src="customTrashIcon" />
+            <button class="action-icon actions-button" @click="openActionsPopup" title="Actions">
+              <ion-icon :src="ellipsisHorizontalOutline" />
             </button>
           </template>
         </div>
@@ -275,6 +316,14 @@ watch(
   </ion-col>
 
   <ProductAnalyticsCard v-if="productAnalytics" :analytics="productAnalytics" ref="productAnalyticsCardRef" />
+  <ActionsPopup
+    :is-open="showActionsPopup"
+    :x="popupX"
+    :y="popupY"
+    :actions="actions"
+    @close="showActionsPopup = false" />
+
+  <UnauthenticatedActionCard ref="unauthActionCardRef" />
 </template>
 
 <style scoped>
@@ -392,6 +441,15 @@ t .action-icon.edit ion-icon {
 
 .action-icon.delete ion-icon {
   color: #f87171;
+}
+
+.action-icon.actions-button {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.action-icon.actions-button ion-icon {
+  color: #a78bfa;
 }
 
 .action-icon:active {

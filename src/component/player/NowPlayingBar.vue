@@ -5,8 +5,12 @@ import { computed, ref, watch, onMounted, onUnmounted, nextTick, createApp } fro
 import { usePlayerStore } from '@/store/playerStore';
 import { useLikeStore } from '@/store/likeStore';
 import { audioPlayerService } from '@/services/audioPlayerService';
+import { useAuthStore } from '@/store/reactiveStorage';
+import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
 
 const player = usePlayerStore();
+const authStore = useAuthStore();
+const unauthActionCardRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
 
 // Initialize audio service
 audioPlayerService.init(player);
@@ -78,6 +82,11 @@ async function loadLiked() {
 }
 
 async function toggleLike() {
+  if (!authStore.isAuthenticated) {
+    unauthActionCardRef.value?.open();
+    return;
+  }
+
   const slug = player.current?.slug;
   if (!slug) return;
   await likeStore.toggle(slug);
@@ -135,6 +144,11 @@ watch(
 );
 
 const openSaveTrack = async () => {
+  if (!authStore.isAuthenticated) {
+    unauthActionCardRef.value?.open();
+    return;
+  }
+
   if (!player.current) return;
 
   const { default: SaveTrackButton } = await import('@/component/actions/SaveTrackCard.vue');
@@ -234,6 +248,8 @@ const openSaveTrack = async () => {
       </button>
     </div>
   </div>
+
+  <UnauthenticatedActionCard ref="unauthActionCardRef" />
 </template>
 
 <style scoped>
@@ -478,6 +494,7 @@ const openSaveTrack = async () => {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .time {
@@ -485,14 +502,17 @@ const openSaveTrack = async () => {
   color: #9aa3ad;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  min-width: 26px;
+  min-width: 30px;
+  width: 30px;
   text-align: center;
+  flex-shrink: 0;
 }
 
 .slider {
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
+  min-width: 40px;
   height: 5px;
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;
