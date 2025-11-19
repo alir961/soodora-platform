@@ -7,7 +7,6 @@ import UserProfileView from '@/view/user/UserProfileView.vue';
 import MarketPlaceView from '@/view/marketplace/MarketplaceView.vue';
 import NotFoundView from '@/view/NotFoundView.vue';
 import MaintenanceView from '@/view/MaintenanceView.vue';
-import CommentView from '@/view/explore/CommentView.vue';
 import LinkHubCreateView from '@/view/linkhub/LinkHubCreateView.vue';
 import SearchView from '@/view/search/SearchView.vue';
 import PaymentResultView from '@/view/marketplace/PaymentResultView.vue';
@@ -37,11 +36,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/explore',
     name: 'Explore',
     component: HomeView,
-  },
-  {
-    path: '/posts/:slug/comments',
-    name: 'CommentView',
-    component: CommentView,
   },
   {
     path: '/linkhub/create',

@@ -233,41 +233,6 @@ watch([searchInput, selectedSort], () => {
 <style scoped>
 /* Header styles removed - now using Header component */
 
-.actions-button {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.actions-button ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.actions-button:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.actions-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
 .filter-panel-wrapper {
   width: 90%;
   margin: 0 auto;
@@ -438,39 +403,6 @@ watch([searchInput, selectedSort], () => {
   }
   66% {
     transform: translate(20px, 20px) scale(0.95);
-  }
-}
-
-@media (max-width: 640px) {
-  .marketplace-header {
-    padding: 1rem;
-  }
-
-  .header-icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-  }
-
-  .header-icon {
-    font-size: 20px;
-  }
-
-  .header-title {
-    font-size: 1.25rem;
-  }
-
-  .header-subtitle {
-    font-size: 0.8rem;
-  }
-
-  .actions-button {
-    height: 38px;
-    border-radius: 10px;
-  }
-
-  .actions-button ion-icon {
-    font-size: 19px;
   }
 }
 </style>

@@ -299,60 +299,6 @@ const userRole = computed(() => {
 </template>
 
 <style scoped>
-.settings-button {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.settings-button.close-mode {
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
-}
-
-.settings-button ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.settings-button.close-mode ion-icon {
-  color: rgba(239, 68, 68, 1);
-}
-
-.settings-button:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.settings-button.close-mode:hover {
-  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.18);
-}
-
-.settings-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
-.settings-button.close-mode:active {
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
-}
-
 .content-wrapper {
   position: relative;
 }

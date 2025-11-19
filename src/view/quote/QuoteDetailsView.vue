@@ -366,56 +366,6 @@ const calculateSubtotal = () => {
   flex-shrink: 0;
 }
 
-.action-btn {
-  appearance: none;
-  border: none;
-  height: 38px;
-  padding: 0 0.9rem;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-  backdrop-filter: blur(20px) saturate(180%);
-}
-
-.action-btn ion-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.edit-btn {
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  color: #fff;
-  padding: 0 1rem;
-}
-
-.edit-btn:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.action-btn-text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.download-btn,
-.delete-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
-  width: 38px;
-  padding: 0;
-}
-
 .delete-btn {
   color: rgba(239, 68, 68, 1);
 }

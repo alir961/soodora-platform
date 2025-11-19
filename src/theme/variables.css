@@ -15,7 +15,17 @@
 /* For information on how to create your own theme, please see:
 http://ionicframework.com/docs/theming/ */
 
+/* Force dark mode always - override system preference */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
 :root {
+  /* Force dark mode */
+  color-scheme: dark;
+  
   /* Primary and Accent Colors */
   --ion-color-primary: #176bfd; /* Blue */
   --ion-color-primary-rgb: 91, 136, 246;

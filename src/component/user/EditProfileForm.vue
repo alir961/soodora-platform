@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { checkmarkOutline, trashOutline, cameraOutline, pencilOutline } from 'ionicons/icons';
-import { alertController, IonIcon } from '@ionic/vue';
-import { callDeleteProfile, callUpdateProfile } from '@/client/profileClient';
+import { checkmarkOutline, trashOutline, cameraOutline, pencilOutline, image } from 'ionicons/icons';
+import { IonIcon } from '@ionic/vue';
+import { callDeleteProfile, callUpdateProfile, callDeleteUserAvatar } from '@/client/profileClient';
+import ActionsPopup from '@/component/actions/ActionsPopup.vue';
+import DeleteCard from '@/component/actions/DeleteCard.vue';
 import { UserUpdatePayload } from '@/entity/UserUpdatePayload';
 import { deleteBearerToken } from '@/store/localStorage';
 import { useRouter } from 'vue-router';
@@ -40,31 +42,17 @@ const hasChanges = computed(() => {
   );
 });
 
-const deleteAccount = async () => {
-  const alert = await alertController.create({
-    header: 'Confirm Account Deletion',
-    message: 'Are you sure you want to delete your account? This cannot be undone.',
-    buttons: [
-      { text: 'Cancel', role: 'cancel' },
-      {
-        text: 'Delete',
-        role: 'destructive',
-        handler: async () => {
-          try {
-            await callDeleteProfile();
-            authStore.logout();
-            await deleteBearerToken();
-            await router.push('/authentication');
-            window.location.reload();
-          } catch (error: unknown) {
-            const message = 'Failed to delete your account. ' + (error instanceof Error ? error.message : '');
-            await showToast(message, 'danger');
-          }
-        },
-      },
-    ],
-  });
-  await alert.present();
+const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
+
+const handleAccountDeleted = async () => {
+  authStore.logout();
+  await deleteBearerToken();
+  await router.push('/authentication');
+  window.location.reload();
+};
+
+const openDeleteAccount = () => {
+  deleteCardRef.value?.open();
 };
 
 const updateAccount = async () => {
@@ -102,9 +90,70 @@ const onAvatarSelected = (file: File) => {
   reader.readAsDataURL(file);
 };
 
+const showAvatarPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
+interface ActionItem {
+  icon: string;
+  label: string;
+  action: () => void;
+  destructive?: boolean;
+}
+
+const avatarActions = ref<ActionItem[]>([]);
+
 const triggerFileInput = () => {
   const input = document.getElementById('avatar-upload') as HTMLInputElement;
   input?.click();
+};
+
+const openAvatarPopup = (event: MouseEvent) => {
+  const avatar = event.currentTarget as HTMLElement;
+  const rect = avatar.getBoundingClientRect();
+  popupX.value = rect.left + rect.width / 2;
+  popupY.value = rect.top + rect.height;
+
+  const user = authStore.getAuthenticatedUser;
+  const userWithAvatar = user as User & { avatarUrl?: string };
+  const hasAvatar = !!(user && userWithAvatar.avatarUrl);
+
+  const actions = [];
+
+  // Change or Add action
+  actions.push({
+    icon: image,
+    label: hasAvatar ? 'Change Profile Picture' : 'Add Profile Picture',
+    action: () => {
+      triggerFileInput();
+    },
+  });
+
+  // Delete action (only if avatar exists)
+  if (hasAvatar) {
+    actions.push({
+      icon: trashOutline,
+      label: 'Delete Profile Picture',
+      destructive: true,
+      action: async () => {
+        try {
+          await callDeleteUserAvatar();
+          avatarPreview.value = '';
+          avatarFile.value = null;
+          const user = authStore.getAuthenticatedUser;
+          if (user) {
+            const userWithAvatar = user as User & { avatarUrl?: string };
+            userWithAvatar.avatarUrl = '';
+          }
+        } catch (error) {
+          const message = 'Failed to delete profile picture. ' + (error instanceof Error ? error.message : '');
+          await showToast(message, 'danger');
+        }
+      },
+    });
+  }
+
+  avatarActions.value = actions;
+  showAvatarPopup.value = true;
 };
 
 const handleFileChange = (event: Event) => {
@@ -154,7 +203,7 @@ onMounted(() => {
 <template>
   <div class="edit-container">
     <div class="profile-header">
-      <div class="avatar-wrapper" @click="triggerFileInput">
+      <div class="avatar-wrapper" @click="openAvatarPopup">
         <div class="avatar-preview">
           <img v-if="avatarPreview" :src="avatarPreview" alt="Profile avatar" class="avatar-img" />
           <div v-else class="avatar-placeholder">
@@ -212,11 +261,25 @@ onMounted(() => {
     </div>
 
     <div class="actions">
-      <button class="action-btn delete" @click="deleteAccount">
+      <button class="action-btn delete" @click="openDeleteAccount">
         <ion-icon :icon="trashOutline" />
         Delete Account
       </button>
     </div>
+
+    <ActionsPopup
+      :is-open="showAvatarPopup"
+      :x="popupX"
+      :y="popupY"
+      :actions="avatarActions"
+      @close="showAvatarPopup = false" />
+
+    <DeleteCard
+      ref="deleteCardRef"
+      item-type="account"
+      item-slug="profile"
+      :delete-function="callDeleteProfile"
+      @deleted="handleAccountDeleted" />
   </div>
 </template>
 
@@ -291,6 +354,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .username-wrapper {
@@ -304,6 +368,7 @@ onMounted(() => {
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+  max-width: 100%;
 }
 
 .username-wrapper:focus-within {

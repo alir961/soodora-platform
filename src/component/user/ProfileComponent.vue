@@ -54,7 +54,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
           <ion-card-title class="profile-username">@{{ profile.username }}</ion-card-title>
           <div class="tag-and-follow">
             <RoleTagComponent v-for="role in profile.roles" :key="role" :role="role" class="role-tag" />
-            <FollowButton v-if="canFollow" :user="profile" @click.stop />
+            <FollowButton v-if="canFollow" :user="profile" />
           </div>
         </div>
       </div>

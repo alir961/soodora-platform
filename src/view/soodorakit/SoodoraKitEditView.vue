@@ -472,57 +472,6 @@ watch(
   flex-shrink: 0;
 }
 
-.action-btn {
-  appearance: none;
-  border: none;
-  height: 38px;
-  padding: 0 1rem;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: white;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.action-btn ion-icon {
-  font-size: 20px;
-}
-
-.action-btn-text {
-  white-space: nowrap;
-}
-
-.download-btn {
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-}
-
-.download-btn:hover {
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  transform: translateY(-2px);
-}
-
-.download-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
-.delete-btn {
-  color: rgba(239, 68, 68, 1);
-  width: 38px;
-  padding: 0;
-  justify-content: center;
-}
-
 .delete-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   transform: scale(1.05);

@@ -238,49 +238,6 @@ const goBack = () => {
   z-index: 1;
 }
 
-/* Create Fab Button */
-.create-fab {
-  appearance: none;
-  border: none;
-  height: 38px;
-  padding: 0 1rem 0 0.9rem;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  flex-shrink: 0;
-}
-
-.create-fab ion-icon {
-  font-size: 20px;
-  padding-bottom: 2px;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.create-fab-text {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.create-fab:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.create-fab:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
 /* Loading State */
 .loading-state {
   display: flex;

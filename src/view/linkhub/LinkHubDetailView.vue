@@ -166,39 +166,6 @@ onIonViewDidEnter(loadPage);
   --background: #000000;
 }
 
-.share-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.share-btn ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.share-btn ion-icon {
-  font-size: 18px;
-}
-
-.share-btn:active {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: scale(1.05);
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);

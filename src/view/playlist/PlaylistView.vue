@@ -201,41 +201,6 @@ onActivated(() => {
   --background: #000000;
 }
 
-.create-fab {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.create-fab ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.create-fab:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.create-fab:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
 .playlists-container {
   padding: 1.5rem;
   max-width: 1400px;
@@ -300,7 +265,7 @@ onActivated(() => {
 
 .empty-icon {
   font-size: 56px;
-  color: rgba(251, 146, 60, 0.6);
+  color: rgb(251, 146, 60);
   opacity: 0.8;
 }
 

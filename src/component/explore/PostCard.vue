@@ -21,7 +21,6 @@ import {
   callRetrievePostAnalytics,
 } from '@/client/postClient';
 import { useAuthStore } from '@/store/reactiveStorage';
-import { Router, useRouter } from 'vue-router';
 import customLikeIcon from '@/assets/icons/like.svg';
 import customCommentIcon from '@/assets/icons/comment.svg';
 import customRepostIcon from '@/assets/icons/repost.svg';
@@ -37,9 +36,12 @@ import DeleteCard from '@/component/actions/DeleteCard.vue';
 import SaveTrackCard from '@/component/actions/SaveTrackCard.vue';
 import TrackCard from '@/component/music/TrackCard.vue';
 import { statsChartOutline } from 'ionicons/icons';
+import { ellipsisHorizontalOutline } from 'ionicons/icons';
 import PostAnalyticsCard from '@/component/actions/PostAnalyticsCard.vue';
+import ActionsPopup from '@/component/actions/ActionsPopup.vue';
+import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
+import CommentsSheet from '@/component/explore/CommentsSheet.vue';
 
-const router: Router = useRouter();
 const authStore = useAuthStore();
 
 const props = defineProps({
@@ -84,12 +86,20 @@ const loadReposts = async (postSlug: string) => {
 };
 
 const toggleLikePost = async (postSlug: string) => {
+  if (!authStore.getAuthenticatedUser) {
+    unauthModalRef.value?.open();
+    return;
+  }
   await likeStore.toggle(postSlug);
   isLiked.value = likeStore.isLiked(postSlug);
   emit(isLiked.value ? 'post-like' : 'post-unlike');
 };
 
 const toggleRepostPost = async (postSlug: string) => {
+  if (!authStore.getAuthenticatedUser) {
+    unauthModalRef.value?.open();
+    return;
+  }
   try {
     if (isReposted.value && props.post) {
       await callPostUnrepost(postSlug);
@@ -106,8 +116,18 @@ const toggleRepostPost = async (postSlug: string) => {
   }
 };
 
-const redirectToPostComments = async (postSlug: string) => {
-  await router.push({ name: 'CommentView', params: { slug: postSlug } });
+const openCommentsSheet = () => {
+  if (!authStore.getAuthenticatedUser) {
+    unauthModalRef.value?.open();
+    return;
+  }
+  commentsSheetRef.value?.open();
+};
+
+const localCommentCount = ref(props.post.commentCount);
+
+const handleCommentCreated = () => {
+  localCommentCount.value++;
 };
 
 watch(
@@ -178,6 +198,8 @@ const exportCardRef = ref<InstanceType<typeof ExportCard> | null>(null);
 const deleteCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const saveTrackCardRef = ref<InstanceType<typeof SaveTrackCard> | null>(null);
 const postAnalyticsCardRef = ref<InstanceType<typeof PostAnalyticsCard> | null>(null);
+const unauthModalRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
+const commentsSheetRef = ref<InstanceType<typeof CommentsSheet> | null>(null);
 
 const openExportModal = () => {
   exportCardRef.value?.open();
@@ -197,6 +219,42 @@ const openAnalytics = () => {
 
 const handlePostDeleted = (slug: string) => {
   emit('post-deleted', slug);
+};
+
+// Actions popup state (reuse the marketplace pattern)
+const showActionsPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
+interface ActionItem {
+  icon: string;
+  label: string;
+  action: () => void;
+  destructive?: boolean;
+}
+
+const actions = ref<ActionItem[]>([]);
+
+const openActionsPopup = (event: Event) => {
+  const target = (event.currentTarget || event.target) as HTMLElement;
+  const rect = target.getBoundingClientRect();
+  popupX.value = rect.left + rect.width / 2;
+  popupY.value = rect.top + rect.height;
+
+  actions.value = [
+    {
+      icon: statsChartOutline,
+      label: 'Analytics',
+      action: () => openAnalytics(),
+    },
+    {
+      icon: customTrashIcon,
+      label: 'Delete',
+      destructive: true,
+      action: () => openDeleteConfirm(),
+    },
+  ];
+
+  showActionsPopup.value = true;
 };
 </script>
 
@@ -234,13 +292,9 @@ const handlePostDeleted = (slug: string) => {
                 <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
               </ion-button>
 
-              <ion-button
-                class="comment-button"
-                fill="clear"
-                size="default"
-                @click.stop="redirectToPostComments(post.slug)">
+              <ion-button class="comment-button" fill="clear" size="default" @click.stop="openCommentsSheet">
                 <ion-icon :src="customCommentIcon" />
-                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+                <ion-note v-show="formatCount(localCommentCount)">{{ formatCount(localCommentCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -261,19 +315,11 @@ const handlePostDeleted = (slug: string) => {
             <div>
               <ion-button
                 v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
-                class="analytics-button"
+                class="actions-button"
                 fill="clear"
                 size="default"
-                @click.stop="openAnalytics">
-                <ion-icon :src="statsChartOutline" />
-              </ion-button>
-              <ion-button
-                v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
-                class="delete-button"
-                fill="clear"
-                size="default"
-                @click.stop="openDeleteConfirm">
-                <ion-icon :src="customTrashIcon" />
+                @click.stop="openActionsPopup">
+                <ion-icon :src="ellipsisHorizontalOutline" />
               </ion-button>
             </div>
           </div>
@@ -294,13 +340,9 @@ const handlePostDeleted = (slug: string) => {
                 <ion-note v-show="formatCount(displayedLikeCount)">{{ formatCount(displayedLikeCount) }}</ion-note>
               </ion-button>
 
-              <ion-button
-                class="comment-button"
-                fill="clear"
-                size="default"
-                @click.stop="redirectToPostComments(post.slug)">
+              <ion-button class="comment-button" fill="clear" size="default" @click.stop="openCommentsSheet">
                 <ion-icon :src="customCommentIcon" />
-                <ion-note v-show="formatCount(post.commentCount)">{{ formatCount(post.commentCount) }}</ion-note>
+                <ion-note v-show="formatCount(localCommentCount)">{{ formatCount(localCommentCount) }}</ion-note>
               </ion-button>
 
               <ion-button
@@ -326,19 +368,11 @@ const handlePostDeleted = (slug: string) => {
             <div>
               <ion-button
                 v-show="post.owner.slug === authStore.getAuthenticatedUserSlug"
-                class="analytics-button"
+                class="actions-button"
                 fill="clear"
                 size="default"
-                @click.stop="openAnalytics">
-                <ion-icon :src="statsChartOutline" />
-              </ion-button>
-              <ion-button
-                v-if="post.owner.slug === authStore.getAuthenticatedUserSlug"
-                class="delete-button"
-                fill="clear"
-                size="default"
-                @click.stop="openDeleteConfirm">
-                <ion-icon :src="customTrashIcon" />
+                @click.stop="openActionsPopup">
+                <ion-icon :src="ellipsisHorizontalOutline" />
               </ion-button>
             </div>
           </div>
@@ -365,6 +399,14 @@ const handlePostDeleted = (slug: string) => {
       ref="saveTrackCardRef" />
 
     <PostAnalyticsCard v-if="postAnalytics" :analytics="postAnalytics" ref="postAnalyticsCardRef" />
+    <ActionsPopup
+      :is-open="showActionsPopup"
+      :x="popupX"
+      :y="popupY"
+      :actions="actions"
+      @close="showActionsPopup = false" />
+    <CommentsSheet :post-slug="post.slug" @comment-created="handleCommentCreated" ref="commentsSheetRef" />
+    <UnauthenticatedActionCard ref="unauthModalRef" />
   </ion-col>
 </template>
 
@@ -484,8 +526,9 @@ ion-avatar img {
 .post-header-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
   max-width: 100%;
-  width: 100%;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -494,14 +537,23 @@ ion-avatar img {
 .header-row {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   max-width: 100%;
+  gap: 8px;
+  min-width: 0;
+}
+
+.header-row .username {
+  flex: 1;
+  min-width: 0;
 }
 
 .post-date {
   font-size: 1.2rem;
   font-weight: 400;
   color: var(--ion-color-medium);
-  width: auto;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .post-title {
@@ -587,6 +639,11 @@ ion-avatar img {
   --padding-end: 0;
   --color: #f87171;
   color: #f87171;
+}
+
+.actions-button {
+  --padding-start: 0;
+  --padding-end: 0;
 }
 
 .music-actions {

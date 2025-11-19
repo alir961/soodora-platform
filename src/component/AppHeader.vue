@@ -128,4 +128,148 @@ defineProps<{
   align-items: center;
   gap: 0.75rem;
 }
+
+:deep(.about-btn),
+:deep(.actions-button),
+:deep(.create-button),
+:deep(.create-fab),
+:deep(.edit-fab),
+:deep(.edit-btn),
+:deep(.share-btn),
+:deep(.settings-button),
+:deep(.action-btn) {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+:deep(.visit-btn),
+:deep(.download-btn) {
+  appearance: none;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  width: auto;
+  height: 36px;
+  padding: 0 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+:deep(.about-btn) ion-icon,
+:deep(.actions-button) ion-icon,
+:deep(.create-button) ion-icon,
+:deep(.create-fab) ion-icon,
+:deep(.edit-fab) ion-icon,
+:deep(.edit-btn) ion-icon,
+:deep(.share-btn) ion-icon,
+:deep(.settings-button) ion-icon,
+:deep(.action-btn) ion-icon {
+  font-size: 18px;
+  color: #fff;
+  flex-shrink: 0;
+  padding-bottom: 0;
+}
+
+:deep(.visit-btn) ion-icon,
+:deep(.download-btn) ion-icon {
+  font-size: 18px;
+  color: #fff;
+  flex-shrink: 0;
+  padding-bottom: 0;
+}
+
+:deep(.visit-btn) span,
+:deep(.download-btn) span {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+}
+
+:deep(.about-btn):active,
+:deep(.actions-button):active,
+:deep(.create-button):active,
+:deep(.create-fab):active,
+:deep(.edit-fab):active,
+:deep(.edit-btn):active,
+:deep(.share-btn):active,
+:deep(.settings-button):active,
+:deep(.action-btn):active,
+:deep(.visit-btn):active,
+:deep(.download-btn):active {
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
+  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
+  transform: scale(1.05);
+}
+
+:deep(.delete-fab),
+:deep(.delete-btn),
+:deep(.trash-button),
+:deep(.back-button) {
+  appearance: none;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.12);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+:deep(.delete-fab) ion-icon,
+:deep(.delete-btn) ion-icon,
+:deep(.trash-button) ion-icon,
+:deep(.back-button) ion-icon {
+  font-size: 18px;
+  color: rgba(239, 68, 68, 1);
+  flex-shrink: 0;
+  padding-bottom: 0;
+}
+
+:deep(.delete-fab):active,
+:deep(.delete-btn):active,
+:deep(.trash-button):active,
+:deep(.back-button):active {
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.18);
+  transform: scale(1.05);
+}
+
+:deep(.settings-button.close-mode) {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+:deep(.settings-button.close-mode) ion-icon {
+  color: rgba(239, 68, 68, 1);
+}
+
+:deep(.settings-button.close-mode):active {
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.18);
+}
 </style>

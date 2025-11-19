@@ -207,7 +207,13 @@ watch(followingPosts, (newPosts: Post[]) => {
         <div class="glow-orb orb-3"></div>
       </div>
 
-      <Header :icon="compassOutline">
+      <Header
+        v-if="!authStore.isAuthenticated"
+        title="Explore"
+        subtitle="Discover new music and connect with artists."
+        :icon="compassOutline" />
+
+      <Header v-else :icon="compassOutline">
         <template #actions>
           <div class="tab-switcher">
             <div :class="['tab-pill', activeTab === 'for-you' ? 'active' : '']" @click="goToTab('for-you')">
@@ -223,7 +229,14 @@ watch(followingPosts, (newPosts: Post[]) => {
         </template>
       </Header>
 
-      <swiper @swiper="onSwiperInit" @slideChange="onSlideChange" :initial-slide="0" :speed="250">
+      <!-- Swiper for authenticated users -->
+      <swiper
+        v-if="authStore.isAuthenticated"
+        @swiper="onSwiperInit"
+        @slideChange="onSlideChange"
+        :initial-slide="0"
+        :speed="250"
+        :allowTouchMove="true">
         <!-- For You Tab -->
         <swiper-slide>
           <div class="tab-content">
@@ -273,6 +286,28 @@ watch(followingPosts, (newPosts: Post[]) => {
           </div>
         </swiper-slide>
       </swiper>
+
+      <!-- Single tab for non-authenticated users -->
+      <div v-else class="tab-content">
+        <ion-row no-bounce>
+          <div
+            v-for="(post, index) in posts"
+            :key="post.slug"
+            :class="['post-wrapper', index === posts.length - 1 ? 'last' : '']">
+            <PostCard
+              :post="post"
+              @post-deleted="() => loadPosts('for-you', true)"
+              @post-like="post.likeCount++"
+              @post-unlike="post.likeCount--"
+              @post-repost="post.repostCount++"
+              @post-unrepost="post.repostCount--"
+              class="postcard" />
+          </div>
+        </ion-row>
+        <ion-infinite-scroll @ionInfinite="onInfinite" threshold="6.25rem" :disabled="!hasMore">
+          <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
+        </ion-infinite-scroll>
+      </div>
     </ApplicationViewport>
   </ion-page>
 </template>
@@ -315,42 +350,6 @@ watch(followingPosts, (newPosts: Post[]) => {
   box-shadow:
     0 2px 12px rgba(59, 130, 246, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.create-button {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  justify-self: end;
-}
-
-.create-button ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.create-button:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.create-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
 }
 
 .create-button-placeholder {
@@ -468,43 +467,6 @@ swiper-slide {
 }
 
 @media (max-width: 640px) {
-  .explore-header {
-    padding: 1rem;
-  }
-
-  .header-content {
-    grid-template-columns: 42px 1fr 42px;
-    gap: 0.5rem;
-  }
-
-  .header-icon-wrapper {
-    width: 42px;
-    height: 42px;
-  }
-
-  .header-icon-placeholder {
-    width: 42px;
-    height: 42px;
-  }
-
-  .header-icon {
-    font-size: 20px;
-  }
-
-  .create-button {
-    height: 38px;
-    width: 38px;
-  }
-
-  .create-button-placeholder {
-    width: 38px;
-    height: 38px;
-  }
-
-  .create-button ion-icon {
-    font-size: 19px;
-  }
-
   .tab-pill {
     padding: 0.5rem 1.25rem;
     font-size: 0.85rem;
