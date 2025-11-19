@@ -536,61 +536,6 @@ watch(
   flex-shrink: 0;
 }
 
-.edit-fab,
-.delete-fab {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.edit-fab ion-icon,
-.delete-fab ion-icon {
-  font-size: 22px;
-  color: #fff;
-  padding-bottom: 0;
-  flex-shrink: 0;
-}
-
-.delete-fab {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.delete-fab ion-icon {
-  color: rgba(239, 68, 68, 1);
-}
-
-.edit-fab:hover,
-.delete-fab:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  transform: translateY(-2px);
-}
-
-.edit-fab:hover {
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-}
-
-.delete-fab:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.edit-fab:active,
-.delete-fab:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
 /* Merged Card */
 .playlist-card-merged {
   background: rgba(255, 255, 255, 0.03);

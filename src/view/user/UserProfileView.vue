@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
+import Header from '@/component/AppHeader.vue';
 import { computed, onMounted, ref, Ref } from 'vue';
 import { briefcaseOutline, closeOutline, ellipsisHorizontal, linkOutline, personCircleOutline } from 'ionicons/icons';
 import { IonIcon } from '@ionic/vue';
@@ -138,34 +139,23 @@ const closeActionsPopup = () => {
       <div class="glow-orb orb-3"></div>
     </div>
 
-    <div class="profile-header">
-      <div class="header-content">
-        <div class="header-left">
-          <div class="header-icon-wrapper">
-            <ion-icon :icon="personCircleOutline" class="header-icon" />
-          </div>
-          <div class="header-text">
-            <h1 class="header-title">{{ headerTitle }}</h1>
-            <p class="header-subtitle">{{ userRole }}</p>
-          </div>
-        </div>
-
+    <Header :title="headerTitle" :subtitle="userRole" :icon="personCircleOutline">
+      <template #actions>
         <button class="about-btn" @click="openSettingsPopup($event)">
           <ion-icon :icon="ellipsisHorizontal" />
         </button>
-
-        <ActionsPopup
-          :is-open="showActionsPopup"
-          :x="popupX"
-          :y="popupY"
-          :actions="actionItems"
-          @close="closeActionsPopup" />
-
         <button class="back-button" @click="handleBackButton">
           <ion-icon :icon="closeOutline" />
         </button>
-      </div>
-    </div>
+      </template>
+    </Header>
+
+    <ActionsPopup
+      :is-open="showActionsPopup"
+      :x="popupX"
+      :y="popupY"
+      :actions="actionItems"
+      @close="closeActionsPopup" />
 
     <ProfileComponent
       v-if="user"
@@ -182,112 +172,6 @@ const closeActionsPopup = () => {
 </template>
 
 <style scoped>
-.profile-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(18, 22, 30, 0.85);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-  padding: 1rem 1.5rem;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.header-icon-wrapper {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.15));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
-}
-
-.header-icon {
-  font-size: 22px;
-  color: #60a5fa;
-}
-
-.header-text {
-  flex: 1;
-  min-width: 0;
-}
-
-.header-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0 0 2px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.header-subtitle {
-  font-size: 0.85rem;
-  color: #9aa3ad;
-  margin: 0;
-  font-weight: 500;
-}
-
-.back-button {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 10px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.2);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.back-button ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: rgba(239, 68, 68, 1);
-  flex-shrink: 0;
-}
-
-.back-button:hover {
-  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
-  background: rgba(239, 68, 68, 0.18);
-  transform: translateY(-2px);
-}
-
-.back-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.15);
-}
-
 .loading {
   text-align: center;
   font-size: 1.3em;
@@ -353,70 +237,5 @@ const closeActionsPopup = () => {
   66% {
     transform: translate(20px, 20px) scale(0.95);
   }
-}
-
-@media (max-width: 640px) {
-  .profile-header {
-    padding: 1rem;
-  }
-
-  .header-icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-  }
-
-  .header-icon {
-    font-size: 20px;
-  }
-
-  .header-title {
-    font-size: 1.25rem;
-  }
-
-  .header-subtitle {
-    font-size: 0.8rem;
-  }
-
-  .back-button {
-    height: 38px;
-    border-radius: 10px;
-  }
-
-  .back-button ion-icon {
-    font-size: 19px;
-  }
-}
-.about-btn {
-  appearance: none;
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  background: rgba(59, 130, 246, 0.15);
-  color: #60a5fa;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.about-btn ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.about-btn ion-icon {
-  font-size: 18px;
-}
-
-.about-btn:active {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: scale(1.05);
 }
 </style>

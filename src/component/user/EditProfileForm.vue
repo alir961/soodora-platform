@@ -354,6 +354,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .username-wrapper {
@@ -367,6 +368,7 @@ onMounted(() => {
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+  max-width: 100%;
 }
 
 .username-wrapper:focus-within {

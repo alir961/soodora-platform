@@ -352,42 +352,6 @@ watch(followingPosts, (newPosts: Post[]) => {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.create-button {
-  appearance: none;
-  border: none;
-  height: 38px;
-  width: 38px;
-  padding: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #253a60e0 30%, #1e40af90 100%);
-  box-shadow: 0 4px 16px rgba(30, 41, 59, 0.18);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  justify-self: end;
-}
-
-.create-button ion-icon {
-  font-size: 22px;
-  padding-bottom: 0;
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.create-button:hover {
-  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.25);
-  background: linear-gradient(135deg, #1e40af 60%, #1e293b 100%);
-  transform: translateY(-2px);
-}
-
-.create-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
-}
-
 .create-button-placeholder {
   width: 38px;
   height: 38px;
@@ -503,43 +467,6 @@ swiper-slide {
 }
 
 @media (max-width: 640px) {
-  .explore-header {
-    padding: 1rem;
-  }
-
-  .header-content {
-    grid-template-columns: 42px 1fr 42px;
-    gap: 0.5rem;
-  }
-
-  .header-icon-wrapper {
-    width: 42px;
-    height: 42px;
-  }
-
-  .header-icon-placeholder {
-    width: 42px;
-    height: 42px;
-  }
-
-  .header-icon {
-    font-size: 20px;
-  }
-
-  .create-button {
-    height: 38px;
-    width: 38px;
-  }
-
-  .create-button-placeholder {
-    width: 38px;
-    height: 38px;
-  }
-
-  .create-button ion-icon {
-    font-size: 19px;
-  }
-
   .tab-pill {
     padding: 0.5rem 1.25rem;
     font-size: 0.85rem;
