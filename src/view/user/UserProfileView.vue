@@ -78,7 +78,7 @@ const handleLinkHub = async () => {
       return;
     }
   } catch (error: unknown) {
-    await showToast('Artist may not have a Soodora Kit', 'warning');
+    await showToast('Artist may not have a Link Hub', 'warning');
   }
 };
 
@@ -104,8 +104,9 @@ const handleSoodoraKit = async () => {
     link.click();
     URL.revokeObjectURL(url);
   } catch (error: unknown) {
-    const message = 'Failed to download PDF. ' + (error instanceof Error ? error.message : '');
-    await showToast(message, 'danger');
+    const message =
+      'Failed to download PDF, Artist may not have a Soodora Kit. ' + (error instanceof Error ? error.message : '');
+    await showToast(message, 'warning');
   }
 };
 
