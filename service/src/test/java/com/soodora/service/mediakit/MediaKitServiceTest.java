@@ -1,16 +1,26 @@
 package com.soodora.service.mediakit;
 
 import com.soodora.domain.cdn.FileData;
+import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.generator.PdfExporter;
-import com.soodora.domain.mediakit.*;
-import com.soodora.domain.mediakititem.*;
+import com.soodora.domain.mediakit.CreateMediaKitCommand;
+import com.soodora.domain.mediakit.MediaKit;
+import com.soodora.domain.mediakit.MediaKitRepository;
+import com.soodora.domain.mediakit.UpdateMediaKitCommand;
+import com.soodora.domain.mediakititem.CreateMediaKitItemCommand;
+import com.soodora.domain.mediakititem.MediaKitItem;
+import com.soodora.domain.mediakititem.MediaKitItemRepository;
+import com.soodora.domain.mediakititem.UpdateMediaKitItemCommand;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.io.ByteArrayOutputStream;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,6 +28,7 @@ import static org.mockito.Mockito.*;
 
 import static com.soodora.test.TestConstants.*;
 
+@ExtendWith(MockitoExtension.class)
 class MediaKitServiceTest {
 
     @Mock
@@ -29,166 +40,345 @@ class MediaKitServiceTest {
     @Mock
     private PdfExporter pdfExporter;
 
+    @InjectMocks
     private MediaKitService mediaKitService;
 
-    private final FileData fileData = new FileData(
+    private static final FileData FILE_DATA = new FileData(
             "dummy image content".getBytes(),
             "test-image.jpg",
             "image/jpeg");
 
-    @BeforeEach
-    void setUp() {
-        mediaKitRepository = mock(MediaKitRepository.class);
-        mediaKitItemRepository = mock(MediaKitItemRepository.class);
-        pdfExporter = mock(PdfExporter.class);
-        mediaKitService = new MediaKitService(mediaKitRepository, mediaKitItemRepository, pdfExporter);
-    }
+    private static final UpdateMediaKitCommand VALID_UPDATE_COMMAND = new UpdateMediaKitCommand("NewTitle", "Short",
+            "Long", "email", "phone");
 
     @Test
-    void givenCreateCommand_whenCreateMediaKit_thenReturnDto() {
+    void givenCreateCommand_whenCreateMediaKit_thenReturnCreatedMediaKit() {
         // GIVEN
         CreateMediaKitCommand command = new CreateMediaKitCommand("Title", "Short", "Long", "email", "phone");
 
-        when(mediaKitRepository.save(command, USER)).thenReturn(MEDIA_KIT);
+        when(mediaKitRepository.save(USER, command))
+                .thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKit result = mediaKitService.createMediaKit(command, USER);
+        mediaKitService.createMediaKit(USER, command);
 
         // THEN
-        assertNotNull(result);
-        assertEquals("slug", result.getSlug());
-        verify(mediaKitRepository).save(command, USER);
+        verify(mediaKitRepository).save(USER, command);
     }
 
     @Test
-    void givenUpdateCommand_whenUpdateMediaKit_thenReturnDto() {
+    void givenValidSlug_whenRetrieveMediaKitBySlug_thenReturnMediaKit() {
         // GIVEN
-        UpdateMediaKitCommand command = new UpdateMediaKitCommand("NewTitle", "Short", "Long", "email", "phone");
-        MediaKit updated = new MediaKit("slug", ARTIST_USER, "NewTitle", "Short", "Long", "email", "phone", emptyList(),
-                0, 0);
-
-        when(mediaKitRepository.update(command, "slug1")).thenReturn(updated);
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKit result = mediaKitService.updateMediaKit(command, "slug1");
+        MediaKit mediaKit = mediaKitService.retrieveMediaKitBySlug(MEDIA_KIT.getSlug());
+
+        // THEN
+        assertEquals(MEDIA_KIT, mediaKit);
+    }
+
+    @Test
+    void givenInvalidSlug_whenRetrieveMediaKitBySlug_thenThrowUnknownMediaKitException() {
+        // GIVEN
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenThrow(UnknownSlugException.class);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.retrieveMediaKitBySlug(MEDIA_KIT.getSlug());
+
+        // THEN
+        assertThrows(UnknownMediaKitException.class, executable);
+    }
+
+    @Test
+    void givenValidArtistSlug_whenRetrieveMediaKitByArtistSlug_thenReturnMediaKit() {
+        // GIVEN
+        when(mediaKitRepository.findByArtistSlug(ARTIST_USER.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        MediaKit mediaKit = mediaKitService.retrieveMediaKitByArtistSlug(ARTIST_USER.getSlug());
+
+        // THEN
+        assertEquals(MEDIA_KIT, mediaKit);
+    }
+
+    @Test
+    void givenInvalidArtistSlug_whenRetrieveMediaKitByArtistSlug_thenThrowUnknownMediaKitException() {
+        // GIVEN
+        when(mediaKitRepository.findByArtistSlug(ARTIST_USER.getSlug()))
+                .thenThrow(UnknownSlugException.class);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.retrieveMediaKitByArtistSlug(ARTIST_USER.getSlug());
+
+        // THEN
+        assertThrows(UnknownMediaKitException.class, executable);
+    }
+
+    @Test
+    void givenMediaKitOwner_whenUpdateMediaKit_thenReturnUpdatedMediaKit() {
+        // GIVEN
+        MediaKit updated = new MediaKit(MEDIA_KIT.getSlug(), ARTIST_USER, "NewTitle", "Short", "Long", "email", "phone",
+                emptyList(),
+                0, 0);
+
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitRepository.update(MEDIA_KIT.getSlug(), VALID_UPDATE_COMMAND))
+                .thenReturn(updated);
+
+        // WHEN
+        MediaKit result = mediaKitService.updateMediaKit(ARTIST_USER, MEDIA_KIT.getSlug(), VALID_UPDATE_COMMAND);
 
         // THEN
         assertEquals("NewTitle", result.getTitle());
-        verify(mediaKitRepository).update(command, "slug1");
     }
 
     @Test
-    void givenSlug_whenRetrieveMediaKitBySlug_thenReturnDto() {
+    void givenAdministrator_whenUpdateMediaKit_thenReturnUpdatedMediaKit() {
         // GIVEN
-        String slug = "test-slug";
+        MediaKit updated = new MediaKit(MEDIA_KIT.getSlug(), ARTIST_USER, "NewTitle", "Short", "Long", "email", "phone",
+                emptyList(),
+                0, 0);
 
-        when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT);
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitRepository.update(MEDIA_KIT.getSlug(), VALID_UPDATE_COMMAND))
+                .thenReturn(updated);
 
         // WHEN
-        MediaKit actualDTO = mediaKitService.retrieveMediaKitBySlug(slug);
+        MediaKit result = mediaKitService.updateMediaKit(ADMIN, MEDIA_KIT.getSlug(), VALID_UPDATE_COMMAND);
 
         // THEN
-        assertEquals(MEDIA_KIT, actualDTO);
-        verify(mediaKitRepository).findBySlug(slug);
+        assertEquals("NewTitle", result.getTitle());
     }
 
     @Test
-    void givenArtistSlug_whenRetrieveMediaKitByArtistSlug_thenReturnDto() {
+    void givenInvalidUser_whenUpdateMediaKit_thenThrowInvalidPermissionException() {
         // GIVEN
-        String artistSlug = "artist-slug";
-
-        when(mediaKitRepository.findByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT);
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
 
         // WHEN
-        MediaKit actualDTO = mediaKitService.retrieveMediaKitByArtistSlug(artistSlug);
+        Executable executable = () -> mediaKitService.updateMediaKit(USER, MEDIA_KIT.getSlug(), VALID_UPDATE_COMMAND);
 
         // THEN
-        assertEquals(MEDIA_KIT, actualDTO);
-        verify(mediaKitRepository).findByArtistSlug(artistSlug);
+        assertThrows(InvalidPermissionException.class, executable, "Only the owner can update the Soodora Kit");
     }
 
     @Test
-    void givenSlug_whenDeleteMediaKit_thenRepositoryCalled() {
+    void givenMediaKitOwner_whenDeleteMediaKit_thenMediaKitIsDeleted() {
+        // GIVEN
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
         // WHEN
-        mediaKitService.deleteMediaKit("slug1");
+        mediaKitService.deleteMediaKit(ARTIST_USER, MEDIA_KIT.getSlug());
 
         // THEN
-        verify(mediaKitRepository).deleteBySlug("slug1");
+        verify(mediaKitRepository).delete(MEDIA_KIT.getSlug());
     }
 
     @Test
-    void givenCreateItemCommand_whenAddMediaKitItem_thenReturnDto() {
+    void givenAdministrator_whenDeleteMediaKit_thenMediaKitIsDeleted() {
+        // GIVEN
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        mediaKitService.deleteMediaKit(ADMIN, MEDIA_KIT.getSlug());
+
+        // THEN
+        verify(mediaKitRepository).delete(MEDIA_KIT.getSlug());
+    }
+
+    @Test
+    void givenInvalidUser_whenDeleteMediaKit_thenThrowInvalidPermissionException() {
+        // GIVEN
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.deleteMediaKit(USER, MEDIA_KIT.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the owner can delete the Soodora Kit");
+    }
+
+    @Test
+    void givenMediaKitOwner_whenAddMediaKitItem_thenReturnMediaKitItem() {
         // GIVEN
         CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
 
-        when(mediaKitItemRepository.save(command, "artist-slug", fileData)).thenReturn(MEDIA_KIT_ITEM);
+        when(mediaKitRepository.findByArtistSlug(ARTIST_USER.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitItemRepository.save(command, ARTIST_USER.getSlug(), FILE_DATA))
+                .thenReturn(MEDIA_KIT_ITEM);
 
         // WHEN
-        MediaKitItem result = mediaKitService.addMediaKitItem(command, "artist-slug", fileData);
+        MediaKitItem result = mediaKitService.addMediaKitItem(ARTIST_USER, ARTIST_USER.getSlug(), command, FILE_DATA);
 
         // THEN
-        assertEquals("item-slug", result.getSlug());
-        verify(mediaKitItemRepository).save(command, "artist-slug", fileData);
+        assertEquals(MEDIA_KIT_ITEM, result);
     }
 
     @Test
-    void givenUpdateItemCommand_whenUpdateMediaKitItem_thenReturnDto() {
+    void givenAdministrator_whenAddMediaKitItem_thenReturnMediaKitItem() {
+        // GIVEN
+        CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
+
+        when(mediaKitRepository.findByArtistSlug(ARTIST_USER.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitItemRepository.save(command, ARTIST_USER.getSlug(), FILE_DATA))
+                .thenReturn(MEDIA_KIT_ITEM);
+
+        // WHEN
+        MediaKitItem result = mediaKitService.addMediaKitItem(ADMIN, ARTIST_USER.getSlug(), command, FILE_DATA);
+
+        // THEN
+        assertEquals(MEDIA_KIT_ITEM, result);
+    }
+
+    @Test
+    void givenInvalidUser_whenAddMediaKitItem_thenThrowInvalidPermissionException() {
+        // GIVEN
+        CreateMediaKitItemCommand command = new CreateMediaKitItemCommand("image", "Title", "url");
+
+        when(mediaKitRepository.findByArtistSlug(ARTIST_USER.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.addMediaKitItem(USER, ARTIST_USER.getSlug(), command, FILE_DATA);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the owner can add items to the Soodora Kit");
+    }
+
+    @Test
+    void givenMediaKitOwner_whenUpdateMediaKitItem_thenReturnMediaKitItem() {
         // GIVEN
         UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
 
-        when(mediaKitItemRepository.update(command, "item-slug", fileData)).thenReturn(MEDIA_KIT_ITEM);
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitItemRepository.update(MEDIA_KIT_ITEM.getSlug(), command, FILE_DATA))
+                .thenReturn(MEDIA_KIT_ITEM);
 
         // WHEN
-        MediaKitItem result = mediaKitService.updateMediaKitItem(command, "item-slug", fileData);
+        MediaKitItem result = mediaKitService.updateMediaKitItem(ARTIST_USER, MEDIA_KIT_ITEM.getSlug(), command,
+                FILE_DATA);
 
         // THEN
-        assertEquals("item-slug", result.getSlug());
-        verify(mediaKitItemRepository).update(command, "item-slug", fileData);
+        assertEquals(MEDIA_KIT_ITEM.getSlug(), result.getSlug());
     }
 
     @Test
-    void givenItemSlug_whenDeleteMediaKitItem_thenRepositoryCalled() {
-        // WHEN
-        mediaKitService.deleteMediaKitItem("item-slug");
-
-        // THEN
-        verify(mediaKitItemRepository).deleteBySlug("item-slug");
-    }
-
-    @Test
-    void givenSlug_whenExportMediaKitToPdf_thenReturnPdfBytes() throws Exception {
+    void givenAdministrator_whenUpdateMediaKitItem_thenReturnMediaKitItem() {
         // GIVEN
-        String slug = "kit-slug";
+        UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
+
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(mediaKitItemRepository.update(MEDIA_KIT_ITEM.getSlug(), command, FILE_DATA))
+                .thenReturn(MEDIA_KIT_ITEM);
+
+        // WHEN
+        MediaKitItem result = mediaKitService.updateMediaKitItem(ADMIN, MEDIA_KIT_ITEM.getSlug(), command, FILE_DATA);
+
+        // THEN
+        assertEquals(MEDIA_KIT_ITEM.getSlug(), result.getSlug());
+    }
+
+    @Test
+    void givenInvalidUser_whenUpdateMediaKitItem_thenThrowInvalidPermissionException() {
+        // GIVEN
+        UpdateMediaKitItemCommand command = new UpdateMediaKitItemCommand("image", "Title", "url");
+
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.updateMediaKitItem(USER, MEDIA_KIT_ITEM.getSlug(), command,
+                FILE_DATA);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable,
+                "Only the owner can update items from the Soodora Kit");
+    }
+
+    @Test
+    void givenMediaKitOwner_whenDeleteMediaKitItem_thenDeleteMediaKitItem() {
+        // GIVEN
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        mediaKitService.deleteMediaKitItem(ARTIST_USER, MEDIA_KIT_ITEM.getSlug());
+
+        // THEN
+        verify(mediaKitItemRepository).delete(MEDIA_KIT_ITEM.getSlug());
+    }
+
+    @Test
+    void givenAdministrator_whenDeleteMediaKitItem_thenDeleteMediaKitItem() {
+        // GIVEN
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        mediaKitService.deleteMediaKitItem(ADMIN, MEDIA_KIT_ITEM.getSlug());
+
+        // THEN
+        verify(mediaKitItemRepository).delete(MEDIA_KIT_ITEM.getSlug());
+    }
+
+    @Test
+    void givenInvalidUser_whenDeleteMediaKitItem_thenDeleteMediaKitItem() {
+        // GIVEN
+        when(mediaKitItemRepository.findMediaKitByItemSlug(MEDIA_KIT_ITEM.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        // WHEN
+        Executable executable = () -> mediaKitService.deleteMediaKitItem(USER, MEDIA_KIT_ITEM.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable,
+                "Only the owner can delete items from the Soodora Kit");
+    }
+
+    @Test
+    void givenValidSlug_whenExportMediaKitToPdf_thenReturnPdfBytes() throws Exception {
+        // GIVEN
         ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
 
         byteArray.write("PDF".getBytes());
 
-        when(mediaKitRepository.findBySlug(slug)).thenReturn(MEDIA_KIT);
-        when(pdfExporter.exportMediaKit(MEDIA_KIT)).thenReturn(byteArray);
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenReturn(MEDIA_KIT);
+        when(pdfExporter.exportMediaKit(MEDIA_KIT))
+                .thenReturn(byteArray);
 
         // WHEN
-        byte[] result = mediaKitService.exportMediaKitToPdf(slug, USER);
+        byte[] result = mediaKitService.exportMediaKitToPdf(USER, MEDIA_KIT.getSlug());
 
         // THEN
         assertArrayEquals("PDF".getBytes(), result);
-        verify(mediaKitRepository).findBySlug(slug);
-        verify(pdfExporter).exportMediaKit(MEDIA_KIT);
     }
 
     @Test
     void givenInvalidSlug_whenExportMediaKitToPdf_thenThrowUnknownMediaKitException() {
         // GIVEN
-        String slug = "invalid-slug";
-
-        when(mediaKitRepository.findBySlug(slug)).thenThrow(UnknownMediaKitException.class);
+        when(mediaKitRepository.find(MEDIA_KIT.getSlug()))
+                .thenThrow(UnknownMediaKitException.class);
 
         // WHEN
-        Executable executable = () -> mediaKitService.exportMediaKitToPdf(slug, USER);
+        Executable executable = () -> mediaKitService.exportMediaKitToPdf(USER, MEDIA_KIT.getSlug());
 
         // THEN
         assertThrows(UnknownMediaKitException.class, executable);
-        verify(mediaKitRepository).findBySlug(slug);
-        verifyNoInteractions(pdfExporter);
     }
 
 }

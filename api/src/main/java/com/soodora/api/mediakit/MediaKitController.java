@@ -12,6 +12,7 @@ import com.soodora.service.shared.FileDataService;
 import com.soodora.service.shared.InvalidPermissionException;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,73 +34,16 @@ public class MediaKitController implements MediaKitResource {
 
     @Override
     @PostMapping
+    @PreAuthorize("hasRole('ARTIST')")
     public ResponseEntity<JsonResponse> createMediaKit(
             @AuthenticationPrincipal User user, @RequestBody CreateMediaKitRequest request) {
         try {
-            MediaKit mediaKit = mediaKitService.createMediaKit(request.toCommand(), user);
+            MediaKit mediaKit = mediaKitService.createMediaKit(user, request.toCommand());
 
             return new ResponseEntity<>(MediaKitDTO.build(mediaKit), CREATED);
         } catch (InvalidRequestException e) {
             return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
         }
-    }
-
-    @Override
-    @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updateMediaKit(
-            @PathVariable String slug,
-            @RequestBody UpdateMediaKitRequest request) {
-        try {
-            MediaKit mediaKit = mediaKitService.updateMediaKit(request.toCommand(), slug);
-
-            return new ResponseEntity<>(MediaKitDTO.build(mediaKit), OK);
-        } catch (InvalidRequestException e) {
-            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
-        }
-    }
-
-    @Override
-    @DeleteMapping("/{slug}")
-    public void deleteMediaKit(@PathVariable String slug) {
-        mediaKitService.deleteMediaKit(slug);
-    }
-
-    @Override
-    @PostMapping(value = "/{artistSlug}/items", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonResponse> addItem(
-            @PathVariable String artistSlug,
-            @RequestPart("data") CreateMediaKitItemRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
-        try {
-            FileData fileData = fileDataService.toFileData(imageFile);
-            MediaKitItem mediaKitItem = mediaKitService.addMediaKitItem(request.toCommand(), artistSlug, fileData);
-
-            return new ResponseEntity<>(MediaKitItemDTO.build(mediaKitItem), CREATED);
-        } catch (InvalidRequestException e) {
-            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
-        }
-    }
-
-    @Override
-    @PutMapping(value = "/items/{itemSlug}", consumes = {"multipart/form-data"})
-    public ResponseEntity<JsonResponse> updateItem(
-            @PathVariable String itemSlug,
-            @RequestPart("data") UpdateMediaKitItemRequest request,
-            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
-        try {
-            FileData fileData = fileDataService.toFileData(imageFile);
-            MediaKitItem mediaKitItem = mediaKitService.updateMediaKitItem(request.toCommand(), itemSlug, fileData);
-
-            return new ResponseEntity<>(MediaKitItemDTO.build(mediaKitItem), OK);
-        } catch (InvalidRequestException e) {
-            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
-        }
-    }
-
-    @Override
-    @DeleteMapping("/items/{itemSlug}")
-    public void deleteItem(@PathVariable String itemSlug) {
-        mediaKitService.deleteMediaKitItem(itemSlug);
     }
 
     @Override
@@ -109,35 +53,111 @@ public class MediaKitController implements MediaKitResource {
     }
 
     @Override
-    @GetMapping("/artist/{artistSlug}")
-    public MediaKitDTO getMediaKitByArtistSlug(@PathVariable String artistSlug) {
-        return MediaKitDTO.build(mediaKitService.retrieveMediaKitByArtistSlug(artistSlug));
+    @PutMapping("/{slug}")
+    @PreAuthorize("hasRole('ARTIST')")
+    public ResponseEntity<JsonResponse> updateMediaKit(
+            @AuthenticationPrincipal User user,
+            @PathVariable String slug,
+            @RequestBody UpdateMediaKitRequest request) {
+        try {
+            MediaKit mediaKit = mediaKitService.updateMediaKit(user, slug, request.toCommand());
+
+            return new ResponseEntity<>(MediaKitDTO.build(mediaKit), OK);
+        } catch (InvalidRequestException e) {
+            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
+        }
+    }
+
+    @Override
+    @DeleteMapping("/{slug}")
+    @PreAuthorize("hasRole('ARTIST')")
+    public void deleteMediaKit(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        mediaKitService.deleteMediaKit(user, slug);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ARTIST')")
+    @PostMapping(value = "/{artistSlug}/items", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> addMediaKitItem(
+            @AuthenticationPrincipal User user,
+            @PathVariable String artistSlug,
+            @RequestPart("data") CreateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
+        try {
+            FileData fileData = fileDataService.toFileData(imageFile);
+            MediaKitItem mediaKitItem = mediaKitService.addMediaKitItem(user, artistSlug, request.toCommand(),
+                    fileData);
+
+            return new ResponseEntity<>(MediaKitItemDTO.build(mediaKitItem), CREATED);
+        } catch (InvalidRequestException e) {
+            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
+        }
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ARTIST')")
+    @PutMapping(value = "/items/{itemSlug}", consumes = {"multipart/form-data"})
+    public ResponseEntity<JsonResponse> updateMediaKitItem(
+            @AuthenticationPrincipal User user,
+            @PathVariable String itemSlug,
+            @RequestPart("data") UpdateMediaKitItemRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile imageFile) {
+        try {
+            FileData fileData = fileDataService.toFileData(imageFile);
+            MediaKitItem mediaKitItem = mediaKitService.updateMediaKitItem(user, itemSlug, request.toCommand(),
+                    fileData);
+
+            return new ResponseEntity<>(MediaKitItemDTO.build(mediaKitItem), OK);
+        } catch (InvalidRequestException e) {
+            return new ResponseEntity<>(new ExceptionResponse(e.getMessage()), BAD_REQUEST);
+        }
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ARTIST')")
+    @DeleteMapping("/items/{itemSlug}")
+    public void deleteMediaKitItem(@AuthenticationPrincipal User user, @PathVariable String itemSlug) {
+        mediaKitService.deleteMediaKitItem(user, itemSlug);
     }
 
     @Override
     @GetMapping("/{slug}/export/pdf")
     public ResponseEntity<?> exportPdf(@AuthenticationPrincipal User user, @PathVariable String slug) {
         try {
-            byte[] pdfBytes = mediaKitService.exportMediaKitToPdf(slug, user);
+            byte[] pdfBytes = mediaKitService.exportMediaKitToPdf(user, slug);
 
             return ok()
                     .header(CONTENT_DISPOSITION, "attachment; filename=\"mediakit_" + slug + ".pdf\"")
                     .contentType(APPLICATION_PDF)
                     .body(pdfBytes);
-        } catch (Exception e) {
-            return new ResponseEntity<>(new ExceptionResponse("Failed to export PDF: " + e.getMessage()),
-                    INTERNAL_SERVER_ERROR);
+        } catch (InvalidPermissionException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), FORBIDDEN);
+        } catch (UnknownMediaKitException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), NOT_FOUND);
+        } catch (Exception exception) {
+            ExceptionResponse exceptionResponse = new ExceptionResponse(
+                    "Failed to export PDF: " + exception.getMessage());
+
+            return new ResponseEntity<>(exceptionResponse, INTERNAL_SERVER_ERROR);
         }
     }
 
     @Override
+    @PreAuthorize("hasRole('ARTIST')")
     @GetMapping("/{slug}/analytics")
     public MediaKitAnalyticsDTO getMediaKitAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug) {
         MediaKit mediaKit = mediaKitService.retrieveMediaKitBySlug(slug);
 
-        if (mediaKit.getOwner().getSlug().equals(user.getSlug()) || user.isAdmin())
+        if (mediaKit.hasAccess(user))
             return MediaKitAnalyticsDTO.build(mediaKit);
         throw new InvalidPermissionException("Only the media kit owner can access the analytics");
+    }
+
+    @Override
+    @GetMapping("/artist/{artistSlug}")
+    public MediaKitDTO getMediaKitByArtistSlug(@PathVariable String artistSlug) {
+        // TODO: Move to ArtistController
+        return MediaKitDTO.build(mediaKitService.retrieveMediaKitByArtistSlug(artistSlug));
     }
 
 }

@@ -53,7 +53,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public Post save(CreatePostCommand command, User user, FileData fileData) {
+    public Post save(User user, CreatePostCommand command, FileData fileData) {
         PostEntity entity = new PostEntity();
         ArtistEntity artistEntity = findArtistByUserSlugOrThrow(user.getSlug());
 
@@ -136,7 +136,16 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void likePost(String postSlug, User user) {
+    public boolean isCommentOwner(User user, String commentSlug) {
+        CommentEntity comment = findCommentBySlugOrThrow(commentSlug);
+        User commentOwner = comment.getUser().aggregate();
+
+        return user.isSame(commentOwner);
+    }
+
+    @Override
+    @Transactional
+    public void likePost(User user, String postSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
@@ -164,7 +173,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unlikePost(String postSlug, User user) {
+    public void unlikePost(User user, String postSlug) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
@@ -182,7 +191,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public CommentDTO commentPost(String postSlug, CommentPostCommand command, User user) {
+    public CommentDTO commentPost(User user, String postSlug, CommentPostCommand command) {
         PostEntity post = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity comment = new CommentEntity();
@@ -200,7 +209,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void likeComment(String commentSlug, User user) {
+    public void likeComment(User user, String commentSlug) {
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity commentEntity = findCommentBySlugOrThrow(commentSlug);
         boolean alreadyLiked = commentEntity.getLikes().stream()
@@ -220,7 +229,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unlikeComment(String commentSlug, User user) {
+    public void unlikeComment(User user, String commentSlug) {
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
         CommentEntity comment = findCommentBySlugOrThrow(commentSlug);
 
@@ -288,7 +297,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void repost(String postSlug, User user) {
+    public void repost(User user, String postSlug) {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 
@@ -298,7 +307,7 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public void unrepost(String postSlug, User user) {
+    public void unrepost(User user, String postSlug) {
         PostEntity postEntity = findPostBySlugOrThrow(postSlug);
         UserEntity userEntity = findUserBySlugOrThrow(user.getSlug());
 

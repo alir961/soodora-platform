@@ -35,7 +35,7 @@ public interface ProductResource {
     @Operation(summary = "Search products with filters", responses = {
             @ApiResponse(responseCode = "200", description = "List of products retrieved successfully")
     })
-    Page<ProductDTO> getProducts(
+    Page<ProductDTO> searchProducts(
             @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
@@ -55,7 +55,7 @@ public interface ProductResource {
             @ApiResponse(responseCode = "400", description = "Invalid request", content = @io.swagger.v3.oas.annotations.media.Content)
     })
     ResponseEntity<JsonResponse> updateProduct(
-            @PathVariable String slug,
+            @AuthenticationPrincipal User user, @PathVariable String slug,
             @RequestPart("data") UpdateProductRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
@@ -64,7 +64,7 @@ public interface ProductResource {
             @ApiResponse(responseCode = "204", description = "Product deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Product not found", content = @io.swagger.v3.oas.annotations.media.Content)
     })
-    void deleteProduct(@PathVariable("slug") String slug);
+    void deleteProduct(@AuthenticationPrincipal User user, @PathVariable("slug") String slug);
 
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Retrieve product analytics", description = "Retrieve sales analytics for a specific product. Only the product vendor or admins can access this data.", responses = {

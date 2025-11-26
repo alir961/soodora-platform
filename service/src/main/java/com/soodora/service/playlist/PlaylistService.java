@@ -6,6 +6,7 @@ import com.soodora.domain.playlist.*;
 import com.soodora.domain.post.Post;
 import com.soodora.domain.user.User;
 import com.soodora.service.post.UnknownPostException;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.List;
 
@@ -15,13 +16,15 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 
+import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
+
 @Service
 @RequiredArgsConstructor
 public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
 
-    public Playlist createPlaylist(CreatePlaylistCommand command, User user, FileData imageFile)
+    public Playlist createPlaylist(User user, CreatePlaylistCommand command, FileData imageFile)
             throws PlaylistUnityException {
         if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.getSlug()))
             throw new PlaylistUnityException("Name is already used");
@@ -36,36 +39,50 @@ public class PlaylistService {
         return playlistRepository.findByFilter(filter, pageable);
     }
 
-    public Playlist retrievePlaylistBySlug(String slug) {
+    public Playlist retrievePlaylistBySlug(User user, String playlistSlug) {
         try {
-            return playlistRepository.findBySlug(slug);
+            Playlist playlist = playlistRepository.findBySlug(playlistSlug);
+
+            if (playlist.getPrivacy() == PUBLIC || playlist.hasAccess(user))
+                return playlist;
+            throw new InvalidPermissionException("Only the playlist owner can access the playlist");
         } catch (UnknownSlugException exception) {
             throw new UnknownPlaylistException(exception.getMessage());
         }
     }
 
-    public Page<Post> retrievePlaylistPostsBySlug(String playlistSlug, Pageable pageable) {
-        return playlistRepository.findPlaylistPosts(playlistSlug, pageable);
+    public Page<Post> retrievePlaylistPostsBySlug(User user, String playlistSlug, Pageable pageable) {
+        Playlist playlist = retrievePlaylistBySlug(user, playlistSlug);
+
+        if (playlist.getPrivacy() == PUBLIC || playlist.hasAccess(user))
+            return playlistRepository.findPlaylistPosts(playlistSlug, pageable);
+        throw new InvalidPermissionException("Only the playlist owner can access the playlist posts");
     }
 
-    public Playlist updatePlaylist(UpdatePlaylistCommand command, String slug, FileData imageFile)
+    public Playlist updatePlaylist(User user, String playlistSlug, UpdatePlaylistCommand command, FileData imageFile)
             throws PlaylistUnityException {
-        try {
-            return playlistRepository.update(command, slug, imageFile);
-        } catch (UnknownSlugException exception) {
-            throw new PlaylistUnityException(exception.getMessage());
-        }
+        Playlist playlist = retrievePlaylistBySlug(user, playlistSlug);
+
+        if (!playlist.hasAccess(user))
+            throw new InvalidPermissionException("Only the playlist owner can update the playlist");
+        if (playlistRepository.isPlaylistNameUsedByUser(command.name(), user.getSlug()))
+            throw new PlaylistUnityException("Playlist name is already used");
+        return playlistRepository.update(command, playlistSlug, imageFile);
     }
 
-    public void deletePlaylistBySlug(String slug) throws UnknownPlaylistException {
-        try {
-            playlistRepository.deletePlaylistAndUnlinkPosts(slug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPlaylistException(exception.getMessage());
-        }
+    public void deletePlaylist(User user, String playlistSlug) throws UnknownPlaylistException {
+        Playlist playlist = retrievePlaylistBySlug(user, playlistSlug);
+
+        if (!playlist.hasAccess(user))
+            throw new InvalidPermissionException("Only the playlist owner can delete the playlist");
+        playlistRepository.deletePlaylistAndUnlinkPosts(playlistSlug);
     }
 
-    public Playlist addPostToPlaylist(Playlist playlist, String postSlug) {
+    public Playlist addPostToPlaylist(User user, String playlistSlug, String postSlug) {
+        Playlist playlist = retrievePlaylistBySlug(user, playlistSlug);
+
+        if (!playlist.hasAccess(user))
+            throw new InvalidPermissionException("Only the playlist owner can add a post to the playlist");
         try {
             return playlistRepository.addPostToPlaylist(playlist, postSlug);
         } catch (UnknownSlugException exception) {
@@ -73,12 +90,18 @@ public class PlaylistService {
         }
     }
 
-    public Playlist removePostFromPlaylist(Playlist playlist, String postSlug) {
+    public Playlist removePostFromPlaylist(User user, String playlistSlug, String postSlug) {
+
+        Playlist playlist = retrievePlaylistBySlug(user, playlistSlug);
+
+        if (!playlist.hasAccess(user))
+            throw new InvalidPermissionException("Only the playlist owner can delete a post from the playlist");
         try {
             return playlistRepository.removePostFromPlaylist(playlist, postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
+
     }
 
 }

@@ -11,6 +11,8 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import static java.util.Comparator.comparing;
+
 @Getter
 @AllArgsConstructor
 public class Product {
@@ -27,5 +29,15 @@ public class Product {
     private Date createdAt;
     private Date updatedAt;
     private Set<Sale> sales;
+
+    public boolean hasAccess(User user) {
+        return vendor.isSame(user) || user.isAdmin();
+    }
+
+    public Sale getFirstSale() {
+        return sales.stream()
+                .min(comparing(Sale::getCreatedAt))
+                .orElse(null);
+    }
 
 }

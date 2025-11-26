@@ -12,27 +12,28 @@ import org.springframework.data.domain.Pageable;
 
 public interface PostRepository {
 
-    Post save(CreatePostCommand command, User user, FileData fileData);
+    Post save(User user, CreatePostCommand command, FileData fileData);
     Post find(String postSlug);
     Page<Post> findAll(Pageable pageable);
-    void likePost(String postSlug, User user);
-    void unlikePost(String postSlug, User user);
-    CommentDTO commentPost(String postSlug, CommentPostCommand command, User user);
-    void unlikeComment(String commentSlug, User user);
-    void likeComment(String commentSlug, User user);
+    void likePost(User user, String postSlug);
+    void unlikePost(User user, String postSlug);
+    CommentDTO commentPost(User user, String postSlug, CommentPostCommand command);
+    void unlikeComment(User user, String commentSlug);
+    void likeComment(User user, String commentSlug);
     void deleteComment(String commentSlug);
     List<LikeDTO> retrieveLikes(String postSlug);
     Set<User> retrieveReposts(String postSlug);
     List<CommentDTO> retrieveComments(String postSlug);
     List<LikeDTO> retrieveCommentLikes(String commentSlug);
     void delete(String postSlug);
-    void repost(String postSlug, User user);
-    void unrepost(String postSlug, User user);
+    void repost(User user, String postSlug);
+    void unrepost(User user, String postSlug);
     Page<Post> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable);
     Page<Post> findByFilter(PostFilter filter, Pageable pageable);
     Page<Post> findRecommendedPosts(User user, Pageable pageable);
     Page<Post> findUserPosts(Identifier identifier, Pageable pageable);
     Page<Post> findUserReposts(Identifier identifier, Pageable pageable);
     Page<Post> findUserAudios(Identifier identifier, Pageable pageable);
+    boolean isCommentOwner(User user, String commentSlug);
 
 }

@@ -2,11 +2,15 @@ package com.soodora.service.linkhub;
 
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.linkhub.*;
-import com.soodora.domain.user.LinkHubNotFoundException;
+import com.soodora.domain.link.LinkHubUnityException;
+import com.soodora.domain.linkhub.CreateLinkHubCommand;
+import com.soodora.domain.linkhub.LinkHub;
+import com.soodora.domain.linkhub.LinkHubRepository;
+import com.soodora.domain.linkhub.UpdateLinkHubCommand;
+import com.soodora.domain.user.ArtistWithoutLinkHubException;
 import com.soodora.domain.user.User;
-import com.soodora.service.link.LinkUnityException;
-import com.soodora.service.user.UnknownUserException;
+import com.soodora.service.common.InvalidRequestException;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.List;
 
@@ -21,47 +25,51 @@ public class LinkHubService {
     private final ArtistRepository artistRepository;
     private final LinkHubRepository linkHubRepository;
 
-    public String createLinkHub(CreateLinkHubCommand command, User user) {
-        return linkHubRepository.save(command, user).getSlug();
+    public String createLinkHub(User user, CreateLinkHubCommand command) {
+        try {
+            return linkHubRepository.save(user, command).getSlug();
+        } catch (LinkHubUnityException exception) {
+            throw new InvalidRequestException("Artist already had a Link Hub");
+        }
     }
 
     public List<LinkHub> retrieveAllLinkHubs() {
         return linkHubRepository.findAll();
     }
 
-    public LinkHub retrieveLinkHubByUserSlug(String userSlug) throws UnknownLinkHubException {
+    public LinkHub retrieveLinkHub(String linkHubSlug) {
         try {
-            return artistRepository.retrieveLinkHub(userSlug);
-        } catch (LinkHubNotFoundException exception) {
-            throw new UnknownLinkHubException("Could not retrieve link hub for artist: " + userSlug);
-        }
-    }
+            LinkHub linkHub = linkHubRepository.findBySlug(linkHubSlug);
 
-    public LinkHub retrieveLinkHubBySlug(String slug) {
-        try {
-            LinkHub linkHub = linkHubRepository.findBySlug(slug);
-
-            linkHubRepository.persistView(slug);
+            linkHubRepository.persistView(linkHubSlug);
             return linkHub;
-        } catch (UnknownSlugException exception) {
-            throw new UnknownUserException(exception.getMessage());
-        }
-    }
-
-    public LinkHub updateLinkHub(UpdateLinkHubCommand command, String slug) {
-        try {
-            return linkHubRepository.update(command, slug);
-        } catch (UnknownSlugException exception) {
-            throw new LinkUnityException(exception.getMessage());
-        }
-    }
-
-    public void deleteLinkHubBySlug(String slug) throws UnknownLinkHubException {
-        try {
-            linkHubRepository.deleteBySlug(slug);
         } catch (UnknownSlugException exception) {
             throw new UnknownLinkHubException(exception.getMessage());
         }
+    }
+
+    public LinkHub retrieveLinkHubByArtistSlug(String artistSlug) throws UnknownLinkHubException {
+        try {
+            return artistRepository.retrieveLinkHub(artistSlug);
+        } catch (ArtistWithoutLinkHubException exception) {
+            throw new UnknownLinkHubException("Could not retrieve Link Hub for artist: " + artistSlug);
+        }
+    }
+
+    public LinkHub updateLinkHub(User user, String linkHubSlug, UpdateLinkHubCommand command) {
+        LinkHub linkHub = retrieveLinkHub(linkHubSlug);
+
+        if (!linkHub.hasAccess(user))
+            throw new InvalidPermissionException("Only the owner can update the Link Hub");
+        return linkHubRepository.update(linkHubSlug, command);
+    }
+
+    public void deleteLinkHub(User user, String linkHubSlug) {
+        LinkHub linkHub = retrieveLinkHub(linkHubSlug);
+
+        if (!linkHub.hasAccess(user))
+            throw new InvalidPermissionException("Only the owner can delete the Link Hub");
+        linkHubRepository.deleteBySlug(linkHubSlug);
     }
 
 }

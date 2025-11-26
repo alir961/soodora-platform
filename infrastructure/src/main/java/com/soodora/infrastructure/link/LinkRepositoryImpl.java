@@ -5,6 +5,8 @@ import com.soodora.domain.link.CreateLinkCommand;
 import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
+import com.soodora.domain.linkhub.LinkHub;
+import com.soodora.domain.user.ArtistWithoutLinkHubException;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 import com.soodora.infrastructure.linkhub.LinkHubEntity;
 import com.soodora.infrastructure.linkhub.LinkHubJpaRepository;
@@ -33,11 +35,12 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public Link save(CreateLinkCommand command, String userSlug) {
-        LinkHubEntity linkHub = linkHubRepository.findByArtistUserSlug(userSlug)
-                .orElseThrow(() -> new UnknownSlugException("Link hub not found for user slug: " + userSlug));
-
+    public Link save(String artistSlug, CreateLinkCommand command) {
+        LinkHubEntity linkHub = linkHubRepository.findByArtistUserSlug(artistSlug)
+                .orElseThrow(
+                        () -> new ArtistWithoutLinkHubException("Link hub not found for user slug: " + artistSlug));
         LinkEntity entity = new LinkEntity();
+
         entity.setTitle(command.title());
         entity.setDescription(command.description());
         entity.setUrl(command.url());
@@ -52,8 +55,8 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public Link update(UpdateLinkCommand command, String slug) {
-        LinkEntity existingLink = findLinkBySlugOrThrow(slug);
+    public Link update(String linkSlug, UpdateLinkCommand command) {
+        LinkEntity existingLink = findLinkBySlugOrThrow(linkSlug);
 
         if (isNotNullOrBlank(command.title()))
             existingLink.setTitle(command.title());
@@ -68,8 +71,8 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public Link findBySlug(String slug) {
-        return findLinkBySlugOrThrow(slug).aggregate();
+    public Link findBySlug(String linkSlug) {
+        return findLinkBySlugOrThrow(linkSlug).aggregate();
     }
 
     @Override
@@ -82,11 +85,18 @@ public class LinkRepositoryImpl implements LinkRepository {
 
     @Override
     @Transactional
-    public void deleteBySlug(String slug) {
-        LinkEntity link = repository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find link with slug: #" + slug));
+    public void deleteBySlug(String linkSlug) {
+        LinkEntity link = findLinkBySlugOrThrow(linkSlug);
 
         repository.deleteById(link.getId());
+    }
+
+    @Override
+    @Transactional
+    public LinkHub findLinkHubByLinkSlug(String linkSlug) {
+        LinkEntity link = findLinkBySlugOrThrow(linkSlug);
+
+        return link.getLinkHub().aggregate();
     }
 
     private String generateUniqueSlug() {

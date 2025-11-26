@@ -11,6 +11,7 @@ import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CreatePostRequest;
+import com.soodora.service.post.PostEngagementService;
 import com.soodora.service.post.PostService;
 import com.soodora.service.shared.FileDataService;
 
@@ -30,8 +31,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.http.HttpStatus.*;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -43,6 +42,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class PostController implements PostResource {
 
     private final PostService postService;
+    private final PostEngagementService postEngagementService;
     private final FileDataService fileDataService;
 
     @Override
@@ -55,7 +55,7 @@ public class PostController implements PostResource {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
 
-            postService.createPost(createPostRequest.toCommand(), user, fileData);
+            postService.createPost(user, createPostRequest.toCommand(), fileData);
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -87,31 +87,32 @@ public class PostController implements PostResource {
     @Override
     @GetMapping("/{postSlug}")
     public PostDTO getPost(@PathVariable String postSlug) {
-        return PostDTO.build(postService.retrievePostBySlug(postSlug));
+        return PostDTO.build(postService.retrievePost(postSlug));
     }
 
     @Override
     @DeleteMapping("/{postSlug}")
-    public void deletePost(@PathVariable("postSlug") String slug) {
-        postService.deletePostBySlug(slug);
+    @PreAuthorize("hasRole('ARTIST')")
+    public void deletePost(@AuthenticationPrincipal User user, @PathVariable("postSlug") String slug) {
+        postService.deletePost(user, slug);
     }
 
     @Override
     @PostMapping("/{postSlug}/likes")
     public void likePost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
-        postService.likePost(postSlug, user);
+        postEngagementService.likePost(user, postSlug);
     }
 
     @Override
     @DeleteMapping("/{slug}/likes")
     public void unlikePost(@AuthenticationPrincipal User user, @PathVariable String slug) {
-        postService.unlikePost(slug, user);
+        postEngagementService.unlikePost(user, slug);
     }
 
     @Override
     @GetMapping("/{postSlug}/likes")
     public Set<String> getLikes(@PathVariable String postSlug) {
-        return postService.retrieveLikes(postSlug).stream()
+        return postEngagementService.retrieveLikes(postSlug).stream()
                 .map(LikeDTO::user)
                 .map(PublicUserDTO::slug)
                 .collect(toSet());
@@ -120,24 +121,25 @@ public class PostController implements PostResource {
     @Override
     @PostMapping("/{postSlug}/reposts")
     public void repostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
-        postService.repostPostBySlug(postSlug, user);
+        postEngagementService.repostPost(user, postSlug);
     }
 
     @Override
     @DeleteMapping("/{postSlug}/reposts")
     public void unrepostPost(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
-        postService.unrepostPostBySlug(user, postSlug);
+        postEngagementService.unrepostPost(user, postSlug);
     }
 
     @Override
     @GetMapping("/{postSlug}/reposts")
     public Set<String> getReposts(@PathVariable String postSlug) {
-        return postService.retrieveReposts(postSlug).stream()
+        return postEngagementService.retrieveReposts(postSlug).stream()
                 .map(User::getSlug)
                 .collect(toSet());
     }
 
     @Override
+    @PreAuthorize("hasRole('ARTIST')")
     @GetMapping("/{postSlug}/analytics")
     public PostAnalyticsDTO getPostAnalytics(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         PostAnalytics postAnalytics = postService.computePostAnalytics(user, postSlug);
@@ -148,17 +150,13 @@ public class PostController implements PostResource {
     @Override
     @GetMapping("/likes")
     public List<LikeDTO> getUserLikes(@RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
-
-        return postService.retrieveUserLikes(filter);
+        return postEngagementService.retrieveUserLikes(userSlug);
     }
 
     @Override
     @GetMapping("/comments")
     public List<CommentDTO> getUserComments(@RequestParam(value = "userSlug") String userSlug) {
-        PostFilter filter = new PostFilter(ofNullable(userSlug), empty(), empty(), empty(), empty());
-
-        return postService.retrieveUserComments(filter);
+        return postEngagementService.retrieveUserComments(userSlug);
     }
 
 }

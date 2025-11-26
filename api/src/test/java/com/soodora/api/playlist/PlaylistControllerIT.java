@@ -10,6 +10,7 @@ import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.playlist.*;
 import com.soodora.service.post.UnknownPostException;
+import com.soodora.service.shared.InvalidPermissionException;
 import com.soodora.service.user.UnknownUserException;
 
 import org.junit.jupiter.api.Test;
@@ -81,7 +82,7 @@ class PlaylistControllerIT {
         CreatePlaylistRequest createPlaylistRequest = new CreatePlaylistRequest("", "Description", "");
 
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
-                .createPlaylist(any(CreatePlaylistCommand.class), eq(USER), any(FileData.class));
+                .createPlaylist(eq(USER), any(CreatePlaylistCommand.class), any(FileData.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists")
@@ -100,7 +101,7 @@ class PlaylistControllerIT {
                 asJsonString(createPlaylistRequest).getBytes());
 
         doThrow(new PlaylistUnityException("Name is already used")).when(playlistService)
-                .createPlaylist(any(), eq(ARTIST_USER), any());
+                .createPlaylist(eq(ARTIST_USER), any(), any());
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists")
@@ -157,9 +158,9 @@ class PlaylistControllerIT {
         // GIVEN
         Page<Post> posts = new PageImpl<>(PLAYLIST_1.getPosts());
 
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1"))
+        when(playlistService.retrievePlaylistBySlug(null, "playlistSlug1"))
                 .thenReturn(PLAYLIST_1);
-        when(playlistService.retrievePlaylistPostsBySlug(eq("playlistSlug1"), any(Pageable.class)))
+        when(playlistService.retrievePlaylistPostsBySlug(eq(null), eq("playlistSlug1"), any(Pageable.class)))
                 .thenReturn(posts);
 
         // WHEN & THEN
@@ -174,9 +175,9 @@ class PlaylistControllerIT {
         // GIVEN
         PageImpl<Post> page = new PageImpl<>(PLAYLIST_PRIVATE.getPosts());
 
-        when(playlistService.retrievePlaylistBySlug("playlistSlug"))
+        when(playlistService.retrievePlaylistBySlug(ARTIST_USER, "playlistSlug"))
                 .thenReturn(PLAYLIST_PRIVATE);
-        when(playlistService.retrievePlaylistPostsBySlug(eq("playlistSlug"), any(Pageable.class)))
+        when(playlistService.retrievePlaylistPostsBySlug(eq(ARTIST_USER), eq("playlistSlug"), any(Pageable.class)))
                 .thenReturn(page);
 
         // WHEN & THEN
@@ -188,7 +189,7 @@ class PlaylistControllerIT {
     @Test
     void givenUnknownPlaylistSlug_whenGetPlaylist_thenNotFound() throws Exception {
         // GIVEN
-        doThrow(UnknownUserException.class).when(playlistService).retrievePlaylistBySlug("unknown");
+        doThrow(UnknownUserException.class).when(playlistService).retrievePlaylistBySlug(null, "unknown");
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/unknown"))
@@ -198,12 +199,8 @@ class PlaylistControllerIT {
     @Test
     void givenPrivatePlaylistSlug_whenGetPlaylist_thenForbidden() throws Exception {
         // GIVEN
-        PageImpl<Post> page = new PageImpl<>(PLAYLIST_PRIVATE.getPosts());
-
-        when(playlistService.retrievePlaylistBySlug("playlistSlug"))
-                .thenReturn(PLAYLIST_PRIVATE);
-        when(playlistService.retrievePlaylistPostsBySlug(eq("playlistSlug"), any(Pageable.class)))
-                .thenReturn(page);
+        when(playlistService.retrievePlaylistBySlug(null, "playlistSlug"))
+                .thenThrow(new InvalidPermissionException("Only the playlist owner can access the playlist"));
 
         // WHEN & THEN
         mockMvc.perform(get("/playlists/playlistSlug"))
@@ -218,8 +215,7 @@ class PlaylistControllerIT {
         MockMultipartFile jsonPart = new MockMultipartFile("data", "", "application/json",
                 asJsonString(updatePlaylistRequest).getBytes());
 
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
-        when(playlistService.updatePlaylist(any(), any(), any())).thenReturn(PLAYLIST_1);
+        when(playlistService.updatePlaylist(eq(ARTIST_USER), eq("playlistSlug1"), any(), any())).thenReturn(PLAYLIST_1);
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists/playlistSlug1")
@@ -240,9 +236,8 @@ class PlaylistControllerIT {
         MockMultipartFile jsonPart = new MockMultipartFile("data", "", "application/json",
                 asJsonString(updatePlaylistRequest).getBytes());
 
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
         doThrow(new InvalidRequestException("Invalid request")).when(playlistService)
-                .updatePlaylist(any(UpdatePlaylistCommand.class), eq("playlistSlug1"), any());
+                .updatePlaylist(eq(ARTIST_USER), eq("playlistSlug1"), any(UpdatePlaylistCommand.class), any());
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists/playlistSlug1")
@@ -258,35 +253,14 @@ class PlaylistControllerIT {
     }
 
     @Test
-    void givenAdminUser_whenUpdatePlaylist_thenSuccess() throws Exception {
-        // GIVEN
-        UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest("", "", "PUBLIC");
-        MockMultipartFile jsonPart = new MockMultipartFile("data", "", "application/json",
-                asJsonString(updatePlaylistRequest).getBytes());
-
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
-        when(playlistService.updatePlaylist(any(), any(), any())).thenReturn(PLAYLIST_1);
-
-        // WHEN & THEN
-        mockMvc.perform(multipart("/playlists/playlistSlug1")
-                .file(jsonPart)
-                .file(FILE_PART)
-                .with(user(new UserPrincipal(ADMIN)))
-                .with(request -> {
-                    request.setMethod("PUT");
-                    return request;
-                }))
-                .andExpect(status().isOk());
-    }
-
-    @Test
     void givenAuthenticatedUser_whenUpdatePlaylist_thenForbidden() throws Exception {
         // GIVEN
         UpdatePlaylistRequest updatePlaylistRequest = new UpdatePlaylistRequest("", "", "PUBLIC");
         MockMultipartFile jsonPart = new MockMultipartFile("data", "", "application/json",
                 asJsonString(updatePlaylistRequest).getBytes());
 
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
+        when(playlistService.updatePlaylist(eq(USER), eq("playlistSlug1"), any(), any()))
+                .thenThrow(new InvalidPermissionException("Only to owner can update the playlist"));
 
         // WHEN & THEN
         mockMvc.perform(multipart("/playlists/playlistSlug1")
@@ -321,22 +295,20 @@ class PlaylistControllerIT {
     @Test
     void givenValidPlaylistSlug_whenDeletePlaylist_thenSuccess() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1"))
+        when(playlistService.retrievePlaylistBySlug(ARTIST_USER, "playlistSlug1"))
                 .thenReturn(PLAYLIST_1);
-        doNothing().when(playlistService).deletePlaylistBySlug("playlistSlug1");
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1")
                 .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isOk());
-        verify(playlistService).deletePlaylistBySlug("playlistSlug1");
     }
 
     @Test
     void givenUnknownPlaylistSlug_whenDeletePlaylist_thenNotFound() throws Exception {
         // GIVEN
         doThrow(new UnknownPlaylistException("Playlist not found")).when(playlistService)
-                .retrievePlaylistBySlug("unknown");
+                .deletePlaylist(ARTIST_USER, "unknown");
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/unknown")
@@ -347,8 +319,8 @@ class PlaylistControllerIT {
     @Test
     void givenAuthenticatedUser_whenDeletePlaylist_thenForbidden() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1"))
-                .thenReturn(PLAYLIST_1);
+        doThrow(new InvalidPermissionException("Only to owner can delete the playlist"))
+                .when(playlistService).deletePlaylist(USER, "playlistSlug1");
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1")
@@ -366,8 +338,7 @@ class PlaylistControllerIT {
     @Test
     void givenValidPlaylistAndPost_whenAddPostToPlaylist_thenSuccess() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
-        when(playlistService.addPostToPlaylist(PLAYLIST_1, "postSlug1"))
+        when(playlistService.addPostToPlaylist(ARTIST_USER, "playlistSlug1", "postSlug1"))
                 .thenReturn(PLAYLIST_1);
 
         // WHEN & THEN
@@ -381,7 +352,7 @@ class PlaylistControllerIT {
     void givenUnknownPlaylist_whenAddPostToPlaylist_thenNotFound() throws Exception {
         // GIVEN
         doThrow(new UnknownPlaylistException("Playlist not found")).when(playlistService)
-                .retrievePlaylistBySlug("unknown");
+                .addPostToPlaylist(ARTIST_USER, "unknown", "postSlug1");
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists/unknown/posts/postSlug1")
@@ -393,9 +364,8 @@ class PlaylistControllerIT {
     @Test
     void givenUnknownPost_whenAddPostToPlaylist_thenNotFound() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
         doThrow(new UnknownPostException("Post not found"))
-                .when(playlistService).addPostToPlaylist(PLAYLIST_1, "unknown");
+                .when(playlistService).addPostToPlaylist(ARTIST_USER, "playlistSlug1", "unknown");
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists/playlistSlug1/posts/unknown")
@@ -407,8 +377,8 @@ class PlaylistControllerIT {
     @Test
     void givenAuthenticatedUser_whenAddPostToPlaylist_thenForbidden() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1"))
-                .thenReturn(PLAYLIST_1);
+        when(playlistService.addPostToPlaylist(USER, "playlistSlug1", "postSlug1"))
+                .thenThrow(new InvalidPermissionException("Only to owner can add a post to the playlist"));
 
         // WHEN & THEN
         mockMvc.perform(post("/playlists/playlistSlug1/posts/postSlug1")
@@ -426,8 +396,7 @@ class PlaylistControllerIT {
     @Test
     void givenValidPlaylistAndPost_whenRemovePostFromPlaylist_thenSuccess() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
-        when(playlistService.removePostFromPlaylist(PLAYLIST_1, "postSlug1"))
+        when(playlistService.removePostFromPlaylist(ARTIST_USER, "playlistSlug1", "postSlug1"))
                 .thenReturn(PLAYLIST_1);
 
         // WHEN & THEN
@@ -441,7 +410,7 @@ class PlaylistControllerIT {
     void givenUnknownPlaylist_whenRemovePostFromPlaylist_thenNotFound() throws Exception {
         // GIVEN
         doThrow(new UnknownPlaylistException("Playlist not found")).when(playlistService)
-                .retrievePlaylistBySlug("playlistSlug1");
+                .removePostFromPlaylist(ARTIST_USER, "playlistSlug1", "unknown");
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1/posts/unknown")
@@ -453,9 +422,8 @@ class PlaylistControllerIT {
     @Test
     void givenUnknownPost_whenRemovePostFromPlaylist_thenNotFound() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1")).thenReturn(PLAYLIST_1);
         doThrow(new UnknownPostException("Post not found"))
-                .when(playlistService).removePostFromPlaylist(PLAYLIST_1, "unknown");
+                .when(playlistService).removePostFromPlaylist(ARTIST_USER, "playlistSlug1", "unknown");
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1/posts/unknown")
@@ -467,8 +435,8 @@ class PlaylistControllerIT {
     @Test
     void givenAuthenticatedUser_whenRemovePostFromPlaylist_thenForbidden() throws Exception {
         // GIVEN
-        when(playlistService.retrievePlaylistBySlug("playlistSlug1"))
-                .thenReturn(PLAYLIST_1);
+        when(playlistService.removePostFromPlaylist(USER, "playlistSlug1", "postSlug1"))
+                .thenThrow(new InvalidPermissionException("Only to owner can remove a post from the playlist"));
 
         // WHEN & THEN
         mockMvc.perform(delete("/playlists/playlistSlug1/posts/postSlug1")

@@ -28,7 +28,7 @@ public class LinkHubRepositoryImpl implements LinkHubRepository {
 
     @Override
     @Transactional
-    public LinkHub save(CreateLinkHubCommand command, User user) {
+    public LinkHub save(User user, CreateLinkHubCommand command) {
         ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
                 .orElseThrow(
                         () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
@@ -50,20 +50,9 @@ public class LinkHubRepositoryImpl implements LinkHubRepository {
 
     @Override
     @Transactional
-    public LinkHub update(UpdateLinkHubCommand command, String slug) {
-        LinkHubEntity existingLinkHub = findLinkHubBySlugOrThrow(slug);
-
-        if (isNotNullOrBlank(command.title()))
-            existingLinkHub.setTitle(command.title());
-        if (isNotNullOrBlank(command.description()))
-            existingLinkHub.setDescription(command.description());
-        return linkHubRepository.save(existingLinkHub).aggregate();
-    }
-
-    @Override
-    @Transactional
-    public LinkHub findBySlug(String slug) {
-        return findLinkHubBySlugOrThrow(slug).aggregate();
+    public LinkHub findBySlug(String linkHubSlug) {
+        return findLinkHubBySlugOrThrow(linkHubSlug)
+                .aggregate();
     }
 
     @Override
@@ -76,9 +65,21 @@ public class LinkHubRepositoryImpl implements LinkHubRepository {
 
     @Override
     @Transactional
-    public void deleteBySlug(String slug) {
-        LinkHubEntity linkHub = linkHubRepository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownSlugException("Unable to find link hub with slug: #" + slug));
+    public LinkHub update(String linkHubSlug, UpdateLinkHubCommand command) {
+        LinkHubEntity existingLinkHub = findLinkHubBySlugOrThrow(linkHubSlug);
+
+        if (isNotNullOrBlank(command.title()))
+            existingLinkHub.setTitle(command.title());
+        if (isNotNullOrBlank(command.description()))
+            existingLinkHub.setDescription(command.description());
+        return linkHubRepository.save(existingLinkHub)
+                .aggregate();
+    }
+
+    @Override
+    @Transactional
+    public void deleteBySlug(String linkHubSlug) {
+        LinkHubEntity linkHub = findLinkHubBySlugOrThrow(linkHubSlug);
 
         linkHub.getArtist().setLinkHub(null);
         linkHubRepository.delete(linkHub);
@@ -86,8 +87,8 @@ public class LinkHubRepositoryImpl implements LinkHubRepository {
 
     @Override
     @Transactional
-    public void persistView(String slug) {
-        LinkHubEntity linkHub = findLinkHubBySlugOrThrow(slug);
+    public void persistView(String linkHubSlug) {
+        LinkHubEntity linkHub = findLinkHubBySlugOrThrow(linkHubSlug);
 
         linkHub.setViewCount(linkHub.getViewCount() + 1);
         linkHubRepository.save(linkHub);

@@ -74,6 +74,7 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/playlists/*").permitAll()
                         .requestMatchers(GET, "/link-hubs").permitAll()
                         .requestMatchers(GET, "/link-hubs/**").permitAll()
+                        .requestMatchers(GET, "/media-kits/artist/*").permitAll()
                         .requestMatchers("/auth/google").permitAll()
                         .requestMatchers("/payments/**").permitAll()
                         .anyRequest().authenticated())

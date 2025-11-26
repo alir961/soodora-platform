@@ -1,15 +1,14 @@
 package com.soodora.api.product;
 
 import com.soodora.domain.cdn.FileData;
-import com.soodora.domain.product.Product;
-import com.soodora.domain.product.ProductFilter;
-import com.soodora.domain.user.UserRepository;
+import com.soodora.domain.product.*;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.product.CreateProductRequest;
 import com.soodora.service.product.ProductService;
+import com.soodora.service.product.UnknownProductException;
 import com.soodora.service.product.UpdateProductRequest;
-import com.soodora.service.user.UserService;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,6 +24,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static java.time.Duration.ZERO;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -48,49 +48,54 @@ class ProductControllerIT {
     @MockitoBean
     private ProductService productService;
 
-    @MockitoBean
-    private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
+    private static final Page<Product> PRODUCT_PAGE = new PageImpl<>(List.of(PRODUCT));
+
+    private static final MockMultipartFile FILE_DATA = new MockMultipartFile(
+            "file",
+            "test-image.jpg",
+            "image/jpeg",
+            "dummy image content".getBytes());
+
+    private static final CreateProductRequest VALID_CREATE_REQUEST = new CreateProductRequest(
+            "Product Name",
+            "Description",
+            "category",
+            BigDecimal.valueOf(100.99),
+            EUR,
+            10);
+    private static final UpdateProductRequest VALID_UPDATE_REQUEST = new UpdateProductRequest(
+            "Updated Product Name",
+            "Updated Description",
+            "Updated Category",
+            BigDecimal.valueOf(10.99),
+            EUR,
+            20L);
+
+    private static final MockMultipartFile CREATE_REQUEST_JSON = new MockMultipartFile(
+            "data",
+            "",
+            "application/json",
+            asJsonString(VALID_CREATE_REQUEST).getBytes());
+    private static final MockMultipartFile UPDATE_REQUEST_JSON = new MockMultipartFile(
+            "data",
+            "",
+            "application/json",
+            asJsonString(VALID_UPDATE_REQUEST).getBytes());
 
     @Test
-    void givenArtistUser_whenCreateProduct_thenSuccess() throws Exception {
-        // GIVEN
-        CreateProductRequest request = new CreateProductRequest(
-                "Product Name",
-                "Description",
-                "category",
-                BigDecimal.valueOf(100.99),
-                EUR,
-                10);
-
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
-
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
-
-        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
-        doNothing().when(productService).createProduct(any(), eq(ARTIST_USER), any());
-
+    void givenValidRequest_whenCreateProduct_thenCreated() throws Exception {
         // WHEN & THEN
         mockMvc.perform(multipart("/products")
-                .file(jsonPart)
-                .file(filePart)
+                .file(CREATE_REQUEST_JSON)
+                .file(FILE_DATA)
                 .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void givenInvalidRequest_whenCreateProduct_thenInvalidRequest() throws Exception {
+    void givenInvalidRequest_whenCreateProduct_thenBadRequest() throws Exception {
         // GIVEN
-        CreateProductRequest request = new CreateProductRequest(
+        CreateProductRequest invalidRequest = new CreateProductRequest(
                 null,
                 null,
                 "category",
@@ -98,106 +103,79 @@ class ProductControllerIT {
                 EUR,
                 0);
 
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
-
-        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
         doThrow(InvalidRequestException.class).when(productService)
-                .createProduct(any(), eq(ARTIST_USER), eq(fileData));
+                .createProduct(any(CreateProductCommand.class), eq(ARTIST_USER), any(FileData.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/products")
                 .with(user(new UserPrincipal(ARTIST_USER)))
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(request)))
+                .content(asJsonString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void givenNoArtistUser_whenCreateProduct_thenForbidden() throws Exception {
-        // GIVEN
-        CreateProductRequest request = new CreateProductRequest(
-                "Product Name",
-                "Description",
-                "category",
-                BigDecimal.valueOf(100.99),
-                EUR,
-                10);
-
-        MockMultipartFile dataPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
-
+    void givenAuthenticatedUser_whenCreateProduct_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(multipart("/products")
-                .file(dataPart)
+                .file(CREATE_REQUEST_JSON)
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void givenValidPage_whenGetProducts_thenSuccess() throws Exception {
-        // GIVEN
-        Page<Product> productsPage = new PageImpl<>(List.of(PRODUCT));
+    void givenUnauthenticatedUser_whenCreateProduct_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(multipart("/products")
+                .file(CREATE_REQUEST_JSON))
+                .andExpect(status().isForbidden());
+    }
 
-        when(productService.retrieveProducts(any(ProductFilter.class), any(Pageable.class))).thenReturn(productsPage);
+    @Test
+    void givenValidPage_whenSearchProducts_thenOk() throws Exception {
+        // GIVEN
+        when(productService.retrieveProducts(any(ProductFilter.class), any(Pageable.class)))
+                .thenReturn(PRODUCT_PAGE);
 
         // WHEN & THEN
         mockMvc.perform(get("/products/search")
-                .with(user(new UserPrincipal(USER)))
                 .param("page", "0")
                 .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(PRODUCT.getSlug()))
-                .andExpect(jsonPath("$.content[0].name").value(PRODUCT.getName()));
+                .andExpect(jsonPath("$.content[0].slug").value(PRODUCT.getSlug()));
     }
 
     @Test
-    void givenValidSlug_whenGetProduct_thenSuccess() throws Exception {
+    void givenValidSlug_whenGetProduct_thenOk() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         when(productService.retrieveProduct("slug")).thenReturn(PRODUCT);
 
-        mockMvc.perform(get("/products/slug")
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/products/slug"))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void givenValidRequest_whenUpdateProduct_thenSuccess() throws Exception {
+    void givenInvalidSlug_whenGetProduct_thenNotFound() throws Exception {
         // GIVEN
-        UpdateProductRequest request = new UpdateProductRequest(
-                "Updated Product Name",
-                "Updated Description",
-                "Updated Category",
-                BigDecimal.valueOf(10.99),
-                EUR,
-                20L);
+        when(productService.retrieveProduct("slug"))
+                .thenThrow(new UnknownProductException("Unable to find product"));
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
+        mockMvc.perform(get("/products/slug"))
+                .andExpect(status().isNotFound());
+    }
 
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "updated-image.jpg",
-                "image/jpeg",
-                "dummy updated image".getBytes());
-
-        when(productService.updateProduct(any(), eq(PRODUCT.getSlug()), any())).thenReturn(PRODUCT);
+    @Test
+    void givenValidRequest_whenUpdateProduct_thenOk() throws Exception {
+        // GIVEN
+        when(productService.updateProduct(eq(ARTIST_USER), eq(PRODUCT.getSlug()), any(), any()))
+                .thenReturn(PRODUCT);
 
         // WHEN & THEN
         mockMvc.perform(multipart("/products/" + PRODUCT.getSlug())
-                .file(jsonPart)
-                .file(filePart)
-                .with(user(new UserPrincipal(USER)))
+                .file(UPDATE_REQUEST_JSON)
+                .file(FILE_DATA)
+                .with(user(new UserPrincipal(ARTIST_USER)))
                 .with(requestPostProcessor -> {
                     requestPostProcessor.setMethod("PUT");
                     return requestPostProcessor;
@@ -206,40 +184,30 @@ class ProductControllerIT {
     }
 
     @Test
-    void givenInvalidRequest_whenUpdateProduct_thenInvalidRequest() throws Exception {
+    void givenInvalidRequest_whenUpdateProduct_thenBadRequest() throws Exception {
         // GIVEN
-        UpdateProductRequest updateProductRequest = new UpdateProductRequest(
+        UpdateProductRequest invalidRequest = new UpdateProductRequest(
                 "",
                 "",
                 "",
                 BigDecimal.valueOf(100.99),
                 EUR,
                 0L);
-
-        MockMultipartFile dataPart = new MockMultipartFile(
+        MockMultipartFile requestJsonPart = new MockMultipartFile(
                 "data",
                 "",
                 "application/json",
-                asJsonString(updateProductRequest).getBytes());
+                asJsonString(invalidRequest).getBytes());
 
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "test-image.jpg",
-                "image/jpeg",
-                "dummy image content".getBytes());
-
-        FileData fileData = new FileData(filePart.getBytes(), filePart.getOriginalFilename(),
-                filePart.getContentType());
-
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
         doThrow(new InvalidRequestException("Invalid request"))
-                .when(productService).updateProduct(any(), eq("productSlug1"), eq(fileData));
+                .when(productService)
+                .updateProduct(eq(ARTIST_USER), eq("slug"), any(UpdateProductCommand.class), any(FileData.class));
 
         // WHEN & THEN
-        mockMvc.perform(multipart("/products/productSlug1")
-                .file(dataPart)
-                .file(filePart)
-                .with(user(new UserPrincipal(USER)))
+        mockMvc.perform(multipart("/products/slug")
+                .file(requestJsonPart)
+                .file(FILE_DATA)
+                .with(user(new UserPrincipal(ARTIST_USER)))
                 .with(requestPostProcessor -> {
                     requestPostProcessor.setMethod("PUT");
                     return requestPostProcessor;
@@ -248,16 +216,136 @@ class ProductControllerIT {
     }
 
     @Test
-    void givenValidSlug_whenDeleteProduct_thenSuccess() throws Exception {
+    void givenInvalidPermission_whenUpdateProduct_thenForbidden() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(productService).deleteProductBySlug("slug");
+        when(productService.updateProduct(eq(ARTIST_USER), eq(PRODUCT.getSlug()), any(), any()))
+                .thenThrow(new InvalidPermissionException("Only the owner can update the product"));
+
+        // WHEN & THEN
+        mockMvc.perform(multipart("/products/" + PRODUCT.getSlug())
+                .file(UPDATE_REQUEST_JSON)
+                .file(FILE_DATA)
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                }))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenUpdateProduct_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(multipart("/products/" + PRODUCT.getSlug())
+                .file(UPDATE_REQUEST_JSON)
+                .file(FILE_DATA)
+                .with(user(new UserPrincipal(USER)))
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                }))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenUpdateProduct_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(multipart("/products/" + PRODUCT.getSlug())
+                .file(UPDATE_REQUEST_JSON)
+                .file(FILE_DATA)
+                .with(requestPostProcessor -> {
+                    requestPostProcessor.setMethod("PUT");
+                    return requestPostProcessor;
+                }))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenDeleteProduct_thenOk() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/products/slug")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidPermission_whenDeleteProduct_thenForbidden() throws Exception {
+        // GIVEN
+        doThrow(new InvalidPermissionException("Only the owner can delete the product"))
+                .when(productService).deleteProduct(ARTIST_USER, "slug");
 
         // WHEN & THEN
         mockMvc.perform(delete("/products/slug")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenDeleteProduct_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/products/slug")
                 .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenDeleteProduct_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/products/slug"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenGetProductAnalytics_thenOk() throws Exception {
+        // GIVEN
+        ProductAnalytics analytics = new ProductAnalytics(0, 0, 0, 0, ZERO, "$");
+
+        when(productService.computeProductAnalytics(ARTIST_USER, "slug"))
+                .thenReturn(analytics);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/products/slug/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isOk());
-        verify(productService).deleteProductBySlug("slug");
+    }
+
+    @Test
+    void givenInvalidSlug_whenGetProductAnalytics_thenNotFound() throws Exception {
+        // GIVEN
+        when(productService.computeProductAnalytics(ARTIST_USER, "slug"))
+                .thenThrow(new UnknownProductException("Unable to find product"));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/products/slug/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenInvalidPermission_whenGetProductAnalytics_thenForbidden() throws Exception {
+        // GIVEN
+        when(productService.computeProductAnalytics(ARTIST_USER, "slug"))
+                .thenThrow(new InvalidPermissionException("Only the owner can get analytics"));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/products/slug/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenGetProductAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/products/slug/analytics")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenGetProductAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/products/slug/analytics"))
+                .andExpect(status().isForbidden());
     }
 
 }

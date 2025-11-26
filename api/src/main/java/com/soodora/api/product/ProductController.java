@@ -7,9 +7,11 @@ import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductFilter;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.product.*;
+import com.soodora.service.product.CreateProductRequest;
+import com.soodora.service.product.ProductService;
+import com.soodora.service.product.ProductUnityException;
+import com.soodora.service.product.UpdateProductRequest;
 import com.soodora.service.shared.FileDataService;
-import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Optional;
 
@@ -55,7 +57,7 @@ public class ProductController implements ProductResource {
 
     @Override
     @GetMapping("/search")
-    public Page<ProductDTO> getProducts(@RequestParam(value = "userSlug") Optional<String> userSlug,
+    public Page<ProductDTO> searchProducts(@RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
             @RequestParam(value = "category") Optional<String> category,
@@ -74,34 +76,34 @@ public class ProductController implements ProductResource {
 
     @Override
     @PutMapping("/{slug}")
+    @PreAuthorize("hasRole('ARTIST')")
     public ResponseEntity<JsonResponse> updateProduct(
+            @AuthenticationPrincipal User user,
             @PathVariable String slug,
             @RequestPart("data") UpdateProductRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
-            Product product = service.updateProduct(request.toCommand(), slug, fileData);
+            Product product = service.updateProduct(user, slug, request.toCommand(), fileData);
 
             return new ResponseEntity<>(ProductDTO.build(product), OK);
-        } catch (InvalidRequestException | UnknownProductException exception) {
+        } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
     }
 
     @Override
     @DeleteMapping("/{slug}")
-    public void deleteProduct(@PathVariable("slug") String slug) {
-        service.deleteProductBySlug(slug);
+    @PreAuthorize("hasRole('ARTIST')")
+    public void deleteProduct(@AuthenticationPrincipal User user, @PathVariable("slug") String slug) {
+        service.deleteProduct(user, slug);
     }
 
     @Override
     @GetMapping("/{slug}/analytics")
+    @PreAuthorize("hasRole('ARTIST')")
     public ProductAnalyticsDTO getProductAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug) {
-        Product product = service.retrieveProduct(slug);
-
-        if (product.getVendor().getSlug().equals(user.getSlug()) || user.isAdmin())
-            return ProductAnalyticsDTO.build(service.computeProductAnalytics(slug));
-        throw new InvalidPermissionException("Only the product vendor can access the analytics");
+        return ProductAnalyticsDTO.build(service.computeProductAnalytics(user, slug));
     }
 
 }

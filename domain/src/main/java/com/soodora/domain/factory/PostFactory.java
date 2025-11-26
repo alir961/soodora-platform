@@ -30,20 +30,4 @@ public class PostFactory {
                 new Date());
     }
 
-    public static Post buildDefaultPostWithoutAudio(String slug, String title) {
-        return new Post(
-                slug,
-                title,
-                "Content",
-                "imageUrl",
-                null,
-                null,
-                buildDefaultArtistUser(),
-                emptyList(),
-                emptyList(),
-                emptyList(),
-                new Date(),
-                new Date());
-    }
-
 }

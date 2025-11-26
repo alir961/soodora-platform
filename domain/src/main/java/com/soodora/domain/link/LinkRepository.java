@@ -1,13 +1,20 @@
 package com.soodora.domain.link;
 
+import com.soodora.domain.linkhub.LinkHub;
+
 import java.util.List;
 
 public interface LinkRepository {
 
-    Link save(CreateLinkCommand command, String userSlug);
-    Link update(UpdateLinkCommand command, String slug);
-    Link findBySlug(String slug);
+    Link save(String artistSlug, CreateLinkCommand command);
+
+    Link findBySlug(String linkSlug);
     List<Link> findAll();
-    void deleteBySlug(String slug);
+
+    Link update(String linkSlug, UpdateLinkCommand command);
+
+    void deleteBySlug(String linkSlug);
+
+    LinkHub findLinkHubByLinkSlug(String linkSlug);
 
 }

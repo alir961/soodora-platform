@@ -5,24 +5,27 @@ import com.soodora.domain.link.CreateLinkCommand;
 import com.soodora.domain.link.Link;
 import com.soodora.domain.link.LinkRepository;
 import com.soodora.domain.link.UpdateLinkCommand;
+import com.soodora.domain.linkhub.LinkHub;
+import com.soodora.domain.user.ArtistWithoutLinkHubException;
+import com.soodora.service.linkhub.UnknownLinkHubException;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static java.util.Collections.emptyList;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 import static com.soodora.domain.factory.LinkFactory.buildDefaultLink;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.domain.factory.LinkHubFactory.buildDefaultLinkHub;
+import static com.soodora.test.TestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class LinkServiceTest {
@@ -30,37 +33,51 @@ class LinkServiceTest {
     @Mock
     private LinkRepository linkRepository;
 
+    @InjectMocks
     private LinkService linkService;
 
     private static final Link LINK_1 = buildDefaultLink("slug1", "Title 1");
     private static final Link LINK_2 = buildDefaultLink("slug2", "Title 2");
     private static final Link LINK_3 = buildDefaultLink("slug3", "Title 3");
     private static final List<Link> LINKS = List.of(LINK_1, LINK_2, LINK_3);
+    private static final LinkHub LINK_HUB = buildDefaultLinkHub("slug", "Link Hub", LINKS);
 
-    @BeforeEach
-    void setUp() {
-        linkService = new LinkService(linkRepository);
-    }
+    private static final CreateLinkCommand CREATE_LINK_COMMAND = new CreateLinkCommand("title", "url", "iconUrl",
+            "description");
+    private static final UpdateLinkCommand UPDATE_LINK_COMMAND = new UpdateLinkCommand("new title", "new url",
+            "new iconUrl", "new description");
 
     @Test
-    void createLink_Success() throws UnknownSlugException {
+    void givenValidCommand_whenCreateLink_thenLinkIsCreated() {
         // GIVEN
-        CreateLinkCommand command = new CreateLinkCommand("title", "url", "iconUrl", "description");
-
-        when(linkRepository.save(any(CreateLinkCommand.class), eq(USER.getSlug()))).thenReturn(LINK_1);
+        when(linkRepository.save(USER.getSlug(), CREATE_LINK_COMMAND))
+                .thenReturn(LINK_1);
 
         // WHEN
-        String slug = linkService.createLink(command, USER.getSlug());
+        String slug = linkService.createLink(USER.getSlug(), CREATE_LINK_COMMAND);
 
         // THEN
         assertEquals(LINK_1.getSlug(), slug);
-        verify(linkRepository).save(any(CreateLinkCommand.class), eq(USER.getSlug()));
     }
 
     @Test
-    void retrieveAllLinks_Success() {
+    void givenArtistWithoutLinkHub_whenCreateLink_thenThrowUnknownLinkHubException() {
         // GIVEN
-        when(linkRepository.findAll()).thenReturn(LINKS);
+        when(linkRepository.save(USER.getSlug(), CREATE_LINK_COMMAND))
+                .thenThrow(ArtistWithoutLinkHubException.class);
+
+        // WHEN
+        Executable executable = () -> linkService.createLink(USER.getSlug(), CREATE_LINK_COMMAND);
+
+        // THEN
+        assertThrows(UnknownLinkHubException.class, executable);
+    }
+
+    @Test
+    void givenLinks_whenRetrieveAllLinks_thenReturnLinks() {
+        // GIVEN
+        when(linkRepository.findAll())
+                .thenReturn(LINKS);
 
         // WHEN
         List<Link> retrievedLinks = linkService.retrieveAllLinks();
@@ -70,99 +87,137 @@ class LinkServiceTest {
     }
 
     @Test
-    void retrieveAllLinks_NoContent() {
+    void givenValidSlug_whenRetrieveLinkBySlug_thenReturnLink() {
         // GIVEN
-        when(linkRepository.findAll()).thenReturn(emptyList());
+        when(linkRepository.findBySlug(LINK_1.getSlug()))
+                .thenReturn(LINK_1);
 
         // WHEN
-        List<Link> retrievedLinks = linkService.retrieveAllLinks();
-
-        // THEN
-        assertTrue(retrievedLinks.isEmpty());
-    }
-
-    @Test
-    void retrieveLinkBySlug_Success() {
-        // GIVEN
-        String slug = LINK_1.getSlug();
-        when(linkRepository.findBySlug(slug)).thenReturn(LINK_1);
-
-        // WHEN
-        Link link = linkService.retrieveLinkBySlug(slug);
+        Link link = linkService.retrieveLink(LINK_1.getSlug());
 
         // THEN
         assertEquals(LINK_1, link);
     }
 
     @Test
-    void retrieveLinkBySlug_Unknown() {
+    void givenInvalidSlug_whenRetrieveLinkBySlug_thenReturnLink() {
         // GIVEN
-        String unknownSlug = "unknown";
-
-        when(linkRepository.findBySlug(unknownSlug)).thenReturn(null);
+        when(linkRepository.findBySlug(LINK_1.getSlug()))
+                .thenThrow(UnknownSlugException.class);
 
         // WHEN
-        Link link = linkService.retrieveLinkBySlug(unknownSlug);
+        Executable executable = () -> linkService.retrieveLink(LINK_1.getSlug());
 
         // THEN
-        assertNull(link);
+        assertThrows(UnknownLinkException.class, executable);
     }
 
     @Test
-    void updateLink_Success() {
+    void givenLinkHubOwner_whenUpdateLink_thenLinkIsUpdated() {
         // GIVEN
-        UpdateLinkCommand command = new UpdateLinkCommand("new title", "new url", "new iconUrl", "new description");
-        String slug = LINK_1.getSlug();
-
-        when(linkRepository.update(command, slug)).thenReturn(LINK_1);
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
+        when(linkRepository.update(LINK_1.getSlug(), UPDATE_LINK_COMMAND))
+                .thenReturn(LINK_1);
 
         // WHEN
-        Link updatedLink = linkService.updateLink(command, slug);
+        Link updatedLink = linkService.updateLink(ARTIST_USER, LINK_1.getSlug(), UPDATE_LINK_COMMAND);
 
         // THEN
         assertEquals(LINK_1, updatedLink);
     }
 
     @Test
-    void updateLink_UnknownSlug_ThrowsUnityException() {
+    void givenAdministrator_whenUpdateLink_thenLinkIsUpdated() {
         // GIVEN
-        UpdateLinkCommand command = new UpdateLinkCommand("new title", "new url", "new iconUrl", "new description");
-        String slug = "unknown";
-
-        when(linkRepository.update(command, slug)).thenThrow(UnknownSlugException.class);
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
+        when(linkRepository.update(LINK_1.getSlug(), UPDATE_LINK_COMMAND))
+                .thenReturn(LINK_1);
 
         // WHEN
-        Executable executable = () -> linkService.updateLink(command, slug);
+        Link updatedLink = linkService.updateLink(ADMIN, LINK_1.getSlug(), UPDATE_LINK_COMMAND);
 
         // THEN
-        assertThrows(LinkUnityException.class, executable);
+        assertEquals(LINK_1, updatedLink);
     }
 
     @Test
-    void deleteLinkBySlug_Success() throws UnknownSlugException {
+    void givenInvalidUser_whenUpdateLink_thenThrowInvalidPermissionException() {
         // GIVEN
-        String slug = LINK_1.getSlug();
-        doNothing().when(linkRepository).deleteBySlug(slug);
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
 
         // WHEN
-        Executable executable = () -> linkService.deleteLinkBySlug(slug);
+        Executable executable = () -> linkService.updateLink(USER, LINK_1.getSlug(), UPDATE_LINK_COMMAND);
 
         // THEN
-        assertDoesNotThrow(executable);
-        verify(linkRepository).deleteBySlug(slug);
+        assertThrows(InvalidPermissionException.class, executable, "to change");
     }
 
     @Test
-    void deleteLinkBySlug_Unknown_ThrowsUnknownLinkException() throws UnknownSlugException {
+    void givenInvalidSlug_whenUpdateLink_thenThrowUnknownLinkException() {
         // GIVEN
-        String slug = LINK_1.getSlug();
-
-        doThrow(UnknownSlugException.class).when(linkRepository).deleteBySlug(slug);
+        when(linkRepository.findLinkHubByLinkSlug("unknown"))
+                .thenThrow(UnknownSlugException.class);
 
         // WHEN
-        Executable executable = () -> linkService.deleteLinkBySlug(slug);
+        Executable executable = () -> linkService.updateLink(ARTIST_USER, "unknown", UPDATE_LINK_COMMAND);
 
         // THEN
         assertThrows(UnknownLinkException.class, executable);
     }
+
+    @Test
+    void givenLinkHubOwner_whenDeleteLink_thenDeleteLink() {
+        // GIVEN
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
+
+        // WHEN
+        linkService.deleteLink(ARTIST_USER, LINK_1.getSlug());
+
+        // THEN
+        verify(linkRepository).deleteBySlug(LINK_1.getSlug());
+    }
+
+    @Test
+    void givenAdministrator_whenDeleteLink_thenDeleteLink() {
+        // GIVEN
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
+
+        // WHEN
+        linkService.deleteLink(ADMIN, LINK_1.getSlug());
+
+        // THEN
+        verify(linkRepository).deleteBySlug(LINK_1.getSlug());
+    }
+
+    @Test
+    void givenInvalidUser_whenDeleteLink_thenThrowInvalidPermissionException() {
+        // GIVEN
+        when(linkRepository.findLinkHubByLinkSlug(LINK_1.getSlug()))
+                .thenReturn(LINK_HUB);
+
+        // WHEN
+        Executable executable = () -> linkService.deleteLink(USER, LINK_1.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the Link Hub owner can delete a link");
+    }
+
+    @Test
+    void givenInvalidSlug_whenDeleteLink_thenThrowUnknownLinkException() {
+        // GIVEN
+        doThrow(UnknownSlugException.class)
+                .when(linkRepository).findLinkHubByLinkSlug("unknown");
+
+        // WHEN
+        Executable executable = () -> linkService.deleteLink(ARTIST_USER, "unknown");
+
+        // THEN
+        assertThrows(UnknownLinkException.class, executable);
+    }
+
 }

@@ -35,12 +35,20 @@ public interface MediaKitResource {
             @Parameter(hidden = true) User user,
             @RequestBody(required = true, description = "The data required to create a new media kit") CreateMediaKitRequest request);
 
+    @Operation(summary = "Retrieve a media kit by slug", description = "Fetches a media kit by its unique slug identifier.", responses = {
+            @ApiResponse(responseCode = "200", description = "Media kit successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Media kit not found")
+    })
+    MediaKitDTO getMediaKitBySlug(
+            @Parameter(description = "Slug of the media kit", required = true) @PathVariable String slug);
+
     @Operation(summary = "Update an existing media kit", description = "Updates the media kit identified by its slug. Only the owner artist can update it.", responses = {
             @ApiResponse(responseCode = "200", description = "Media kit successfully updated"),
             @ApiResponse(responseCode = "400", description = "Invalid update data", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "404", description = "Media kit not found")
     })
     ResponseEntity<JsonResponse> updateMediaKit(
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Slug of the media kit to update", required = true) @PathVariable String slug,
             @RequestBody(required = true, description = "Updated media kit information") UpdateMediaKitRequest request);
 
@@ -49,13 +57,15 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "404", description = "Media kit not found")
     })
     void deleteMediaKit(
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Slug of the media kit to delete", required = true) @PathVariable String slug);
 
     @Operation(summary = "Add an item to a media kit", description = "Adds a new item (photo, video, press link, etc.) to an artist's media kit. Accepts multipart form-data with an optional file.", responses = {
             @ApiResponse(responseCode = "201", description = "Item successfully added", content = @Content(schema = @Schema(implementation = JsonResponse.class))),
             @ApiResponse(responseCode = "400", description = "Invalid item data", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
-    ResponseEntity<JsonResponse> addItem(
+    ResponseEntity<JsonResponse> addMediaKitItem(
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Slug of the artist owning the media kit", required = true) @PathVariable String artistSlug,
             @RequestPart("data") CreateMediaKitItemRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
@@ -65,7 +75,8 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "400", description = "Invalid item update data", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
             @ApiResponse(responseCode = "404", description = "Media kit item not found")
     })
-    ResponseEntity<JsonResponse> updateItem(
+    ResponseEntity<JsonResponse> updateMediaKitItem(
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Slug of the media kit item to update", required = true) @PathVariable String itemSlug,
             @RequestPart("data") UpdateMediaKitItemRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
@@ -74,22 +85,9 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "204", description = "Item successfully deleted"),
             @ApiResponse(responseCode = "404", description = "Item not found")
     })
-    void deleteItem(
+    void deleteMediaKitItem(
+            @AuthenticationPrincipal User user,
             @Parameter(description = "Slug of the item to delete", required = true) @PathVariable String itemSlug);
-
-    @Operation(summary = "Retrieve a media kit by slug", description = "Fetches a media kit by its unique slug identifier.", responses = {
-            @ApiResponse(responseCode = "200", description = "Media kit successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Media kit not found")
-    })
-    MediaKitDTO getMediaKitBySlug(
-            @Parameter(description = "Slug of the media kit", required = true) @PathVariable String slug);
-
-    @Operation(summary = "Retrieve a media kit by artist slug", description = "Fetches the media kit associated with a specific artist.", responses = {
-            @ApiResponse(responseCode = "200", description = "Media kit successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitDTO.class))),
-            @ApiResponse(responseCode = "404", description = "Media kit not found")
-    })
-    MediaKitDTO getMediaKitByArtistSlug(
-            @Parameter(description = "Slug of the artist", required = true) @PathVariable String artistSlug);
 
     @Operation(summary = "Export a media kit as PDF", description = "Exports the media kit as a downloadable PDF. The user must have permission to access it.", responses = {
             @ApiResponse(responseCode = "200", description = "PDF successfully exported", content = @Content(mediaType = "application/pdf")),
@@ -106,5 +104,12 @@ public interface MediaKitResource {
             @ApiResponse(responseCode = "404", description = "Media kit not found", content = @Content(schema = @Schema(implementation = ExceptionResponse.class)))
     })
     MediaKitAnalyticsDTO getMediaKitAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug);
+
+    @Operation(summary = "Retrieve a media kit by artist slug", description = "Fetches the media kit associated with a specific artist.", responses = {
+            @ApiResponse(responseCode = "200", description = "Media kit successfully retrieved", content = @Content(schema = @Schema(implementation = MediaKitDTO.class))),
+            @ApiResponse(responseCode = "404", description = "Media kit not found")
+    })
+    MediaKitDTO getMediaKitByArtistSlug(
+            @Parameter(description = "Slug of the artist", required = true) @PathVariable String artistSlug);
 
 }

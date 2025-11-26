@@ -3,13 +3,12 @@ package com.soodora.api.mediakit;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.mediakit.*;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,8 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpHeaders.CONTENT_DISPOSITION;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.http.MediaType.APPLICATION_PDF;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -36,237 +37,437 @@ class MediaKitControllerIT {
     @MockitoBean
     private MediaKitService mediaKitService;
 
-    @Test
-    void shouldCreateMediaKit() throws Exception {
-        CreateMediaKitRequest request = new CreateMediaKitRequest("Title", "Short bio", "Long bio", "email@example.com",
-                "+123456789");
+    private static final CreateMediaKitRequest VALID_CREATE_REQUEST = new CreateMediaKitRequest("Title", "Short bio",
+            "Long bio", "email@example.com",
+            "+123456789");
+    private static final UpdateMediaKitRequest VALID_UPDATE_REQUEST = new UpdateMediaKitRequest("New Title",
+            "New Short", "New Long",
+            "new@example.com", "+11111111");
+    private static final CreateMediaKitItemRequest VALID_ITEM_CREATE_REQUEST = new CreateMediaKitItemRequest("image",
+            "Title", "https://example.com/img.jpg");
+    private static final UpdateMediaKitItemRequest VALID_ITEM_UPDATE_REQUEST = new UpdateMediaKitItemRequest("image",
+            "Updated Title", "https://example.com/img2.jpg");
 
-        when(mediaKitService.createMediaKit(any(), eq(USER))).thenReturn(MEDIA_KIT);
+    private static final MockMultipartFile FILE_PART = new MockMultipartFile(
+            "file",
+            "test.jpg",
+            "image/jpeg",
+            "fake image content".getBytes());
+
+    private static final MockMultipartFile ITEM_CREATE_JSON_PART = new MockMultipartFile(
+            "data",
+            "",
+            "application/json",
+            asJsonString(VALID_ITEM_CREATE_REQUEST).getBytes());
+    private static final MockMultipartFile ITEM_UPDATE_JSON_PART = new MockMultipartFile(
+            "data",
+            "",
+            "application/json",
+            asJsonString(VALID_ITEM_UPDATE_REQUEST).getBytes());
+
+    private static final byte[] PDF_DATA = "PDF_DATA".getBytes();
+
+    @Test
+    void givenValidRequest_whenCreateMediaKit_thenCreated() throws Exception {
+        when(mediaKitService.createMediaKit(eq(ARTIST_USER), any())).thenReturn(MEDIA_KIT);
 
         mockMvc.perform(post("/media-kits")
-                .with(user(new UserPrincipal(USER)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_CREATE_REQUEST)))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void shouldReturnBadRequestOnInvalidCreateMediaKit() throws Exception {
-        CreateMediaKitRequest request = new CreateMediaKitRequest("", "", "", "", "");
+    void givenInvalidRequest_whenCreateMediaKit_thenBadRequest() throws Exception {
+        CreateMediaKitRequest invalidRequest = new CreateMediaKitRequest("", "", "", "", "");
 
         when(mediaKitService.createMediaKit(any(), any()))
                 .thenThrow(new InvalidRequestException("Invalid media kit"));
 
         mockMvc.perform(post("/media-kits")
-                .with(user(new UserPrincipal(USER)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void shouldUpdateMediaKit() throws Exception {
-        String slug = "slug1";
-        UpdateMediaKitRequest request = new UpdateMediaKitRequest("New Title", "New Short", "New Long",
-                "new@example.com", "+11111111");
-
-        when(mediaKitService.updateMediaKit(any(), any())).thenReturn(MEDIA_KIT);
-
-        mockMvc.perform(put("/media-kits/" + slug)
+    void givenAuthenticatedUser_whenCreateMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(post("/media-kits")
                 .with(user(new UserPrincipal(USER)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_CREATE_REQUEST)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenCreateMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(post("/media-kits")
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_CREATE_REQUEST)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenGetMediaKitBySlug_thenOk() throws Exception {
+        when(mediaKitService.retrieveMediaKitBySlug(MEDIA_KIT.getSlug())).thenReturn(MEDIA_KIT);
+
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(USER)))
+                .accept(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(APPLICATION_JSON));
+    }
+
+    @Test
+    void givenInvalidSlug_whenGetMediaKitBySlug_thenNotFound() throws Exception {
+        when(mediaKitService.retrieveMediaKitBySlug(MEDIA_KIT.getSlug()))
+                .thenThrow(new UnknownMediaKitException("Unable to find media kit"));
+
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(USER)))
+                .accept(APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenValidRequest_whenUpdateMediaKit_thenOk() throws Exception {
+        when(mediaKitService.updateMediaKit(eq(ARTIST_USER), eq(MEDIA_KIT.getSlug()), any())).thenReturn(MEDIA_KIT);
+
+        mockMvc.perform(put("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_UPDATE_REQUEST)))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldReturnBadRequestOnInvalidUpdateMediaKit() throws Exception {
-        String slug = "slug1";
-        UpdateMediaKitRequest request = new UpdateMediaKitRequest("", "", "", "", "");
+    void givenInvalidRequest_whenUpdateMediaKit_thenBadRequest() throws Exception {
+        UpdateMediaKitRequest invalidRequest = new UpdateMediaKitRequest("", "", "", "", "");
 
-        when(mediaKitService.updateMediaKit(any(), any())).thenThrow(new InvalidRequestException("Invalid update"));
+        when(mediaKitService.updateMediaKit(eq(ARTIST_USER), eq(MEDIA_KIT.getSlug()), any()))
+                .thenThrow(new InvalidRequestException("Invalid update"));
 
-        mockMvc.perform(put("/media-kits/" + slug)
-                .with(user(new UserPrincipal(USER)))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+        mockMvc.perform(put("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(invalidRequest)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void shouldGetMediaKitBySlug() throws Exception {
-        String slug = "test-slug";
+    void givenInvalidPermission_whenUpdateMediaKit_thenForbidden() throws Exception {
+        when(mediaKitService.updateMediaKit(eq(ARTIST_USER), eq(MEDIA_KIT.getSlug()), any()))
+                .thenThrow(new InvalidPermissionException("Only the owner can update the Soodora Kit"));
 
-        when(mediaKitService.retrieveMediaKitBySlug(slug)).thenReturn(MEDIA_KIT);
-
-        mockMvc.perform(get("/media-kits/" + slug)
-                .with(user(new UserPrincipal(USER)))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(mediaKitService).retrieveMediaKitBySlug(slug);
+        mockMvc.perform(put("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_UPDATE_REQUEST)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldGetMediaKitByArtistSlug() throws Exception {
-        String artistSlug = "artist-slug";
-
-        when(mediaKitService.retrieveMediaKitByArtistSlug(artistSlug)).thenReturn(MEDIA_KIT);
-
-        mockMvc.perform(get("/media-kits/artist/" + artistSlug)
+    void givenUAuthenticatedUser_whenUpdateMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(put("/media-kits/" + MEDIA_KIT.getSlug())
                 .with(user(new UserPrincipal(USER)))
-                .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
-
-        verify(mediaKitService).retrieveMediaKitByArtistSlug(artistSlug);
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_UPDATE_REQUEST)))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldDeleteMediaKit() throws Exception {
-        String slug = "slug1";
+    void givenUnauthenticatedUser_whenUpdateMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(put("/media-kits/" + MEDIA_KIT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_UPDATE_REQUEST)))
+                .andExpect(status().isForbidden());
+    }
 
-        mockMvc.perform(delete("/media-kits/" + slug)
+    @Test
+    void givenValidSlug_whenDeleteMediaKit_thenOk() throws Exception {
+        mockMvc.perform(delete("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidSlug_whenDeleteMediaKit_thenNotFound() throws Exception {
+        doThrow(new UnknownMediaKitException("Unable to find media kit"))
+                .when(mediaKitService)
+                .deleteMediaKit(ARTIST_USER, MEDIA_KIT.getSlug());
+
+        mockMvc.perform(delete("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenInvalidPermission_whenDeleteMediaKit_thenForbidden() throws Exception {
+        doThrow(new InvalidPermissionException("Only the owner can delete the Soodora Kit"))
+                .when(mediaKitService)
+                .deleteMediaKit(ARTIST_USER, MEDIA_KIT.getSlug());
+
+        mockMvc.perform(delete("/media-kits/" + MEDIA_KIT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenDeleteMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(delete("/media-kits/" + MEDIA_KIT.getSlug())
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-
-        verify(mediaKitService).deleteMediaKit(slug);
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldAddMediaKitItem() throws Exception {
-        // GIVEN
-        CreateMediaKitItemRequest request = new CreateMediaKitItemRequest("image", "Title",
-                "https://example.com/img.jpg");
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                "fake image content".getBytes());
+    void givenUnauthenticatedUser_whenDeleteMediaKit_thenForbidden() throws Exception {
+        mockMvc.perform(delete("/media-kits/" + MEDIA_KIT.getSlug()))
+                .andExpect(status().isForbidden());
+    }
 
-        when(mediaKitService.addMediaKitItem(any(), eq(ARTIST_USER.getSlug()), any())).thenReturn(MEDIA_KIT_ITEM);
+    @Test
+    void givenValidRequest_whenAddMediaKitItem_thenOk() throws Exception {
+        when(mediaKitService.addMediaKitItem(eq(ARTIST_USER), eq(ARTIST_USER.getSlug()), any(), any()))
+                .thenReturn(MEDIA_KIT_ITEM);
 
-        // WHEN + THEN
         mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
-                .file(jsonPart)
-                .file(filePart)
-                .with(user(new UserPrincipal(USER))))
+                .file(ITEM_CREATE_JSON_PART)
+                .file(FILE_PART)
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void shouldUpdateMediaKitItem() throws Exception {
-        String itemSlug = "item-slug";
-        UpdateMediaKitItemRequest request = new UpdateMediaKitItemRequest("Image", "Updated Title",
-                "https://example.com/img2.jpg");
+    void givenInvalidArtistSlug_whenAddMediaKitItem_thenNotFound() throws Exception {
+        when(mediaKitService.addMediaKitItem(eq(ARTIST_USER), eq(ARTIST_USER.getSlug()), any(), any()))
+                .thenThrow(new UnknownMediaKitException("Unable to find media kit"));
 
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(request).getBytes());
+        mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
+                .file(ITEM_CREATE_JSON_PART)
+                .file(FILE_PART)
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
 
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "update.jpg",
-                "image/jpeg",
-                "updated image".getBytes());
+    @Test
+    void givenInvalidPermission_whenAddMediaKitItem_thenForbidden() throws Exception {
+        when(mediaKitService.addMediaKitItem(eq(ARTIST_USER), eq(ARTIST_USER.getSlug()), any(), any()))
+                .thenThrow(new InvalidPermissionException("Only the owner can add items to the Soodora Kit"));
 
-        when(mediaKitService.updateMediaKitItem(any(), any(), any())).thenReturn(MEDIA_KIT_ITEM);
+        mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
+                .file(ITEM_CREATE_JSON_PART)
+                .file(FILE_PART)
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
 
-        mockMvc.perform(multipart("/media-kits/items/" + itemSlug)
-                .file(jsonPart)
-                .file(filePart)
-                .with(user(new UserPrincipal(USER)))
-                .with(request1 -> {
-                    request1.setMethod("PUT");
-                    return request1;
-                })) // force PUT for multipart
+    @Test
+    void givenAuthenticatedUser_whenAddMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
+                .file(ITEM_CREATE_JSON_PART)
+                .file(FILE_PART)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenAddMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(multipart("/media-kits/" + ARTIST_USER.getSlug() + "/items")
+                .file(ITEM_CREATE_JSON_PART)
+                .file(FILE_PART))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidRequest_whenUpdateMediaKitItem_thenOk() throws Exception {
+        when(mediaKitService.updateMediaKitItem(eq(ARTIST_USER), eq(MEDIA_KIT_ITEM.getSlug()), any(), any()))
+                .thenReturn(MEDIA_KIT_ITEM);
+
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .file(ITEM_UPDATE_JSON_PART)
+                .file(FILE_PART)
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void shouldReturnBadRequestOnInvalidUpdateItem() throws Exception {
-        String itemSlug = "item-slug";
-        UpdateMediaKitItemRequest request = new UpdateMediaKitItemRequest("Image", "Updated Title",
+    void givenInvalidRequest_whenUpdateMediaKitItem_thenBadRequest() throws Exception {
+        UpdateMediaKitItemRequest invalidRequest = new UpdateMediaKitItemRequest("Image", "Updated Title",
                 "https://example.com/img2.jpg");
-
         MockMultipartFile jsonPart = new MockMultipartFile(
                 "data",
                 "",
                 "application/json",
-                asJsonString(request).getBytes());
+                asJsonString(invalidRequest).getBytes());
 
-        when(mediaKitService.updateMediaKitItem(any(), any(), any()))
+        when(mediaKitService.updateMediaKitItem(eq(ARTIST_USER), eq(MEDIA_KIT_ITEM.getSlug()), any(), any()))
                 .thenThrow(new InvalidRequestException("Invalid update item"));
 
-        mockMvc.perform(multipart("/media-kits/items/" + itemSlug)
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
                 .file(jsonPart)
-                .with(user(new UserPrincipal(USER)))
-                .with(request1 -> {
-                    request1.setMethod("PUT");
-                    return request1;
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
                 }))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    void shouldDeleteMediaKitItem() throws Exception {
-        String itemSlug = "item-slug";
+    void givenInvalidSlug_whenUpdateMediaKitItem_thenBadRequest() throws Exception {
+        when(mediaKitService.updateMediaKitItem(eq(ARTIST_USER), eq(MEDIA_KIT_ITEM.getSlug()), any(), any()))
+                .thenThrow(new UnknownMediaKitItemException("Unable to find media kit item"));
 
-        mockMvc.perform(delete("/media-kits/items/" + itemSlug)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-
-        verify(mediaKitService).deleteMediaKitItem(itemSlug);
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .file(ITEM_UPDATE_JSON_PART)
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void shouldExportPdf() throws Exception {
-        byte[] pdfData = "PDFDATA".getBytes();
+    void givenInvalidPermission_whenUpdateMediaKitItem_thenForbidden() throws Exception {
+        when(mediaKitService.updateMediaKitItem(eq(ARTIST_USER), eq(MEDIA_KIT_ITEM.getSlug()), any(), any()))
+                .thenThrow(new InvalidPermissionException("Only the owner can update items from the Soodora Kit"));
 
-        when(mediaKitService.exportMediaKitToPdf("slug1", USER))
-                .thenReturn(pdfData);
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .file(ITEM_UPDATE_JSON_PART)
+                .with(user(new UserPrincipal(ARTIST_USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
+                .andExpect(status().isForbidden());
+    }
 
-        mockMvc.perform(get("/media-kits/slug1/export/pdf")
+    @Test
+    void givenAuthenticatedUser_whenUpdateMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .file(ITEM_UPDATE_JSON_PART)
+                .with(user(new UserPrincipal(USER)))
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenUpdateMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(multipart("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .file(ITEM_UPDATE_JSON_PART)
+                .with(request -> {
+                    request.setMethod("PUT");
+                    return request;
+                }))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenDeleteMediaKitItem_thenOk() throws Exception {
+        mockMvc.perform(delete("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidSlug_whenDeleteMediaKitItem_thenNotFound() throws Exception {
+        doThrow(new UnknownMediaKitItemException("Unable to find media kit item"))
+                .when(mediaKitService)
+                .deleteMediaKitItem(ARTIST_USER, MEDIA_KIT_ITEM.getSlug());
+
+        mockMvc.perform(delete("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenInvalidPermission_whenDeleteMediaKitItem_thenForbidden() throws Exception {
+        doThrow(new InvalidPermissionException("Only the owner can update items from the Soodora Kit"))
+                .when(mediaKitService)
+                .deleteMediaKitItem(ARTIST_USER, MEDIA_KIT_ITEM.getSlug());
+
+        mockMvc.perform(delete("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenDeleteMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(delete("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug())
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenDeleteMediaKitItem_thenForbidden() throws Exception {
+        mockMvc.perform(delete("/media-kits/items/" + MEDIA_KIT_ITEM.getSlug()))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenExportPdf_thenOk() throws Exception {
+        when(mediaKitService.exportMediaKitToPdf(USER, MEDIA_KIT.getSlug()))
+                .thenReturn(PDF_DATA);
+
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug() + "/export/pdf")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("mediakit_slug1.pdf")));
+                .andExpect(content().contentType(APPLICATION_PDF))
+                .andExpect(header().string(CONTENT_DISPOSITION, containsString("mediakit_slug.pdf")));
     }
 
     @Test
-    void shouldReturnForbiddenWithoutAuthOnCreate() throws Exception {
-        CreateMediaKitRequest request = new CreateMediaKitRequest("Title", "Short bio", "Long bio", "email@example.com",
-                "+123456789");
+    void givenInvalidSlug_whenExportPdf_thenNotFound() throws Exception {
+        when(mediaKitService.exportMediaKitToPdf(USER, MEDIA_KIT.getSlug()))
+                .thenThrow(new UnknownMediaKitException("Unable to find media kit"));
 
-        mockMvc.perform(post("/media-kits")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(asJsonString(request)))
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug() + "/export/pdf")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenExportPdf_thenForbidden() throws Exception {
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug() + "/export/pdf"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void shouldReturnForbiddenWithoutAuthOnExport() throws Exception {
-        mockMvc.perform(get("/media-kits/slug1/export/pdf"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void shouldReturnInternalServerErrorOnPdfExportFailure() throws Exception {
-        when(mediaKitService.exportMediaKitToPdf("slug1", USER))
+    void givenPdfGenerationFailure_whenExportPdf_thenInternalServerError() throws Exception {
+        when(mediaKitService.exportMediaKitToPdf(USER, MEDIA_KIT.getSlug()))
                 .thenThrow(new RuntimeException("PDF generation failed"));
 
-        mockMvc.perform(get("/media-kits/slug1/export/pdf")
+        mockMvc.perform(get("/media-kits/" + MEDIA_KIT.getSlug() + "/export/pdf")
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isInternalServerError())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON));
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void givenValidArtistSlug_whenGetMediaKitByArtistSlug_thenOk() throws Exception {
+        when(mediaKitService.retrieveMediaKitByArtistSlug(ARTIST_USER.getSlug()))
+                .thenReturn(MEDIA_KIT);
+
+        mockMvc.perform(get("/media-kits/artist/" + ARTIST_USER.getSlug()))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidArtistSlug_whenGetMediaKitByArtistSlug_thenNotFound() throws Exception {
+        when(mediaKitService.retrieveMediaKitByArtistSlug(ARTIST_USER.getSlug()))
+                .thenThrow(new UnknownMediaKitException("Unable to find media kit item"));
+
+        mockMvc.perform(get("/media-kits/artist/" + ARTIST_USER.getSlug()))
+                .andExpect(status().isNotFound());
     }
 
 }
