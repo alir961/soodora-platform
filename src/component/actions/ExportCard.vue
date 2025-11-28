@@ -1,10 +1,16 @@
 <script setup lang="ts">
-import { PropType, ref } from 'vue';
+import { PropType, ref, computed } from 'vue';
 import { IonIcon } from '@ionic/vue';
-import { shareOutline } from 'ionicons/icons';
+import { shareOutline, colorPaletteOutline } from 'ionicons/icons';
 import { Post } from '@/entity/Post';
 import { Product } from '@/entity/Product';
-import { createPostCanvas, createProductCanvas, downloadCanvas, ExportTheme } from '@/graphics/canvasExport';
+import {
+  createPostCanvas,
+  createProductCanvas,
+  downloadCanvas,
+  ExportTheme,
+  CustomColors,
+} from '@/graphics/canvasExport';
 import { showToast } from '@/utils';
 
 const props = defineProps({
@@ -24,9 +30,231 @@ const previewDataUrl = ref<string>('');
 const isGeneratingPreview = ref(false);
 const showFullscreenPreview = ref(false);
 
+const useCustomColor = ref(false);
+const customAccentColor = ref('#7dd3fc');
+const showOrbs = ref(true);
+
+const showColorPicker = ref(false);
+const hue = ref(195);
+const saturation = ref(92);
+const brightness = ref(99);
+const isDraggingSL = ref(false);
+const isDraggingHue = ref(false);
+const slPickerRef = ref<HTMLElement | null>(null);
+const hueSliderRef = ref<HTMLElement | null>(null);
+
+const presetColors = ['#7dd3fc', '#c084fc', '#f472b6', '#34d399', '#fbbf24', '#fb923c', '#ef4444', '#22d3ee'];
+
+const hsvToHex = (h: number, s: number, v: number): string => {
+  s /= 100;
+  v /= 100;
+
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
+
+  let r = 0,
+    g = 0,
+    b = 0;
+
+  if (h >= 0 && h < 60) {
+    r = c;
+    g = x;
+    b = 0;
+  } else if (h >= 60 && h < 120) {
+    r = x;
+    g = c;
+    b = 0;
+  } else if (h >= 120 && h < 180) {
+    r = 0;
+    g = c;
+    b = x;
+  } else if (h >= 180 && h < 240) {
+    r = 0;
+    g = x;
+    b = c;
+  } else if (h >= 240 && h < 300) {
+    r = x;
+    g = 0;
+    b = c;
+  } else {
+    r = c;
+    g = 0;
+    b = x;
+  }
+
+  const toHex = (n: number) =>
+    Math.round((n + m) * 255)
+      .toString(16)
+      .padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+const hexToHsv = (hex: string): { h: number; s: number; v: number } => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (!result) return { h: 0, s: 100, v: 100 };
+
+  const r = parseInt(result[1], 16) / 255;
+  const g = parseInt(result[2], 16) / 255;
+  const b = parseInt(result[3], 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+
+  let h = 0;
+  const s = max === 0 ? 0 : (d / max) * 100;
+  const v = max * 100;
+
+  if (d !== 0) {
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) * 60;
+        break;
+      case g:
+        h = ((b - r) / d + 2) * 60;
+        break;
+      case b:
+        h = ((r - g) / d + 4) * 60;
+        break;
+    }
+  }
+
+  return { h: Math.round(h), s: Math.round(s), v: Math.round(v) };
+};
+
+const currentPickerColor = computed(() => hsvToHex(hue.value, saturation.value, brightness.value));
+
+const slGradientStyle = computed(() => ({
+  background: `linear-gradient(to top, #000, transparent), 
+               linear-gradient(to right, #fff, hsl(${hue.value}, 100%, 50%))`,
+}));
+
+const slHandleStyle = computed(() => ({
+  left: `${saturation.value}%`,
+  top: `${100 - brightness.value}%`,
+}));
+
+const hueHandleStyle = computed(() => ({
+  left: `${(hue.value / 360) * 100}%`,
+}));
+
+const handleSLStart = (e: MouseEvent | TouchEvent) => {
+  isDraggingSL.value = true;
+  handleSLMove(e);
+  document.addEventListener('mousemove', handleSLMove);
+  document.addEventListener('mouseup', handleSLEnd);
+  document.addEventListener('touchmove', handleSLMove);
+  document.addEventListener('touchend', handleSLEnd);
+};
+
+const handleSLMove = (e: MouseEvent | TouchEvent) => {
+  if (!slPickerRef.value) return;
+
+  const rect = slPickerRef.value.getBoundingClientRect();
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+  const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+  let x = (clientX - rect.left) / rect.width;
+  let y = (clientY - rect.top) / rect.height;
+
+  x = Math.max(0, Math.min(1, x));
+  y = Math.max(0, Math.min(1, y));
+
+  saturation.value = Math.round(x * 100);
+  brightness.value = Math.round((1 - y) * 100);
+};
+
+const handleSLEnd = () => {
+  isDraggingSL.value = false;
+  document.removeEventListener('mousemove', handleSLMove);
+  document.removeEventListener('mouseup', handleSLEnd);
+  document.removeEventListener('touchmove', handleSLMove);
+  document.removeEventListener('touchend', handleSLEnd);
+};
+
+const handleHueStart = (e: MouseEvent | TouchEvent) => {
+  isDraggingHue.value = true;
+  handleHueMove(e);
+  document.addEventListener('mousemove', handleHueMove);
+  document.addEventListener('mouseup', handleHueEnd);
+  document.addEventListener('touchmove', handleHueMove);
+  document.addEventListener('touchend', handleHueEnd);
+};
+
+const handleHueMove = (e: MouseEvent | TouchEvent) => {
+  if (!hueSliderRef.value) return;
+
+  const rect = hueSliderRef.value.getBoundingClientRect();
+  const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+
+  let x = (clientX - rect.left) / rect.width;
+  x = Math.max(0, Math.min(1, x));
+
+  hue.value = Math.round(x * 360);
+};
+
+const handleHueEnd = () => {
+  isDraggingHue.value = false;
+  document.removeEventListener('mousemove', handleHueMove);
+  document.removeEventListener('mouseup', handleHueEnd);
+  document.removeEventListener('touchmove', handleHueMove);
+  document.removeEventListener('touchend', handleHueEnd);
+};
+
+const hexInputValue = ref('');
+
+const handleHexInput = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  let value = target.value.toUpperCase();
+
+  if (!value.startsWith('#')) {
+    value = '#' + value;
+  }
+
+  hexInputValue.value = value;
+
+  if (/^#[0-9A-F]{6}$/i.test(value)) {
+    const hsv = hexToHsv(value);
+    hue.value = hsv.h;
+    saturation.value = hsv.s;
+    brightness.value = hsv.v;
+  }
+};
+
+const openColorPicker = () => {
+  const hsv = hexToHsv(customAccentColor.value);
+  hue.value = hsv.h;
+  saturation.value = hsv.s;
+  brightness.value = hsv.v;
+  hexInputValue.value = customAccentColor.value.toUpperCase();
+  showColorPicker.value = true;
+};
+
+const closeColorPicker = () => {
+  customAccentColor.value = currentPickerColor.value;
+  if (!useCustomColor.value) {
+    useCustomColor.value = true;
+  }
+  showColorPicker.value = false;
+  generatePreview(selectedTheme.value);
+};
+
+const customColors = computed<CustomColors | undefined>(() => {
+  if (useCustomColor.value || !showOrbs.value) {
+    return {
+      accent: useCustomColor.value ? customAccentColor.value : undefined,
+      showOrbs: showOrbs.value,
+    };
+  }
+  return undefined;
+});
+
 const open = () => {
   showExportModal.value = true;
   selectedTheme.value = 'black';
+  useCustomColor.value = false;
+  showOrbs.value = true;
   generatePreview('black');
 };
 
@@ -34,6 +262,9 @@ const closeModal = () => {
   showExportModal.value = false;
   selectedTheme.value = 'black';
   previewDataUrl.value = '';
+  useCustomColor.value = false;
+  showColorPicker.value = false;
+  showOrbs.value = true;
 };
 
 const selectTheme = (theme: ExportTheme) => {
@@ -41,13 +272,37 @@ const selectTheme = (theme: ExportTheme) => {
   generatePreview(theme);
 };
 
+const toggleCustomColor = () => {
+  useCustomColor.value = !useCustomColor.value;
+  generatePreview(selectedTheme.value);
+};
+
+const toggleOrbs = () => {
+  showOrbs.value = !showOrbs.value;
+  generatePreview(selectedTheme.value);
+};
+
+const selectPresetColor = (color: string) => {
+  customAccentColor.value = color;
+
+  const hsv = hexToHsv(color);
+  hue.value = hsv.h;
+  saturation.value = hsv.s;
+  brightness.value = hsv.v;
+
+  if (!useCustomColor.value) {
+    useCustomColor.value = true;
+  }
+  generatePreview(selectedTheme.value);
+};
+
 const generatePreview = async (theme: ExportTheme) => {
   isGeneratingPreview.value = true;
   try {
     const canvas =
       props.type === 'post'
-        ? await createPostCanvas(props.item as Post, theme)
-        : await createProductCanvas(props.item as Product, theme);
+        ? await createPostCanvas(props.item as Post, theme, customColors.value)
+        : await createProductCanvas(props.item as Product, theme, customColors.value);
 
     previewDataUrl.value = canvas.toDataURL();
   } catch (error) {
@@ -63,8 +318,8 @@ const confirmExport = async () => {
   try {
     const canvas =
       props.type === 'post'
-        ? await createPostCanvas(props.item as Post, selectedTheme.value)
-        : await createProductCanvas(props.item as Product, selectedTheme.value);
+        ? await createPostCanvas(props.item as Post, selectedTheme.value, customColors.value)
+        : await createProductCanvas(props.item as Product, selectedTheme.value, customColors.value);
 
     downloadCanvas(canvas);
     closeModal();
@@ -95,31 +350,102 @@ const closeFullscreenPreview = () => {
           <button class="close-btn" @click="closeModal">✕</button>
 
           <div class="modal-content">
-            <h3>Share {{ type }}</h3>
+            <h3 class="modal-title">Share {{ type }}</h3>
 
-            <div class="theme-selector">
-              <button class="theme-btn" :class="{ active: selectedTheme === 'black' }" @click="selectTheme('black')">
-                Black
-              </button>
-              <button class="theme-btn" :class="{ active: selectedTheme === 'white' }" @click="selectTheme('white')">
-                White
-              </button>
-              <button
-                class="theme-btn"
-                :class="{ active: selectedTheme === 'transparent' }"
-                @click="selectTheme('transparent')">
-                Clear
-              </button>
-            </div>
-
-            <div class="preview-container" @click="openFullscreenPreview">
-              <div v-if="isGeneratingPreview" class="preview-loading">
-                <div class="loading-spinner"></div>
+            <div class="main-row">
+              <div class="preview-section" @click="openFullscreenPreview">
+                <div v-if="isGeneratingPreview" class="preview-loading">
+                  <div class="loading-spinner"></div>
+                </div>
+                <img v-else-if="previewDataUrl" :src="previewDataUrl" :alt="`${type} preview`" class="preview-image" />
               </div>
-              <img v-else-if="previewDataUrl" :src="previewDataUrl" :alt="`${type} preview`" class="preview-image" />
+
+              <div class="controls-section">
+                <button
+                  class="control-btn"
+                  :class="{ active: selectedTheme === 'black' }"
+                  @click="selectTheme('black')">
+                  Dark
+                </button>
+                <button
+                  class="control-btn"
+                  :class="{ active: selectedTheme === 'white' }"
+                  @click="selectTheme('white')">
+                  Light
+                </button>
+                <button
+                  class="control-btn"
+                  :class="{ active: selectedTheme === 'transparent' }"
+                  @click="selectTheme('transparent')">
+                  Clear
+                </button>
+                <button class="control-btn accent-btn" :class="{ active: useCustomColor }" @click="toggleCustomColor">
+                  <ion-icon :icon="colorPaletteOutline"></ion-icon>
+                  <span>Accent</span>
+                </button>
+                <button class="control-btn orbs-btn" :class="{ active: !showOrbs }" @click="toggleOrbs">
+                  <span>{{ showOrbs ? '◐' : '○' }}</span>
+                  <span>Orbs</span>
+                </button>
+              </div>
             </div>
 
-            <p class="preview-hint" v-if="!isGeneratingPreview && previewDataUrl">Tap to view full size</p>
+            <transition name="colors-slide">
+              <div v-if="useCustomColor" class="color-options-bar">
+                <button
+                  v-for="color in presetColors"
+                  :key="color"
+                  class="preset-color"
+                  :class="{ active: customAccentColor === color }"
+                  :style="{ backgroundColor: color }"
+                  @click="selectPresetColor(color)"></button>
+                <button
+                  class="color-picker-trigger"
+                  :style="{ backgroundColor: customAccentColor }"
+                  @click="openColorPicker">
+                  <span class="picker-icon">⚙</span>
+                </button>
+              </div>
+            </transition>
+
+            <transition name="picker-fade">
+              <div v-if="showColorPicker" class="color-picker-overlay" @click="closeColorPicker">
+                <div class="color-picker-modal" @click.stop>
+                  <div class="picker-header">
+                    <span class="picker-title">Pick a color</span>
+                    <button class="picker-close" @click="closeColorPicker">✕</button>
+                  </div>
+
+                  <div
+                    ref="slPickerRef"
+                    class="sl-picker"
+                    :style="slGradientStyle"
+                    @mousedown="handleSLStart"
+                    @touchstart.prevent="handleSLStart">
+                    <div class="sl-handle" :style="slHandleStyle"></div>
+                  </div>
+
+                  <div
+                    ref="hueSliderRef"
+                    class="hue-slider"
+                    @mousedown="handleHueStart"
+                    @touchstart.prevent="handleHueStart">
+                    <div class="hue-handle" :style="hueHandleStyle"></div>
+                  </div>
+
+                  <div class="color-preview-row">
+                    <div class="color-preview-swatch" :style="{ backgroundColor: currentPickerColor }"></div>
+                    <input
+                      type="text"
+                      class="hex-input"
+                      :value="currentPickerColor.toUpperCase()"
+                      @input="handleHexInput"
+                      maxlength="7"
+                      placeholder="#000000" />
+                  </div>
+                </div>
+              </div>
+            </transition>
 
             <button class="share-btn" :disabled="!selectedTheme || isGeneratingPreview" @click="confirmExport">
               <ion-icon :icon="shareOutline"></ion-icon>
@@ -153,9 +479,9 @@ const closeFullscreenPreview = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 10000;
   display: flex;
   align-items: center;
@@ -167,8 +493,6 @@ const closeFullscreenPreview = () => {
   position: relative;
   background: linear-gradient(145deg, rgba(24, 30, 42, 0.98), rgba(18, 22, 30, 0.96));
   border-radius: 18px;
-  width: 100%;
-  max-width: 280px;
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -176,24 +500,25 @@ const closeFullscreenPreview = () => {
     0 24px 48px rgba(0, 0, 0, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.08);
   overflow: hidden;
+  width: 340px;
 }
 
 .close-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 10px;
+  right: 10px;
   appearance: none;
   border: 0;
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.6);
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 300;
   transition: all 0.2s ease;
   z-index: 1;
@@ -210,94 +535,48 @@ const closeFullscreenPreview = () => {
 }
 
 .modal-content {
-  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
 }
 
-.modal-content h3 {
-  margin: 0 0 0.65rem 0;
-  font-size: 1.15rem;
+.modal-title {
+  margin: 0;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #ffffff;
   text-align: center;
   letter-spacing: -0.02em;
+  text-transform: capitalize;
 }
 
-.theme-selector {
+.main-row {
   display: flex;
-  gap: 0.35rem;
-  margin-bottom: 0.65rem;
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.3rem;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-direction: row;
+  gap: 1rem;
 }
 
-.theme-btn {
-  flex: 1;
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: rgba(255, 255, 255, 0.5);
-  padding: 0.4rem 0.4rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.theme-btn:hover {
-  color: rgba(255, 255, 255, 0.8);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.theme-btn.active {
-  background: linear-gradient(135deg, #2563eb, #60a5fa);
-  color: #ffffff;
-  box-shadow:
-    0 2px 8px rgba(37, 99, 235, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.theme-btn:active {
-  transform: scale(0.96);
-}
-
-.preview-container {
-  border-radius: 10px;
+.preview-section {
+  width: 160px;
+  height: 284px;
+  border-radius: 12px;
   overflow: hidden;
-  margin-bottom: 0.4rem;
-  background: rgba(96, 165, 250, 0.08);
-  border: 2px solid rgba(96, 165, 250, 0.15);
+  background: rgba(96, 165, 250, 0.06);
+  border: 1px solid rgba(96, 165, 250, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 160px;
   cursor: pointer;
   transition: all 0.25s ease;
-  position: relative;
+  flex-shrink: 0;
 }
 
-.preview-container::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(96, 165, 250, 0.05);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-  pointer-events: none;
+.preview-section:hover {
+  border-color: rgba(96, 165, 250, 0.25);
 }
 
-.preview-container:hover {
-  border-color: rgba(96, 165, 250, 0.3);
-  transform: scale(1.02);
-}
-
-.preview-container:hover::after {
-  opacity: 1;
-}
-
-.preview-container:active {
+.preview-section:active {
   transform: scale(0.98);
 }
 
@@ -319,7 +598,7 @@ const closeFullscreenPreview = () => {
 .loading-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.1);
   border-top-color: #60a5fa;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -331,29 +610,357 @@ const closeFullscreenPreview = () => {
   }
 }
 
-.preview-hint {
+.controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  height: 284px;
+}
+
+.control-btn {
+  flex: 1;
+  width: 100%;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.5rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3rem;
-  margin: 0 0 0.65rem 0;
-  font-size: 0.7rem;
-  color: rgba(96, 165, 250, 0.8);
-  font-weight: 500;
-  text-align: center;
+  gap: 0.4rem;
 }
 
-.preview-hint ion-icon {
+.control-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.control-btn.active {
+  background: linear-gradient(135deg, #2563eb, #60a5fa);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow:
+    0 3px 10px rgba(37, 99, 235, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.control-btn:active {
+  transform: scale(0.97);
+}
+
+.control-btn.accent-btn {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.18), rgba(125, 211, 252, 0.14));
+  border-color: rgba(192, 132, 252, 0.3);
+  color: #ffffff;
+}
+
+.control-btn.accent-btn ion-icon {
   font-size: 15px;
+  color: #c084fc;
+}
+
+.control-btn.accent-btn:hover {
+  background: linear-gradient(135deg, rgba(192, 132, 252, 0.25), rgba(125, 211, 252, 0.2));
+  border-color: rgba(192, 132, 252, 0.4);
+}
+
+.control-btn.accent-btn.active {
+  background: linear-gradient(135deg, #a855f7, #c084fc);
+  border-color: transparent;
+  box-shadow:
+    0 3px 10px rgba(168, 85, 247, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.accent-btn.active ion-icon {
+  color: #ffffff;
+}
+
+.control-btn.orbs-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.control-btn.orbs-btn.active {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #fca5a5;
+}
+
+.color-options-bar {
+  display: flex;
+  gap: 0.35rem;
+  padding: 0.5rem 0.6rem;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.preset-color {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.preset-color:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.preset-color.active {
+  border-color: #ffffff;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.color-picker-trigger {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.color-picker-trigger:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.picker-icon {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.color-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 10002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.color-picker-modal {
+  background: linear-gradient(145deg, rgba(30, 36, 50, 0.98), rgba(22, 26, 36, 0.96));
+  border-radius: 16px;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+  width: 260px;
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.picker-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.picker-close {
+  appearance: none;
+  border: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.6);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.picker-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.sl-picker {
+  width: 100%;
+  height: 160px;
+  border-radius: 10px;
+  position: relative;
+  cursor: crosshair;
+  margin-bottom: 0.75rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.sl-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hue-slider {
+  width: 100%;
+  height: 20px;
+  border-radius: 10px;
+  background: linear-gradient(
+    to right,
+    hsl(0, 100%, 50%),
+    hsl(60, 100%, 50%),
+    hsl(120, 100%, 50%),
+    hsl(180, 100%, 50%),
+    hsl(240, 100%, 50%),
+    hsl(300, 100%, 50%),
+    hsl(360, 100%, 50%)
+  );
+  position: relative;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.hue-handle {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 24px;
+  border-radius: 4px;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.color-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.color-preview-swatch {
+  width: 36px;
+  height: 36px;
+  min-width: 36px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.hex-input {
+  width: 100%;
+  min-width: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.hex-input:focus {
+  border-color: rgba(96, 165, 250, 0.5);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.hex-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.picker-fade-enter-active {
+  animation: pickerFadeIn 0.2s ease;
+}
+
+.picker-fade-leave-active {
+  animation: pickerFadeIn 0.15s ease reverse;
+}
+
+@keyframes pickerFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.colors-slide-enter-active {
+  animation: colorsSlide 0.2s ease;
+}
+
+.colors-slide-leave-active {
+  animation: colorsSlide 0.15s ease reverse;
+}
+
+@keyframes colorsSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .share-btn {
   width: 100%;
-  height: 40px;
+  height: 46px;
   border: 0;
-  border-radius: 9px;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(135deg, #1d4ed8, #2563eb 50%, #60a5fa);
@@ -364,12 +971,11 @@ const closeFullscreenPreview = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .share-btn ion-icon {
-  padding-bottom: 4px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .share-btn:disabled {
@@ -398,9 +1004,9 @@ const closeFullscreenPreview = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(96, 165, 250, 0.15);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 10001;
   display: flex;
   align-items: center;
@@ -454,7 +1060,6 @@ const closeFullscreenPreview = () => {
   max-height: 90vh;
   object-fit: contain;
   border-radius: 12px;
-  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.6);
   cursor: default;
   display: block;
 }
@@ -512,42 +1117,33 @@ const closeFullscreenPreview = () => {
   }
 }
 
-@media (max-width: 480px) {
-  .export-modal {
-    max-width: calc(100% - 2rem);
+@media (max-width: 380px) {
+  .main-row {
+    flex-direction: column;
+    align-items: center;
   }
 
-  .modal-content h3 {
-    font-size: 1.1rem;
+  .preview-section {
+    width: 100%;
+    height: 220px;
   }
 
-  .theme-btn {
-    font-size: 0.7rem;
-    padding: 0.35rem 0.35rem;
+  .controls-section {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
 
-  .preview-container {
-    height: 140px;
+  .control-btn {
+    flex: 1;
+    min-width: calc(50% - 0.25rem);
+    padding: 0.6rem 0.5rem;
   }
 
-  .preview-hint {
-    font-size: 0.65rem;
-  }
-
-  .preview-hint ion-icon {
-    font-size: 14px;
-  }
-
-  .fullscreen-overlay {
-    padding: 1rem;
-  }
-
-  .fullscreen-close {
-    top: -14px;
-    right: -14px;
-    width: 40px;
-    height: 40px;
-    font-size: 20px;
+  .color-options-bar {
+    flex-wrap: wrap;
   }
 }
 </style>
