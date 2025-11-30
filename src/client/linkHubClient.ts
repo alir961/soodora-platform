@@ -42,7 +42,7 @@ export async function getLinkHubAnalytics(slug: string): Promise<LinkHubAnalytic
 
 export async function getUserLinkHub(userSlug: string): Promise<LinkHub> {
   return axios
-    .get('/link-hubs', { headers: await getAuthorizedHeader(), params: { userSlug } })
+    .get(`/link-hubs/user/${userSlug}`, { headers: await getAuthorizedHeader() })
     .then((response) => {
       if (response && response.status === 200 && response.data) return response.data as LinkHub;
       return reject('Not found link page');

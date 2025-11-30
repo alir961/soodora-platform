@@ -25,7 +25,7 @@ http://ionicframework.com/docs/theming/ */
 :root {
   /* Force dark mode */
   color-scheme: dark;
-  
+
   /* Primary and Accent Colors */
   --ion-color-primary: #176bfd; /* Blue */
   --ion-color-primary-rgb: 91, 136, 246;

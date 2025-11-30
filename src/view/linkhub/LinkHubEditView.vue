@@ -59,8 +59,10 @@ const deletePageCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 const deleteLinkCardRef = ref<InstanceType<typeof DeleteCard> | null>(null);
 
 const pageUrl = computed(() => {
+  let baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+
   if (!pageSlug.value) return '';
-  const baseUrl = import.meta.env.VITE_API_URL?.replace('/api/', '') || window.location.origin;
+  if (baseUrl.startsWith('http://localhost:8080')) baseUrl = 'https://localhost:5173';
   return `${baseUrl}/linkhub/${pageSlug.value}`;
 });
 
