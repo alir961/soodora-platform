@@ -3,27 +3,30 @@ package com.soodora.service.linkhub;
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.link.Link;
-import com.soodora.domain.linkhub.*;
-import com.soodora.domain.user.LinkHubNotFoundException;
-import com.soodora.service.link.LinkUnityException;
-import com.soodora.service.user.UnknownUserException;
+import com.soodora.domain.linkhub.CreateLinkHubCommand;
+import com.soodora.domain.linkhub.LinkHub;
+import com.soodora.domain.linkhub.LinkHubRepository;
+import com.soodora.domain.linkhub.UpdateLinkHubCommand;
+import com.soodora.domain.user.ArtistWithoutLinkHubException;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 import static com.soodora.domain.factory.LinkFactory.buildDefaultLink;
 import static com.soodora.domain.factory.LinkHubFactory.buildDefaultLinkHub;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class LinkHubServiceTest {
@@ -34,6 +37,7 @@ class LinkHubServiceTest {
     @Mock
     private LinkHubRepository linkHubRepository;
 
+    @InjectMocks
     private LinkHubService linkHubService;
 
     private static final Link LINK_1 = buildDefaultLink("slug1", "Title 1");
@@ -44,29 +48,27 @@ class LinkHubServiceTest {
     private static final LinkHub LINK_HUB_2 = buildDefaultLinkHub("slug2", "Link Hub 2", LINKS);
     private static final List<LinkHub> LINK_HUBS = List.of(LINK_HUB_1, LINK_HUB_2);
 
-    @BeforeEach
-    void setUp() {
-        linkHubService = new LinkHubService(artistRepository, linkHubRepository);
-    }
-
     @Test
-    void createLinkHub_Success() {
+    void givenValidCommand_whenCreateLinkHub_thenLinkHubIsSaved() {
         // GIVEN
         CreateLinkHubCommand command = new CreateLinkHubCommand("Title", "Description");
-        when(linkHubRepository.save(any(), eq(USER))).thenReturn(LINK_HUB_1);
+
+        when(linkHubRepository.save(eq(ARTIST_USER), any()))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        String slug = linkHubService.createLinkHub(command, USER);
+        String slug = linkHubService.createLinkHub(ARTIST_USER, command);
 
         // THEN
         assertEquals(LINK_HUB_1.getSlug(), slug);
-        verify(linkHubRepository).save(command, USER);
+        verify(linkHubRepository).save(ARTIST_USER, command);
     }
 
     @Test
-    void retrieveAllLinkHubs_Success() {
+    void givenLinkHubs_whenRetrieveAllLinkHubs_thenReturnAllLinkHubs() {
         // GIVEN
-        when(linkHubRepository.findAll()).thenReturn(LINK_HUBS);
+        when(linkHubRepository.findAll())
+                .thenReturn(LINK_HUBS);
 
         // WHEN
         List<LinkHub> result = linkHubService.retrieveAllLinkHubs();
@@ -76,98 +78,167 @@ class LinkHubServiceTest {
     }
 
     @Test
-    void retrieveLinkHub_ByUserSlug_WithUserSlug_Success() {
+    void givenValidSlug_whenRetrieveLinkHubBySlug_thenReturnLinkHub() {
         // GIVEN
-        when(artistRepository.retrieveLinkHub(any())).thenReturn(LINK_HUB_1);
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHub result = linkHubService.retrieveLinkHubByUserSlug(USER.getSlug());
+        LinkHub result = linkHubService.retrieveLinkHub(LINK_HUB_1.getSlug());
 
         // THEN
         assertEquals(LINK_HUB_1, result);
-        verify(artistRepository).retrieveLinkHub(any());
     }
 
     @Test
-    void retrieveUserLinkHub_whenLinkHubDoesNotExist_throwsUnknownLinkHubException() {
+    void givenInvalidSlug_whenRetrieveLinkHubBySlug_thenThrowUnknownLinkHubException() {
         // GIVEN
-        doThrow(LinkHubNotFoundException.class).when(artistRepository).retrieveLinkHub(USER.getSlug());
+        when(linkHubRepository.findBySlug("unknown")).thenThrow(UnknownSlugException.class);
 
         // WHEN
-        Executable executable = () -> linkHubService.retrieveLinkHubByUserSlug(USER.getSlug());
+        Executable executable = () -> linkHubService.retrieveLinkHub("unknown");
 
         // THEN
         assertThrows(UnknownLinkHubException.class, executable);
     }
 
     @Test
-    void retrieveLinkHubByUserSlugBySlug_Success() {
+    void givenValidUserSlug_whenRetrieveLinkHubByArtistSlug_thenReturnLinkHub() {
         // GIVEN
-        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug())).thenReturn(LINK_HUB_1);
+        when(artistRepository.retrieveLinkHub(any()))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHub result = linkHubService.retrieveLinkHubBySlug(LINK_HUB_1.getSlug());
+        LinkHub result = linkHubService.retrieveLinkHubByArtistSlug(USER.getSlug());
 
         // THEN
         assertEquals(LINK_HUB_1, result);
     }
 
     @Test
-    void retrieveLinkHubByUserSlugBySlug_UnknownSlug_ThrowsUnknownUserException() {
+    void givenArtistWithoutLinkHub_whenRetrieveLinkHubByArtistSlug_thenThrowUnknownLinkHubException() {
         // GIVEN
-        when(linkHubRepository.findBySlug("unknown")).thenThrow(UnknownSlugException.class);
+        doThrow(ArtistWithoutLinkHubException.class)
+                .when(artistRepository).retrieveLinkHub(USER.getSlug());
 
         // WHEN
-        Executable executable = () -> linkHubService.retrieveLinkHubBySlug("unknown");
+        Executable executable = () -> linkHubService.retrieveLinkHubByArtistSlug(USER.getSlug());
 
         // THEN
-        assertThrows(UnknownUserException.class, executable);
+        assertThrows(UnknownLinkHubException.class, executable);
     }
 
     @Test
-    void updateLinkHub_Success() {
+    void givenLinkHubOwner_whenUpdateLinkHub_thenLinkHubIsUpdated() {
         // GIVEN
         UpdateLinkHubCommand command = new UpdateLinkHubCommand("Updated Title", "Updated Desc");
-        when(linkHubRepository.update(command, LINK_HUB_1.getSlug())).thenReturn(LINK_HUB_1);
+
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
+        when(linkHubRepository.update(LINK_HUB_1.getSlug(), command))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        LinkHub result = linkHubService.updateLinkHub(command, LINK_HUB_1.getSlug());
+        LinkHub result = linkHubService.updateLinkHub(ARTIST_USER, LINK_HUB_1.getSlug(), command);
 
         // THEN
         assertEquals(LINK_HUB_1, result);
-        verify(linkHubRepository).update(command, LINK_HUB_1.getSlug());
     }
 
     @Test
-    void updateLinkHub_UnknownSlug_ThrowsLinkUnityException() {
+    void givenAdministrator_whenUpdateLinkHub_thenLinkHubIsUpdated() {
         // GIVEN
-        UpdateLinkHubCommand command = new UpdateLinkHubCommand("Title", "Desc");
-        when(linkHubRepository.update(command, "unknown")).thenThrow(UnknownSlugException.class);
+        UpdateLinkHubCommand command = new UpdateLinkHubCommand("Updated Title", "Updated Desc");
+
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
+        when(linkHubRepository.update(LINK_HUB_1.getSlug(), command))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        Executable executable = () -> linkHubService.updateLinkHub(command, "unknown");
+        LinkHub result = linkHubService.updateLinkHub(ADMIN, LINK_HUB_1.getSlug(), command);
 
         // THEN
-        assertThrows(LinkUnityException.class, executable);
+        assertEquals(LINK_HUB_1, result);
     }
 
     @Test
-    void deleteLinkHubBySlug_Success() {
+    void givenInvalidUser_whenUpdateLinkHub_thenThrowInvalidPermissionException() {
         // GIVEN
-        doNothing().when(linkHubRepository).deleteBySlug(LINK_HUB_1.getSlug());
+        UpdateLinkHubCommand command = new UpdateLinkHubCommand("Updated Title", "Updated Desc");
 
-        // WHEN / THEN
-        assertDoesNotThrow(() -> linkHubService.deleteLinkHubBySlug(LINK_HUB_1.getSlug()));
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
+
+        // WHEN
+        Executable executable = () -> linkHubService.updateLinkHub(USER, LINK_HUB_1.getSlug(), command);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the owner can update the Link Hub");
+    }
+
+    @Test
+    void givenInvalidSlug_whenUpdateLinkHub_thenThrowUnknownLinkHubException() {
+        // GIVEN
+        UpdateLinkHubCommand command = new UpdateLinkHubCommand("Title", "Desc");
+
+        when(linkHubRepository.findBySlug("unknown"))
+                .thenThrow(UnknownSlugException.class);
+
+        // WHEN
+        Executable executable = () -> linkHubService.updateLinkHub(ARTIST_USER, "unknown", command);
+
+        // THEN
+        assertThrows(UnknownLinkHubException.class, executable);
+    }
+
+    @Test
+    void givenLinkHubOwner_whenDeleteLinkHub_thenLinkHubIsDeleted() {
+        // GIVEN
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
+
+        // WHEN
+        linkHubService.deleteLinkHub(ARTIST_USER, LINK_HUB_1.getSlug());
+
+        // THEN
         verify(linkHubRepository).deleteBySlug(LINK_HUB_1.getSlug());
     }
 
     @Test
-    void deleteLinkHubBySlug_UnknownSlug_ThrowsUnknownLinkHubException() {
+    void givenAdministrator_whenDeleteLinkHub_thenLinkHubIsDeleted() {
         // GIVEN
-        doThrow(UnknownSlugException.class).when(linkHubRepository).deleteBySlug("unknown");
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
 
         // WHEN
-        Executable executable = () -> linkHubService.deleteLinkHubBySlug("unknown");
+        linkHubService.deleteLinkHub(ADMIN, LINK_HUB_1.getSlug());
+
+        // THEN
+        verify(linkHubRepository).deleteBySlug(LINK_HUB_1.getSlug());
+    }
+
+    @Test
+    void givenInvalidUser_whenDeleteLinkHub_thenThrowInvalidPermissionException() {
+        // GIVEN
+        when(linkHubRepository.findBySlug(LINK_HUB_1.getSlug()))
+                .thenReturn(LINK_HUB_1);
+
+        // WHEN
+        Executable executable = () -> linkHubService.deleteLinkHub(USER, LINK_HUB_1.getSlug());
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the owner can delete the Link Hub");
+    }
+
+    @Test
+    void givenUnknownSlug_whenDeleteLinkHub_thenThrowUnknownLinkHubException() {
+        // GIVEN
+        doThrow(UnknownSlugException.class)
+                .when(linkHubRepository).findBySlug("unknown");
+
+        // WHEN
+        Executable executable = () -> linkHubService.deleteLinkHub(ARTIST_USER, "unknown");
 
         // THEN
         assertThrows(UnknownLinkHubException.class, executable);

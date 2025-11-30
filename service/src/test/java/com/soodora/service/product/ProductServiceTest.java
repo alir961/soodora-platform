@@ -4,14 +4,15 @@ import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
@@ -22,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import static com.soodora.domain.factory.ProductFactory.buildProduct;
-import static com.soodora.test.TestConstants.USER;
+import static com.soodora.test.TestConstants.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
@@ -30,6 +31,7 @@ class ProductServiceTest {
     @Mock
     private ProductRepository productRepository;
 
+    @InjectMocks
     private ProductService productService;
 
     private static final Product PRODUCT_1 = buildProduct("1");
@@ -39,19 +41,54 @@ class ProductServiceTest {
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
     private static final List<Product> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final Page<Product> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
-    private static final CreateProductCommand COMMAND = new CreateProductCommand(
+
+    private static final CreateProductCommand VALID_CREATE_COMMAND = new CreateProductCommand(
             PRODUCT_1.getName(), PRODUCT_1.getDescription(), PRODUCT_1.getCategory(), PRODUCT_1.getPrice().amount(),
             PRODUCT_1.getPrice().currency(), PRODUCT_1.getQuantity());
+    private static final UpdateProductCommand VALID_UPDATE_COMMAND = new UpdateProductCommand(
+            "Updated Name",
+            "Updated Description",
+            "newCategory",
+            BigDecimal.valueOf(149.99),
+            Currency.EUR,
+            5L);
 
-    @BeforeEach
-    void setUp() {
-        productService = new ProductService(productRepository);
+    private static final FileData FILE_DATA = new FileData(
+            "dummy image content".getBytes(),
+            "test-image.jpg",
+            "image/jpeg");
+
+    @Test
+    void givenValidProduct_whenCreateProduct_thenProductIsSaved() {
+        // GIVEN
+        when(productRepository.isProductNameUsedByUser(VALID_CREATE_COMMAND.name(), USER.getSlug()))
+                .thenReturn(false);
+
+        // WHEN
+        productService.createProduct(VALID_CREATE_COMMAND, USER, FILE_DATA);
+
+        // THEN
+        verify(productRepository)
+                .save(VALID_CREATE_COMMAND, USER, FILE_DATA);
     }
 
     @Test
-    void retrieveAllProducts_Success() {
+    void givenUsedProductName_whenCreateProduct_thenThrowProductUnityException() {
+        when(productRepository.isProductNameUsedByUser(VALID_CREATE_COMMAND.name(), USER.getSlug()))
+                .thenReturn(true);
+
+        // WHEN
+        Executable executable = () -> productService.createProduct(VALID_CREATE_COMMAND, USER, FILE_DATA);
+
+        // THEN
+        assertThrows(ProductUnityException.class, executable);
+    }
+
+    @Test
+    void givenPage_whenRetrieveAllProducts_thenReturnPageOfProducts() {
         // GIVEN
-        when(productRepository.findAll(PAGEABLE)).thenReturn(PRODUCTS_PAGE);
+        when(productRepository.findAll(PAGEABLE))
+                .thenReturn(PRODUCTS_PAGE);
 
         // WHEN
         Page<Product> retrievedProducts = productService.retrieveAllProducts(PAGEABLE);
@@ -61,14 +98,34 @@ class ProductServiceTest {
     }
 
     @Test
-    void retrieveProducts_FilteredByUserSlug() {
+    void givenEmptyFilter_whenRetrieveProducts_thenReturnAllProducts() {
+        // GIVEN
+        ProductFilter filter = new ProductFilter(empty(), empty(), empty(), empty());
+        Page<Product> pageFilteredProducts = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
+
+        when(productRepository.findAll(PAGEABLE))
+                .thenReturn(pageFilteredProducts);
+
+        // WHEN
+        List<Product> retrievedProducts = productService.retrieveProducts(filter, PAGEABLE)
+                .getContent();
+
+        // THEN
+        assertEquals(3, retrievedProducts.size());
+        assertEquals(PRODUCT_1, retrievedProducts.get(0));
+        assertEquals(PRODUCT_2, retrievedProducts.get(1));
+        assertEquals(PRODUCT_3, retrievedProducts.get(2));
+    }
+
+    @Test
+    void givenUserFilter_whenRetrieveProducts_thenReturnFilteredProducts() {
         // GIVEN
         ProductFilter filter = new ProductFilter(of(USER.getSlug()), empty(), empty(), empty());
-
         List<Product> filteredProducts = List.of(PRODUCT_1, PRODUCT_3);
         Page<Product> pageFilteredProducts = new PageImpl<>(filteredProducts, PAGEABLE, filteredProducts.size());
 
-        when(productRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredProducts);
+        when(productRepository.findByFilter(filter, PAGEABLE))
+                .thenReturn(pageFilteredProducts);
 
         // WHEN
         Page<Product> retrievedProducts = productService.retrieveProducts(filter, PAGEABLE);
@@ -80,123 +137,177 @@ class ProductServiceTest {
     }
 
     @Test
-    void retrieveProduct_Success() {
+    void givenValidSlug_whenRetrieveProduct_thenReturnProduct() {
         // GIVEN
-        when(productRepository.findBySlug(PRODUCT_1.getSlug())).thenReturn(PRODUCT_1);
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
 
         // WHEN
-        Product retrievedProduct = productService.retrieveProduct(PRODUCT_1.getSlug());
+        Product retrievedProduct = productService.retrieveProduct(SLUG_1);
 
         // THEN
         assertEquals(PRODUCT_1, retrievedProduct);
     }
 
     @Test
-    void retrieveProduct_UnknownSlug() {
+    void givenInvalidSlug_whenRetrieveProduct_thenThrowUnknownProductException() {
         // GIVEN
-        when(productRepository.findBySlug(anyString())).thenThrow(UnknownSlugException.class);
+        when(productRepository.findBySlug("unknown"))
+                .thenThrow(UnknownSlugException.class);
 
         // WHEN
-        Executable executable = () -> productService.retrieveProduct("unknown-slug");
+        Executable executable = () -> productService.retrieveProduct("unknown");
 
         // THEN
         assertThrows(UnknownProductException.class, executable);
     }
 
     @Test
-    void updateProduct_Success() {
-        UpdateProductCommand updateCommand = new UpdateProductCommand(
-                "Updated Name",
-                "Updated Description",
-                "newCategory",
-                BigDecimal.valueOf(149.99),
-                Currency.EUR,
-                5L);
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
-        when(productRepository.update(updateCommand, SLUG_1, fileData)).thenReturn(PRODUCT_1);
+    void givenProductVendor_whenUpdateProduct_thenReturnUpdatedProduct() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+        when(productRepository.update(VALID_UPDATE_COMMAND, SLUG_1, FILE_DATA))
+                .thenReturn(PRODUCT_1);
 
-        Product updatedProduct = productService.updateProduct(updateCommand, SLUG_1, fileData);
+        // WHEN
+        Product updatedProduct = productService.updateProduct(ARTIST_USER, SLUG_1, VALID_UPDATE_COMMAND, FILE_DATA);
 
+        // THEN
         assertEquals(PRODUCT_1, updatedProduct);
-        verify(productRepository).update(any(UpdateProductCommand.class), eq(SLUG_1), eq(fileData));
     }
 
     @Test
-    void updateProduct_UnknownSlug() {
-        UpdateProductCommand updateCommand = new UpdateProductCommand(
-                "Updated Name",
-                "Updated Description",
-                "newCategory",
-                BigDecimal.valueOf(149.99),
-                Currency.EUR,
-                5L);
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
-        when(productRepository.update(updateCommand, SLUG_1, fileData))
-                .thenThrow(new UnknownSlugException("Slug not found"));
-
-        assertThrows(ProductUnityException.class, () -> productService.updateProduct(updateCommand, SLUG_1, fileData));
-    }
-
-    @Test
-    void deleteProduct_Success() {
+    void givenAdministrator_whenUpdateProduct_thenReturnUpdatedProduct() {
         // GIVEN
-        doNothing().when(productRepository).deleteProductBySlug(PRODUCT_1.getSlug());
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+        when(productRepository.update(VALID_UPDATE_COMMAND, SLUG_1, FILE_DATA))
+                .thenReturn(PRODUCT_1);
 
         // WHEN
-        Executable executable = () -> productService.deleteProductBySlug(PRODUCT_1.getSlug());
+        Product updatedProduct = productService.updateProduct(ADMIN, SLUG_1, VALID_UPDATE_COMMAND, FILE_DATA);
 
         // THEN
-        assertDoesNotThrow(executable);
-        verify(productRepository).deleteProductBySlug(PRODUCT_1.getSlug());
+        assertEquals(PRODUCT_1, updatedProduct);
     }
 
     @Test
-    void deleteProduct_UnknownSlug() {
+    void givenInvalidUser_whenUpdateProduct_thenThrowInvalidPermissionException() {
         // GIVEN
-        doThrow(UnknownSlugException.class).when(productRepository).deleteProductBySlug(anyString());
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
 
         // WHEN
-        Executable executable = () -> productService.deleteProductBySlug("unknown-slug");
+        Executable executable = () -> productService.updateProduct(USER, SLUG_1, VALID_UPDATE_COMMAND, FILE_DATA);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the vendor can update the product");
+    }
+
+    @Test
+    void givenInvalidSlug_whenUpdateProduct_thenThrowUnknownProductException() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenThrow(UnknownSlugException.class);
+
+        // WHEN
+        Executable executable = () -> productService.updateProduct(ARTIST_USER, SLUG_1, VALID_UPDATE_COMMAND,
+                FILE_DATA);
 
         // THEN
         assertThrows(UnknownProductException.class, executable);
     }
 
     @Test
-    void createProduct_Success() {
+    void givenProductVendor_whenDeleteProduct_thenDeleteProduct() {
         // GIVEN
-        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.getSlug())).thenReturn(false);
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
 
         // WHEN
-        Executable executable = () -> productService.createProduct(COMMAND, USER, fileData);
+        productService.deleteProduct(ARTIST_USER, SLUG_1);
 
         // THEN
-        assertDoesNotThrow(executable);
-        verify(productRepository).save(any(), eq(USER), eq(fileData));
+        verify(productRepository).deleteProductBySlug(SLUG_1);
     }
 
     @Test
-    void createProduct_NameAlreadyUsed() {
-        when(productRepository.isProductNameUsedByUser(COMMAND.name(), USER.getSlug())).thenReturn(true);
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
+    void givenAdministrator_whenDeleteProduct_thenDeleteProduct() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
 
         // WHEN
-        Executable executable = () -> productService.createProduct(COMMAND, USER, fileData);
+        productService.deleteProduct(ADMIN, SLUG_1);
 
         // THEN
-        assertThrows(ProductUnityException.class, executable);
+        verify(productRepository).deleteProductBySlug(SLUG_1);
     }
+
+    @Test
+    void givenInvalidUser_whenDeleteProduct_thenThrowInvalidPermissionException() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+
+        // WHEN
+        Executable executable = () -> productService.deleteProduct(USER, SLUG_1);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the vendor can delete the product");
+    }
+
+    @Test
+    void givenInvalidSlug_whenDeleteProduct_thenThrowUnknownProductException() {
+        // GIVEN
+        doThrow(UnknownSlugException.class)
+                .when(productRepository).findBySlug("unknown");
+
+        // WHEN
+        Executable executable = () -> productService.deleteProduct(ARTIST_USER, "unknown");
+
+        // THEN
+        assertThrows(UnknownProductException.class, executable);
+    }
+
+    @Test
+    void givenProductVendor_whenComputeProductAnalytics_thenReturnAnalytics() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+
+        // WHEN
+        ProductAnalytics analytics = productService.computeProductAnalytics(ARTIST_USER, SLUG_1);
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenAdministrator_whenComputeProductAnalytics_thenReturnAnalytics() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+
+        // WHEN
+        ProductAnalytics analytics = productService.computeProductAnalytics(ADMIN, SLUG_1);
+
+        // THEN
+        assertNotNull(analytics);
+    }
+
+    @Test
+    void givenInvalidUser_whenComputeProductAnalytics_thenThrowInvalidPermissionException() {
+        // GIVEN
+        when(productRepository.findBySlug(SLUG_1))
+                .thenReturn(PRODUCT_1);
+
+        // WHEN
+        Executable executable = () -> productService.computeProductAnalytics(USER, SLUG_1);
+
+        // THEN
+        assertThrows(InvalidPermissionException.class, executable, "Only the product vendor can access the analytics");
+    }
+
 }

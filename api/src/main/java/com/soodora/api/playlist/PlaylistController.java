@@ -12,7 +12,6 @@ import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.playlist.*;
 import com.soodora.service.post.UnknownPostException;
 import com.soodora.service.shared.FileDataService;
-import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Optional;
 
@@ -27,8 +26,6 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 
 import static org.springframework.http.HttpStatus.*;
-
-import static com.soodora.domain.playlist.PlaylistPrivacy.PUBLIC;
 
 @RestController
 @RequiredArgsConstructor
@@ -46,7 +43,7 @@ public class PlaylistController implements PlaylistResource {
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
             FileData fileData = fileDataService.toFileData(imageFile);
-            Playlist playlist = playlistService.createPlaylist(createPlaylistRequest.toCommand(), user, fileData);
+            Playlist playlist = playlistService.createPlaylist(user, createPlaylistRequest.toCommand(), fileData);
 
             return new ResponseEntity<>(new PlaylistSlugResponse(playlist.getSlug()), CREATED);
         } catch (InvalidRequestException | PlaylistUnityException exception) {
@@ -71,12 +68,10 @@ public class PlaylistController implements PlaylistResource {
     @GetMapping("/{slug}")
     public PopulatedPlaylistDTO getPlaylist(@AuthenticationPrincipal User user, @PathVariable String slug,
             Pageable postsPageable) {
-        Playlist playlist = playlistService.retrievePlaylistBySlug(slug);
-        Page<Post> posts = playlistService.retrievePlaylistPostsBySlug(slug, postsPageable);
+        Playlist playlist = playlistService.retrievePlaylistBySlug(user, slug);
+        Page<Post> posts = playlistService.retrievePlaylistPostsBySlug(user, slug, postsPageable);
 
-        if (playlist.getPrivacy() == PUBLIC || playlist.hasAccess(user))
-            return PopulatedPlaylistDTO.build(playlist, posts);
-        throw new InvalidPermissionException("Only the playlist owner can access the playlist");
+        return PopulatedPlaylistDTO.build(playlist, posts);
     }
 
     @Override
@@ -87,13 +82,10 @@ public class PlaylistController implements PlaylistResource {
             @RequestPart("data") UpdatePlaylistRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile) {
         try {
-            Playlist playlist = playlistService.retrievePlaylistBySlug(slug);
             UpdatePlaylistCommand command = request.toCommand();
             FileData fileData = fileDataService.toFileData(imageFile);
+            Playlist playlist = playlistService.updatePlaylist(user, slug, command, fileData);
 
-            if (!playlist.hasAccess(user))
-                throw new InvalidPermissionException("Only the playlist owner can update the playlist");
-            playlist = playlistService.updatePlaylist(command, slug, fileData);
             return new ResponseEntity<>(PlaylistDTO.build(playlist), OK);
         } catch (InvalidRequestException | UnknownPlaylistException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -103,11 +95,7 @@ public class PlaylistController implements PlaylistResource {
     @Override
     @DeleteMapping("/{slug}")
     public void deletePlaylist(@AuthenticationPrincipal User user, @PathVariable("slug") String slug) {
-        Playlist playlist = playlistService.retrievePlaylistBySlug(slug);
-
-        if (!playlist.hasAccess(user))
-            throw new InvalidPermissionException("Only the playlist owner can delete the playlist");
-        playlistService.deletePlaylistBySlug(slug);
+        playlistService.deletePlaylist(user, slug);
     }
 
     @Override
@@ -117,12 +105,9 @@ public class PlaylistController implements PlaylistResource {
             @PathVariable String playlistSlug,
             @PathVariable String postSlug) {
         try {
-            Playlist playlist = playlistService.retrievePlaylistBySlug(playlistSlug);
+            Playlist playlist = playlistService.addPostToPlaylist(user, playlistSlug, postSlug);
             Page<Post> posts = new PageImpl<>(playlist.getPosts());
 
-            if (!playlist.hasAccess(user))
-                throw new InvalidPermissionException("Only the playlist owner can add a post to the playlist");
-            playlist = playlistService.addPostToPlaylist(playlist, postSlug);
             return new ResponseEntity<>(PopulatedPlaylistDTO.build(playlist, posts), OK);
         } catch (UnknownPlaylistException | UnknownPostException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), NOT_FOUND);
@@ -136,12 +121,9 @@ public class PlaylistController implements PlaylistResource {
             @PathVariable String playlistSlug,
             @PathVariable String postSlug) {
         try {
-            Playlist playlist = playlistService.retrievePlaylistBySlug(playlistSlug);
+            Playlist playlist = playlistService.removePostFromPlaylist(user, playlistSlug, postSlug);
             Page<Post> posts = new PageImpl<>(playlist.getPosts());
 
-            if (!playlist.hasAccess(user))
-                throw new InvalidPermissionException("Only the playlist owner can delete a post from the playlist");
-            playlist = playlistService.removePostFromPlaylist(playlist, postSlug);
             return new ResponseEntity<>(PopulatedPlaylistDTO.build(playlist, posts), OK);
         } catch (UnknownPlaylistException | UnknownPostException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), NOT_FOUND);

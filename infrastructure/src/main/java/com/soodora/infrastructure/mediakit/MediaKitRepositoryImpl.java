@@ -27,7 +27,7 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKit save(CreateMediaKitCommand command, User user) {
+    public MediaKit save(User user, CreateMediaKitCommand command) {
         ArtistEntity artistEntity = artistRepository.findByUserSlug(user.getSlug())
                 .orElseThrow(
                         () -> new UnknownSlugException("Unable to find artist with user slug: #" + user.getSlug()));
@@ -52,8 +52,23 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKit update(UpdateMediaKitCommand command, String slug) {
-        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
+    public List<MediaKit> findAll() {
+        return mediaKitRepository.findAll().stream()
+                .map(DomainEntityAdapter::aggregate)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public MediaKit find(String mediaKitSlug) {
+        return findMediaKitBySlugOrThrow(mediaKitSlug)
+                .aggregate();
+    }
+
+    @Override
+    @Transactional
+    public MediaKit update(String mediaKitSlug, UpdateMediaKitCommand command) {
+        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(mediaKitSlug);
 
         if (isNotNullOrBlank(command.title()))
             mediaKit.setTitle(command.title());
@@ -70,28 +85,8 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public MediaKit findBySlug(String slug) {
-        return findMediaKitBySlugOrThrow(slug).aggregate();
-    }
-
-    @Override
-    @Transactional
-    public MediaKit findByArtistSlug(String slug) {
-        return findMediaKitByArtistSlugOrThrow(slug).aggregate();
-    }
-
-    @Override
-    @Transactional
-    public List<MediaKit> findAll() {
-        return mediaKitRepository.findAll().stream()
-                .map(DomainEntityAdapter::aggregate)
-                .toList();
-    }
-
-    @Override
-    @Transactional
-    public void deleteBySlug(String slug) {
-        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
+    public void delete(String mediaKitSlug) {
+        MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(mediaKitSlug);
 
         mediaKit.getArtist().setMediaKit(null);
         mediaKitRepository.delete(mediaKit);
@@ -99,7 +94,7 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
 
     @Override
     @Transactional
-    public void persistDownload(String slug, User user) {
+    public void persistDownload(User user, String slug) {
         MediaKitEntity mediaKit = findMediaKitBySlugOrThrow(slug);
         UserEntity owner = mediaKit.getArtist().getUser();
         boolean isFollowing = user != null && user.isFollowing(owner.aggregate());
@@ -111,6 +106,13 @@ public class MediaKitRepositoryImpl implements MediaKitRepository {
     protected MediaKitEntity findMediaKitBySlugOrThrow(String slug) {
         return mediaKitRepository.findBySlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find media kit with slug: #" + slug));
+    }
+
+    @Override
+    @Transactional
+    public MediaKit findByArtistSlug(String artistSlug) {
+        return findMediaKitByArtistSlugOrThrow(artistSlug)
+                .aggregate();
     }
 
     protected MediaKitEntity findMediaKitByArtistSlugOrThrow(String slug) {

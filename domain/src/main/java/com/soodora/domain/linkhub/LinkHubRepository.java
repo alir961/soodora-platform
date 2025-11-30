@@ -6,12 +6,15 @@ import java.util.List;
 
 public interface LinkHubRepository {
 
-    LinkHub save(CreateLinkHubCommand command, User user);
-    LinkHub update(UpdateLinkHubCommand command, String slug);
-    LinkHub findBySlug(String slug);
-    List<LinkHub> findAll();
-    void deleteBySlug(String slug);
+    LinkHub save(User user, CreateLinkHubCommand command);
 
-    void persistView(String slug);
+    LinkHub findBySlug(String linkHubSlug);
+    List<LinkHub> findAll();
+
+    LinkHub update(String linkHubSlug, UpdateLinkHubCommand command);
+
+    void deleteBySlug(String linkHubSlug);
+
+    void persistView(String linkHubSlug);
 
 }

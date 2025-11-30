@@ -37,6 +37,12 @@ public class Post {
                 subscribedLikes, subscribedComments, subscribedReposts);
     }
 
+    public boolean hasAccess(User user) {
+        if (user == null)
+            return false;
+        return owner.isSame(user) || user.isAdmin();
+    }
+
     private static int countSubscribers(List<User> users, User target) {
         return toIntExact(users.stream()
                 .filter(u -> u.isFollowing(target))

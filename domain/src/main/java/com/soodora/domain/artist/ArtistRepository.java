@@ -16,6 +16,6 @@ public interface ArtistRepository {
 
     List<EventDTO> retrieveEvents(String slug);
 
-    LinkHub retrieveLinkHub(String slug);
+    LinkHub retrieveLinkHub(String artistSlug);
 
 }

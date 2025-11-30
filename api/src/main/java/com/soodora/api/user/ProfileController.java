@@ -22,9 +22,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import io.swagger.v3.oas.annotations.tags.Tag;
-
 import lombok.RequiredArgsConstructor;
 
 import static java.util.stream.Collectors.toSet;
@@ -33,11 +30,9 @@ import static org.springframework.http.HttpStatus.*;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 
 @RestController
-@RequestMapping("/profile")
 @RequiredArgsConstructor
-@SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Profile Controller")
-public class ProfileController {
+@RequestMapping("/profile")
+public class ProfileController implements ProfileResource {
 
     private final UserService userService;
     private final PostService postService;
@@ -103,7 +98,6 @@ public class ProfileController {
     }
 
     @GetMapping("/following/posts")
-    @SecurityRequirement(name = "bearerAuth")
     public Page<PostDTO> getFollowingPosts(@AuthenticationPrincipal User user, Pageable pageable) {
         return postService.retrievePostsFromFollowing(user.getIdentifier(), pageable)
                 .map(PostDTO::build);

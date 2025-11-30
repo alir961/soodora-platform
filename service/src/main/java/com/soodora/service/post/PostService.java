@@ -8,8 +8,6 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.shared.InvalidPermissionException;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -20,8 +18,6 @@ import lombok.RequiredArgsConstructor;
 
 import static java.util.stream.Collectors.toSet;
 
-import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -29,86 +25,13 @@ public class PostService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
 
-    public void createPost(CreatePostCommand command, User user, FileData fileData) {
-        postRepository.save(command, user, fileData);
+    public void createPost(User user, CreatePostCommand command, FileData fileData) {
+        postRepository.save(user, command, fileData);
     }
 
-    public void likePost(String postSlug, User user) throws UnknownPostException {
+    public Post retrievePost(String postSlug) throws UnknownPostException {
         try {
-            postRepository.likePost(postSlug, user);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
-
-    public void unlikePost(String postSlug, User user) throws UnknownPostException {
-        try {
-            postRepository.unlikePost(postSlug, user);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
-
-    public CommentDTO commentPost(String postSlug, CommentPostCommand command, User user)
-            throws UnknownPostException {
-        try {
-            return postRepository.commentPost(postSlug, command, user);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
-
-    public void likeComment(String commentSlug, User user) throws UnknownPostCommentException {
-        try {
-            postRepository.likeComment(commentSlug, user);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostCommentException(exception.getMessage());
-        }
-    }
-
-    public List<LikeDTO> retrieveCommentLikes(String commentSlug) throws UnknownPostException {
-        try {
-            return postRepository.retrieveCommentLikes(commentSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostCommentException(exception.getMessage());
-        }
-    }
-
-    public void unlikeComment(String commentSlug, User user) throws UnknownPostCommentException {
-        try {
-            postRepository.unlikeComment(commentSlug, user);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostCommentException(exception.getMessage());
-        }
-    }
-
-    public void deleteComment(String commentSlug) throws UnknownPostCommentException {
-        try {
-            postRepository.deleteComment(commentSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostCommentException(exception.getMessage());
-        }
-    }
-
-    public List<LikeDTO> retrieveLikes(String postSlug) throws UnknownPostException {
-        try {
-            return postRepository.retrieveLikes(postSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
-
-    public Set<User> retrieveReposts(String postSlug) throws UnknownPostException {
-        try {
-            return postRepository.retrieveReposts(postSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
-
-    public List<CommentDTO> retrieveComments(String postSlug) throws UnknownPostException {
-        try {
-            return postRepository.retrieveComments(postSlug);
+            return postRepository.find(postSlug);
         } catch (UnknownSlugException exception) {
             throw new UnknownPostException(exception.getMessage());
         }
@@ -117,38 +40,13 @@ public class PostService {
     public Page<Post> retrievePosts(PostFilter filter, Pageable pageable) {
         if (filter.isEmpty())
             return postRepository.findAll(pageable);
-        else
-            return postRepository.findByFilter(filter, pageable);
+        return postRepository.findByFilter(filter, pageable);
     }
 
     public Page<Post> retrieveRecommendedPosts(User user, Pageable pageable) {
         if (user == null)
             return postRepository.findAll(pageable);
         return postRepository.findRecommendedPosts(user, pageable);
-    }
-
-    public List<LikeDTO> retrieveUserLikes(PostFilter filter) throws MissingUserSlugException {
-        Optional<String> userSlug = filter.userSlug();
-
-        if (userSlug.isPresent())
-            return userRepository.retrieveLikes(createFromSlug(userSlug.get()));
-        throw new MissingUserSlugException();
-    }
-
-    public List<CommentDTO> retrieveUserComments(PostFilter filter) throws MissingUserSlugException {
-        Optional<String> userSlug = filter.userSlug();
-
-        if (userSlug.isPresent())
-            return userRepository.retrievePostComments(createFromSlug(userSlug.get()));
-        throw new MissingUserSlugException();
-    }
-
-    public Post retrievePostBySlug(String postSlug) {
-        try {
-            return postRepository.find(postSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
     }
 
     public Page<Post> retrievePostsFromFollowing(Identifier identifier, Pageable pageable) {
@@ -161,27 +59,18 @@ public class PostService {
         return postRepository.findByFollowingSlugs(followingSlugs, pageable);
     }
 
-    public void deletePostBySlug(String postSlug) throws UnknownPostException {
-        try {
-            postRepository.delete(postSlug);
-        } catch (UnknownSlugException exception) {
-            throw new UnknownPostException(exception.getMessage());
-        }
-    }
+    public void deletePost(User user, String postSlug) throws UnknownPostException {
+        Post post = retrievePost(postSlug);
 
-    public void repostPostBySlug(String postSlug, User user) {
-        postRepository.repost(postSlug, user);
-    }
-
-    public void unrepostPostBySlug(User user, String postSlug) {
-        postRepository.unrepost(postSlug, user);
+        if (!post.hasAccess(user))
+            throw new InvalidPermissionException("Only the owner can delete the post");
+        postRepository.delete(postSlug);
     }
 
     public PostAnalytics computePostAnalytics(User user, String postSlug) {
-        Post post = retrievePostBySlug(postSlug);
-        User owner = post.getOwner();
+        Post post = retrievePost(postSlug);
 
-        if (owner.getSlug().equals(user.getSlug()) || user.isAdmin())
+        if (post.hasAccess(user))
             return post.computeAnalytics();
         throw new InvalidPermissionException("Only the post owner can access the analytics");
     }

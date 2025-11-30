@@ -2,7 +2,6 @@ package com.soodora.infrastructure.user;
 
 import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.auth.value.Role;
-import com.soodora.domain.playlist.Playlist;
 import com.soodora.domain.post.CommentDTO;
 import com.soodora.domain.post.LikeDTO;
 import com.soodora.domain.user.UnknownIdentifierException;
@@ -154,14 +153,6 @@ public class UserRepositoryImpl implements UserRepository {
     public Optional<ArtistDTO> retrieveArtist(Identifier identifier) {
         return ofNullable(findUserByIdentifierOrThrows(identifier).getArtist())
                 .map(DomainEntityAdapter::aggregate);
-    }
-
-    @Override
-    @Transactional
-    public List<Playlist> retrievePlaylists(Identifier identifier) {
-        return findUserByIdentifierOrThrows(identifier).getPlaylists().stream()
-                .map(DomainEntityAdapter::aggregate)
-                .toList();
     }
 
     @Override

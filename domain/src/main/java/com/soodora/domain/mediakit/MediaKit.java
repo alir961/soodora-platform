@@ -23,4 +23,10 @@ public class MediaKit {
     private int downloadCount;
     private int subscriberDownloadCount;
 
+    public boolean hasAccess(User user) {
+        if (user == null)
+            return false;
+        return owner.isSame(user) || user.isAdmin();
+    }
+
 }

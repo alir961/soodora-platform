@@ -8,7 +8,7 @@ import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.post.CommentPostRequest;
-import com.soodora.service.post.PostService;
+import com.soodora.service.post.PostEngagementService;
 
 import java.util.List;
 import java.util.Set;
@@ -32,7 +32,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Tag(name = "Post Comment Controller")
 public class PostCommentController {
 
-    private final PostService postService;
+    private final PostEngagementService postEngagementService;
 
     @PostMapping
     @SecurityRequirement(name = "bearerAuth")
@@ -40,7 +40,7 @@ public class PostCommentController {
             @RequestBody CommentPostRequest commentPostRequest,
             @AuthenticationPrincipal User user) {
         try {
-            postService.commentPost(postSlug, commentPostRequest.toCommand(), user);
+            postEngagementService.commentPost(user, postSlug, commentPostRequest.toCommand());
             return new ResponseEntity<>(CREATED);
         } catch (InvalidRequestException exception) {
             return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
@@ -49,12 +49,12 @@ public class PostCommentController {
 
     @GetMapping
     public List<CommentDTO> getComments(@PathVariable String postSlug) {
-        return postService.retrieveComments(postSlug);
+        return postEngagementService.retrieveComments(postSlug);
     }
 
     @GetMapping("/{commentSlug}/likes")
     public Set<String> getCommentLikes(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        return postService.retrieveCommentLikes(commentSlug).stream()
+        return postEngagementService.retrieveCommentLikes(commentSlug).stream()
                 .map(LikeDTO::user)
                 .map(PublicUserDTO::slug)
                 .collect(toSet());
@@ -62,22 +62,23 @@ public class PostCommentController {
 
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/{commentSlug}/likes")
-    public void likeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
-            @AuthenticationPrincipal User user) {
-        postService.likeComment(commentSlug, user);
+    public void likeComment(@AuthenticationPrincipal User user, @PathVariable String postSlug,
+            @PathVariable String commentSlug) {
+        postEngagementService.likeComment(user, commentSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{commentSlug}/likes")
-    public void unlikeComment(@PathVariable String postSlug, @PathVariable String commentSlug,
-            @AuthenticationPrincipal User user) {
-        postService.unlikeComment(commentSlug, user);
+    public void unlikeComment(@AuthenticationPrincipal User user, @PathVariable String postSlug,
+            @PathVariable String commentSlug) {
+        postEngagementService.unlikeComment(user, commentSlug);
     }
 
     @SecurityRequirement(name = "bearerAuth")
     @DeleteMapping("/{commentSlug}")
-    public void deleteComment(@PathVariable String postSlug, @PathVariable String commentSlug) {
-        postService.deleteComment(commentSlug);
+    public void deleteComment(@AuthenticationPrincipal User user, @PathVariable String postSlug,
+            @PathVariable String commentSlug) {
+        postEngagementService.deleteComment(user, commentSlug);
     }
 
 }

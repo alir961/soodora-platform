@@ -22,4 +22,10 @@ public class LinkHub {
     private Date updatedAt;
     private int viewCount;
 
+    public boolean hasAccess(User user) {
+        if (user == null)
+            return false;
+        return owner.isSame(user) || user.isAdmin();
+    }
+
 }

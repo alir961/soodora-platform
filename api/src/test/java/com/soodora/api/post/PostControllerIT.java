@@ -2,19 +2,19 @@ package com.soodora.api.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.post.*;
-import com.soodora.domain.post.PostAnalytics;
 import com.soodora.domain.user.PublicUserDTO;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.post.CommentPostRequest;
 import com.soodora.service.post.CreatePostRequest;
+import com.soodora.service.post.PostEngagementService;
 import com.soodora.service.post.PostService;
-import com.soodora.service.user.UnknownUserException;
+import com.soodora.service.post.UnknownPostException;
+import com.soodora.service.shared.InvalidPermissionException;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +31,10 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -55,7 +57,7 @@ class PostControllerIT {
     private PostService postService;
 
     @MockitoBean
-    private UserRepository userRepository;
+    private PostEngagementService postEngagementService;
 
     private static final Post POST_1 = buildDefaultPost("postSlug1", "Post 1");
     private static final Post POST_2 = buildDefaultPost("postSlug2", "Post 2");
@@ -64,53 +66,45 @@ class PostControllerIT {
     private static final User USER_1 = buildDefaultUser(1);
     private static final User USER_2 = buildDefaultUser(2);
 
+    private static final MockMultipartFile FILE_DATA = new MockMultipartFile(
+            "file",
+            "test-image.jpg",
+            "image/jpeg",
+            "dummy image content".getBytes());
+
+    private static final CreatePostRequest VALID_CREATE_REQUEST = new CreatePostRequest(
+            "Post 1",
+            "Content",
+            "My audio",
+            "audioUrl");
+
+    private static final MockMultipartFile CREATE_REQUEST_JSON = new MockMultipartFile(
+            "data",
+            "",
+            "application/json",
+            asJsonString(VALID_CREATE_REQUEST).getBytes());
+
     @Test
-    void createPost_Success() throws Exception {
-        // GIVEN
-        CreatePostRequest createPostRequest = new CreatePostRequest(
-                "Post 1",
-                "Content",
-                "My audio",
-                "audioUrl");
-
-        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
-
-        MockMultipartFile jsonPart = new MockMultipartFile(
-                "data",
-                "",
-                "application/json",
-                asJsonString(createPostRequest).getBytes());
-
-        MockMultipartFile filePart = new MockMultipartFile(
-                "file",
-                "test.jpg",
-                "image/jpeg",
-                "fake image content".getBytes());
-
+    void givenValidRequest_whenCreatePost_thenCreated() throws Exception {
         // WHEN & THEN
         mockMvc.perform(multipart("/posts")
-                .file(jsonPart)
-                .file(filePart)
+                .file(CREATE_REQUEST_JSON)
+                .file(FILE_DATA)
                 .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
     }
 
     @Test
-    void createPost_InvalidRequest() throws Exception {
+    void givenInvalidRequest_whenCreatePost_thenBadRequest() throws Exception {
         // GIVEN
         CreatePostRequest createPostRequest = new CreatePostRequest(
                 "",
                 "Description",
                 "My audio",
                 "audioUrl");
-        FileData fileData = new FileData(
-                "dummy image content".getBytes(),
-                "test-image.jpg",
-                "image/jpeg");
 
-        when(userRepository.find(ARTIST_USER.getIdentifier())).thenReturn(ARTIST_USER);
         doThrow(new InvalidRequestException("Invalid request")).when(postService)
-                .createPost(any(CreatePostCommand.class), any(User.class), eq(fileData));
+                .createPost(eq(ARTIST_USER), any(CreatePostCommand.class), any(FileData.class));
 
         // WHEN & THEN
         mockMvc.perform(post("/posts")
@@ -121,15 +115,33 @@ class PostControllerIT {
     }
 
     @Test
-    void retrievePost_Success() throws Exception {
+    void givenAuthenticatedUser_whenCreatePost_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(multipart("/posts")
+                .file(CREATE_REQUEST_JSON)
+                .file(FILE_DATA)
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenCreatePost_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(multipart("/posts")
+                .file(CREATE_REQUEST_JSON)
+                .file(FILE_DATA))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenNoFilter_whenSearchPosts_thenOk() throws Exception {
         // GIVEN
         Page<Post> postsPage = new PageImpl<>(List.of(POST_1, POST_2, POST_3));
-        when(postService.retrievePosts(any(), any())).thenReturn(postsPage);
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
+
+        when(postService.retrievePosts(any(PostFilter.class), any(Pageable.class))).thenReturn(postsPage);
 
         // WHEN & THEN
-        mockMvc.perform(get("/posts/search")
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/posts/search"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(3)))
                 .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()))
@@ -138,85 +150,14 @@ class PostControllerIT {
     }
 
     @Test
-    void retrievePosts_Empty() throws Exception {
+    void givenTitleFilter_whenSearchPosts_thenOk() throws Exception {
         // GIVEN
-        Page<Post> emptyPage = new PageImpl<>(List.of());
-
-        when(postService.retrievePosts(any(), any())).thenReturn(emptyPage);
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/posts/search")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(0)));
-    }
-
-    @Test
-    void retrievePostBySlug_Success() throws Exception {
-        // GIVEN
-        when(postService.retrievePostBySlug("postSlug1")).thenReturn(POST_1);
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/posts/postSlug1")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.slug").value("postSlug1"))
-                .andExpect(jsonPath("$.title").value("Post 1"));
-    }
-
-    @Test
-    void retrievePost_Unknown() throws Exception {
-        // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doThrow(UnknownUserException.class).when(postService).retrievePostBySlug(anyString());
-
-        // WHEN & THEN
-        mockMvc.perform(get("/posts/unknown")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void givenAudioTitleFilter_whenSearchPosts_thenRetrieveFilteredAudioPosts() throws Exception {
-        // GIVEN
-        String userSlug = "slug1";
-        boolean hasAudio = true;
-        String audioTitle = "audioTitle1";
-        String description = "description1";
         Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
-        PostFilter postFilter = new PostFilter(
-                of(userSlug),
-                of(hasAudio),
-                empty(),
-                of(audioTitle),
-                of(description));
-
-        when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/posts/search")
-                .param("userSlug", userSlug)
-                .param("hasAudio", String.valueOf(hasAudio))
-                .param("audioTitle", audioTitle)
-                .param("description", description)
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", hasSize(1)))
-                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
-    }
-
-    @Test
-    void givenTitleFilter_whenSearchPosts_thenRetrieveFilteredNonAudioPosts() throws Exception {
-        // GIVEN
         String userSlug = "slug1";
         boolean hasAudio = false;
         String title = "title1";
         String description = "description1";
-        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
 
         PostFilter postFilter = new PostFilter(
                 of(userSlug),
@@ -226,7 +167,6 @@ class PostControllerIT {
                 of(description));
 
         when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/search")
@@ -241,43 +181,95 @@ class PostControllerIT {
     }
 
     @Test
-    void deletePost_Success() throws Exception {
+    void givenAudioTitleFilter_whenSearchPosts_thenOk() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).deletePostBySlug("postSlug1");
+        Page<Post> filteredPage = new PageImpl<>(List.of(POST_1));
+
+        String userSlug = "slug1";
+        boolean hasAudio = true;
+        String audioTitle = "audioTitle1";
+        String description = "description1";
+
+        PostFilter postFilter = new PostFilter(
+                of(userSlug),
+                of(hasAudio),
+                empty(),
+                of(audioTitle),
+                of(description));
+
+        when(postService.retrievePosts(eq(postFilter), any(Pageable.class))).thenReturn(filteredPage);
 
         // WHEN & THEN
-        mockMvc.perform(delete("/posts/postSlug1")
+        mockMvc.perform(get("/posts/search")
+                .param("userSlug", userSlug)
+                .param("hasAudio", String.valueOf(hasAudio))
+                .param("audioTitle", audioTitle)
+                .param("description", description)
                 .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-        verify(postService).deletePostBySlug("postSlug1");
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].slug").value(POST_1.getSlug()));
     }
 
     @Test
-    void deletePost_Unknown() throws Exception {
+    void givenValidSlug_whenGetPost_thenOk() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doThrow(UnknownUserException.class).when(postService).deletePostBySlug(anyString());
+        when(postService.retrievePost("postSlug1")).thenReturn(POST_1);
 
         // WHEN & THEN
-        mockMvc.perform(delete("/posts/unknown")
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/posts/postSlug1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.slug").value("postSlug1"));
+    }
+
+    @Test
+    void givenInvalidSlug_whenGetPost_thenNotFound() throws Exception {
+        // GIVEN
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postService).retrievePost("unknown");
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/unknown"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    void deletePost_Forbidden() throws Exception {
+    void givenValidSlug_whenDeletePost_thenOk() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidSlug_whenDeletePost_thenNotFound() throws Exception {
+        // GIVEN
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postService).deletePost(ARTIST_USER, "unknown");
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/unknown")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenDeletePost_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenDeletePost_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void likePost_Success() throws Exception {
-        // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).likePost("postSlug1", USER);
-
+    void givenValidSlug_whenLikePost_thenOk() throws Exception {
         // WHEN & THEN
         mockMvc.perform(post("/posts/postSlug1/likes")
                 .with(user(new UserPrincipal(USER))))
@@ -285,20 +277,26 @@ class PostControllerIT {
     }
 
     @Test
-    void likePost_Forbidden() throws Exception {
+    void givenInvalidSlug_whenLikePost_thenNotFound() throws Exception {
         // GIVEN
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postEngagementService).likePost(USER, "unknown");
 
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/unknown/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenLikePost_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(post("/posts/postSlug1/likes"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void unlikePost_Success() throws Exception {
-        // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).unlikePost("postSlug1", USER);
-
+    void givenValidSlug_whenUnlikePost_thenOk() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1/likes")
                 .with(user(new UserPrincipal(USER))))
@@ -306,21 +304,33 @@ class PostControllerIT {
     }
 
     @Test
-    void unlikePost_Forbidden() throws Exception {
+    void givenInvalidSlug_whenUnlikePost_thenNotFound() throws Exception {
         // GIVEN
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postEngagementService).unlikePost(USER, "unknown");
 
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/unknown/likes")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenUnlikePost_thenForbidden() throws Exception {
         // WHEN & THEN
         mockMvc.perform(delete("/posts/postSlug1/likes"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void getPostLikes_Success() throws Exception {
+    void givenValidSlug_whenGetLikes_thenOk() throws Exception {
         // GIVEN
-        when(postService.retrieveLikes("postSlug1"))
-                .thenReturn(List.of(
-                        new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER_1), new Date()),
-                        new PostLikeDTO("postSlug1", PublicUserDTO.build(USER_2), new Date())));
+        List<LikeDTO> likes = List.of(
+                new PostLikeDTO(POST_1.getSlug(), PublicUserDTO.build(USER_1), new Date()),
+                new PostLikeDTO(POST_2.getSlug(), PublicUserDTO.build(USER_2), new Date()));
+
+        when(postEngagementService.retrieveLikes("postSlug1"))
+                .thenReturn(likes);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/postSlug1/likes"))
@@ -329,122 +339,93 @@ class PostControllerIT {
     }
 
     @Test
-    void addComment_Success() throws Exception {
+    void givenInvalidSlug_whenGetLikes_thenNotFound() throws Exception {
         // GIVEN
-        CommentPostRequest commentRequest = new CommentPostRequest("Great post!");
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        when(postService.commentPost(eq("postSlug1"), any(CommentPostCommand.class), eq(USER)))
-                .thenReturn(new CommentDTO("commentSlug1", "postSlug1", "Great post!", PublicUserDTO.build(USER), 0,
-                        new Date()));
+        when(postEngagementService.retrieveLikes("unknown"))
+                .thenThrow(new UnknownPostException("Unable to find post"));
 
         // WHEN & THEN
-        mockMvc.perform(post("/posts/postSlug1/comments")
-                .contentType("application/json")
-                .content(asJsonString(commentRequest))
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isCreated());
+        mockMvc.perform(get("/posts/unknown/likes"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    void addComment_Forbidden() throws Exception {
-        // GIVEN
-        CommentPostRequest commentRequest = new CommentPostRequest("Unauthorized comment");
-
+    void givenValidSlug_whenRepostPost_thenOk() throws Exception {
         // WHEN & THEN
-        mockMvc.perform(post("/posts/postSlug1/comments")
-                .contentType("application/json")
-                .content(asJsonString(commentRequest)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void deleteComment_Success() throws Exception {
-        // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).deleteComment("commentSlug1");
-
-        // WHEN & THEN
-        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1")
+        mockMvc.perform(post("/posts/postSlug1/reposts")
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void deleteComment_Forbidden() throws Exception {
+    void givenInvalidSlug_whenRepostPost_thenNotFound() throws Exception {
         // GIVEN
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postEngagementService).repostPost(USER, "unknown");
 
         // WHEN & THEN
-        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1"))
+        mockMvc.perform(post("/posts/unknown/reposts")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenRepostPost_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(post("/posts/postSlug1/reposts"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void getComments_Success() throws Exception {
+    void givenValidSlug_whenUnrepostPost_thenOk() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/reposts")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidSlug_whenUnrepostPost_thenNotFound() throws Exception {
         // GIVEN
-        when(postService.retrieveComments("postSlug1"))
-                .thenReturn(List.of(
-                        new CommentDTO("commentSlug1", "postSlug1", "Great post!", PublicUserDTO.build(USER), 0,
-                                new Date()),
-                        new CommentDTO("commentSlug2", "postSlug1", "Thanks for sharing", PublicUserDTO.build(USER), 0,
-                                new Date())));
+        doThrow(new UnknownPostException("Unable to find post"))
+                .when(postEngagementService).unrepostPost(USER, "unknown");
 
         // WHEN & THEN
-        mockMvc.perform(get("/posts/postSlug1/comments"))
+        mockMvc.perform(delete("/posts/unknown/reposts")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenUnrepostPost_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/posts/postSlug1/reposts"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenValidSlug_whenGetReposts_thenOk() throws Exception {
+        // GIVEN
+        Set<User> reposts = Set.of(USER_1, USER_2);
+
+        when(postEngagementService.retrieveReposts("postSlug1"))
+                .thenReturn(reposts);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/postSlug1/reposts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].slug").value("commentSlug1"))
-                .andExpect(jsonPath("$[0].content").value("Great post!"))
-                .andExpect(jsonPath("$[0].user.slug").value(USER.getSlug()))
-                .andExpect(jsonPath("$[1].slug").value("commentSlug2"))
-                .andExpect(jsonPath("$[1].content").value("Thanks for sharing"))
-                .andExpect(jsonPath("$[1].user.slug").value(USER.getSlug()));
+                .andExpect(jsonPath("$[*]", containsInAnyOrder(USER_1.getSlug(), USER_2.getSlug())));
     }
 
     @Test
-    void likeComment_Success() throws Exception {
+    void givenInvalidSlug_whenGetReposts_thenNotFound() throws Exception {
         // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).likeComment("commentSlug1", USER);
+        when(postEngagementService.retrieveReposts("unknown"))
+                .thenThrow(new UnknownPostException("Unable to find post"));
 
         // WHEN & THEN
-        mockMvc.perform(post("/posts/postSlug1/comments/commentSlug1/likes")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void likeComment_Forbidden() throws Exception {
-        // GIVEN
-
-        // WHEN & THEN
-        mockMvc.perform(post("/posts/postSlug1/comments/commentSlug1/likes"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void unlikeComment_Success() throws Exception {
-        // GIVEN
-        when(userRepository.find(USER.getIdentifier())).thenReturn(USER);
-        doNothing().when(postService).unlikeComment("commentSlug1", USER);
-
-        // WHEN & THEN
-        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk());
-    }
-
-    @Test
-    void unlikeComment_Forbidden() throws Exception {
-        // GIVEN
-
-        // WHEN & THEN
-        mockMvc.perform(delete("/posts/postSlug1/comments/commentSlug1/likes"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void givenUnauthenticatedRequest_whenGetPostAnalytics_thenForbidden() throws Exception {
-        mockMvc.perform(get("/posts/post-slug/analytics"))
-                .andExpect(status().isForbidden());
+        mockMvc.perform(get("/posts/unknown/reposts"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -453,11 +434,11 @@ class PostControllerIT {
         String postSlug = "post-slug";
         PostAnalytics analytics = new PostAnalytics(1, 2, 3, 0, 1, 2);
 
-        when(postService.computePostAnalytics(USER, postSlug)).thenReturn(analytics);
+        when(postService.computePostAnalytics(ARTIST_USER, postSlug)).thenReturn(analytics);
 
         // WHEN & THEN
         mockMvc.perform(get("/posts/post-slug/analytics")
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.likes").value(1))
                 .andExpect(jsonPath("$.comments").value(2))
@@ -465,6 +446,25 @@ class PostControllerIT {
                 .andExpect(jsonPath("$.subscribedLikes").value(0))
                 .andExpect(jsonPath("$.subscribedComments").value(1))
                 .andExpect(jsonPath("$.subscribedReposts").value(2));
+    }
+
+    @Test
+    void givenInvalidPermission_whenGetPostAnalytics_thenForbidden() throws Exception {
+        // GIVEN
+        when(postService.computePostAnalytics(ARTIST_USER, "post-slug"))
+                .thenThrow(new InvalidPermissionException("Only to post owner can access the analytics"));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/post-slug/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenGetPostAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/post-slug/analytics"))
+                .andExpect(status().isForbidden());
     }
 
 }

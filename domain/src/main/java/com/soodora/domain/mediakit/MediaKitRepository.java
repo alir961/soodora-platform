@@ -6,13 +6,17 @@ import java.util.List;
 
 public interface MediaKitRepository {
 
-    MediaKit save(CreateMediaKitCommand command, User user);
-    MediaKit update(UpdateMediaKitCommand command, String slug);
-    MediaKit findBySlug(String slug);
-    MediaKit findByArtistSlug(String slug);
-    List<MediaKit> findAll();
-    void deleteBySlug(String slug);
+    MediaKit save(User user, CreateMediaKitCommand command);
 
-    void persistDownload(String slug, User user);
+    List<MediaKit> findAll();
+    MediaKit find(String mediaKitSlug);
+
+    MediaKit update(String mediaKitSlug, UpdateMediaKitCommand command);
+
+    void delete(String mediaKitSlug);
+
+    void persistDownload(User user, String slug);
+
+    MediaKit findByArtistSlug(String artistSlug);
 
 }

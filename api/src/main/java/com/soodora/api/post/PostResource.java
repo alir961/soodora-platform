@@ -68,7 +68,7 @@ public interface PostResource {
             @ApiResponse(responseCode = "403", description = "Forbidden, user not allowed to delete this post"),
             @ApiResponse(responseCode = "404", description = "Post not found")
     })
-    void deletePost(@PathVariable("postSlug") String slug);
+    void deletePost(@AuthenticationPrincipal User user, @PathVariable("postSlug") String slug);
 
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Like a post", description = "Add a like to the specified post.")
