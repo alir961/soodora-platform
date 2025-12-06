@@ -16,7 +16,7 @@ function formatDuration(): string {
 
   if (diffMinutes < 1 && props.sales <= 0) return 'no sales yet...';
 
-  if (diffMinutes < 1) return 'instantaneously';
+  if (diffMinutes < 1) return 'instantly';
   if (diffMinutes < 60) return `${diffMinutes}m`;
 
   const diffHours = Math.floor(diffMinutes / 60);

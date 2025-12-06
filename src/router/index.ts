@@ -26,6 +26,7 @@ import PlaylistDetailsView from '@/view/playlist/PlaylistDetailsView.vue';
 import PlaylistMeView from '@/view/playlist/PlaylistView.vue';
 import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
+import AnalyticsView from '@/view/user/AnalyticsView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -200,6 +201,10 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/explore/post/create',
     component: PostFormView,
+  },
+  {
+    path: '/analytics',
+    component: AnalyticsView,
   },
 ];
 
