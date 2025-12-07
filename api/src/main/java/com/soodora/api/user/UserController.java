@@ -127,36 +127,28 @@ public class UserController implements UserResource {
     @Override
     @GetMapping("/{slug}/posts")
     public Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable) {
-        Identifier identifier = createFromSlug(slug);
-
-        return userService.retrievePosts(identifier, pageable)
+        return userService.retrievePosts(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/reposts")
     public Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable) {
-        Identifier identifier = createFromSlug(slug);
-
-        return userService.retrieveReposts(identifier, pageable)
+        return userService.retrieveReposts(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/audios")
     public Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable) {
-        Identifier identifier = createFromSlug(slug);
-
-        return userService.retrieveAudios(identifier, pageable)
+        return userService.retrieveAudios(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/products")
     public Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable) {
-        Identifier identifier = createFromSlug(slug);
-
-        return userService.retrieveProducts(identifier, pageable)
+        return userService.retrieveProducts(slug, pageable)
                 .map(ProductDTO::build);
     }
 

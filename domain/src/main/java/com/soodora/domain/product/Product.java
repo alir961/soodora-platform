@@ -34,6 +34,21 @@ public class Product {
         return vendor.isSame(user) || user.isAdmin();
     }
 
+    public boolean isOutOfStock() {
+        return quantity <= 0;
+    }
+
+    public boolean hasSales() {
+        return !sales.isEmpty();
+    }
+
+    public int getTotalRevenue() {
+        return sales.stream()
+                .mapToLong(sale -> sale.getPrice().amount().longValue())
+                .mapToInt(Math::toIntExact)
+                .sum();
+    }
+
     public Sale getFirstSale() {
         return sales.stream()
                 .min(comparing(Sale::getCreatedAt))

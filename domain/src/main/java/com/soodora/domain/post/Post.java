@@ -43,6 +43,14 @@ public class Post {
         return owner.isSame(user) || user.isAdmin();
     }
 
+    public boolean hasAudio() {
+        return !audioTitle.isBlank() && !audioUrl.isBlank();
+    }
+
+    public boolean hasEngagement() {
+        return !likedUsers.isEmpty() || !commentedUsers.isEmpty() || !repostedUsers.isEmpty();
+    }
+
     private static int countSubscribers(List<User> users, User target) {
         return toIntExact(users.stream()
                 .filter(u -> u.isFollowing(target))

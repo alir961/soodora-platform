@@ -26,17 +26,21 @@ public class ProductAnalytics {
     private Duration durationUntilFirstSale;
     private String currency;
 
+    public ProductAnalytics append(ProductAnalytics analytics) {
+        boolean isBefore = durationUntilFirstSale.toMillis() <= analytics.getDurationUntilFirstSale().toMillis();
+        Duration minimumDuration = isBefore ? durationUntilFirstSale : analytics.getDurationUntilFirstSale();
+
+        return new ProductAnalytics(currentQuantity + analytics.getCurrentQuantity(),
+                soldQuantity + analytics.getSoldQuantity(),
+                totalRevenue + analytics.getTotalRevenue(),
+                salesCount + analytics.getSalesCount(),
+                minimumDuration,
+                currency.isBlank() ? analytics.getCurrency() : currency);
+    }
+
     public static ProductAnalytics analyze(Product product) {
         Set<Sale> sales = product.getSales();
-        Sale firstSale = product.getFirstSale();
-        Duration duration = ZERO;
 
-        if (firstSale != null) {
-            Date productCreatedAt = product.getCreatedAt();
-            Date firstSaleCreatedAt = firstSale.getCreatedAt();
-
-            duration = between(productCreatedAt.toInstant(), firstSaleCreatedAt.toInstant());
-        }
         return new ProductAnalytics(
                 toIntExact(product.getQuantity()),
                 sales.stream()
@@ -50,8 +54,24 @@ public class ProductAnalytics {
                         .mapToInt(Math::toIntExact)
                         .sum(),
                 sales.size(),
-                duration,
+                getDurationUntilFirstSale(product),
                 product.getPrice().getSymbol());
+    }
+
+    public static ProductAnalytics empty() {
+        return new ProductAnalytics(0, 0, 0, 0, ZERO, "");
+    }
+
+    private static Duration getDurationUntilFirstSale(Product product) {
+        Sale firstSale = product.getFirstSale();
+
+        if (firstSale != null) {
+            Date productCreatedAt = product.getCreatedAt();
+            Date firstSaleCreatedAt = firstSale.getCreatedAt();
+
+            return between(productCreatedAt.toInstant(), firstSaleCreatedAt.toInstant());
+        }
+        return ZERO;
     }
 
 }

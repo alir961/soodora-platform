@@ -25,6 +25,7 @@ import static java.util.Optional.of;
 import static java.util.stream.Collectors.toSet;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.domain.Pageable.unpaged;
 
 import static com.soodora.domain.factory.PostFactory.buildDefaultPost;
 import static com.soodora.domain.factory.UserFactory.buildDefaultUser;
@@ -278,6 +279,47 @@ class PostServiceTest {
 
         // THEN
         assertThrows(InvalidPermissionException.class, executable, "Only the post owner can access the analytics");
+    }
+
+    @Test
+    void givenArtistWithPosts_whenComputeGlobalAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        PostAnalytics postAnalytics1 = POST_1.computeAnalytics();
+        PostAnalytics postAnalytics2 = POST_2.computeAnalytics();
+        PostAnalytics postAnalytics3 = POST_3.computeAnalytics();
+        PostAnalytics expectedAnalytics = postAnalytics1.append(postAnalytics2).append(postAnalytics3);
+
+        when(postRepository.findUserPosts(ARTIST_USER.getSlug(), unpaged()))
+                .thenReturn(new PageImpl<>(POST_LIST));
+
+        // WHEN
+        PostAnalytics analytics = postService.computeGlobalAnalytics(ARTIST_USER);
+
+        // THEN
+        assertEquals(expectedAnalytics.getLikes(), analytics.getLikes());
+        assertEquals(expectedAnalytics.getComments(), analytics.getComments());
+        assertEquals(expectedAnalytics.getReposts(), analytics.getReposts());
+        assertEquals(expectedAnalytics.getSubscribedLikes(), analytics.getSubscribedLikes());
+        assertEquals(expectedAnalytics.getSubscribedComments(), analytics.getSubscribedComments());
+        assertEquals(expectedAnalytics.getSubscribedReposts(), analytics.getSubscribedReposts());
+    }
+
+    @Test
+    void givenArtistWithoutPosts_whenComputeGlobalAnalytics_thenReturnsAnalytics() {
+        // GIVEN
+        when(postRepository.findUserPosts(ARTIST_USER.getSlug(), unpaged()))
+                .thenReturn(Page.empty());
+
+        // WHEN
+        PostAnalytics analytics = postService.computeGlobalAnalytics(ARTIST_USER);
+
+        // THEN
+        assertEquals(0, analytics.getLikes());
+        assertEquals(0, analytics.getComments());
+        assertEquals(0, analytics.getReposts());
+        assertEquals(0, analytics.getSubscribedLikes());
+        assertEquals(0, analytics.getSubscribedComments());
+        assertEquals(0, analytics.getSubscribedReposts());
     }
 
 }

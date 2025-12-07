@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.data.domain.Pageable.unpaged;
 
-import static com.soodora.domain.user.value.Identifier.Factory.createFromSlug;
 import static com.soodora.domain.user.value.Identifier.Factory.createFromUsername;
 
 @Slf4j
@@ -147,20 +146,20 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public Page<Post> retrievePosts(Identifier identifier, Pageable pageable) {
-        return postRepository.findUserPosts(identifier, pageable);
+    public Page<Post> retrievePosts(String userSlug, Pageable pageable) {
+        return postRepository.findUserPosts(userSlug, pageable);
     }
 
-    public Page<Post> retrieveReposts(Identifier identifier, Pageable pageable) {
-        return postRepository.findUserReposts(identifier, pageable);
+    public Page<Post> retrieveReposts(String userSlug, Pageable pageable) {
+        return postRepository.findUserReposts(userSlug, pageable);
     }
 
-    public Page<Post> retrieveAudios(Identifier identifier, Pageable pageable) {
-        return postRepository.findUserAudios(identifier, pageable);
+    public Page<Post> retrieveAudios(String userSlug, Pageable pageable) {
+        return postRepository.findUserAudios(userSlug, pageable);
     }
 
-    public Page<Product> retrieveProducts(Identifier identifier, Pageable pageable) {
-        return productRepository.findUserProducts(identifier, pageable);
+    public Page<Product> retrieveProducts(String userSlug, Pageable pageable) {
+        return productRepository.findUserProducts(userSlug, pageable);
     }
 
     @Override
@@ -171,8 +170,7 @@ public class UserService implements UserDetailsService {
     }
 
     public void sendPostsSummary(User user) {
-        Identifier identifier = createFromSlug(user.getSlug());
-        List<Post> posts = postRepository.findUserPosts(identifier, unpaged()).stream()
+        List<Post> posts = postRepository.findUserPosts(user.getSlug(), unpaged()).stream()
                 .toList();
 
         summaryEmailSender.sendEmail(user.getEmail().value(), user, posts);

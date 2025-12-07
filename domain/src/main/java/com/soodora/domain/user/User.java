@@ -55,6 +55,10 @@ public class User {
         return roles.stream().anyMatch(Role::isAdmin);
     }
 
+    public boolean isPremium() {
+        return roles.stream().anyMatch(Role::isPremium);
+    }
+
     public void follow(User user) {
         if (isSame(user))
             throw new UserFollowException("User cannot follow itself");

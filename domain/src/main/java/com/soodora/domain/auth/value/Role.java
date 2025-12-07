@@ -14,4 +14,8 @@ public record Role(String value) {
         return value.equals("ADMIN");
     }
 
+    public boolean isPremium() {
+        return value.equals("PREMIUM");
+    }
+
 }

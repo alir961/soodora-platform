@@ -6,7 +6,6 @@ import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.playlist.PlaylistRepository;
 import com.soodora.domain.post.*;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
@@ -115,22 +114,22 @@ public class PostRepositoryImpl implements PostRepository {
 
     @Override
     @Transactional
-    public Page<Post> findUserPosts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByArtistUserSlug(identifier.value(), pageable)
+    public Page<Post> findUserPosts(String userSlug, Pageable pageable) {
+        return postRepository.findByArtistUserSlug(userSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<Post> findUserReposts(Identifier identifier, Pageable pageable) {
-        return postRepository.findByRepostsSlug(identifier.value(), pageable)
+    public Page<Post> findUserReposts(String userSlug, Pageable pageable) {
+        return postRepository.findByRepostsSlug(userSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 
     @Override
     @Transactional
-    public Page<Post> findUserAudios(Identifier identifier, Pageable pageable) {
-        return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(identifier.value(), pageable)
+    public Page<Post> findUserAudios(String userSlug, Pageable pageable) {
+        return postRepository.findByArtistSlugOrUserSlugAndAudioUrlIsNotNull(userSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

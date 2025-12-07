@@ -296,6 +296,33 @@ class ProductControllerIT {
     }
 
     @Test
+    void givenValidSlug_whenGetGlobalAnalytics_thenOk() throws Exception {
+        // GIVEN
+        when(productService.computeGlobalAnalytics(ARTIST_USER))
+                .thenReturn(ProductAnalytics.empty());
+
+        // WHEN & THEN
+        mockMvc.perform(get("/products/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenGetGlobalAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/products/analytics")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenGetGlobalAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/products/analytics"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void givenValidSlug_whenGetProductAnalytics_thenOk() throws Exception {
         // GIVEN
         ProductAnalytics analytics = new ProductAnalytics(0, 0, 0, 0, ZERO, "$");

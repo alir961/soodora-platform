@@ -2,7 +2,6 @@ package com.soodora.domain.product;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.Identifier;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,7 +14,7 @@ public interface ProductRepository {
     Product findBySlug(String slug);
     Page<Product> findAll(Pageable pageable);
     Page<Product> findByFilter(ProductFilter filter, Pageable pageable);
-    Page<Product> findUserProducts(Identifier identifier, Pageable pageable);
+    Page<Product> findUserProducts(String userSlug, Pageable pageable);
     void deleteProductBySlug(String slug);
     boolean isProductNameUsedByUser(String name, String userSlug);
 
