@@ -22,6 +22,7 @@ import {
   linkOutline,
   briefcaseOutline,
   chatbubblesOutline,
+  statsChartOutline,
 } from 'ionicons/icons';
 import ActionsPopup, { type ActionItem } from '@/component/actions/ActionsPopup.vue';
 import { getSoodoraKitArtistSlug } from '@/client/soodoraKitClient';
@@ -145,8 +146,12 @@ const handleSoodoraKit = async () => {
   await router.push('/soodorakits/create');
 };
 
-const handleQuotes = () => {
-  router.push('/quotes/me');
+const handleQuotes = async () => {
+  await router.push('/quotes/me');
+};
+
+const showAnalytics = async () => {
+  await router.push('/analytics');
 };
 
 const canCreateContent = computed(() => {
@@ -175,6 +180,11 @@ const actionItems = computed<ActionItem[]>(() => {
         icon: chatbubblesOutline,
         label: 'My Quotes',
         action: handleQuotes,
+      },
+      {
+        icon: statsChartOutline,
+        label: 'Analytics',
+        action: showAnalytics,
       }
     );
   }
