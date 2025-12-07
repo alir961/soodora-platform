@@ -6,11 +6,15 @@ import com.soodora.domain.product.*;
 import com.soodora.domain.user.User;
 import com.soodora.service.shared.InvalidPermissionException;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
+
+import static org.springframework.data.domain.Pageable.unpaged;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +64,15 @@ public class ProductService {
         } catch (UnknownSlugException exception) {
             throw new UnknownProductException(exception.getMessage());
         }
+    }
+
+    public ProductAnalytics computeGlobalAnalytics(User user) {
+        List<Product> products = productRepository.findUserProducts(user.getSlug(), unpaged())
+                .getContent();
+
+        return products.stream()
+                .map(ProductAnalytics::analyze)
+                .reduce(ProductAnalytics.empty(), ProductAnalytics::append);
     }
 
     public ProductAnalytics computeProductAnalytics(User user, String productSlug) {

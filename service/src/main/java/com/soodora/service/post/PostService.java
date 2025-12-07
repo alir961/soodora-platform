@@ -8,6 +8,7 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.domain.user.value.Identifier;
 import com.soodora.service.shared.InvalidPermissionException;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 
 import static java.util.stream.Collectors.toSet;
+import static org.springframework.data.domain.Pageable.unpaged;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +67,15 @@ public class PostService {
         if (!post.hasAccess(user))
             throw new InvalidPermissionException("Only the owner can delete the post");
         postRepository.delete(postSlug);
+    }
+
+    public PostAnalytics computeGlobalAnalytics(User user) {
+        List<Post> posts = postRepository.findUserPosts(user.getSlug(), unpaged())
+                .getContent();
+
+        return posts.stream()
+                .map(Post::computeAnalytics)
+                .reduce(PostAnalytics.empty(), PostAnalytics::append);
     }
 
     public PostAnalytics computePostAnalytics(User user, String postSlug) {

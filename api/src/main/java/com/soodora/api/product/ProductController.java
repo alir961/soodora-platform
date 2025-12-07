@@ -4,6 +4,7 @@ import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.product.Product;
+import com.soodora.domain.product.ProductAnalytics;
 import com.soodora.domain.product.ProductFilter;
 import com.soodora.domain.user.User;
 import com.soodora.service.common.InvalidRequestException;
@@ -100,10 +101,21 @@ public class ProductController implements ProductResource {
     }
 
     @Override
+    @GetMapping("/analytics")
+    @PreAuthorize("hasRole('ARTIST')")
+    public ProductAnalyticsDTO getGlobalAnalytics(@AuthenticationPrincipal User user) {
+        ProductAnalytics analytics = service.computeGlobalAnalytics(user);
+
+        return ProductAnalyticsDTO.build(analytics);
+    }
+
+    @Override
     @GetMapping("/{slug}/analytics")
     @PreAuthorize("hasRole('ARTIST')")
     public ProductAnalyticsDTO getProductAnalytics(@AuthenticationPrincipal User user, @PathVariable String slug) {
-        return ProductAnalyticsDTO.build(service.computeProductAnalytics(user, slug));
+        ProductAnalytics analytics = service.computeProductAnalytics(user, slug);
+
+        return ProductAnalyticsDTO.build(analytics);
     }
 
 }

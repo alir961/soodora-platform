@@ -8,6 +8,7 @@ import com.soodora.service.shared.InvalidPermissionException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,10 +18,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.*;
 
+import static java.time.Duration.ZERO;
+import static java.util.List.of;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.domain.Pageable.unpaged;
 
 import static com.soodora.domain.factory.ProductFactory.buildProduct;
 import static com.soodora.test.TestConstants.*;
@@ -39,7 +42,7 @@ class ProductServiceTest {
     private static final Product PRODUCT_3 = buildProduct("3");
     private static final String SLUG_1 = "slug1";
     private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
-    private static final List<Product> PRODUCTS = List.of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
+    private static final List<Product> PRODUCTS = of(PRODUCT_1, PRODUCT_2, PRODUCT_3);
     private static final Page<Product> PRODUCTS_PAGE = new PageImpl<>(PRODUCTS, PAGEABLE, PRODUCTS.size());
 
     private static final CreateProductCommand VALID_CREATE_COMMAND = new CreateProductCommand(
@@ -120,8 +123,8 @@ class ProductServiceTest {
     @Test
     void givenUserFilter_whenRetrieveProducts_thenReturnFilteredProducts() {
         // GIVEN
-        ProductFilter filter = new ProductFilter(of(USER.getSlug()), empty(), empty(), empty());
-        List<Product> filteredProducts = List.of(PRODUCT_1, PRODUCT_3);
+        ProductFilter filter = new ProductFilter(Optional.of(USER.getSlug()), empty(), empty(), empty());
+        List<Product> filteredProducts = of(PRODUCT_1, PRODUCT_3);
         Page<Product> pageFilteredProducts = new PageImpl<>(filteredProducts, PAGEABLE, filteredProducts.size());
 
         when(productRepository.findByFilter(filter, PAGEABLE))
@@ -269,6 +272,47 @@ class ProductServiceTest {
 
         // THEN
         assertThrows(UnknownProductException.class, executable);
+    }
+
+    @Test
+    void givenArtistWithProducts_whenComputeGlobalAnalytics_thenReturnAnalytics() {
+        // GIVEN
+        ProductAnalytics productAnalytics1 = ProductAnalytics.analyze(PRODUCT_1);
+        ProductAnalytics productAnalytics2 = ProductAnalytics.analyze(PRODUCT_2);
+        ProductAnalytics productAnalytics3 = ProductAnalytics.analyze(PRODUCT_3);
+        ProductAnalytics expectedAnalytics = productAnalytics1.append(productAnalytics2).append(productAnalytics3);
+
+        when(productRepository.findUserProducts(ARTIST_USER.getSlug(), unpaged()))
+                .thenReturn(new PageImpl<>(of(PRODUCT_1, PRODUCT_2, PRODUCT_3)));
+
+        // WHEN
+        ProductAnalytics analytics = productService.computeGlobalAnalytics(ARTIST_USER);
+
+        // THEN
+        assertEquals(expectedAnalytics.getCurrentQuantity(), analytics.getCurrentQuantity());
+        assertEquals(expectedAnalytics.getSoldQuantity(), analytics.getSoldQuantity());
+        assertEquals(expectedAnalytics.getTotalRevenue(), analytics.getTotalRevenue());
+        assertEquals(expectedAnalytics.getSalesCount(), analytics.getSalesCount());
+        assertEquals(expectedAnalytics.getDurationUntilFirstSale(), analytics.getDurationUntilFirstSale());
+        assertEquals(expectedAnalytics.getCurrency(), analytics.getCurrency());
+    }
+
+    @Test
+    void givenArtistWithoutProducts_whenComputeGlobalAnalytics_thenReturnAnalytics() {
+        // GIVEN
+        when(productRepository.findUserProducts(ARTIST_USER.getSlug(), unpaged()))
+                .thenReturn(Page.empty());
+
+        // WHEN
+        ProductAnalytics analytics = productService.computeGlobalAnalytics(ARTIST_USER);
+
+        // THEN
+        assertEquals(0, analytics.getCurrentQuantity());
+        assertEquals(0, analytics.getSoldQuantity());
+        assertEquals(0, analytics.getTotalRevenue());
+        assertEquals(0, analytics.getSalesCount());
+        assertEquals(ZERO, analytics.getDurationUntilFirstSale());
+        assertEquals("", analytics.getCurrency());
     }
 
     @Test

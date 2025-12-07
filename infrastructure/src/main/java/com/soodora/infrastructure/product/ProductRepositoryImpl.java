@@ -5,7 +5,6 @@ import com.soodora.domain.cdn.ImageStorageUploader;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.product.*;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.Identifier;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
@@ -121,8 +120,8 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public Page<Product> findUserProducts(Identifier identifier, Pageable pageable) {
-        return repository.findByVendorUserSlug(identifier.value(), pageable)
+    public Page<Product> findUserProducts(String userSlug, Pageable pageable) {
+        return repository.findByVendorUserSlug(userSlug, pageable)
                 .map(DomainEntityAdapter::aggregate);
     }
 

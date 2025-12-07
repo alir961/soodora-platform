@@ -14,4 +14,18 @@ public class PostAnalytics {
     private int subscribedComments;
     private int subscribedReposts;
 
+    public PostAnalytics append(PostAnalytics analytics) {
+        return new PostAnalytics(
+                likes + analytics.likes,
+                comments + analytics.comments,
+                reposts + analytics.reposts,
+                subscribedLikes + analytics.subscribedLikes,
+                subscribedComments + analytics.subscribedComments,
+                subscribedReposts + analytics.subscribedReposts);
+    }
+
+    public static PostAnalytics empty() {
+        return new PostAnalytics(0, 0, 0, 0, 0, 0);
+    }
+
 }

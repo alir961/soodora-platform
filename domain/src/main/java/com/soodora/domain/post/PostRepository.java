@@ -2,7 +2,6 @@ package com.soodora.domain.post;
 
 import com.soodora.domain.cdn.FileData;
 import com.soodora.domain.user.User;
-import com.soodora.domain.user.value.Identifier;
 
 import java.util.List;
 import java.util.Set;
@@ -31,9 +30,9 @@ public interface PostRepository {
     Page<Post> findByFollowingSlugs(Set<String> followingSlugs, Pageable pageable);
     Page<Post> findByFilter(PostFilter filter, Pageable pageable);
     Page<Post> findRecommendedPosts(User user, Pageable pageable);
-    Page<Post> findUserPosts(Identifier identifier, Pageable pageable);
-    Page<Post> findUserReposts(Identifier identifier, Pageable pageable);
-    Page<Post> findUserAudios(Identifier identifier, Pageable pageable);
+    Page<Post> findUserPosts(String userSlug, Pageable pageable);
+    Page<Post> findUserReposts(String userSlug, Pageable pageable);
+    Page<Post> findUserAudios(String userSlug, Pageable pageable);
     boolean isCommentOwner(User user, String commentSlug);
 
 }

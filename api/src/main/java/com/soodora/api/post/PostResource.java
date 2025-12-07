@@ -97,6 +97,13 @@ public interface PostResource {
     Set<String> getReposts(@Parameter(description = "Slug of the post") @PathVariable String postSlug);
 
     @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Retrieve artist posts analytics", description = "Retrieve engagement analytics for all artist posts.", responses = {
+            @ApiResponse(responseCode = "200", description = "Analytics successfully retrieved"),
+            @ApiResponse(responseCode = "403", description = "Forbidden — user not allowed to view analytics")
+    })
+    PostAnalyticsDTO getGlobalAnalytics(@Parameter(hidden = true) @AuthenticationPrincipal User user);
+
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Retrieve post analytics", description = "Retrieve engagement analytics for a specific post. Only the post owner or admins can access this data.", responses = {
             @ApiResponse(responseCode = "200", description = "Analytics successfully retrieved"),
             @ApiResponse(responseCode = "403", description = "Forbidden — user not allowed to view analytics"),

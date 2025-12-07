@@ -140,6 +140,15 @@ public class PostController implements PostResource {
 
     @Override
     @PreAuthorize("hasRole('ARTIST')")
+    @GetMapping("/analytics")
+    public PostAnalyticsDTO getGlobalAnalytics(@AuthenticationPrincipal User user) {
+        PostAnalytics postAnalytics = postService.computeGlobalAnalytics(user);
+
+        return PostAnalyticsDTO.build(postAnalytics);
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ARTIST')")
     @GetMapping("/{postSlug}/analytics")
     public PostAnalyticsDTO getPostAnalytics(@AuthenticationPrincipal User user, @PathVariable String postSlug) {
         PostAnalytics postAnalytics = postService.computePostAnalytics(user, postSlug);

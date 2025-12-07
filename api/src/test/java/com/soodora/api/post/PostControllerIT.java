@@ -429,6 +429,40 @@ class PostControllerIT {
     }
 
     @Test
+    void givenAuthenticatedArtist_whenGetGlobalAnalytics_thenOk() throws Exception {
+        // GIVEN
+        PostAnalytics analytics = new PostAnalytics(1, 2, 3, 0, 1, 2);
+
+        when(postService.computeGlobalAnalytics(ARTIST_USER)).thenReturn(analytics);
+
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/analytics")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.likes").value(1))
+                .andExpect(jsonPath("$.comments").value(2))
+                .andExpect(jsonPath("$.reposts").value(3))
+                .andExpect(jsonPath("$.subscribedLikes").value(0))
+                .andExpect(jsonPath("$.subscribedComments").value(1))
+                .andExpect(jsonPath("$.subscribedReposts").value(2));
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenGetGlobalAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/analytics")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedRequest_whenGetGlobalAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/analytics"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void givenAuthenticatedRequest_whenGetPostAnalytics_thenOk() throws Exception {
         // GIVEN
         String postSlug = "post-slug";
@@ -457,6 +491,14 @@ class PostControllerIT {
         // WHEN & THEN
         mockMvc.perform(get("/posts/post-slug/analytics")
                 .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenGetPostAnalytics_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(get("/posts/post-slug/analytics")
+                .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 
