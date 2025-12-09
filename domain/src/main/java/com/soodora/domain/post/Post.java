@@ -44,6 +44,8 @@ public class Post {
     }
 
     public boolean hasAudio() {
+        if (audioTitle == null || audioUrl == null)
+            return false;
         return !audioTitle.isBlank() && !audioUrl.isBlank();
     }
 
