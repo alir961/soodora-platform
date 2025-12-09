@@ -1,0 +1,1 @@
+ALTER TABLE link_hubs ADD COLUMN view_count INT DEFAULT 0;
