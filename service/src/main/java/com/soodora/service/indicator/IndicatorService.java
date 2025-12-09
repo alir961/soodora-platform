@@ -15,6 +15,7 @@ import com.soodora.domain.post.Post;
 import com.soodora.domain.post.PostRepository;
 import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
+import com.soodora.domain.user.ArtistWithoutLinkHubException;
 import com.soodora.domain.user.User;
 
 import java.math.BigDecimal;
@@ -179,7 +180,7 @@ public class IndicatorService {
                     try {
                         artistRepository.retrieveLinkHub(artist.getSlug());
                         return false;
-                    } catch (UnknownSlugException exception) {
+                    } catch (ArtistWithoutLinkHubException exception) {
                         return true;
                     }
                 })
