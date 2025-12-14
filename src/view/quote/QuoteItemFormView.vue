@@ -7,7 +7,7 @@ import { closeOutline, cubeOutline } from 'ionicons/icons';
 import { showToast } from '@/utils';
 import { createQuoteArticle, updateQuoteArticle, getQuote } from '@/client/quoteClient';
 import type { CreateQuoteArticleRequest, UpdateQuoteArticleRequest } from '@/entity/Quote';
-import CurrencySelector from '@/component/deviseSelector/CurrencySelector.vue';
+import CurrencySelector from '@/component/money/CurrencySelector.vue';
 import { Currency } from '@/entity/Money';
 import Header from '@/component/AppHeader.vue';
 
