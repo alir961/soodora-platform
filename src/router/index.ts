@@ -27,6 +27,7 @@ import PlaylistMeView from '@/view/playlist/PlaylistView.vue';
 import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 import AnalyticsView from '@/view/user/AnalyticsView.vue';
+import ArtistEventView from '@/view/event/ArtistEventView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -37,6 +38,10 @@ const routes: Array<RouteRecordRaw> = [
     path: '/explore',
     name: 'Explore',
     component: HomeView,
+  },
+  {
+    path: '/explore/post/create',
+    component: PostFormView,
   },
   {
     path: '/linkhub/create',
@@ -79,6 +84,11 @@ const routes: Array<RouteRecordRaw> = [
     component: UserProfileView,
   },
   {
+    path: '/user/:slug/events',
+    name: 'Artist Events',
+    component: ArtistEventView,
+  },
+  {
     path: '/marketplace',
     name: 'Marketplace',
     component: MarketPlaceView,
@@ -105,6 +115,14 @@ const routes: Array<RouteRecordRaw> = [
     path: '/marketplace/mysales',
     name: 'MySales',
     component: MySaleView,
+  },
+  {
+    path: '/marketplace/product/create',
+    component: ProductFormView,
+  },
+  {
+    path: '/marketplace/product/:slug/edit',
+    component: ProductFormView,
   },
   {
     path: '/soodorakits/create',
@@ -181,6 +199,10 @@ const routes: Array<RouteRecordRaw> = [
     component: QuoteView,
   },
   {
+    path: '/analytics',
+    component: AnalyticsView,
+  },
+  {
     path: '/maintenance',
     name: 'Maintenance',
     component: MaintenanceView,
@@ -189,22 +211,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/:catchAll(.*)',
     name: 'NotFound',
     component: NotFoundView,
-  },
-  {
-    path: '/marketplace/product/create',
-    component: ProductFormView,
-  },
-  {
-    path: '/marketplace/product/:slug/edit',
-    component: ProductFormView,
-  },
-  {
-    path: '/explore/post/create',
-    component: PostFormView,
-  },
-  {
-    path: '/analytics',
-    component: AnalyticsView,
   },
 ];
 

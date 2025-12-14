@@ -8,11 +8,7 @@ function reject(reason: string | Error) {
 }
 
 async function redirectLogin(router: Router) {
-  await router.push('/auth' + retrieveCallbackURL());
-}
-
-async function redirectExplore(router: Router) {
-  await router.push('/explore' + retrieveCallbackURL());
+  await router.push('/authentication' + retrieveCallbackURL());
 }
 
 function capitalize(value: string): string {
@@ -29,7 +25,19 @@ const showToast = async (message: string, color: ToastStatus = 'success') => {
     color,
     position: 'top',
   });
+
   await toast.present();
 };
 
-export { reject, redirectLogin, capitalize, redirectExplore, showToast };
+const formatDate = (isoDate: string): string => {
+  const date = new Date(isoDate);
+  const day = date.getDate().toString().padStart(2, '0');
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+};
+
+export { reject, redirectLogin, capitalize, showToast, formatDate };

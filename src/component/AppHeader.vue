@@ -129,14 +129,14 @@ defineProps<{
   gap: 0.75rem;
 }
 
-:deep(.about-btn),
+:deep(.actions-button),
 :deep(.actions-button),
 :deep(.create-button),
 :deep(.create-fab),
 :deep(.edit-fab),
 :deep(.edit-btn),
 :deep(.share-btn),
-:deep(.settings-button),
+:deep(.actions-button),
 :deep(.action-btn) {
   appearance: none;
   border: 1px solid rgba(59, 130, 246, 0.3);
@@ -174,14 +174,14 @@ defineProps<{
   flex-shrink: 0;
 }
 
-:deep(.about-btn) ion-icon,
+:deep(.actions-button) ion-icon,
 :deep(.actions-button) ion-icon,
 :deep(.create-button) ion-icon,
 :deep(.create-fab) ion-icon,
 :deep(.edit-fab) ion-icon,
 :deep(.edit-btn) ion-icon,
 :deep(.share-btn) ion-icon,
-:deep(.settings-button) ion-icon,
+:deep(.actions-button) ion-icon,
 :deep(.action-btn) ion-icon {
   font-size: 18px;
   color: #fff;
@@ -205,14 +205,14 @@ defineProps<{
   white-space: nowrap;
 }
 
-:deep(.about-btn):active,
+:deep(.actions-button):active,
 :deep(.actions-button):active,
 :deep(.create-button):active,
 :deep(.create-fab):active,
 :deep(.edit-fab):active,
 :deep(.edit-btn):active,
 :deep(.share-btn):active,
-:deep(.settings-button):active,
+:deep(.actions-button):active,
 :deep(.action-btn):active,
 :deep(.visit-btn):active,
 :deep(.download-btn):active {
@@ -259,16 +259,16 @@ defineProps<{
   transform: scale(1.05);
 }
 
-:deep(.settings-button.close-mode) {
+:deep(.actions-button.close-mode) {
   border-color: rgba(239, 68, 68, 0.25);
   background: rgba(239, 68, 68, 0.12);
 }
 
-:deep(.settings-button.close-mode) ion-icon {
+:deep(.actions-button.close-mode) ion-icon {
   color: rgba(239, 68, 68, 1);
 }
 
-:deep(.settings-button.close-mode):active {
+:deep(.actions-button.close-mode):active {
   box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
   background: rgba(239, 68, 68, 0.18);
 }

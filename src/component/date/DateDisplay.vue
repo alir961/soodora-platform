@@ -3,7 +3,7 @@ defineProps<{
   date: string | Date;
 }>();
 
-function formatPostDate(dateInput: string | Date): string {
+function formatDate(dateInput: string | Date): string {
   const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
@@ -23,5 +23,5 @@ function formatPostDate(dateInput: string | Date): string {
 </script>
 
 <template>
-  <span>{{ formatPostDate(date) }}</span>
+  <span>{{ formatDate(date) }}</span>
 </template>
