@@ -28,6 +28,7 @@ import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 import AnalyticsView from '@/view/user/AnalyticsView.vue';
 import ArtistEventView from '@/view/event/ArtistEventView.vue';
+import CreateEventView from '@/view/event/CreateEventView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -87,6 +88,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/user/:slug/events',
     name: 'Artist Events',
     component: ArtistEventView,
+  },
+  {
+    path: '/user/:slug/events/create',
+    name: 'Create Event',
+    component: CreateEventView,
   },
   {
     path: '/marketplace',

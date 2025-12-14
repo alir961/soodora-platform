@@ -3,6 +3,21 @@ import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 import { Event } from '@/entity/Event';
 
+export interface CreateEventPayload {
+  type: string;
+  title: string;
+  description: string;
+  url: string;
+  thumbnailUrl: string;
+  latitude: number;
+  longitude: number;
+  dateTime: string;
+}
+
+async function callCreateEvent(event: CreateEventPayload): Promise<void> {
+  return axios.post('/events', event, { headers: await getAuthorizedHeader() });
+}
+
 async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
   const response = await axios.get('/events', {
     params: { artistSlug },
@@ -13,4 +28,4 @@ async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
   return reject('Failed to retrieve artist posts.');
 }
 
-export { callRetrieveArtistEvents };
+export { callCreateEvent, callRetrieveArtistEvents };

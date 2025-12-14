@@ -3,7 +3,7 @@ import { IonIcon, onIonViewWillEnter } from '@ionic/vue';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import ProfileComponent from '@/component/user/ProfileComponent.vue';
-import { OAuthProvider, callRetrieveLinkedOAuthProviders, retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { callRetrieveLinkedOAuthProviders, OAuthProvider, retrieveAuthenticatedProfile } from '@/client/profileClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import Header from '@/component/AppHeader.vue';
 import OAuthButton from '@/component/auth/OAuthButton.vue';
@@ -11,17 +11,18 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import UserContentList from '@/component/user/UserContentList.vue';
 import EditProfileForm from '@/component/user/EditProfileForm.vue';
 import { User } from '@/entity/User';
-import { loadBearerToken, deleteBearerToken } from '@/store/localStorage';
+import { deleteBearerToken, loadBearerToken } from '@/store/localStorage';
 import { showToast } from '@/utils';
 import {
-  closeOutline,
-  personCircleOutline,
-  ellipsisHorizontal,
-  settingsOutline,
-  logOutOutline,
-  linkOutline,
   briefcaseOutline,
   chatbubblesOutline,
+  closeOutline,
+  ellipsisHorizontal,
+  linkOutline,
+  logOutOutline,
+  mapOutline,
+  personCircleOutline,
+  settingsOutline,
   statsChartOutline,
 } from 'ionicons/icons';
 import ActionsPopup, { type ActionItem } from '@/component/actions/ActionsPopup.vue';
@@ -91,9 +92,10 @@ const closeFollowList = () => {
 
 const openSettingsPopup = (event: MouseEvent) => {
   const button = event.currentTarget as HTMLElement;
-  const rect = button.getBoundingClientRect();
-  popupX.value = rect.right - 220; // Align right edge of popup with right edge of button
-  popupY.value = rect.bottom + 8; // 8px below the button
+  const bounds = button.getBoundingClientRect();
+
+  popupX.value = bounds.right - 220;
+  popupY.value = bounds.bottom + 8;
   showActionsPopup.value = true;
 };
 
@@ -109,15 +111,16 @@ const handleSignOut = async () => {
   authStore.logout();
   await deleteBearerToken();
   await router.push('/authentication');
-  window.location.reload();
+  globalThis.location.reload();
 };
 
 const handleLinkHub = async () => {
   const user = authStore.getAuthenticatedUser;
-  if (!user) return;
 
+  if (!user) return;
   try {
     const linkHub = await getUserLinkHub(user.slug);
+
     if (linkHub) {
       await router.push(`/linkhub/edit/${linkHub.slug}`);
       return;
@@ -130,15 +133,14 @@ const handleLinkHub = async () => {
 
 const handleSoodoraKit = async () => {
   const user = authStore.getAuthenticatedUser;
-  if (!user) return;
 
+  if (!user) return;
   try {
-    if (user.roles.includes('ARTIST')) {
-      const soodoraKit = await getSoodoraKitArtistSlug(user.slug);
-      if (soodoraKit) {
-        await router.push(`/soodorakits/${soodoraKit.slug}`);
-        return;
-      }
+    const soodoraKit = await getSoodoraKitArtistSlug(user.slug);
+
+    if (soodoraKit) {
+      await router.push(`/soodorakits/${soodoraKit.slug}`);
+      return;
     }
   } catch (error) {
     // User doesn't have a soodorakit yet, redirect to create
@@ -150,12 +152,20 @@ const handleQuotes = async () => {
   await router.push('/quotes/me');
 };
 
-const showAnalytics = async () => {
+const handleEvents = async () => {
+  const user: User | null = authStore.getAuthenticatedUser;
+
+  if (!user) return;
+  await router.push(`/user/${user.slug}/events`);
+};
+
+const handleAnalytics = async () => {
   await router.push('/analytics');
 };
 
 const canCreateContent = computed(() => {
   const user = authStore.getAuthenticatedUser;
+
   if (!user) return false;
   return user.roles.some((role) => ['ADMIN', 'PREMIUM', 'ARTIST'].includes(role));
 });
@@ -163,7 +173,6 @@ const canCreateContent = computed(() => {
 const actionItems = computed<ActionItem[]>(() => {
   const items: ActionItem[] = [];
 
-  // Only show artist/premium features if user has appropriate role
   if (canCreateContent.value) {
     items.push(
       {
@@ -182,14 +191,18 @@ const actionItems = computed<ActionItem[]>(() => {
         action: handleQuotes,
       },
       {
+        icon: mapOutline,
+        label: 'My Events',
+        action: handleEvents,
+      },
+      {
         icon: statsChartOutline,
         label: 'Analytics',
-        action: showAnalytics,
+        action: handleAnalytics,
       }
     );
   }
 
-  // Always show Settings and Sign Out
   items.push(
     {
       icon: settingsOutline,
@@ -249,12 +262,12 @@ const userRole = computed(() => {
       <template #actions>
         <button
           v-if="!showFollowList.showing"
-          class="settings-button"
+          class="actions-button"
           :class="{ 'close-mode': showEditForm }"
           @click="headerButtonAction">
           <ion-icon :icon="headerButtonIcon" />
         </button>
-        <button v-else class="settings-button close-mode" @click="headerButtonAction">
+        <button v-else class="actions-button close-mode" @click="headerButtonAction">
           <ion-icon :icon="closeOutline" />
         </button>
       </template>
@@ -311,15 +324,6 @@ const userRole = computed(() => {
 <style scoped>
 .content-wrapper {
   position: relative;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 
 .google-button,
@@ -475,12 +479,12 @@ const userRole = computed(() => {
     font-size: 0.8rem;
   }
 
-  .settings-button {
+  .actions-button {
     height: 38px;
     border-radius: 10px;
   }
 
-  .settings-button ion-icon {
+  .actions-button ion-icon {
     font-size: 19px;
   }
 }
