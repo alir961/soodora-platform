@@ -78,6 +78,8 @@ public class UserService implements UserDetailsService {
 
             avatarUrl = new Url(hostedAvatarUrl);
         }
+        if (userRepository.isUsed(createFromUsername(username.value())))
+            throw new UserUnityException("Username is already used");
         user.updateUser(username, updateCommand.firstname(), updateCommand.lastname(),
                 updateCommand.description(), avatarUrl);
         return userRepository.save(user);

@@ -1,12 +1,11 @@
 package com.soodora.api.event;
 
-import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.auth.UserPrincipal;
-import com.soodora.service.event.CreateEventRequest;
 import com.soodora.service.event.EventService;
+import com.soodora.service.event.UnknownEventException;
+import com.soodora.service.shared.InvalidPermissionException;
 
-import org.hamcrest.core.StringStartsWith;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,17 +15,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import jakarta.inject.Inject;
 
 import static java.time.LocalDateTime.now;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.hamcrest.Matchers.startsWith;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.api.JsonStringify.asJsonString;
 import static com.soodora.test.TestConstants.*;
@@ -35,13 +34,34 @@ import static com.soodora.test.TestConstants.*;
 @AutoConfigureMockMvc
 class EventControllerIT {
 
-    private static final CreateEventRequest VALID_REQUEST = new CreateEventRequest(
-            "FESTIVAL",
+    private static final SaveEventRequest VALID_REQUEST = new SaveEventRequest(
+            "festival",
             "Title",
             "Description",
             "url",
             "thumbnailUrl",
-            "Address",
+            0,
+            0,
+            now());
+
+    private static final SaveEventRequest INVALID_TYPE_REQUEST = new SaveEventRequest(
+            "invalid",
+            "Title",
+            "Description",
+            "url",
+            "thumbnailUrl",
+            0,
+            0,
+            now());
+
+    private static final SaveEventRequest INVALID_TITLE_REQUEST = new SaveEventRequest(
+            "festival",
+            "    ",
+            "Description",
+            "url",
+            "thumbnailUrl",
+            0,
+            0,
             now());
 
     @Inject
@@ -51,162 +71,213 @@ class EventControllerIT {
     private EventService eventService;
 
     @Test
-    void givenValidRequest_whenCreateEvent_thenCreated() throws Exception {
+    void givenAuthenticatedArtist_whenCreateEvent_thenCreated() throws Exception {
         // GIVEN
-        when(eventService.createEvent(any(), eq(USER))).thenReturn(EVENT);
+        when(eventService.createEvent(eq(ARTIST_USER), any()))
+                .thenReturn(EVENT);
 
         // WHEN & THEN
-        mockMvc.perform(post("/artists/events")
+        mockMvc.perform(post("/events")
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(VALID_REQUEST))
-                .with(user(new UserPrincipal(USER))))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isCreated());
-        verify(eventService)
-                .createEvent(any(), eq(USER));
     }
 
     @Test
     void givenInvalidType_whenCreateEvent_thenBadRequest() throws Exception {
-        // GIVEN
-        CreateEventRequest invalidRequest = new CreateEventRequest(
-                "MUSIC_GLITCH",
-                "Title",
-                "Description",
-                "url",
-                "thumbnailUrl",
-                "Address",
-                now());
-
         // WHEN & THEN
-        mockMvc.perform(post("/artists/events")
+        mockMvc.perform(post("/events")
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(invalidRequest))
-                .with(user(new UserPrincipal(USER))))
+                .content(asJsonString(INVALID_TYPE_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(new StringStartsWith("Event type must be one of")));
-        verify(eventService, never())
-                .createEvent(any(), eq(USER));
+                .andExpect(jsonPath("$.reason").value(startsWith("Event type must be one of")));
     }
 
     @Test
     void givenInvalidTitle_whenCreateEvent_thenBadRequest() throws Exception {
-        // GIVEN
-        CreateEventRequest invalidRequest = new CreateEventRequest(
-                "FESTIVAL",
-                "    ",
-                "Description",
-                "url",
-                "thumbnailUrl",
-                "Address",
-                now());
-
         // WHEN & THEN
-        mockMvc.perform(post("/artists/events")
+        mockMvc.perform(post("/events")
                 .contentType(APPLICATION_JSON)
-                .content(asJsonString(invalidRequest))
-                .with(user(new UserPrincipal(USER))))
+                .content(asJsonString(INVALID_TITLE_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$").value("Title cannot be null or blank"));
-        verify(eventService, never())
-                .createEvent(any(), eq(USER));
+                .andExpect(jsonPath("$.reason").value("Title cannot be null or blank"));
     }
 
     @Test
-    void givenUnauthorizedRequest_whenCreateEvent_thenForbidden() throws Exception {
+    void givenAuthenticatedUser_whenCreateEvent_thenForbidden() throws Exception {
         // WHEN & THEN
-        mockMvc.perform(post("/artists/events")
+        mockMvc.perform(post("/events")
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenCreateEvent_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(post("/events")
                 .contentType(APPLICATION_JSON)
                 .content(asJsonString(VALID_REQUEST)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void givenValidArtistSlug_whenGetEvents_thenOk() throws Exception {
+    void givenValidArtistSlug_whenSearchEvents_thenOk() throws Exception {
         // GIVEN
-        when(eventService.getArtistEvents(ARTIST.slug())).thenReturn(singletonList(EVENT));
+        when(eventService.getArtistEvents(ARTIST.slug()))
+                .thenReturn(singletonList(EVENT));
 
         // WHEN & THEN
-        mockMvc.perform(get("/artists/events")
-                .queryParam("artistSlug", ARTIST.slug())
-                .with(user(new UserPrincipal(USER))))
+        mockMvc.perform(get("/events")
+                .queryParam("artistSlug", ARTIST.slug()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].slug").value(EVENT.slug()));
+                .andExpect(jsonPath("$[0].slug").value(EVENT.getSlug()));
     }
 
     @Test
-    void givenValidArtistSlug_whenGetEvents_thenNoContent() throws Exception {
+    void givenInvalidArtistSlug_whenSearchEvents_thenNotFound() throws Exception {
         // GIVEN
-        when(eventService.getArtistEvents(ARTIST.slug())).thenReturn(emptyList());
+        when(eventService.getArtistEvents(ARTIST.slug()))
+                .thenThrow(UnknownArtistException.class);
 
         // WHEN & THEN
-        mockMvc.perform(get("/artists/events")
-                .queryParam("artistSlug", ARTIST.slug())
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void givenInvalidArtistSlug_whenGetEvents_thenNoContent() throws Exception {
-        // GIVEN
-        when(eventService.getArtistEvents("invalidSlug")).thenThrow(UnknownSlugException.class);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/artists/events")
-                .queryParam("artistSlug", "invalidSlug")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void givenUnauthorizedRequest_whenGetEvents_thenForbidden() throws Exception {
-        // WHEN & THEN
-        mockMvc.perform(get("/artists/events")
+        mockMvc.perform(get("/events")
                 .queryParam("artistSlug", ARTIST.slug()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenAuthenticatedArtist_whenUpdateEvent_thenOk() throws Exception {
+        // GIVEN
+        when(eventService.updateEvent(eq(ARTIST_USER), eq(EVENT.getSlug()), any()))
+                .thenReturn(EVENT);
+
+        // WHEN & THEN
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidEventSlug_whenUpdateEvent_thenNotFound() throws Exception {
+        // GIVEN
+        when(eventService.updateEvent(eq(ARTIST_USER), eq(EVENT.getSlug()), any()))
+                .thenThrow(UnknownEventException.class);
+
+        // WHEN & THEN
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenInvalidType_whenUpdateEvent_thenBadRequest() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(INVALID_TYPE_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value(startsWith("Event type must be one of")));
+    }
+
+    @Test
+    void givenInvalidTitle_whenUpdateEvent_thenBadRequest() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(INVALID_TITLE_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.reason").value("Title cannot be null or blank"));
+    }
+
+    @Test
+    void givenInvalidPermission_whenUpdateEvent_thenForbidden() throws Exception {
+        // GIVEN
+        when(eventService.updateEvent(eq(ARTIST_USER), eq(EVENT.getSlug()), any()))
+                .thenThrow(InvalidPermissionException.class);
+
+        // WHEN & THEN
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
+                .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void givenArtistAuthenticatedUser_whenGetAuthenticatedArtistEvents_thenOk() throws Exception {
-        // GIVEN
-        when(eventService.getArtistEvents(USER)).thenReturn(singletonList(EVENT));
-
+    void givenAuthenticatedUser_whenUpdateEvent_thenForbidden() throws Exception {
         // WHEN & THEN
-        mockMvc.perform(get("/artists/events/:me")
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].slug").value(EVENT.slug()));
-    }
-
-    @Test
-    void givenArtistAuthenticatedUser_whenGetAuthenticatedArtistEvents_thenNoContent() throws Exception {
-        // GIVEN
-        when(eventService.getArtistEvents(ARTIST.slug())).thenReturn(emptyList());
-
-        // WHEN & THEN
-        mockMvc.perform(get("/artists/events/:me")
-                .queryParam("artistSlug", ARTIST.slug())
-                .with(user(new UserPrincipal(USER))))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void givenNoArtistAuthenticatedUser_whenGetAuthenticatedArtistEvents_thenForbidden() throws Exception {
-        // GIVEN
-        when(eventService.getArtistEvents(USER)).thenThrow(UnknownArtistException.class);
-
-        // WHEN & THEN
-        mockMvc.perform(get("/artists/events/:me")
+        mockMvc.perform(put("/events/" + EVENT.getSlug())
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST))
                 .with(user(new UserPrincipal(USER))))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    void givenUnauthorizedRequest_whenGetAuthenticatedArtistEvents_thenForbidden() throws Exception {
+    void givenUnauthenticatedUser_whenUpdateEvent_thenForbidden() throws Exception {
         // WHEN & THEN
-        mockMvc.perform(get("/artists/events/:me")
-                .queryParam("artistSlug", ARTIST.slug()))
+        mockMvc.perform(post("/events")
+                .contentType(APPLICATION_JSON)
+                .content(asJsonString(VALID_REQUEST)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedArtist_whenDeleteEvent_thenOk() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/events/" + EVENT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void givenInvalidEventSlug_whenDeleteEvent_thenNotFound() throws Exception {
+        // GIVEN
+        doThrow(UnknownEventException.class)
+                .when(eventService).deleteEvent(ARTIST_USER, EVENT.getSlug());
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/events/" + EVENT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void givenInvalidPermission_whenDeleteEvent_thenForbidden() throws Exception {
+        // GIVEN
+        doThrow(InvalidPermissionException.class)
+                .when(eventService).deleteEvent(ARTIST_USER, EVENT.getSlug());
+
+        // WHEN & THEN
+        mockMvc.perform(delete("/events/" + EVENT.getSlug())
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAuthenticatedUser_whenDeleteEvent_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/events/" + EVENT.getSlug())
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenUnauthenticatedUser_whenDeleteEvent_thenForbidden() throws Exception {
+        // WHEN & THEN
+        mockMvc.perform(delete("/events/" + EVENT.getSlug()))
                 .andExpect(status().isForbidden());
     }
 

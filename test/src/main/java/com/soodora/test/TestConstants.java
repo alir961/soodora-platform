@@ -1,7 +1,7 @@
 package com.soodora.test;
 
 import com.soodora.domain.artist.ArtistDTO;
-import com.soodora.domain.event.EventDTO;
+import com.soodora.domain.event.Event;
 import com.soodora.domain.mediakit.MediaKit;
 import com.soodora.domain.mediakititem.MediaKitItem;
 import com.soodora.domain.oauth.RefreshableAuthorization;
@@ -19,7 +19,7 @@ import static com.soodora.domain.factory.ProductFactory.buildDefaultProduct;
 import static com.soodora.domain.factory.SaleFactory.buildDefaultSale;
 import static com.soodora.domain.factory.UserFactory.*;
 import static com.soodora.test.factory.ArtistFactory.buildDefaultArtist;
-import static com.soodora.test.factory.EventFactory.buildEventDTO;
+import static com.soodora.test.factory.EventFactory.buildDefaultEvent;
 
 @NoArgsConstructor(access = PRIVATE)
 public class TestConstants {
@@ -38,7 +38,7 @@ public class TestConstants {
     public static final User ADMIN = buildDefaultAdminUser();
     public static final User ARTIST_USER = buildDefaultArtistUser();
     public static final ArtistDTO ARTIST = buildDefaultArtist("");
-    public static final EventDTO EVENT = buildEventDTO("");
+    public static final Event EVENT = buildDefaultEvent();
     public static final MediaKit MEDIA_KIT = buildDefaultMediaKit();
     public static final MediaKitItem MEDIA_KIT_ITEM = buildDefaultMediaKitItem();
     public static final Sale SALE = buildDefaultSale();

@@ -1,7 +1,8 @@
 package com.soodora.infrastructure.event;
 
-import com.soodora.domain.event.EventDTO;
+import com.soodora.domain.event.Event;
 import com.soodora.domain.event.EventType;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
 
@@ -21,7 +22,7 @@ import static jakarta.persistence.EnumType.STRING;
 @Setter
 @Entity(name = "events")
 @NoArgsConstructor
-public class EventEntity implements DomainEntityAdapter<EventDTO> {
+public class EventEntity implements DomainEntityAdapter<Event> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -37,7 +38,7 @@ public class EventEntity implements DomainEntityAdapter<EventDTO> {
     @Column
     private String title;
 
-    @Column
+    @Column(length = 1000)
     private String description;
 
     @Column
@@ -47,7 +48,10 @@ public class EventEntity implements DomainEntityAdapter<EventDTO> {
     private String thumbnailUrl;
 
     @Column
-    private String address;
+    private double latitude;
+
+    @Column
+    private double longitude;
 
     @Column
     private LocalDateTime dateTime;
@@ -56,18 +60,22 @@ public class EventEntity implements DomainEntityAdapter<EventDTO> {
     private List<ArtistEntity> artists = new ArrayList<>();
 
     @Override
-    public EventDTO aggregate() {
-        return new EventDTO(
+    public Event aggregate() {
+        List<User> artistAggregates = artists.stream()
+                .map(ArtistEntity::getUser)
+                .map(DomainEntityAdapter::aggregate)
+                .toList();
+
+        return new Event(
                 slug,
                 type,
                 title,
                 description,
                 url,
                 thumbnailUrl,
-                address,
+                latitude,
+                longitude,
                 dateTime,
-                artists.stream()
-                        .map(DomainEntityAdapter::aggregate)
-                        .toList());
+                artistAggregates);
     }
 }

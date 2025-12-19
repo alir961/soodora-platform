@@ -1,10 +1,9 @@
 package com.soodora.infrastructure.event;
 
 import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.event.CreateEventCommand;
-import com.soodora.domain.event.EventDTO;
+import com.soodora.domain.event.Event;
 import com.soodora.domain.event.EventRepository;
-import com.soodora.domain.user.UnknownIdentifierException;
+import com.soodora.domain.user.User;
 import com.soodora.infrastructure.artist.ArtistEntity;
 import com.soodora.infrastructure.artist.ArtistJpaRepository;
 import com.soodora.infrastructure.common.DomainEntityAdapter;
@@ -27,35 +26,46 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     @Transactional
-    public EventDTO save(CreateEventCommand command, String artistSlug) {
-        EventEntity event = new EventEntity();
-        ArtistEntity artist = artistRepository.findByUserSlug(artistSlug)
-                .orElseThrow(() -> new UnknownSlugException("Invalid artist slug: " + artistSlug));
+    public Event save(Event event) {
+        EventEntity eventEntity = eventRepository.findBySlug(event.getSlug()).orElse(new EventEntity());
+        String slug = event.getSlug() == null ? generateUniqueSlug() : event.getSlug();
 
-        event.setSlug(generateUniqueSlug());
-        event.setType(command.type());
-        event.setTitle(command.title());
-        event.setDescription(command.description());
-        event.setUrl(command.url());
-        event.setThumbnailUrl(command.thumbnailUrl());
-        event.setAddress(command.address());
-        event.setDateTime(command.dateTime());
-        event = eventRepository.save(event);
-        artist.getEvents().add(event);
-        artistRepository.save(artist);
-        return event.aggregate();
+        eventEntity.setSlug(slug);
+        eventEntity.setType(event.getType());
+        eventEntity.setTitle(event.getTitle());
+        eventEntity.setDescription(event.getDescription());
+        eventEntity.setUrl(event.getUrl());
+        eventEntity.setThumbnailUrl(event.getThumbnailUrl());
+        eventEntity.setLatitude(event.getLatitude());
+        eventEntity.setLongitude(event.getLongitude());
+        eventEntity.setDateTime(event.getDateTime());
+        eventEntity = eventRepository.save(eventEntity);
+
+        for (User artist : event.getArtists()) {
+            ArtistEntity artistEntity = artistRepository.findByUserSlug(artist.getSlug())
+                    .orElseThrow(
+                            () -> new UnknownSlugException("Unable to find artist with slug: #" + artist.getSlug()));
+            boolean hasEvent = artistEntity.getEvents().stream()
+                    .anyMatch(entity -> entity.getSlug().equals(event.getSlug()));
+
+            if (hasEvent)
+                artistEntity.getEvents().removeIf(entity -> entity.getSlug().equals(event.getSlug()));
+            artistEntity.getEvents().add(eventEntity);
+            artistRepository.save(artistEntity);
+        }
+        return eventEntity.aggregate();
     }
 
     @Override
     @Transactional
-    public EventDTO find(String slug) {
-        return findArtistBySlug(slug)
+    public Event find(String eventSlug) {
+        return findEventBySlugOrThrows(eventSlug)
                 .aggregate();
     }
 
     @Override
     @Transactional
-    public List<EventDTO> findAll() {
+    public List<Event> findAll() {
         return eventRepository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .toList();
@@ -63,8 +73,8 @@ public class EventRepositoryImpl implements EventRepository {
 
     @Override
     @Transactional
-    public void delete(String slug) {
-        eventRepository.findBySlug(slug)
+    public void delete(String eventSlug) {
+        eventRepository.findBySlug(eventSlug)
                 .ifPresent(eventRepository::delete);
     }
 
@@ -76,9 +86,9 @@ public class EventRepositoryImpl implements EventRepository {
         return slug;
     }
 
-    private EventEntity findArtistBySlug(String slug) {
+    private EventEntity findEventBySlugOrThrows(String slug) {
         return eventRepository.findBySlug(slug)
-                .orElseThrow(() -> new UnknownIdentifierException("Unable to find artist '" + slug + "'"));
+                .orElseThrow(() -> new UnknownSlugException("Unable to find event with slug: #" + slug));
     }
 
 }
