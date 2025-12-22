@@ -61,7 +61,6 @@ function retrieveColorTheme(theme: ExportTheme, customColors?: CustomColors): Co
   return baseTheme;
 }
 
-
 function shiftHue(hex: string, degrees: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) return hex;
@@ -500,11 +499,7 @@ function createExcerptCopy(text: string | undefined, maxCharacters: number): str
   return `${trimmed.slice(0, maxCharacters).trim()}…`;
 }
 
-async function createPostCanvas(
-  post: Post,
-  theme: ExportTheme,
-  customColors?: CustomColors
-): Promise<StaticCanvas> {
+async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: CustomColors): Promise<StaticCanvas> {
   const colorTheme = retrieveColorTheme(theme, customColors);
   const canvas = new StaticCanvas(undefined, { width: 1080, height: 1920, backgroundColor: 'rgba(0,0,0,0)' });
 
@@ -513,9 +508,6 @@ async function createPostCanvas(
 
   const cardLeft = 80;
   const cardWidth = canvasWidth - 160;
-  const minCardTop = 180;
-  const minCardBottom = 80;
-  const maxCardHeight = canvasHeight - minCardTop - minCardBottom;
 
   const tempCardTop = 0;
   const horizontalPadding = 96;
@@ -603,7 +595,7 @@ async function createPostCanvas(
   const heroWidth = contentWidth;
   const heroHeight = heroWidth * 0.62;
   const isAudioPost = !!(post.audioUrl && post.audioTitle);
-  const titleMaxHeight = (post.imageUrl || isAudioPost) ? heroHeight * 0.45 : heroHeight * 0.85;
+  const titleMaxHeight = post.imageUrl || isAudioPost ? heroHeight * 0.45 : heroHeight * 0.85;
 
   // For audio posts, skip the post title section entirely - we show the track title instead
   if (!isAudioPost) {
@@ -627,12 +619,10 @@ async function createPostCanvas(
     currentY += postTitle.getScaledHeight() + 48;
   }
 
-  const postTitleBottom = currentY;
-
   // Audio post with cover image
   if (isAudioPost && post.imageUrl) {
     const audioHeroHeight = heroWidth * 0.82;
-    
+
     // Audio track title - with music icon
     const audioTrackTitle = createAutoSizedTextbox(`♫  ${createExcerptCopy(post.audioTitle.toUpperCase(), 50)}`, {
       top: currentY,
@@ -654,7 +644,7 @@ async function createPostCanvas(
     currentY += audioTrackTitle.getScaledHeight() + 58;
 
     // More square-ish hero for album art (uses audioHeroHeight calculated above)
-    
+
     const postImage = await FabricImage.fromURL(post.imageUrl, { crossOrigin: 'anonymous' }, { selectable: false });
 
     const imgWidth = postImage.width ?? 1;
@@ -751,24 +741,24 @@ async function createPostCanvas(
     // Waveform baseline is exactly at the bottom of the image (inside rounded corners)
     const imageBottom = currentY + audioHeroHeight;
     const waveformBaseline = imageBottom;
-    
+
     // Create a more dynamic, musical pattern with peaks and valleys
     const peakPositions = [0.15, 0.35, 0.5, 0.65, 0.85]; // Where the peaks are
-    
+
     for (let i = 0; i < barCount; i++) {
       const progress = i / barCount;
-      
+
       // Calculate distance to nearest peak for more musical feel
       let peakInfluence = 0;
       for (const peak of peakPositions) {
         const dist = Math.abs(progress - peak);
         peakInfluence = Math.max(peakInfluence, Math.max(0, 1 - dist * 4));
       }
-      
+
       // Add some variation
       const variation = Math.sin(i * 1.2) * 0.15 + Math.cos(i * 0.7) * 0.1;
       const barHeight = Math.max(10, (0.25 + peakInfluence * 0.75 + variation) * maxBarHeight);
-      
+
       const barGradient = new Gradient({
         type: 'linear',
         gradientUnits: 'pixels',
@@ -797,7 +787,7 @@ async function createPostCanvas(
   // Audio post without cover image
   else if (isAudioPost && !post.imageUrl) {
     const audioHeroHeight = heroWidth * 0.58;
-    
+
     // Audio track title - with music icon
     const audioTrackTitle = createAutoSizedTextbox(`♫  ${createExcerptCopy(post.audioTitle.toUpperCase(), 50)}`, {
       top: currentY,
@@ -939,17 +929,17 @@ async function createPostCanvas(
 
     // Create dynamic peaks at different positions
     const peakPositions = [0.12, 0.28, 0.45, 0.62, 0.78, 0.92];
-    
+
     for (let i = 0; i < barCount; i++) {
       const progress = i / barCount;
-      
+
       // Calculate influence from nearest peaks
       let peakInfluence = 0;
       for (const peak of peakPositions) {
         const dist = Math.abs(progress - peak);
         peakInfluence = Math.max(peakInfluence, Math.max(0, 1 - dist * 5));
       }
-      
+
       // Add variation for more organic feel
       const variation = Math.sin(i * 0.9) * 0.12 + Math.cos(i * 1.3) * 0.08;
       const barHeight = Math.max(12, (0.2 + peakInfluence * 0.8 + variation) * maxBarHeight);
@@ -1176,7 +1166,7 @@ async function createPostCanvas(
   const exploreWidth = Math.min(260, contentWidth * 0.4);
   const exploreHeight = 56;
   const buttonOffset = (72 - exploreHeight) / 2;
-  
+
   const exploreGradient = new Gradient({
     type: 'linear',
     gradientUnits: 'pixels',
@@ -1224,11 +1214,11 @@ async function createPostCanvas(
   const ctaLeft = contentX + contentWidth - postLogoWidth;
   const logoPath = theme === 'white' ? '/assets/images/png/banner-dark.png' : '/assets/images/png/banner-light.png';
   const logoImage = await FabricImage.fromURL(logoPath, { crossOrigin: 'anonymous' }, { selectable: false });
-  
+
   const imgWidth = logoImage.width ?? 1;
   const imgHeight = logoImage.height ?? 1;
   const scale = Math.min(postLogoWidth / imgWidth, (postLogoHeight * 0.8) / imgHeight);
-  
+
   logoImage.scale(scale);
   logoImage.set({
     left: ctaLeft + postLogoWidth / 2,
@@ -1637,7 +1627,7 @@ async function createProductCanvas(
   const marketplaceWidth = Math.min(340, contentWidth * 0.48);
   const marketplaceHeight = 56;
   const buttonOffset = (72 - marketplaceHeight) / 2;
-  
+
   const marketplaceGradient = new Gradient({
     type: 'linear',
     gradientUnits: 'pixels',
@@ -1686,11 +1676,11 @@ async function createProductCanvas(
   const logoLeft = contentX + contentWidth - productLogoWidth;
   const logoPath = theme === 'white' ? '/assets/images/png/banner-dark.png' : '/assets/images/png/banner-light.png';
   const logoImage = await FabricImage.fromURL(logoPath, { crossOrigin: 'anonymous' }, { selectable: false });
-  
+
   const imgWidth = logoImage.width ?? 1;
   const imgHeight = logoImage.height ?? 1;
   const scale = Math.min(productLogoWidth / imgWidth, (productLogoHeight * 0.8) / imgHeight);
-  
+
   logoImage.scale(scale);
   logoImage.set({
     left: logoLeft + productLogoWidth / 2,

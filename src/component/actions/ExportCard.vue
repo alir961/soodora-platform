@@ -43,16 +43,7 @@ const isDraggingHue = ref(false);
 const slPickerRef = ref<HTMLElement | null>(null);
 const hueSliderRef = ref<HTMLElement | null>(null);
 
-const presetColors = [
-  '#7dd3fc',
-  '#c084fc',
-  '#f472b6',
-  '#34d399',
-  '#fbbf24',
-  '#fb923c',
-  '#ef4444',
-  '#176bfd',
-];
+const presetColors = ['#7dd3fc', '#c084fc', '#f472b6', '#34d399', '#fbbf24', '#fb923c', '#ef4444', '#176bfd'];
 
 const hsvToHex = (h: number, s: number, v: number): string => {
   s /= 100;
@@ -736,7 +727,19 @@ const closeFullscreenPreview = () => {
   justify-content: center;
   position: relative;
   box-sizing: border-box;
-  background: conic-gradient(from 0deg, #ef4444, #f59e0b, #eab308, #84cc16, #10b981, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444);
+  background: conic-gradient(
+    from 0deg,
+    #ef4444,
+    #f59e0b,
+    #eab308,
+    #84cc16,
+    #10b981,
+    #06b6d4,
+    #3b82f6,
+    #8b5cf6,
+    #ec4899,
+    #ef4444
+  );
   color: #ffffff;
   font-weight: 700;
   letter-spacing: 0.5px;

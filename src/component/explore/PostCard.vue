@@ -355,11 +355,7 @@ const openActionsPopup = (event: Event) => {
                 <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
               </ion-button>
 
-              <ion-button
-                class="export-button"
-                fill="clear"
-                size="default"
-                @click.stop="openExportModal">
+              <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
                 <ion-icon :src="customShareIcon" />
               </ion-button>
             </div>
