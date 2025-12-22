@@ -9,9 +9,11 @@ import { ProductAnalytics } from '@/entity/Product';
 import GlobalPostAnalytics from '@/component/analytics/GlobalPostAnalytics.vue';
 import GlobalProductAnalytics from '@/component/analytics/GlobalProductAnalytics.vue';
 import AppHeader from '@/component/AppHeader.vue';
-import { statsChartOutline } from 'ionicons/icons';
+import { arrowBackOutline } from 'ionicons/icons';
+import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
+const router = useRouter();
 
 const postAnalytics = ref<PostAnalytics | null>(null);
 const productAnalytics = ref<ProductAnalytics | null>(null);
@@ -25,6 +27,10 @@ const fetchAnalytics = async () => {
   }
 };
 
+const goBack = () => {
+  router.back();
+};
+
 const isLoading = computed(() => !authStore.getAuthenticatedUser && !postAnalytics.value && !productAnalytics.value);
 
 onIonViewWillEnter(async () => await fetchAnalytics());
@@ -34,7 +40,11 @@ onMounted(async () => await fetchAnalytics());
 
 <template>
   <ApplicationViewport title="Analytics" authenticated>
-    <AppHeader title="Global Analytics" subtitle="All your data in one place" :icon="statsChartOutline" />
+    <AppHeader
+      title="Global Analytics"
+      subtitle="All your data in one place"
+      :icon="arrowBackOutline"
+      :on-icon-click="goBack" />
 
     <div class="ambient-glow">
       <div class="glow-orb" />

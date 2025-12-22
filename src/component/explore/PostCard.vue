@@ -355,12 +355,7 @@ const openActionsPopup = (event: Event) => {
                 <ion-note v-show="formatCount(post.repostCount)">{{ formatCount(post.repostCount) }}</ion-note>
               </ion-button>
 
-              <ion-button
-                v-if="!post.audioTitle"
-                class="export-button"
-                fill="clear"
-                size="default"
-                @click.stop="openExportModal">
+              <ion-button class="export-button" fill="clear" size="default" @click.stop="openExportModal">
                 <ion-icon :src="customShareIcon" />
               </ion-button>
             </div>
@@ -380,7 +375,7 @@ const openActionsPopup = (event: Event) => {
       </ion-card-content>
     </ion-card>
 
-    <ExportCard v-if="!post.audioTitle" :item="post" type="post" ref="exportCardRef" />
+    <ExportCard :item="post" type="post" ref="exportCardRef" />
 
     <DeleteCard
       item-type="post"
