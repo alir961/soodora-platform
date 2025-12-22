@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PropType, ref, computed } from 'vue';
 import { IonIcon } from '@ionic/vue';
-import { shareOutline, colorPaletteOutline } from 'ionicons/icons';
+import { shareOutline } from 'ionicons/icons';
 import { Post } from '@/entity/Post';
 import { Product } from '@/entity/Product';
 import {
@@ -25,14 +25,14 @@ const props = defineProps({
 });
 
 const showExportModal = ref(false);
-const selectedTheme = ref<ExportTheme>('black');
+// Base theme controls content rendering (light/dark)
+const selectedBaseTheme = ref<Exclude<ExportTheme, 'transparent'>>('black');
 const previewDataUrl = ref<string>('');
 const isGeneratingPreview = ref(false);
 const showFullscreenPreview = ref(false);
 
-const useCustomColor = ref(false);
-const customAccentColor = ref('#7dd3fc');
-const showOrbs = ref(true);
+const customAccentColor = ref('');
+// Orbs removed
 
 const showColorPicker = ref(false);
 const hue = ref(195);
@@ -43,7 +43,16 @@ const isDraggingHue = ref(false);
 const slPickerRef = ref<HTMLElement | null>(null);
 const hueSliderRef = ref<HTMLElement | null>(null);
 
-const presetColors = ['#7dd3fc', '#c084fc', '#f472b6', '#34d399', '#fbbf24', '#fb923c', '#ef4444', '#22d3ee'];
+const presetColors = [
+  '#7dd3fc',
+  '#c084fc',
+  '#f472b6',
+  '#34d399',
+  '#fbbf24',
+  '#fb923c',
+  '#ef4444',
+  '#176bfd',
+];
 
 const hsvToHex = (h: number, s: number, v: number): string => {
   s /= 100;
@@ -233,53 +242,33 @@ const openColorPicker = () => {
 
 const closeColorPicker = () => {
   customAccentColor.value = currentPickerColor.value;
-  if (!useCustomColor.value) {
-    useCustomColor.value = true;
-  }
   showColorPicker.value = false;
-  generatePreview(selectedTheme.value);
+  generatePreview(selectedBaseTheme.value);
 };
 
 const customColors = computed<CustomColors | undefined>(() => {
-  if (useCustomColor.value || !showOrbs.value) {
-    return {
-      accent: useCustomColor.value ? customAccentColor.value : undefined,
-      showOrbs: showOrbs.value,
-    };
-  }
-  return undefined;
+  if (!customAccentColor.value) return undefined;
+  return {
+    accent: customAccentColor.value,
+  };
 });
 
 const open = () => {
   showExportModal.value = true;
-  selectedTheme.value = 'black';
-  useCustomColor.value = false;
-  showOrbs.value = true;
-  generatePreview('black');
+  selectedBaseTheme.value = 'black';
+  generatePreview(selectedBaseTheme.value);
 };
 
 const closeModal = () => {
   showExportModal.value = false;
-  selectedTheme.value = 'black';
+  selectedBaseTheme.value = 'black';
   previewDataUrl.value = '';
-  useCustomColor.value = false;
   showColorPicker.value = false;
-  showOrbs.value = true;
 };
 
-const selectTheme = (theme: ExportTheme) => {
-  selectedTheme.value = theme;
-  generatePreview(theme);
-};
-
-const toggleCustomColor = () => {
-  useCustomColor.value = !useCustomColor.value;
-  generatePreview(selectedTheme.value);
-};
-
-const toggleOrbs = () => {
-  showOrbs.value = !showOrbs.value;
-  generatePreview(selectedTheme.value);
+const selectBaseTheme = (theme: Exclude<ExportTheme, 'transparent'>) => {
+  selectedBaseTheme.value = theme;
+  generatePreview(selectedBaseTheme.value);
 };
 
 const selectPresetColor = (color: string) => {
@@ -289,11 +278,12 @@ const selectPresetColor = (color: string) => {
   hue.value = hsv.h;
   saturation.value = hsv.s;
   brightness.value = hsv.v;
+  generatePreview(selectedBaseTheme.value);
+};
 
-  if (!useCustomColor.value) {
-    useCustomColor.value = true;
-  }
-  generatePreview(selectedTheme.value);
+const resetToDefaultColor = () => {
+  customAccentColor.value = '';
+  generatePreview(selectedBaseTheme.value);
 };
 
 const generatePreview = async (theme: ExportTheme) => {
@@ -313,13 +303,13 @@ const generatePreview = async (theme: ExportTheme) => {
 };
 
 const confirmExport = async () => {
-  if (!selectedTheme.value) return;
+  if (!selectedBaseTheme.value) return;
 
   try {
     const canvas =
       props.type === 'post'
-        ? await createPostCanvas(props.item as Post, selectedTheme.value, customColors.value)
-        : await createProductCanvas(props.item as Product, selectedTheme.value, customColors.value);
+        ? await createPostCanvas(props.item as Post, selectedBaseTheme.value, customColors.value)
+        : await createProductCanvas(props.item as Product, selectedBaseTheme.value, customColors.value);
 
     downloadCanvas(canvas);
     closeModal();
@@ -361,52 +351,44 @@ const closeFullscreenPreview = () => {
               </div>
 
               <div class="controls-section">
-                <button
-                  class="control-btn"
-                  :class="{ active: selectedTheme === 'black' }"
-                  @click="selectTheme('black')">
-                  Dark
-                </button>
-                <button
-                  class="control-btn"
-                  :class="{ active: selectedTheme === 'white' }"
-                  @click="selectTheme('white')">
-                  Light
-                </button>
-                <button
-                  class="control-btn"
-                  :class="{ active: selectedTheme === 'transparent' }"
-                  @click="selectTheme('transparent')">
-                  Clear
-                </button>
-                <button class="control-btn accent-btn" :class="{ active: useCustomColor }" @click="toggleCustomColor">
-                  <ion-icon :icon="colorPaletteOutline"></ion-icon>
-                  <span>Accent</span>
-                </button>
-                <button class="control-btn orbs-btn" :class="{ active: !showOrbs }" @click="toggleOrbs">
-                  <span>{{ showOrbs ? '◐' : '○' }}</span>
-                  <span>Orbs</span>
-                </button>
+                <div class="theme-buttons">
+                  <button
+                    class="control-btn"
+                    :class="{ active: selectedBaseTheme === 'black' }"
+                    @click="selectBaseTheme('black')">
+                    Dark
+                  </button>
+                  <button
+                    class="control-btn"
+                    :class="{ active: selectedBaseTheme === 'white' }"
+                    @click="selectBaseTheme('white')">
+                    Light
+                  </button>
+                </div>
+
+                <div class="color-options-bar">
+                  <button
+                    class="default-color-btn"
+                    :class="{ active: !customAccentColor }"
+                    @click="resetToDefaultColor">
+                    <span class="slash-icon">∅</span>
+                  </button>
+                  <button
+                    v-for="color in presetColors"
+                    :key="color"
+                    class="preset-color"
+                    :class="{ active: customAccentColor === color }"
+                    :style="{ backgroundColor: color }"
+                    @click="selectPresetColor(color)"></button>
+                  <button
+                    class="color-picker-trigger"
+                    :style="{ backgroundColor: customAccentColor }"
+                    @click="openColorPicker">
+                    <span class="picker-label">Custom</span>
+                  </button>
+                </div>
               </div>
             </div>
-
-            <transition name="colors-slide">
-              <div v-if="useCustomColor" class="color-options-bar">
-                <button
-                  v-for="color in presetColors"
-                  :key="color"
-                  class="preset-color"
-                  :class="{ active: customAccentColor === color }"
-                  :style="{ backgroundColor: color }"
-                  @click="selectPresetColor(color)"></button>
-                <button
-                  class="color-picker-trigger"
-                  :style="{ backgroundColor: customAccentColor }"
-                  @click="openColorPicker">
-                  <span class="picker-icon">⚙</span>
-                </button>
-              </div>
-            </transition>
 
             <transition name="picker-fade">
               <div v-if="showColorPicker" class="color-picker-overlay" @click="closeColorPicker">
@@ -447,7 +429,7 @@ const closeFullscreenPreview = () => {
               </div>
             </transition>
 
-            <button class="share-btn" :disabled="!selectedTheme || isGeneratingPreview" @click="confirmExport">
+            <button class="share-btn" :disabled="!selectedBaseTheme || isGeneratingPreview" @click="confirmExport">
               <ion-icon :icon="shareOutline"></ion-icon>
               <span>Download & Share</span>
             </button>
@@ -555,11 +537,13 @@ const closeFullscreenPreview = () => {
   display: flex;
   flex-direction: row;
   gap: 1rem;
+  align-items: stretch;
 }
 
 .preview-section {
   width: 160px;
-  height: 284px;
+  height: auto;
+  align-self: stretch;
   border-radius: 12px;
   overflow: hidden;
   background: rgba(96, 165, 250, 0.06);
@@ -570,6 +554,8 @@ const closeFullscreenPreview = () => {
   cursor: pointer;
   transition: all 0.25s ease;
   flex-shrink: 0;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
 .preview-section:hover {
@@ -613,9 +599,16 @@ const closeFullscreenPreview = () => {
 .controls-section {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
   flex: 1;
-  height: 284px;
+  width: auto;
+  justify-content: flex-start;
+}
+
+.theme-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
 .control-btn {
@@ -625,7 +618,8 @@ const closeFullscreenPreview = () => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.7);
-  padding: 0.5rem 0.75rem;
+  padding: 0.4rem 0.75rem;
+  min-height: 38px;
   border-radius: 10px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -655,46 +649,6 @@ const closeFullscreenPreview = () => {
 .control-btn:active {
   transform: scale(0.97);
 }
-
-.control-btn.accent-btn {
-  background: linear-gradient(135deg, rgba(192, 132, 252, 0.18), rgba(125, 211, 252, 0.14));
-  border-color: rgba(192, 132, 252, 0.3);
-  color: #ffffff;
-}
-
-.control-btn.accent-btn ion-icon {
-  font-size: 15px;
-  color: #c084fc;
-}
-
-.control-btn.accent-btn:hover {
-  background: linear-gradient(135deg, rgba(192, 132, 252, 0.25), rgba(125, 211, 252, 0.2));
-  border-color: rgba(192, 132, 252, 0.4);
-}
-
-.control-btn.accent-btn.active {
-  background: linear-gradient(135deg, #a855f7, #c084fc);
-  border-color: transparent;
-  box-shadow:
-    0 3px 10px rgba(168, 85, 247, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.control-btn.accent-btn.active ion-icon {
-  color: #ffffff;
-}
-
-.control-btn.orbs-btn {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
-.control-btn.orbs-btn.active {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
-  color: #fca5a5;
-}
-
 .color-options-bar {
   display: flex;
   gap: 0.35rem;
@@ -702,15 +656,54 @@ const closeFullscreenPreview = () => {
   background: rgba(0, 0, 0, 0.25);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
-  justify-content: space-between;
   overflow: hidden;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.35rem;
+  padding: 0.35rem;
+}
+
+.default-color-btn {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  border-radius: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.default-color-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.default-color-btn.active {
+  border-color: #ffffff;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.35);
+}
+
+.slash-icon {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 300;
 }
 
 .preset-color {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
-  border-radius: 6px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  border-radius: 8px;
   border: 2px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -730,11 +723,11 @@ const closeFullscreenPreview = () => {
 }
 
 .color-picker-trigger {
-  width: 26px;
-  height: 26px;
-  min-width: 26px;
-  border-radius: 6px;
-  border: 2px solid transparent;
+  width: 100%;
+  aspect-ratio: auto;
+  min-width: 0;
+  border-radius: 8px;
+  border: none;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
@@ -742,17 +735,29 @@ const closeFullscreenPreview = () => {
   align-items: center;
   justify-content: center;
   position: relative;
+  box-sizing: border-box;
+  background: conic-gradient(from 0deg, #ef4444, #f59e0b, #eab308, #84cc16, #10b981, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #ef4444);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  grid-column: 1 / -1;
+  min-height: 42px;
+  overflow: hidden;
 }
 
 .color-picker-trigger:hover {
-  transform: scale(1.1);
+  transform: scale(1.03);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
 }
 
-.picker-icon {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+.picker-label {
+  font-size: 0.75rem;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
 }
 
 .color-picker-overlay {
@@ -935,25 +940,6 @@ const closeFullscreenPreview = () => {
   }
 }
 
-.colors-slide-enter-active {
-  animation: colorsSlide 0.2s ease;
-}
-
-.colors-slide-leave-active {
-  animation: colorsSlide 0.15s ease reverse;
-}
-
-@keyframes colorsSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .share-btn {
   width: 100%;
   height: 46px;
@@ -1131,19 +1117,8 @@ const closeFullscreenPreview = () => {
   .controls-section {
     width: 100%;
     height: auto;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .control-btn {
-    flex: 1;
-    min-width: calc(50% - 0.25rem);
-    padding: 0.6rem 0.5rem;
-  }
-
-  .color-options-bar {
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.6rem;
   }
 }
 </style>

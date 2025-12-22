@@ -356,7 +356,6 @@ const openActionsPopup = (event: Event) => {
               </ion-button>
 
               <ion-button
-                v-if="!post.audioTitle"
                 class="export-button"
                 fill="clear"
                 size="default"
@@ -380,7 +379,7 @@ const openActionsPopup = (event: Event) => {
       </ion-card-content>
     </ion-card>
 
-    <ExportCard v-if="!post.audioTitle" :item="post" type="post" ref="exportCardRef" />
+    <ExportCard :item="post" type="post" ref="exportCardRef" />
 
     <DeleteCard
       item-type="post"

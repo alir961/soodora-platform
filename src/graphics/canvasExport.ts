@@ -7,7 +7,6 @@ type ExportTheme = 'black' | 'white' | 'transparent';
 interface CustomColors {
   accent?: string;
   accentSecondary?: string;
-  showOrbs?: boolean;
 }
 
 interface ColorTheme {
@@ -23,7 +22,6 @@ interface ColorTheme {
   chipBackground: string;
   chipText: string;
   surfaceShadow: string;
-  banner: string;
 }
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -62,6 +60,7 @@ function retrieveColorTheme(theme: ExportTheme, customColors?: CustomColors): Co
 
   return baseTheme;
 }
+
 
 function shiftHue(hex: string, degrees: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -145,13 +144,12 @@ function getBaseTheme(theme: ExportTheme): ColorTheme {
         cardStroke: 'rgba(255, 255, 255, 0.08)',
         primary: '#f8fbff',
         secondary: '#97a4c7',
-        accent: '#7dd3fc',
-        accentSecondary: '#c084fc',
-        accentGlow: 'rgba(125, 211, 252, 0.3)',
-        chipBackground: 'rgba(255, 255, 255, 0.08)',
-        chipText: '#dbeafe',
+        accent: '#ffffff',
+        accentSecondary: '#e2e8f0',
+        accentGlow: 'rgba(255, 255, 255, 0.3)',
+        chipBackground: 'rgba(255, 255, 255, 0.15)',
+        chipText: '#ffffff',
         surfaceShadow: 'rgba(2, 6, 23, 0.6)',
-        banner: 'banner-light.png',
       } as ColorTheme;
     case 'white':
       return {
@@ -161,13 +159,12 @@ function getBaseTheme(theme: ExportTheme): ColorTheme {
         cardStroke: 'rgba(15, 23, 42, 0.12)',
         primary: '#0f172a',
         secondary: '#334155',
-        accent: '#2563eb',
-        accentSecondary: '#7c3aed',
-        accentGlow: 'rgba(37, 99, 235, 0.35)',
-        chipBackground: 'rgba(37, 99, 235, 0.1)',
-        chipText: '#1d4ed8',
+        accent: '#0f172a',
+        accentSecondary: '#334155',
+        accentGlow: 'rgba(15, 23, 42, 0.35)',
+        chipBackground: 'rgba(15, 23, 42, 0.1)',
+        chipText: '#0f172a',
         surfaceShadow: 'rgba(15, 23, 42, 0.15)',
-        banner: 'banner-dark.png',
       } as ColorTheme;
     case 'transparent':
       return {
@@ -177,30 +174,14 @@ function getBaseTheme(theme: ExportTheme): ColorTheme {
         cardStroke: 'rgba(255, 255, 255, 0.3)',
         primary: '#0f172a',
         secondary: '#475569',
-        accent: '#2563eb',
-        accentSecondary: '#7c3aed',
-        accentGlow: 'rgba(37, 99, 235, 0.25)',
+        accent: '#0f172a',
+        accentSecondary: '#334155',
+        accentGlow: 'rgba(15, 23, 42, 0.25)',
         chipBackground: 'rgba(15, 23, 42, 0.06)',
-        chipText: '#1e40af',
+        chipText: '#0f172a',
         surfaceShadow: 'rgba(15, 23, 42, 0.12)',
-        banner: 'banner-light.png',
       } as ColorTheme;
   }
-}
-
-async function retrieveSoodoraBanner(colorTheme: ColorTheme): Promise<FabricImage> {
-  const soodoraBanner = await FabricImage.fromURL(
-    `/assets/images/png/${colorTheme.banner}`,
-    {},
-    {
-      top: 60,
-      left: 60,
-      selectable: false,
-    }
-  );
-
-  soodoraBanner.scaleToWidth(280);
-  return soodoraBanner;
 }
 
 function createGlassmorphicCard(
@@ -259,38 +240,6 @@ function updateCardAppearance(card: Rect, height: number, colorTheme: ColorTheme
 
   card.set({ height, fill: gradient });
   card.setCoords();
-}
-
-function applyCanvasBackground(canvas: StaticCanvas, colorTheme: ColorTheme): void {
-  const width = canvas.getWidth();
-  const height = canvas.getHeight();
-  const gradient = new Gradient({
-    type: 'linear',
-    gradientUnits: 'pixels',
-    coords: { x1: 0, y1: 0, x2: width, y2: height },
-    colorStops: [
-      { offset: 0, color: colorTheme.backgroundGradient[0] },
-      { offset: 1, color: colorTheme.backgroundGradient[1] },
-    ],
-  });
-
-  canvas.backgroundColor = gradient;
-  canvas.renderAll();
-}
-
-function createGlowOrb(x: number, y: number, size: number, fillColor: string, blurColor: string): Circle {
-  return new Circle({
-    radius: size / 2,
-    left: x - size / 2,
-    top: y - size / 2,
-    fill: fillColor,
-    opacity: 0.7,
-    shadow: new Shadow({
-      color: blurColor,
-      blur: size,
-    }),
-    selectable: false,
-  });
 }
 
 function createCircularAvatar(
@@ -551,10 +500,13 @@ function createExcerptCopy(text: string | undefined, maxCharacters: number): str
   return `${trimmed.slice(0, maxCharacters).trim()}…`;
 }
 
-async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: CustomColors): Promise<StaticCanvas> {
+async function createPostCanvas(
+  post: Post,
+  theme: ExportTheme,
+  customColors?: CustomColors
+): Promise<StaticCanvas> {
   const colorTheme = retrieveColorTheme(theme, customColors);
-  const canvas = new StaticCanvas(undefined, { width: 1080, height: 1920, backgroundColor: colorTheme.background });
-  applyCanvasBackground(canvas, colorTheme);
+  const canvas = new StaticCanvas(undefined, { width: 1080, height: 1920, backgroundColor: 'rgba(0,0,0,0)' });
 
   const canvasHeight = canvas.getHeight();
   const canvasWidth = canvas.getWidth();
@@ -615,6 +567,8 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
 
   currentY += avatarSize + 70;
 
+  const isAudioPostForChip = !!(post.audioUrl && post.audioTitle);
+  const chipText = isAudioPostForChip ? 'SOODORA MUSIC' : 'SOODORA POST';
   const chipWidth = Math.min(contentWidth, 360);
   const chipBackground = new Rect({
     left: contentX,
@@ -630,7 +584,7 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
   });
   cardElements.push({ element: chipBackground, relativeTop: currentY });
 
-  const chipLabel = new Textbox('SOODORA POST', {
+  const chipLabel = new Textbox(chipText, {
     top: currentY + 18,
     left: contentX,
     fontSize: 28,
@@ -644,32 +598,390 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
   });
   cardElements.push({ element: chipLabel, relativeTop: currentY + 18 });
 
-  currentY += 64 + 40;
+  currentY += 64 + 60;
 
   const heroWidth = contentWidth;
   const heroHeight = heroWidth * 0.62;
-  const titleMaxHeight = post.imageUrl ? heroHeight * 0.45 : heroHeight * 0.85;
+  const isAudioPost = !!(post.audioUrl && post.audioTitle);
+  const titleMaxHeight = (post.imageUrl || isAudioPost) ? heroHeight * 0.45 : heroHeight * 0.85;
 
-  const postTitle = createAutoSizedTextbox(createExcerptCopy(post.title.toUpperCase(), 160), {
-    top: currentY,
-    left: contentX,
-    maxWidth: contentWidth,
-    maxHeight: titleMaxHeight,
-    maxFontSize: 96,
-    minFontSize: 58,
-    fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
-    fontWeight: '900',
-    fill: colorTheme.primary,
-    selectable: false,
-    lineHeight: 1.05,
-    textAlign: 'left',
-    truncateOverflow: true,
-  });
-  postTitle.initDimensions();
-  cardElements.push({ element: postTitle, relativeTop: currentY });
-  currentY += postTitle.getScaledHeight() + 48;
+  // For audio posts, skip the post title section entirely - we show the track title instead
+  if (!isAudioPost) {
+    const postTitle = createAutoSizedTextbox(createExcerptCopy(post.title.toUpperCase(), 100), {
+      top: currentY,
+      left: contentX,
+      maxWidth: contentWidth,
+      maxHeight: titleMaxHeight,
+      maxFontSize: 96,
+      minFontSize: 58,
+      fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
+      fontWeight: '900',
+      fill: colorTheme.primary,
+      selectable: false,
+      lineHeight: 1.05,
+      textAlign: 'left',
+      truncateOverflow: true,
+    });
+    postTitle.initDimensions();
+    cardElements.push({ element: postTitle, relativeTop: currentY });
+    currentY += postTitle.getScaledHeight() + 48;
+  }
 
-  if (post.imageUrl) {
+  const postTitleBottom = currentY;
+
+  // Audio post with cover image
+  if (isAudioPost && post.imageUrl) {
+    const audioHeroHeight = heroWidth * 0.82;
+    
+    // Audio track title - with music icon
+    const audioTrackTitle = createAutoSizedTextbox(`♫  ${createExcerptCopy(post.audioTitle.toUpperCase(), 50)}`, {
+      top: currentY,
+      left: contentX,
+      maxWidth: contentWidth,
+      maxHeight: 100,
+      maxFontSize: 48,
+      minFontSize: 30,
+      fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
+      fontWeight: '800',
+      fill: colorTheme.accent,
+      selectable: false,
+      lineHeight: 1.1,
+      textAlign: 'left',
+      truncateOverflow: true,
+    });
+    audioTrackTitle.initDimensions();
+    cardElements.push({ element: audioTrackTitle, relativeTop: currentY });
+    currentY += audioTrackTitle.getScaledHeight() + 58;
+
+    // More square-ish hero for album art (uses audioHeroHeight calculated above)
+    
+    const postImage = await FabricImage.fromURL(post.imageUrl, { crossOrigin: 'anonymous' }, { selectable: false });
+
+    const imgWidth = postImage.width ?? 1;
+    const imgHeight = postImage.height ?? 1;
+
+    const scaleX = heroWidth / imgWidth;
+    const scaleY = audioHeroHeight / imgHeight;
+    const scale = Math.max(scaleX, scaleY);
+
+    postImage.scaleX = scale;
+    postImage.scaleY = scale;
+
+    const clipRect = new Rect({
+      width: heroWidth / scale,
+      height: audioHeroHeight / scale,
+      rx: 48 / scale,
+      ry: 48 / scale,
+      originX: 'center',
+      originY: 'center',
+    });
+
+    postImage.set({
+      left: contentX + heroWidth / 2,
+      top: currentY + audioHeroHeight / 2,
+      originX: 'center',
+      originY: 'center',
+      clipPath: clipRect,
+      shadow: new Shadow({
+        color: colorTheme.surfaceShadow,
+        blur: 50,
+        offsetY: 25,
+      }),
+    });
+    postImage.setCoords();
+    cardElements.push({ element: postImage, relativeTop: currentY + audioHeroHeight / 2 });
+
+    // Dark overlay for audio
+    const audioOverlay = new Rect({
+      left: contentX,
+      top: currentY,
+      width: heroWidth,
+      height: audioHeroHeight,
+      rx: 48,
+      ry: 48,
+      fill: 'rgba(0, 0, 0, 0.4)',
+      selectable: false,
+    });
+    cardElements.push({ element: audioOverlay, relativeTop: currentY });
+
+    // Play button - bubble style like footer buttons
+    const playButtonSize = 120;
+    const playButtonGradient = new Gradient({
+      type: 'linear',
+      gradientUnits: 'pixels',
+      coords: { x1: 0, y1: 0, x2: playButtonSize, y2: playButtonSize },
+      colorStops: [
+        { offset: 0, color: `${colorTheme.accent}33` },
+        { offset: 0.5, color: `${colorTheme.accent}22` },
+        { offset: 1, color: `${colorTheme.accent}2a` },
+      ],
+    });
+    const playButton = new Circle({
+      left: contentX + heroWidth / 2,
+      top: currentY + audioHeroHeight / 2,
+      radius: playButtonSize / 2,
+      originX: 'center',
+      originY: 'center',
+      fill: playButtonGradient,
+      stroke: `${colorTheme.accent}55`,
+      strokeWidth: 2,
+      selectable: false,
+    });
+    cardElements.push({ element: playButton, relativeTop: currentY + audioHeroHeight / 2 });
+
+    // Play triangle icon
+    const playTriangle = new Textbox('▶', {
+      left: contentX + heroWidth / 2 + 5,
+      top: currentY + audioHeroHeight / 2,
+      width: 50,
+      fontSize: 44,
+      fontFamily: 'Arial, sans-serif',
+      fill: colorTheme.accent,
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+      textAlign: 'center',
+    });
+    cardElements.push({ element: playTriangle, relativeTop: currentY + audioHeroHeight / 2 });
+
+    // Dynamic waveform bars - more musical looking
+    const barCount = 40;
+    const barWidth = (heroWidth - 80) / barCount - 2.5;
+    const maxBarHeight = 60;
+    // Waveform baseline is exactly at the bottom of the image (inside rounded corners)
+    const imageBottom = currentY + audioHeroHeight;
+    const waveformBaseline = imageBottom;
+    
+    // Create a more dynamic, musical pattern with peaks and valleys
+    const peakPositions = [0.15, 0.35, 0.5, 0.65, 0.85]; // Where the peaks are
+    
+    for (let i = 0; i < barCount; i++) {
+      const progress = i / barCount;
+      
+      // Calculate distance to nearest peak for more musical feel
+      let peakInfluence = 0;
+      for (const peak of peakPositions) {
+        const dist = Math.abs(progress - peak);
+        peakInfluence = Math.max(peakInfluence, Math.max(0, 1 - dist * 4));
+      }
+      
+      // Add some variation
+      const variation = Math.sin(i * 1.2) * 0.15 + Math.cos(i * 0.7) * 0.1;
+      const barHeight = Math.max(10, (0.25 + peakInfluence * 0.75 + variation) * maxBarHeight);
+      
+      const barGradient = new Gradient({
+        type: 'linear',
+        gradientUnits: 'pixels',
+        coords: { x1: 0, y1: barHeight, x2: 0, y2: 0 },
+        colorStops: [
+          { offset: 0, color: `${colorTheme.accent}55` },
+          { offset: 0.5, color: colorTheme.accent },
+          { offset: 1, color: colorTheme.accentSecondary },
+        ],
+      });
+      const bar = new Rect({
+        left: contentX + 40 + i * (barWidth + 2.5),
+        top: waveformBaseline - barHeight,
+        width: barWidth,
+        height: barHeight,
+        rx: barWidth / 2,
+        ry: barWidth / 2,
+        fill: barGradient,
+        selectable: false,
+      });
+      cardElements.push({ element: bar, relativeTop: waveformBaseline - barHeight });
+    }
+
+    currentY = waveformBaseline + 50;
+  }
+  // Audio post without cover image
+  else if (isAudioPost && !post.imageUrl) {
+    const audioHeroHeight = heroWidth * 0.58;
+    
+    // Audio track title - with music icon
+    const audioTrackTitle = createAutoSizedTextbox(`♫  ${createExcerptCopy(post.audioTitle.toUpperCase(), 50)}`, {
+      top: currentY,
+      left: contentX,
+      maxWidth: contentWidth,
+      maxHeight: 100,
+      maxFontSize: 48,
+      minFontSize: 30,
+      fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
+      fontWeight: '800',
+      fill: colorTheme.accent,
+      selectable: false,
+      lineHeight: 1.1,
+      textAlign: 'left',
+      truncateOverflow: true,
+    });
+    audioTrackTitle.initDimensions();
+    cardElements.push({ element: audioTrackTitle, relativeTop: currentY });
+    currentY += audioTrackTitle.getScaledHeight() + 40;
+
+    // More square-ish hero for audio (uses audioHeroHeight calculated above)
+
+    // Dark gradient panel for audio visualization
+    const audioGradient = new Gradient({
+      type: 'linear',
+      gradientUnits: 'pixels',
+      coords: { x1: 0, y1: 0, x2: heroWidth, y2: audioHeroHeight },
+      colorStops: [
+        { offset: 0, color: 'rgba(15, 23, 42, 0.98)' },
+        { offset: 0.5, color: 'rgba(30, 41, 59, 0.95)' },
+        { offset: 1, color: 'rgba(15, 23, 42, 0.92)' },
+      ],
+    });
+    const audioPanel = new Rect({
+      left: contentX,
+      top: currentY,
+      width: heroWidth,
+      height: audioHeroHeight,
+      rx: 48,
+      ry: 48,
+      fill: audioGradient,
+      stroke: colorTheme.cardStroke,
+      strokeWidth: 1.5,
+      shadow: new Shadow({ color: colorTheme.surfaceShadow, blur: 45, offsetY: 22 }),
+      selectable: false,
+    });
+    cardElements.push({ element: audioPanel, relativeTop: currentY });
+
+    // Background decorative circles - subtle
+    const circleGradient1 = new Gradient({
+      type: 'radial',
+      gradientUnits: 'pixels',
+      coords: { x1: 100, y1: 100, x2: 100, y2: 100, r1: 0, r2: 180 },
+      colorStops: [
+        { offset: 0, color: `${colorTheme.accent}18` },
+        { offset: 1, color: `${colorTheme.accent}00` },
+      ],
+    });
+    const decorCircle1 = new Circle({
+      left: contentX + heroWidth * 0.25,
+      top: currentY + audioHeroHeight * 0.45,
+      radius: 180,
+      originX: 'center',
+      originY: 'center',
+      fill: circleGradient1,
+      selectable: false,
+    });
+    cardElements.push({ element: decorCircle1, relativeTop: currentY + audioHeroHeight * 0.45 });
+
+    const circleGradient2 = new Gradient({
+      type: 'radial',
+      gradientUnits: 'pixels',
+      coords: { x1: 70, y1: 70, x2: 70, y2: 70, r1: 0, r2: 140 },
+      colorStops: [
+        { offset: 0, color: `${colorTheme.accentSecondary}15` },
+        { offset: 1, color: `${colorTheme.accentSecondary}00` },
+      ],
+    });
+    const decorCircle2 = new Circle({
+      left: contentX + heroWidth * 0.75,
+      top: currentY + audioHeroHeight * 0.65,
+      radius: 140,
+      originX: 'center',
+      originY: 'center',
+      fill: circleGradient2,
+      selectable: false,
+    });
+    cardElements.push({ element: decorCircle2, relativeTop: currentY + audioHeroHeight * 0.65 });
+
+    // Central play button - bubble style like footer buttons
+    const playButtonSize = 140;
+    const playButtonGradient = new Gradient({
+      type: 'linear',
+      gradientUnits: 'pixels',
+      coords: { x1: 0, y1: 0, x2: playButtonSize, y2: playButtonSize },
+      colorStops: [
+        { offset: 0, color: `${colorTheme.accent}33` },
+        { offset: 0.5, color: `${colorTheme.accent}22` },
+        { offset: 1, color: `${colorTheme.accent}2a` },
+      ],
+    });
+    const playButton = new Circle({
+      left: contentX + heroWidth / 2,
+      top: currentY + audioHeroHeight / 2 - 10,
+      radius: playButtonSize / 2,
+      originX: 'center',
+      originY: 'center',
+      fill: playButtonGradient,
+      stroke: `${colorTheme.accent}55`,
+      strokeWidth: 2,
+      selectable: false,
+    });
+    cardElements.push({ element: playButton, relativeTop: currentY + audioHeroHeight / 2 - 10 });
+
+    // Play triangle icon
+    const playTriangle = new Textbox('▶', {
+      left: contentX + heroWidth / 2 + 6,
+      top: currentY + audioHeroHeight / 2 - 10,
+      width: 60,
+      fontSize: 52,
+      fontFamily: 'Arial, sans-serif',
+      fill: colorTheme.accent,
+      originX: 'center',
+      originY: 'center',
+      selectable: false,
+      textAlign: 'center',
+    });
+    cardElements.push({ element: playTriangle, relativeTop: currentY + audioHeroHeight / 2 - 10 });
+
+    // Dynamic waveform visualization with musical peaks
+    const barCount = 48;
+    const barSpacing = 4;
+    const totalBarsWidth = heroWidth - 80;
+    const barWidth = (totalBarsWidth - (barCount - 1) * barSpacing) / barCount;
+    const maxBarHeight = 75;
+    // Waveform baseline is exactly at the bottom of the panel (same as audio with cover)
+    const panelBottom = currentY + audioHeroHeight;
+    const waveformBaseline = panelBottom;
+
+    // Create dynamic peaks at different positions
+    const peakPositions = [0.12, 0.28, 0.45, 0.62, 0.78, 0.92];
+    
+    for (let i = 0; i < barCount; i++) {
+      const progress = i / barCount;
+      
+      // Calculate influence from nearest peaks
+      let peakInfluence = 0;
+      for (const peak of peakPositions) {
+        const dist = Math.abs(progress - peak);
+        peakInfluence = Math.max(peakInfluence, Math.max(0, 1 - dist * 5));
+      }
+      
+      // Add variation for more organic feel
+      const variation = Math.sin(i * 0.9) * 0.12 + Math.cos(i * 1.3) * 0.08;
+      const barHeight = Math.max(12, (0.2 + peakInfluence * 0.8 + variation) * maxBarHeight);
+
+      const barGradient = new Gradient({
+        type: 'linear',
+        gradientUnits: 'pixels',
+        coords: { x1: 0, y1: barHeight, x2: 0, y2: 0 },
+        colorStops: [
+          { offset: 0, color: `${colorTheme.accent}55` },
+          { offset: 0.5, color: colorTheme.accent },
+          { offset: 1, color: colorTheme.accentSecondary },
+        ],
+      });
+
+      const bar = new Rect({
+        left: contentX + 40 + i * (barWidth + barSpacing),
+        top: waveformBaseline - barHeight,
+        width: barWidth,
+        height: barHeight,
+        rx: barWidth / 2,
+        ry: barWidth / 2,
+        fill: barGradient,
+        selectable: false,
+      });
+      cardElements.push({ element: bar, relativeTop: waveformBaseline - barHeight });
+    }
+
+    currentY = waveformBaseline + 50;
+  }
+  // Regular post with image
+  else if (post.imageUrl) {
     const postImage = await FabricImage.fromURL(post.imageUrl, { crossOrigin: 'anonymous' }, { selectable: false });
 
     const imgWidth = postImage.width ?? 1;
@@ -705,6 +1017,43 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     });
     postImage.setCoords();
     cardElements.push({ element: postImage, relativeTop: currentY + heroHeight / 2 });
+
+    // Decorative accent overlay at bottom of image
+    const imageOverlayGradient = new Gradient({
+      type: 'linear',
+      gradientUnits: 'pixels',
+      coords: { x1: 0, y1: 0, x2: heroWidth, y2: heroHeight * 0.5 },
+      colorStops: [
+        { offset: 0, color: `${colorTheme.accent}00` },
+        { offset: 0.7, color: `${colorTheme.accent}15` },
+        { offset: 1, color: `${colorTheme.accent}25` },
+      ],
+    });
+    const imageAccentOverlay = new Rect({
+      left: contentX,
+      top: currentY + heroHeight * 0.5,
+      width: heroWidth,
+      height: heroHeight * 0.5,
+      rx: 48,
+      ry: 48,
+      fill: imageOverlayGradient,
+      selectable: false,
+    });
+    cardElements.push({ element: imageAccentOverlay, relativeTop: currentY + heroHeight * 0.5 });
+
+    // Small accent dot at corner
+    const accentDot = new Circle({
+      left: contentX + heroWidth - 50,
+      top: currentY + 50,
+      radius: 8,
+      originX: 'center',
+      originY: 'center',
+      fill: colorTheme.accent,
+      shadow: new Shadow({ color: colorTheme.accentGlow, blur: 20, offsetX: 0, offsetY: 0 }),
+      selectable: false,
+    });
+    cardElements.push({ element: accentDot, relativeTop: currentY + 50 });
+
     currentY += heroHeight + 60;
   } else {
     const fallbackGradient = new Gradient({
@@ -732,15 +1081,6 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     });
     cardElements.push({ element: fallbackPanel, relativeTop: currentY });
 
-    const orbTopRight = createGlowOrb(
-      contentX + heroWidth * 0.85,
-      currentY + heroHeight * 0.15,
-      120,
-      colorTheme.accentGlow,
-      colorTheme.accent
-    );
-    cardElements.push({ element: orbTopRight, relativeTop: currentY + heroHeight * 0.12 });
-
     const quoteSymbol = new Textbox('"', {
       top: currentY + 30,
       left: contentX + 50,
@@ -756,7 +1096,7 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     cardElements.push({ element: quoteSymbol, relativeTop: currentY + 20 });
 
     const contentText = post.content?.trim() || 'Shared on Soodora';
-    const fallbackContent = createAutoSizedTextbox(createExcerptCopy(contentText, 280), {
+    const fallbackContent = createAutoSizedTextbox(createExcerptCopy(contentText, 200), {
       top: currentY + heroHeight * 0.25,
       left: contentX + 70,
       maxWidth: heroWidth - 140,
@@ -799,7 +1139,9 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     currentY += heroHeight + 60;
   }
 
-  const postBodyCopy = post.imageUrl ? createExcerptCopy(post.content ?? '', 450) : '';
+  // Show post body for posts with image or audio posts with cover
+  const showBodyContent = post.imageUrl || (isAudioPost && post.imageUrl);
+  const postBodyCopy = showBodyContent ? createExcerptCopy(post.content ?? '', 140) : '';
   if (postBodyCopy) {
     const postContent = createAutoSizedTextbox(postBodyCopy, {
       top: currentY,
@@ -831,99 +1173,79 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
   });
   cardElements.push({ element: footerLine, relativeTop: currentY });
 
-  const watermarkWidth = contentWidth * 0.5 - 32;
-  const watermark = new Textbox('EXPLORE', {
-    top: currentY + 56,
-    left: contentX,
-    width: Math.max(220, watermarkWidth),
-    fontSize: 40,
-    fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
-    fontWeight: '800',
-    fill: colorTheme.accent,
-    textAlign: 'left',
-    selectable: false,
-    charSpacing: 250,
-  });
-  cardElements.push({ element: watermark, relativeTop: currentY + 56 });
-
-  const ctaHeight = 96;
-  const ctaWidth = Math.min(380, contentWidth / 2);
-  const ctaLeft = contentX + contentWidth - ctaWidth;
-  const ctaGradient = new Gradient({
+  const exploreWidth = Math.min(260, contentWidth * 0.4);
+  const exploreHeight = 56;
+  const buttonOffset = (72 - exploreHeight) / 2;
+  
+  const exploreGradient = new Gradient({
     type: 'linear',
     gradientUnits: 'pixels',
-    coords: { x1: 0, y1: 0, x2: ctaWidth, y2: ctaHeight },
+    coords: { x1: 0, y1: 0, x2: exploreWidth, y2: exploreHeight },
     colorStops: [
       { offset: 0, color: `${colorTheme.accent}22` },
       { offset: 0.5, color: `${colorTheme.accent}11` },
       { offset: 1, color: `${colorTheme.accent}1a` },
     ],
   });
-  const ctaButton = new Rect({
-    left: ctaLeft,
-    top: currentY + 36,
-    width: ctaWidth,
-    height: ctaHeight,
-    rx: ctaHeight / 2,
-    ry: ctaHeight / 2,
-    fill: ctaGradient,
+  const exploreButton = new Rect({
+    left: contentX,
+    top: currentY + 48 + buttonOffset,
+    width: exploreWidth,
+    height: exploreHeight,
+    rx: exploreHeight / 2,
+    ry: exploreHeight / 2,
+    fill: exploreGradient,
     stroke: `${colorTheme.accent}40`,
     strokeWidth: 1.5,
     shadow: new Shadow({ color: 'rgba(0, 0, 0, 0.15)', blur: 25, offsetY: 8 }),
     selectable: false,
   });
-  cardElements.push({ element: ctaButton, relativeTop: currentY + 36 });
+  cardElements.push({ element: exploreButton, relativeTop: currentY + 48 + buttonOffset });
 
-  const ctaText = createAutoSizedTextbox('POST EXPORT', {
-    top: currentY + 36 + (ctaHeight - 35) / 2,
-    left: ctaLeft,
-    maxWidth: ctaWidth,
-    maxHeight: ctaHeight - 24,
-    maxFontSize: 35,
-    minFontSize: 24,
+  const footerButtonText = isAudioPost ? 'LISTEN' : 'EXPLORE';
+  const watermark = createAutoSizedTextbox(footerButtonText, {
+    top: currentY + 48 + buttonOffset + (exploreHeight - 24) / 2,
+    left: contentX,
+    maxWidth: exploreWidth,
+    maxHeight: exploreHeight - 20,
+    maxFontSize: 26,
+    minFontSize: 20,
     fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
-    fontWeight: '600',
+    fontWeight: '800',
     fill: colorTheme.accent,
     selectable: false,
     textAlign: 'center',
-    charSpacing: 120,
-    splitByGrapheme: false,
+    charSpacing: 250,
   });
-  ctaText.initDimensions();
-  const ctaTextRelativeTop = currentY + 36 + (ctaHeight - (ctaText.height ?? 35)) / 2;
-  cardElements.push({ element: ctaText, relativeTop: ctaTextRelativeTop });
+  cardElements.push({ element: watermark, relativeTop: currentY + 48 + buttonOffset + (exploreHeight - 24) / 2 });
 
-  const footerBottom = currentY + 56 + (watermark.height ?? 40) + 80;
-  const ctaBottom = currentY + 36 + ctaHeight + 80;
-  const cardContentHeight = Math.max(footerBottom, ctaBottom) - tempCardTop;
-  const finalCardHeight = Math.min(maxCardHeight, cardContentHeight);
+  const postLogoWidth = Math.min(280, contentWidth * 0.4);
+  const postLogoHeight = 56;
+  const ctaLeft = contentX + contentWidth - postLogoWidth;
+  const logoPath = theme === 'white' ? '/assets/images/png/banner-dark.png' : '/assets/images/png/banner-light.png';
+  const logoImage = await FabricImage.fromURL(logoPath, { crossOrigin: 'anonymous' }, { selectable: false });
+  
+  const imgWidth = logoImage.width ?? 1;
+  const imgHeight = logoImage.height ?? 1;
+  const scale = Math.min(postLogoWidth / imgWidth, (postLogoHeight * 0.8) / imgHeight);
+  
+  logoImage.scale(scale);
+  logoImage.set({
+    left: ctaLeft + postLogoWidth / 2,
+    top: currentY + 48 + buttonOffset + postLogoHeight / 2,
+    originX: 'center',
+    originY: 'center',
+  });
+  logoImage.setCoords();
+  cardElements.push({ element: logoImage, relativeTop: currentY + 48 + buttonOffset + postLogoHeight / 2 });
+
+  const footerBottom = currentY + 56 + (watermark.height ?? 40) + 110;
+  const logoBottom = currentY + 36 + postLogoHeight + 110;
+  const cardContentHeight = Math.max(footerBottom, logoBottom) - tempCardTop;
+  const finalCardHeight = cardContentHeight;
 
   const centeredCardTop = (canvasHeight - finalCardHeight) / 2;
   const verticalOffset = centeredCardTop - tempCardTop;
-
-  const showOrbs = customColors?.showOrbs !== false;
-  let topOrb: Circle | null = null;
-  let middleOrb: Circle | null = null;
-  let bottomOrb: Circle | null = null;
-
-  if (showOrbs) {
-    topOrb = createGlowOrb(220, centeredCardTop + 100, 360, colorTheme.accentGlow, colorTheme.accent);
-    middleOrb = createGlowOrb(920, centeredCardTop + 380, 280, colorTheme.accentGlow, colorTheme.accentSecondary);
-    bottomOrb = createGlowOrb(
-      180,
-      centeredCardTop + finalCardHeight - 50,
-      320,
-      colorTheme.accentGlow,
-      colorTheme.accentSecondary
-    );
-    canvas.add(topOrb);
-    canvas.add(middleOrb);
-    canvas.add(bottomOrb);
-  }
-
-  const soodoraBanner = await retrieveSoodoraBanner(colorTheme);
-  soodoraBanner.set({ left: 90, top: 90 });
-  canvas.add(soodoraBanner);
 
   const card = createGlassmorphicCard(cardLeft, centeredCardTop, cardWidth, finalCardHeight, colorTheme, 56, theme);
   canvas.add(card);
@@ -934,11 +1256,20 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     canvas.add(element as Parameters<typeof canvas.add>[0]);
   }
 
-  if (showOrbs && bottomOrb && middleOrb && topOrb) {
-    canvas.sendObjectToBack(bottomOrb);
-    canvas.sendObjectToBack(middleOrb);
-    canvas.sendObjectToBack(topOrb);
-  }
+  // Shift everything so the card starts at (0,0) and crop the canvas to the card bounds.
+  const offsetX = cardLeft;
+  const offsetY = centeredCardTop;
+  canvas.getObjects().forEach((obj) => {
+    const left = obj.left ?? 0;
+    const top = obj.top ?? 0;
+    obj.set({ left: left - offsetX, top: top - offsetY });
+    obj.setCoords();
+  });
+
+  canvas.setWidth(cardWidth);
+  canvas.setHeight(finalCardHeight);
+  canvas.backgroundColor = 'rgba(0,0,0,0)';
+  canvas.renderAll();
 
   return canvas;
 }
@@ -949,26 +1280,11 @@ async function createProductCanvas(
   customColors?: CustomColors
 ): Promise<StaticCanvas> {
   const colorTheme = retrieveColorTheme(theme, customColors);
-  const canvas = new StaticCanvas(undefined, { width: 1080, height: 1920, backgroundColor: colorTheme.background });
-  applyCanvasBackground(canvas, colorTheme);
-
-  const showOrbs = customColors?.showOrbs !== false;
-  let topLeftOrb: Circle | null = null;
-  let topRightOrb: Circle | null = null;
-  let bottomOrb: Circle | null = null;
-
-  if (showOrbs) {
-    topLeftOrb = createGlowOrb(240, 420, 420, colorTheme.accentGlow, colorTheme.accentSecondary);
-    topRightOrb = createGlowOrb(920, 260, 280, colorTheme.accentGlow, colorTheme.accent);
-    bottomOrb = createGlowOrb(180, 1600, 320, colorTheme.accentGlow, colorTheme.accentSecondary);
-    canvas.add(topLeftOrb);
-    canvas.add(topRightOrb);
-    canvas.add(bottomOrb);
-  }
-
-  const soodoraBanner = await retrieveSoodoraBanner(colorTheme);
-  soodoraBanner.set({ left: 80, top: 80 });
-  canvas.add(soodoraBanner);
+  const canvas = new StaticCanvas(undefined, {
+    width: 1080,
+    height: 1920,
+    backgroundColor: 'rgba(0,0,0,0)',
+  });
 
   const cardTop = 200;
   const cardLeft = 80;
@@ -1047,24 +1363,6 @@ async function createProductCanvas(
       selectable: false,
     });
     canvas.add(fallbackPanel);
-
-    const orbTopRight = createGlowOrb(
-      contentX + heroWidth * 0.85,
-      currentY + heroHeight * 0.15,
-      120,
-      colorTheme.accentGlow,
-      colorTheme.accent
-    );
-    canvas.add(orbTopRight);
-
-    const orbBottomLeft = createGlowOrb(
-      contentX + heroWidth * 0.1,
-      currentY + heroHeight * 0.85,
-      100,
-      'rgba(192, 132, 252, 0.2)',
-      colorTheme.accentSecondary
-    );
-    canvas.add(orbBottomLeft);
 
     const priceTagWidth = Math.min(280, heroWidth * 0.4);
     const priceTagGradient = new Gradient({
@@ -1148,11 +1446,11 @@ async function createProductCanvas(
     canvas.add(accentLine);
   }
 
-  const heroToTitleSpacing = 140;
+  const heroToTitleSpacing = 60;
   currentY += heroHeight + heroToTitleSpacing;
 
   const productTitleMaxHeight = Math.min(240, heroHeight * 0.55);
-  const displayProductName = createExcerptCopy(product.name?.toUpperCase() ?? 'SOODORA EXCLUSIVE', 140);
+  const displayProductName = createExcerptCopy(product.name?.toUpperCase() ?? 'SOODORA EXCLUSIVE', 80);
   const productName = createAutoSizedTextbox(displayProductName, {
     top: currentY,
     left: contentX,
@@ -1172,9 +1470,9 @@ async function createProductCanvas(
   });
   canvas.add(productName);
   productName.initDimensions();
-  currentY += productName.getScaledHeight() + 40;
+  currentY += productName.getScaledHeight() + 24;
 
-  const productDescriptionCopy = product.imageUrl ? createExcerptCopy(product.description ?? '', 380) : '';
+  const productDescriptionCopy = product.imageUrl ? createExcerptCopy(product.description ?? '', 110) : '';
   if (productDescriptionCopy) {
     const productDescription = createAutoSizedTextbox(productDescriptionCopy, {
       top: currentY,
@@ -1193,7 +1491,7 @@ async function createProductCanvas(
     });
     canvas.add(productDescription);
     productDescription.initDimensions();
-    currentY += productDescription.getScaledHeight() + 60;
+    currentY += productDescription.getScaledHeight() + 36;
   }
 
   const priceTop = currentY;
@@ -1320,25 +1618,11 @@ async function createProductCanvas(
 
   const vendorSubtitleBottom = (vendorSubtitle.top ?? 0) + (vendorSubtitle.height ?? 0);
 
-  const watermark = new Textbox('SOODORA MARKETPLACE', {
-    top: 0,
-    left: contentX,
-    width: contentWidth,
-    fontSize: 38,
-    fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
-    fontWeight: '700',
-    fill: colorTheme.secondary,
-    selectable: false,
-    charSpacing: 160,
-  });
-  watermark.initDimensions();
-  const watermarkHeight = watermark.height ?? 40;
-
   const totalGap = 80;
   const halfGap = totalGap / 2;
 
   const footerLineTop = vendorSubtitleBottom + halfGap;
-  const watermarkTop = footerLineTop + halfGap;
+  const marketplaceTop = footerLineTop + halfGap;
 
   const footerLine = new Rect({
     left: contentX,
@@ -1350,35 +1634,83 @@ async function createProductCanvas(
   });
   canvas.add(footerLine);
 
-  watermark.set({ top: watermarkTop });
-  canvas.add(watermark);
+  const marketplaceWidth = Math.min(340, contentWidth * 0.48);
+  const marketplaceHeight = 56;
+  const buttonOffset = (72 - marketplaceHeight) / 2;
+  
+  const marketplaceGradient = new Gradient({
+    type: 'linear',
+    gradientUnits: 'pixels',
+    coords: { x1: 0, y1: 0, x2: marketplaceWidth, y2: marketplaceHeight },
+    colorStops: [
+      { offset: 0, color: `${colorTheme.accent}22` },
+      { offset: 0.5, color: `${colorTheme.accent}11` },
+      { offset: 1, color: `${colorTheme.accent}1a` },
+    ],
+  });
+  const marketplaceButton = new Rect({
+    left: contentX,
+    top: marketplaceTop + buttonOffset,
+    width: marketplaceWidth,
+    height: marketplaceHeight,
+    rx: marketplaceHeight / 2,
+    ry: marketplaceHeight / 2,
+    fill: marketplaceGradient,
+    stroke: `${colorTheme.accent}40`,
+    strokeWidth: 1.5,
+    shadow: new Shadow({ color: 'rgba(0, 0, 0, 0.15)', blur: 25, offsetY: 8 }),
+    selectable: false,
+  });
+  canvas.add(marketplaceButton);
 
-  const contentBottom = watermarkTop + watermarkHeight + 60;
+  const watermark = createAutoSizedTextbox('MARKETPLACE', {
+    top: marketplaceTop + buttonOffset + (marketplaceHeight - 24) / 2,
+    left: contentX,
+    maxWidth: marketplaceWidth,
+    maxHeight: marketplaceHeight - 20,
+    maxFontSize: 26,
+    minFontSize: 20,
+    fontFamily: 'Overpass, -apple-system, SF Pro Display, sans-serif',
+    fontWeight: '800',
+    fill: colorTheme.accent,
+    selectable: false,
+    textAlign: 'center',
+    charSpacing: 200,
+  });
+  canvas.add(watermark);
+  watermark.initDimensions();
+  const watermarkHeight = watermark.height ?? 40;
+
+  const productLogoWidth = Math.min(280, contentWidth * 0.4);
+  const productLogoHeight = 56;
+  const logoLeft = contentX + contentWidth - productLogoWidth;
+  const logoPath = theme === 'white' ? '/assets/images/png/banner-dark.png' : '/assets/images/png/banner-light.png';
+  const logoImage = await FabricImage.fromURL(logoPath, { crossOrigin: 'anonymous' }, { selectable: false });
+  
+  const imgWidth = logoImage.width ?? 1;
+  const imgHeight = logoImage.height ?? 1;
+  const scale = Math.min(productLogoWidth / imgWidth, (productLogoHeight * 0.8) / imgHeight);
+  
+  logoImage.scale(scale);
+  logoImage.set({
+    left: logoLeft + productLogoWidth / 2,
+    top: marketplaceTop + buttonOffset + productLogoHeight / 2,
+    originX: 'center',
+    originY: 'center',
+  });
+  logoImage.setCoords();
+  canvas.add(logoImage);
+
+  const contentBottom = marketplaceTop + Math.max(watermarkHeight, productLogoHeight) + 90;
   const cardContentHeight = contentBottom - cardTop;
-  const finalCardHeight = Math.min(maxCardHeight, cardContentHeight);
+  const finalCardHeight = cardContentHeight;
 
   const canvasHeight = canvas.getHeight();
   const centeredCardTop = (canvasHeight - finalCardHeight) / 2;
   const verticalOffset = centeredCardTop - cardTop;
 
-  if (showOrbs && topLeftOrb && topRightOrb && bottomOrb) {
-    topLeftOrb.set({ top: centeredCardTop - 90 });
-    topLeftOrb.setCoords();
-    topRightOrb.set({ top: centeredCardTop + 60 });
-    topRightOrb.setCoords();
-
-    bottomOrb.set({ top: centeredCardTop + finalCardHeight - 150 });
-    bottomOrb.set({ left: 30 });
-    bottomOrb.setCoords();
-
-    canvas.sendObjectToBack(bottomOrb);
-  }
-
   const allObjects = canvas.getObjects();
   allObjects.forEach((obj) => {
-    if (obj === topLeftOrb || obj === topRightOrb || obj === bottomOrb || obj === soodoraBanner) {
-      return;
-    }
     if (obj === card) {
       obj.set({ top: centeredCardTop });
       obj.setCoords();
@@ -1392,6 +1724,21 @@ async function createProductCanvas(
   });
 
   updateCardAppearance(card, finalCardHeight, colorTheme);
+
+  // Shift everything so the card starts at (0,0) and crop the canvas to the card bounds.
+  const offsetX = cardLeft;
+  const offsetY = centeredCardTop;
+  canvas.getObjects().forEach((obj) => {
+    const left = obj.left ?? 0;
+    const top = obj.top ?? 0;
+    obj.set({ left: left - offsetX, top: top - offsetY });
+    obj.setCoords();
+  });
+
+  canvas.setWidth(cardWidth);
+  canvas.setHeight(finalCardHeight);
+  canvas.backgroundColor = 'rgba(0,0,0,0)';
+  canvas.renderAll();
 
   return canvas;
 }
