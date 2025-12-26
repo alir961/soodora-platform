@@ -6,7 +6,7 @@ import CreateEventForm from '@/component/event/CreateEventForm.vue';
 </script>
 
 <template>
-  <ApplicationViewport title="Artists Events" id="viewport">
+  <ApplicationViewport>
     <div id="main-wrapper">
       <AppHeader title="Artist Events" subtitle="Register your next event here" :icon="calendarNumberOutline" />
 

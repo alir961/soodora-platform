@@ -461,7 +461,7 @@ const noResultsMessage = computed(() => {
 </script>
 
 <template>
-  <ApplicationViewport title="Search">
+  <ApplicationViewport>
     <ion-content>
       <div v-if="shouldShowPlaceholder || shouldShowNoResults" class="ambient-glow">
         <div class="glow-orb orb-1"></div>

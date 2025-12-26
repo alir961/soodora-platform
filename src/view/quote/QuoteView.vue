@@ -85,7 +85,7 @@ const goBack = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Quotes">
+  <ApplicationViewport>
     <IonContent class="quotes-detail-content">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">

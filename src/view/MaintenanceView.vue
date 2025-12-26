@@ -35,7 +35,7 @@ onIonViewWillEnter(redirectIfOnline);
 </script>
 
 <template>
-  <ApplicationViewport title="Soodora" offline :hideTabBar="true">
+  <ApplicationViewport offline>
     <div class="container">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">

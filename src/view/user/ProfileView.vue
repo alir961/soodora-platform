@@ -251,7 +251,7 @@ const userRole = computed(() => {
 </script>
 
 <template>
-  <ApplicationViewport title="Account" authenticated>
+  <ApplicationViewport>
     <div class="ambient-glow">
       <div class="glow-orb orb-1"></div>
       <div class="glow-orb orb-2"></div>

@@ -31,9 +31,8 @@ onIonViewWillEnter(() => {
 </script>
 
 <template>
-  <ApplicationViewport title="Email Confirmation">
+  <ApplicationViewport>
     <div class="confirmation-container">
-      <!-- Ambient Glow Background -->
       <div class="ambient-glow">
         <div
           class="glow-orb orb-1"
@@ -47,7 +46,6 @@ onIonViewWillEnter(() => {
       </div>
 
       <div class="content">
-        <!-- Loading State -->
         <div v-if="secret && isLoading" class="loading-state">
           <div class="spinner-wrapper">
             <ion-spinner name="circular" class="custom-spinner" />
@@ -56,7 +54,6 @@ onIonViewWillEnter(() => {
           <p class="message">Please wait while we verify your account.</p>
         </div>
 
-        <!-- Result State (Success or Error) -->
         <div v-else-if="secret && !isLoading" class="result-state">
           <div class="icon-wrapper">
             <div class="status-icon" :class="{ success: isConfirmed, error: !isConfirmed }">
@@ -79,7 +76,6 @@ onIonViewWillEnter(() => {
           </ion-button>
         </div>
 
-        <!-- No Secret State -->
         <div v-else class="no-secret-state">
           <div class="icon-wrapper">
             <div class="info-icon">✉</div>

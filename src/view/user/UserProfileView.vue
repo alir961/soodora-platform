@@ -157,7 +157,7 @@ const closeActionsPopup = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="User Profile" back-button>
+  <ApplicationViewport>
     <div class="ambient-glow">
       <div class="glow-orb orb-1"></div>
       <div class="glow-orb orb-2"></div>

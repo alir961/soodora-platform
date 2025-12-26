@@ -215,7 +215,7 @@ onMounted(loadPage);
 </script>
 
 <template>
-  <ApplicationViewport title="Link Page">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <div v-if="isOwner">
         <Header

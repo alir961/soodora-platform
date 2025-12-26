@@ -66,7 +66,7 @@ async function submitCreate() {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Link Hub">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <div class="form-header">
         <div class="header-content">

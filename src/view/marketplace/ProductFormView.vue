@@ -134,7 +134,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <ApplicationViewport :title="headerTitle">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <Header :title="headerTitle" :subtitle="productData.name || 'New product'" :icon="cartOutline">
         <template #actions>

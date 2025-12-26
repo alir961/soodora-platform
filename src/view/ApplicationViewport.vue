@@ -7,15 +7,9 @@ import { useAuthStore } from '@/store/reactiveStorage';
 import { loadBearerToken } from '@/store/localStorage';
 
 const props = defineProps({
-  title: {
-    required: true,
-    type: String,
-  },
-  authenticated: Boolean,
   offline: Boolean,
-  fullscreen: Boolean,
-  backButton: Boolean,
 });
+
 const authStore = useAuthStore();
 const contentRef = ref<InstanceType<typeof IonContent> | null>(null);
 const bottomPadding = ref('0px');
@@ -32,6 +26,7 @@ const updatePadding = () => {
   const isScrollable = scrollEl.scrollHeight > scrollEl.clientHeight + 1;
   const extra = 8;
   const pxVal = nowPlayingOffset > 0 && isScrollable ? Math.ceil(nowPlayingOffset + extra) : 0;
+
   if (styleTargetEl && hostEl && styleTargetEl !== hostEl) {
     bottomPadding.value = '0px';
     styleTargetEl.style.setProperty('--padding-bottom', `${pxVal}px`);
@@ -130,7 +125,7 @@ onUnmounted(() => {
 
 <template>
   <ion-page>
-    <ion-header v-if="!fullscreen" collapse="condense" class="safe-area">
+    <ion-header collapse="condense" class="safe-area">
       <ion-buttons slot="start">
         <slot name="buttons"></slot>
       </ion-buttons>

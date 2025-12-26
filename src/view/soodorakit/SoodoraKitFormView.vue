@@ -56,7 +56,7 @@ const saveNewSoodoraKit = async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Soodora Kit">
+  <ApplicationViewport>
     <IonContent class="form-content-wrapper">
       <Header title="Create Soodora Kit" :subtitle="newSoodoraKit.title || 'New kit'" :icon="sparklesOutline">
         <template #actions>

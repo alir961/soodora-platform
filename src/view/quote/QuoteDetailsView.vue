@@ -130,7 +130,7 @@ const calculateSubtotal = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Quote Details">
+  <ApplicationViewport>
     <IonContent class="quote-details-content">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">

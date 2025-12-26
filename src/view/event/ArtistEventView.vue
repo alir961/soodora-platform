@@ -80,7 +80,7 @@ onIonViewWillEnter(fetchArtistEvents);
 </script>
 
 <template>
-  <ApplicationViewport title="Artists Events" id="viewport">
+  <ApplicationViewport>
     <div id="main-wrapper">
       <AppHeader
         title="Artists Events"

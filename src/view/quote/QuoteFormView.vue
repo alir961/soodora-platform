@@ -97,7 +97,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <ApplicationViewport :title="isEditMode ? 'Edit Quote' : 'Create Quote'">
+  <ApplicationViewport>
     <IonContent class="form-content-wrapper">
       <Header
         :title="isEditMode ? 'Edit Quote' : 'Create Quote'"

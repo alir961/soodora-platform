@@ -76,7 +76,7 @@ async function submitCreate() {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Link Hub">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <Header title="Create Link Hub" :subtitle="pageData.title || 'New hub'" :icon="linkOutline">
         <template #actions>

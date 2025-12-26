@@ -11,7 +11,7 @@ const redirectHome = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="404 Page Not Found" authenticated>
+  <ApplicationViewport>
     <div class="container">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">

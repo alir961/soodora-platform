@@ -166,7 +166,7 @@ watch(
 </script>
 
 <template>
-  <ApplicationViewport title="Soodora Kit">
+  <ApplicationViewport>
     <IonContent class="soodorakit-content">
       <!-- Ambient Glow Background -->
       <div class="ambient-glow">

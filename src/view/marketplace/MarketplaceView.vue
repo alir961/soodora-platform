@@ -80,7 +80,7 @@ const handleCreateProduct = () => {
 };
 
 const handleMySales = () => {
-  router.push('/marketplace/mysales');
+  router.push('/marketplace/sales');
 };
 
 const actionItems = computed<ActionItem[]>(() => [
@@ -144,7 +144,7 @@ watch([searchInput, selectedSort], () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Marketplace">
+  <ApplicationViewport>
     <ion-content>
       <div class="ambient-glow">
         <div class="glow-orb orb-1"></div>
