@@ -65,7 +65,7 @@ public interface ProfileResource {
     })
     void followUser(
             @Parameter(hidden = true) @AuthenticationPrincipal User user,
-            @Parameter(description = "Slug of the user to follow") @PathVariable("slug") String slug);
+            @Parameter(description = "Slug of the user to follow") @PathVariable String slug);
 
     @Operation(summary = "Retrieve followers of the logged-in user", responses = {
             @ApiResponse(responseCode = "200", description = "Followers retrieved", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PublicUserDTO.class))))
@@ -84,7 +84,7 @@ public interface ProfileResource {
     })
     void unfollowUser(
             @Parameter(hidden = true) @AuthenticationPrincipal User user,
-            @Parameter(description = "Slug of the user to unfollow") @PathVariable("slug") String slug);
+            @Parameter(description = "Slug of the user to unfollow") @PathVariable String slug);
 
     @Operation(summary = "Retrieve posts from users the logged-in user follows", responses = {
             @ApiResponse(responseCode = "200", description = "Posts retrieved", content = @Content(schema = @Schema(implementation = Page.class)))

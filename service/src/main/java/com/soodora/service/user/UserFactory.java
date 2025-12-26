@@ -37,7 +37,8 @@ public class UserFactory {
                 null,
                 emptySet(),
                 emptySet(),
-                emptySet());
+                emptySet(),
+                false);
     }
 
 }

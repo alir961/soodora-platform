@@ -66,10 +66,13 @@ public class UserEntity implements DomainEntityAdapter<User> {
     private Date updatedAt;
 
     @Column(nullable = false)
-    String description;
+    private String description;
 
     @Column
     private String avatarUrl;
+
+    @Column(nullable = false)
+    private boolean configured;
 
     @JoinColumn(unique = true)
     @OneToOne(mappedBy = "user", orphanRemoval = true, cascade = ALL)
@@ -121,7 +124,8 @@ public class UserEntity implements DomainEntityAdapter<User> {
                 avatarUrl == null ? null : new Url(avatarUrl),
                 rolesAggregates,
                 emptySet(),
-                emptySet());
+                emptySet(),
+                configured);
     }
 
     public User aggregateFollowers() {
@@ -148,7 +152,8 @@ public class UserEntity implements DomainEntityAdapter<User> {
                 avatarUrl == null ? null : new Url(avatarUrl),
                 rolesAggregates,
                 followersAggregates,
-                followingAggregates);
+                followingAggregates,
+                configured);
     }
 
 }

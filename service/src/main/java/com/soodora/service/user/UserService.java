@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toSet;
 import static org.springframework.data.domain.Pageable.unpaged;
 
@@ -58,6 +59,15 @@ public class UserService implements UserDetailsService {
         return userRepository.searchUsersByUsername(usernameQuery, onlyArtists, pageable);
     }
 
+    public void configure(User user, boolean migrate) {
+        if (migrate && !user.isArtist())
+            user = updateUserRoles(user.getIdentifier(), singleton("ARTIST"));
+        if (user.isConfigured())
+            return;
+        user.configure();
+        userRepository.save(user);
+    }
+
     public User updateUser(Identifier userIdentifier, UserUpdateCommand updateCommand) {
         User user = retrieveUser(userIdentifier);
         Username username = new Username(updateCommand.username());
@@ -73,13 +83,13 @@ public class UserService implements UserDetailsService {
         return userRepository.save(user);
     }
 
-    public void updateUserRoles(Identifier identifier, Set<String> roles) {
+    public User updateUserRoles(Identifier identifier, Set<String> roles) {
         User user = retrieveUser(identifier);
 
         user.updateRoles(roles.stream()
                 .map(Role::new)
                 .collect(toSet()));
-        userRepository.save(user);
+        return userRepository.save(user);
     }
 
     public void deleteUser(Identifier identifier) throws UnknownUserException {
