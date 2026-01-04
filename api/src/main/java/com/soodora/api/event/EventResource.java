@@ -1,12 +1,17 @@
 package com.soodora.api.event;
 
-import com.soodora.domain.event.EventDTO;
+import com.soodora.api.common.ExceptionResponse;
+import com.soodora.api.common.JsonResponse;
 import com.soodora.domain.user.User;
-import com.soodora.service.event.CreateEventRequest;
+
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -16,32 +21,44 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @Tag(name = "Event Controller")
-@SecurityRequirement(name = "bearerAuth")
 public interface EventResource {
 
+    @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create event for logged artist", responses = {
-            @ApiResponse(responseCode = "201", description = "Event created"),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "403", description = "User must be artist")
+            @ApiResponse(responseCode = "201", description = "Event created", content = @Content(schema = @Schema(implementation = EventDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden, user not allowed to create event", content = @Content)
     })
-    ResponseEntity<?> createEvent(
-            User user,
-            @RequestBody(required = true) CreateEventRequest request);
+    ResponseEntity<JsonResponse> createEvent(
+            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+            @RequestBody(required = true) SaveEventRequest request);
 
     @Operation(summary = "Retrieve filtered events", responses = {
             @ApiResponse(responseCode = "200", description = "Events retrieved", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventDTO.class)))),
-            @ApiResponse(responseCode = "204", description = "No events retrieved"),
-            @ApiResponse(responseCode = "400", description = "Invalid request"),
-            @ApiResponse(responseCode = "403", description = "Forbidden request")
+            @ApiResponse(responseCode = "404", description = "Artist with that slug cannot be found", content = @Content)
     })
-    ResponseEntity<?> getEvents(
-            String artistSlug);
+    List<EventDTO> searchEvents(String artistSlug);
 
-    @Operation(summary = "Retrieve logged artist events", responses = {
-            @ApiResponse(responseCode = "200", description = "Events retrieved", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventDTO.class)))),
-            @ApiResponse(responseCode = "403", description = "User must be artist")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Update event from given slug", responses = {
+            @ApiResponse(responseCode = "200", description = "Event updated", content = @Content(schema = @Schema(implementation = EventDTO.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request", content = @Content(schema = @Schema(implementation = ExceptionResponse.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden, user not allowed to update this event", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Event with that slug cannot be found", content = @Content)
     })
-    ResponseEntity<?> getAuthenticatedArtistEvents(
-            User user);
+    ResponseEntity<JsonResponse> updateEvent(
+            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+            @PathVariable String eventSlug,
+            @RequestBody(required = true) SaveEventRequest request);
+
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(summary = "Delete event from given slug", responses = {
+            @ApiResponse(responseCode = "200", description = "Event deleted"),
+            @ApiResponse(responseCode = "403", description = "Forbidden, user not allowed to update this event"),
+            @ApiResponse(responseCode = "404", description = "Event with that slug cannot be found")
+    })
+    void deleteEvent(
+            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+            @PathVariable String eventSlug);
 
 }

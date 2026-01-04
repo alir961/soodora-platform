@@ -77,6 +77,7 @@ public class UserRepositoryImpl implements UserRepository {
         userEntity.setLastname(user.getLastname());
         userEntity.setDescription(user.getDescription());
         userEntity.setAvatarUrl(user.getAvatarUrl() == null ? null : user.getAvatarUrl().value());
+        userEntity.setConfigured(user.isConfigured());
         userEntity.setRoles(roles);
         userEntity.setFollowers(followers);
         userEntity.setFollowing(following);

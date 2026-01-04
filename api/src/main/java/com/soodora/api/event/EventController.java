@@ -1,76 +1,71 @@
 package com.soodora.api.event;
 
-import com.soodora.domain.common.UnknownSlugException;
-import com.soodora.domain.event.EventDTO;
+import com.soodora.api.common.ExceptionResponse;
+import com.soodora.api.common.JsonResponse;
+import com.soodora.domain.event.Event;
 import com.soodora.domain.user.User;
-import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.common.InvalidRequestException;
-import com.soodora.service.event.CreateEventRequest;
 import com.soodora.service.event.EventService;
 
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import lombok.RequiredArgsConstructor;
 
-import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.FORBIDDEN;
-import static org.springframework.http.ResponseEntity.*;
+import static org.springframework.http.HttpStatus.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/artists/events")
+@RequestMapping("/events")
 public class EventController implements EventResource {
 
     private final EventService eventService;
 
     @Override
     @PostMapping
-    public ResponseEntity<?> createEvent(
+    @ResponseStatus(code = CREATED)
+    @PreAuthorize("hasRole('ARTIST')")
+    public ResponseEntity<JsonResponse> createEvent(
             @AuthenticationPrincipal User user,
-            @RequestBody CreateEventRequest request) {
+            @RequestBody SaveEventRequest request) {
         try {
-            EventDTO event = eventService.createEvent(request.toCommand(), user);
+            Event event = eventService.createEvent(user, request.toCommand());
 
-            return status(CREATED).body(event.slug());
-        } catch (UnknownArtistException exception) {
-            return status(FORBIDDEN).body(exception.getMessage());
+            return new ResponseEntity<>(EventDTO.build(event), CREATED);
         } catch (InvalidRequestException exception) {
-            return badRequest().body(exception.getMessage());
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
     }
 
     @Override
     @GetMapping
-    public ResponseEntity<?> getEvents(
-            @RequestParam String artistSlug) {
-        try {
-            List<EventDTO> events = eventService.getArtistEvents(artistSlug);
+    public List<EventDTO> searchEvents(@RequestParam String artistSlug) {
+        return eventService.getArtistEvents(artistSlug).stream()
+                .map(EventDTO::build)
+                .toList();
+    }
 
-            if (events.isEmpty())
-                return noContent().build();
-            return ok().body(events);
-        } catch (UnknownSlugException exception) {
-            return noContent().build();
+    @PutMapping("/{eventSlug}")
+    @PreAuthorize("hasRole('ARTIST')")
+    public ResponseEntity<JsonResponse> updateEvent(@AuthenticationPrincipal User user, @PathVariable String eventSlug,
+            @RequestBody SaveEventRequest request) {
+        try {
+            Event event = eventService.updateEvent(user, eventSlug, request.toCommand());
+
+            return new ResponseEntity<>(EventDTO.build(event), OK);
+        } catch (InvalidRequestException exception) {
+            return new ResponseEntity<>(new ExceptionResponse(exception.getMessage()), BAD_REQUEST);
         }
     }
 
-    @Override
-    @GetMapping(":me")
-    public ResponseEntity<?> getAuthenticatedArtistEvents(
-            @AuthenticationPrincipal User user) {
-        try {
-            List<EventDTO> events = eventService.getArtistEvents(user);
-
-            if (events.isEmpty())
-                return noContent().build();
-            return ok().body(events);
-        } catch (UnknownArtistException exception) {
-            return status(FORBIDDEN).body(exception.getMessage());
-        }
+    @DeleteMapping("/{eventSlug}")
+    @PreAuthorize("hasRole('ARTIST')")
+    public void deleteEvent(@AuthenticationPrincipal User user, @PathVariable String eventSlug) {
+        eventService.deleteEvent(user, eventSlug);
     }
 
 }

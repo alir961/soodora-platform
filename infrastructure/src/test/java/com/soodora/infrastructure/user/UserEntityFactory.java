@@ -23,6 +23,7 @@ public class UserEntityFactory extends UserFactory {
                 new Date(),
                 "Description",
                 null,
+                false,
                 null,
                 new ArrayList<>(),
                 new ArrayList<>(),

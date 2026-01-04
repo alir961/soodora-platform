@@ -4,12 +4,12 @@ import java.util.List;
 
 public interface EventRepository {
 
-    EventDTO save(CreateEventCommand command, String artistSlug);
+    Event save(Event event);
 
-    EventDTO find(String slug);
+    Event find(String eventSlug);
 
-    List<EventDTO> findAll();
+    List<Event> findAll();
 
-    void delete(String slug);
+    void delete(String eventSlug);
 
 }

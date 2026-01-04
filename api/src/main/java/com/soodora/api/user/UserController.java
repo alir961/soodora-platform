@@ -84,7 +84,7 @@ public class UserController implements UserResource {
     @Override
     @PutMapping("/{slug}/roles")
     @PreAuthorize("hasRole('ADMIN')")
-    public void updateUserRoles(@PathVariable("slug") String slug, @RequestBody Set<String> roles) {
+    public void updateUserRoles(@PathVariable String slug, @RequestBody Set<String> roles) {
         Identifier identifier = createFromSlug(slug);
 
         userService.updateUserRoles(identifier, roles);
@@ -93,7 +93,7 @@ public class UserController implements UserResource {
     @Override
     @DeleteMapping("/{slug}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable("slug") String slug) {
+    public ResponseEntity<Void> deleteUser(@PathVariable String slug) {
         try {
             Identifier identifier = createFromSlug(slug);
 
@@ -106,7 +106,7 @@ public class UserController implements UserResource {
 
     @Override
     @GetMapping("/{slug}/followers")
-    public Set<PublicUserDTO> getFollowers(@PathVariable("slug") String slug) {
+    public Set<PublicUserDTO> getFollowers(@PathVariable String slug) {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowers(identifier).stream()
@@ -116,7 +116,7 @@ public class UserController implements UserResource {
 
     @Override
     @GetMapping("/{slug}/following")
-    public Set<PublicUserDTO> getFollowing(@PathVariable("slug") String slug) {
+    public Set<PublicUserDTO> getFollowing(@PathVariable String slug) {
         Identifier identifier = createFromSlug(slug);
 
         return userService.retrieveFollowing(identifier).stream()
@@ -126,28 +126,28 @@ public class UserController implements UserResource {
 
     @Override
     @GetMapping("/{slug}/posts")
-    public Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable) {
+    public Page<PostDTO> getUserPosts(@PathVariable String slug, Pageable pageable) {
         return userService.retrievePosts(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/reposts")
-    public Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable) {
+    public Page<PostDTO> getUserReposts(@PathVariable String slug, Pageable pageable) {
         return userService.retrieveReposts(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/audios")
-    public Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable) {
+    public Page<PostDTO> getUserAudios(@PathVariable String slug, Pageable pageable) {
         return userService.retrieveAudios(slug, pageable)
                 .map(PostDTO::build);
     }
 
     @Override
     @GetMapping("/{slug}/products")
-    public Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable) {
+    public Page<ProductDTO> getUserProducts(@PathVariable String slug, Pageable pageable) {
         return userService.retrieveProducts(slug, pageable)
                 .map(ProductDTO::build);
     }

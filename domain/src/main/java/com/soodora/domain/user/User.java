@@ -33,6 +33,8 @@ public class User {
     private Set<User> followers;
     private Set<User> following;
 
+    private boolean configured;
+
     public Identifier getIdentifier() {
         return createFromEmail(email.value());
     }
@@ -59,6 +61,10 @@ public class User {
         return roles.stream().anyMatch(Role::isPremium);
     }
 
+    public boolean isArtist() {
+        return roles.stream().anyMatch(Role::isArtist);
+    }
+
     public void follow(User user) {
         if (isSame(user))
             throw new UserFollowException("User cannot follow itself");
@@ -82,6 +88,10 @@ public class User {
 
     public boolean isSame(User user) {
         return slug.equals(user.getSlug());
+    }
+
+    public void configure() {
+        configured = true;
     }
 
 }

@@ -1,5 +1,6 @@
 package com.soodora.api.user;
 
+import com.soodora.api.common.ConfigurationRequest;
 import com.soodora.api.common.ExceptionResponse;
 import com.soodora.api.common.JsonResponse;
 import com.soodora.api.post.PostDTO;
@@ -74,7 +75,7 @@ public class ProfileController implements ProfileResource {
     }
 
     @PostMapping("/followers/{slug}")
-    public void followUser(@AuthenticationPrincipal User user, @PathVariable("slug") String slug) {
+    public void followUser(@AuthenticationPrincipal User user, @PathVariable String slug) {
         userService.follow(user.getIdentifier(), createFromSlug(slug));
     }
 
@@ -93,7 +94,7 @@ public class ProfileController implements ProfileResource {
     }
 
     @DeleteMapping("/followers/{slug}")
-    public void unfollowUser(@AuthenticationPrincipal User user, @PathVariable("slug") String slug) {
+    public void unfollowUser(@AuthenticationPrincipal User user, @PathVariable String slug) {
         userService.unfollow(user.getIdentifier(), createFromSlug(slug));
     }
 
@@ -101,6 +102,16 @@ public class ProfileController implements ProfileResource {
     public Page<PostDTO> getFollowingPosts(@AuthenticationPrincipal User user, Pageable pageable) {
         return postService.retrievePostsFromFollowing(user.getIdentifier(), pageable)
                 .map(PostDTO::build);
+    }
+
+    @GetMapping("/configuration")
+    public boolean isConfigured(@AuthenticationPrincipal User user) {
+        return user.isConfigured();
+    }
+
+    @PostMapping("/configuration")
+    public void configure(@AuthenticationPrincipal User user, @RequestBody ConfigurationRequest configuration) {
+        userService.configure(user, configuration.migrate());
     }
 
 }

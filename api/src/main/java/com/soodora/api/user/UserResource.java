@@ -34,7 +34,7 @@ public interface UserResource {
     @Operation(summary = "Get public info of a user by slug", responses = {
             @ApiResponse(responseCode = "200", description = "User public info")
     })
-    PublicUserDTO getUser(@PathVariable("slug") String slug);
+    PublicUserDTO getUser(@PathVariable String slug);
 
     @Operation(summary = "Search users by username", responses = {
             @ApiResponse(responseCode = "200", description = "Page of users matching the query")
@@ -50,35 +50,35 @@ public interface UserResource {
     })
     @SecurityRequirement(name = "bearerAuth")
     ResponseEntity<JsonResponse> updateUser(
-            @PathVariable("slug") String slug,
+            @PathVariable String slug,
             @RequestPart("data") UpdateUserRequest request,
             @RequestPart(value = "file", required = false) MultipartFile imageFile);
 
     @Operation(summary = "Update roles of a user (admin only)")
     @SecurityRequirement(name = "bearerAuth")
-    void updateUserRoles(@PathVariable("slug") String slug, @RequestBody Set<String> roles);
+    void updateUserRoles(@PathVariable String slug, @RequestBody Set<String> roles);
 
     @Operation(summary = "Delete a user (admin only)")
     @SecurityRequirement(name = "bearerAuth")
-    ResponseEntity<Void> deleteUser(@PathVariable("slug") String slug);
+    ResponseEntity<Void> deleteUser(@PathVariable String slug);
 
     @Operation(summary = "Get followers of a user")
-    Set<PublicUserDTO> getFollowers(@PathVariable("slug") String slug);
+    Set<PublicUserDTO> getFollowers(@PathVariable String slug);
 
     @Operation(summary = "Get users followed by a user")
-    Set<PublicUserDTO> getFollowing(@PathVariable("slug") String slug);
+    Set<PublicUserDTO> getFollowing(@PathVariable String slug);
 
     @Operation(summary = "Get posts of a user")
-    Page<PostDTO> getUserPosts(@PathVariable("slug") String slug, Pageable pageable);
+    Page<PostDTO> getUserPosts(@PathVariable String slug, Pageable pageable);
 
     @Operation(summary = "Get reposts of a user")
-    Page<PostDTO> getUserReposts(@PathVariable("slug") String slug, Pageable pageable);
+    Page<PostDTO> getUserReposts(@PathVariable String slug, Pageable pageable);
 
     @Operation(summary = "Get audio posts of a user")
-    Page<PostDTO> getUserAudios(@PathVariable("slug") String slug, Pageable pageable);
+    Page<PostDTO> getUserAudios(@PathVariable String slug, Pageable pageable);
 
     @Operation(summary = "Get products of a user")
-    Page<ProductDTO> getUserProducts(@PathVariable("slug") String slug, Pageable pageable);
+    Page<ProductDTO> getUserProducts(@PathVariable String slug, Pageable pageable);
 
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Send weekly posts summary email")

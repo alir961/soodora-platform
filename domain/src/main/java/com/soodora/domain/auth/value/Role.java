@@ -18,4 +18,8 @@ public record Role(String value) {
         return value.equals("PREMIUM");
     }
 
+    public boolean isArtist() {
+        return value.equals("ARTIST") || isPremium();
+    }
+
 }

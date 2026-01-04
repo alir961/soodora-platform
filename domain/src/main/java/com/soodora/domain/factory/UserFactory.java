@@ -30,7 +30,8 @@ public class UserFactory {
                 null,
                 new HashSet<>(),
                 new HashSet<>(),
-                new HashSet<>());
+                new HashSet<>(),
+                true);
     }
 
     public static User buildDefaultUser() {
@@ -47,7 +48,8 @@ public class UserFactory {
                 null,
                 new HashSet<>(),
                 new HashSet<>(),
-                new HashSet<>());
+                new HashSet<>(),
+                true);
     }
 
     public static User buildDefaultUser(int id) {
@@ -64,7 +66,8 @@ public class UserFactory {
                 null,
                 new HashSet<>(),
                 new HashSet<>(),
-                new HashSet<>());
+                new HashSet<>(),
+                true);
     }
 
     public static User buildDefaultArtistUser() {
@@ -81,7 +84,8 @@ public class UserFactory {
                 null,
                 of(new Role("ARTIST")),
                 new HashSet<>(),
-                new HashSet<>());
+                new HashSet<>(),
+                true);
     }
 
     public static User buildDefaultAdminUser() {
@@ -98,7 +102,8 @@ public class UserFactory {
                 null,
                 of(new Role("ADMIN")),
                 new HashSet<>(),
-                new HashSet<>());
+                new HashSet<>(),
+                true);
     }
 
 }
