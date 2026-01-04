@@ -69,7 +69,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="My Sales">
+  <ApplicationViewport>
     <ion-content class="sales-content-wrapper">
       <Header title="My Sales" subtitle="Track your product sales" :icon="pricetagsOutline">
         <template #actions>

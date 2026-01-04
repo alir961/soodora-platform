@@ -39,7 +39,7 @@ onMounted(async () => await fetchAnalytics());
 </script>
 
 <template>
-  <ApplicationViewport title="Analytics" authenticated>
+  <ApplicationViewport>
     <AppHeader
       title="Global Analytics"
       subtitle="All your data in one place"

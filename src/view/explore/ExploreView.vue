@@ -200,7 +200,7 @@ watch(followingPosts, (newPosts: Post[]) => {
 
 <template>
   <ion-page>
-    <ApplicationViewport title="Explore">
+    <ApplicationViewport>
       <div class="ambient-glow">
         <div class="glow-orb orb-1"></div>
         <div class="glow-orb orb-2"></div>

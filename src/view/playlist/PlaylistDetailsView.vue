@@ -172,7 +172,7 @@ const goBackToPlaylists = () => {
     router.back();
   } else {
     // Default to playlists page if no valid history or came from edit
-    router.push(`/playlists/me?t=${Date.now()}`);
+    router.push(`/playlists?t=${Date.now()}`);
   }
 };
 
@@ -180,7 +180,7 @@ const handleDeletePlaylist = async () => {
   if (!playlist.value) return;
   try {
     await deletePlaylistBySlug(playlist.value.playlist.slug);
-    await router.push(`/playlists/me?t=${Date.now()}`);
+    await router.push(`/playlists?t=${Date.now()}`);
   } catch {
     // Error handling already done by client
   }
@@ -301,7 +301,7 @@ watch(
 </script>
 
 <template>
-  <ApplicationViewport title="Playlist">
+  <ApplicationViewport>
     <IonContent class="playlist-detail-content">
       <div class="ambient-glow">
         <div class="glow-orb orb-1"></div>

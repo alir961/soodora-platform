@@ -27,6 +27,11 @@ import PlaylistMeView from '@/view/playlist/PlaylistView.vue';
 import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 import AnalyticsView from '@/view/user/AnalyticsView.vue';
+import ArtistEventView from '@/view/event/ArtistEventView.vue';
+import CreateEventView from '@/view/event/CreateEventView.vue';
+import EventListView from '@/view/event/EventListView.vue';
+import EditEventView from '@/view/event/EditEventView.vue';
+import { nextTick } from 'vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -39,18 +44,23 @@ const routes: Array<RouteRecordRaw> = [
     component: HomeView,
   },
   {
+    path: '/explore/post/create',
+    name: 'Create Post',
+    component: PostFormView,
+  },
+  {
     path: '/linkhub/create',
-    name: 'LinkHubCreate',
+    name: 'Create Link Hub',
     component: LinkHubCreateView,
   },
   {
     path: '/linkhub/edit/:slug',
-    name: 'LinkHubEdit',
+    name: 'Edit Link Hub',
     component: LinkHubEditView,
   },
   {
     path: '/linkhub/:slug',
-    name: 'LinkHubDetail',
+    name: 'Link Hub Details',
     component: LinkHubDetailView,
   },
   {
@@ -70,13 +80,33 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/profile',
-    name: 'Profile',
+    name: 'My Profile',
     component: ProfileView,
   },
   {
     path: '/user/:slug',
-    name: 'User',
+    name: 'User Profile',
     component: UserProfileView,
+  },
+  {
+    path: '/user/:slug/events',
+    name: 'Events Map',
+    component: ArtistEventView,
+  },
+  {
+    path: '/user/:slug/events/create',
+    name: 'Create Event',
+    component: CreateEventView,
+  },
+  {
+    path: '/user/:slug/events/list',
+    name: 'Events List',
+    component: EventListView,
+  },
+  {
+    path: '/user/:slug/events/:eventSlug',
+    name: 'Edit Event',
+    component: EditEventView,
   },
   {
     path: '/marketplace',
@@ -85,100 +115,109 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/marketplace/payment/success',
-    name: 'PaymentSuccess',
+    name: 'Payment Success',
     component: PaymentResultView,
     props: {
       title: 'Your payment has been validated, you will soon receive a confirmation of your order.',
-      button: 'Back to marketplace',
     },
   },
   {
     path: '/marketplace/payment/cancel',
-    name: 'PaymentCancel',
+    name: 'Payment Cancel',
     component: PaymentResultView,
     props: {
       title: 'Your payment has been cancelled, you will not be charged.',
-      button: 'Back to marketplace',
     },
   },
   {
-    path: '/marketplace/mysales',
-    name: 'MySales',
+    path: '/marketplace/sales',
+    name: 'My Sales',
     component: MySaleView,
   },
   {
+    path: '/marketplace/product/create',
+    name: 'Create Product',
+    component: ProductFormView,
+  },
+  {
+    path: '/marketplace/product/:slug/edit',
+    name: 'Edit Product',
+    component: ProductFormView,
+  },
+  {
     path: '/soodorakits/create',
-    name: 'SoodoraKitCreation',
+    name: 'Create Soodora Kit',
     component: SoodoraKitFormView,
   },
   {
+    path: '/soodorakits/:slug',
+    name: 'Edit Soodora Kit',
+    component: SoodoraKitEditView,
+  },
+  {
     path: '/soodorakits/:slug/items/new',
-    name: 'SoodoraKitItemCreate',
+    name: 'Create Soodora Kit Item',
     component: SoodoraKitItemFormView,
   },
   {
     path: '/soodorakits/:slug/items/:itemSlug/edit',
-    name: 'SoodoraKitItemEdit',
+    name: 'Edit Soodora Kit Item',
     component: SoodoraKitItemFormView,
   },
   {
-    path: '/soodorakits/:slug',
-    name: 'SoodoraKitEdit',
-    component: SoodoraKitEditView,
-  },
-  {
     path: '/playlists',
-    name: 'PlaylistView',
+    name: 'My Playlists',
     component: PlaylistMeView,
   },
   {
     path: '/playlists/create',
-    name: 'PlaylistCreateView',
+    name: 'Create Playlist',
     component: PlaylistFormView,
   },
   {
     path: '/playlists/:slug/edit',
-    name: 'PlaylistEditView',
+    name: 'Edit Playlist',
     component: PlaylistFormView,
   },
   {
     path: '/playlists/:slug',
-    name: 'PlaylistDetailsView',
+    name: 'Playlist Details',
     component: PlaylistDetailsView,
   },
   {
-    path: '/playlists/me',
-    redirect: '/playlists',
-  },
-  {
     path: '/quotes/create',
-    name: 'QuoteCreateView',
+    name: 'Create Quote',
     component: QuoteCreateView,
   },
   {
     path: '/quotes/:slug/edit',
-    name: 'QuoteEditView',
+    name: 'Edit Quote',
     component: QuoteCreateView,
   },
   {
     path: '/quotes/:slug',
-    name: 'QuoteDetailsView',
+    name: 'Quote Details',
     component: QuoteDetailsView,
   },
   {
     path: '/quotes/:quoteSlug/items/new',
-    name: 'QuoteItemCreateView',
+    name: 'Create Quote Item',
     component: QuoteItemFormView,
   },
   {
     path: '/quotes/:quoteSlug/items/:itemSlug/edit',
-    name: 'QuoteItemEditView',
+    name: 'Edit Quote Item',
     component: QuoteItemFormView,
   },
   {
     path: '/quotes/me',
-    name: 'QuoteView',
+    name: 'My Quotes',
     component: QuoteView,
+  },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    component: AnalyticsView,
   },
   {
     path: '/maintenance',
@@ -187,30 +226,22 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/:catchAll(.*)',
-    name: 'NotFound',
+    name: 'Not Found',
     component: NotFoundView,
-  },
-  {
-    path: '/marketplace/product/create',
-    component: ProductFormView,
-  },
-  {
-    path: '/marketplace/product/:slug/edit',
-    component: ProductFormView,
-  },
-  {
-    path: '/explore/post/create',
-    component: PostFormView,
-  },
-  {
-    path: '/analytics',
-    component: AnalyticsView,
   },
 ];
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
+});
+
+router.afterEach((to) => {
+  return nextTick(() => {
+    const title: string | symbol = to.name || 'Soodora';
+
+    document.title = title.toString();
+  });
 });
 
 export default router;

@@ -88,7 +88,7 @@ const submitForm = async () => {
       await router.push(`/playlists/${playlistSlug}?t=${Date.now()}`);
     } else {
       await createPlaylist(formData);
-      await router.push(`/playlists/me?t=${Date.now()}`);
+      await router.push(`/playlists?t=${Date.now()}`);
     }
   } catch (error: unknown) {
     const action = isEditMode.value ? 'update' : 'create';
@@ -101,7 +101,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <ApplicationViewport :title="headerTitle">
+  <ApplicationViewport>
     <IonContent class="form-content-wrapper">
       <Header :title="headerTitle" :subtitle="playlistData.name || 'New playlist'" :icon="musicalNotesOutline">
         <template #actions>

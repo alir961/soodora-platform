@@ -46,7 +46,7 @@ onIonViewWillEnter(async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Authentication">
+  <ApplicationViewport>
     <div class="auth-shell">
       <div class="bg-ornament one" />
       <div class="bg-ornament two" />

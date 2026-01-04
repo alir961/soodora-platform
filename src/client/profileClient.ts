@@ -79,6 +79,26 @@ async function callUnfollowUser(slug: string): Promise<void> {
     .catch(reject);
 }
 
+async function callRetrieveConfiguration(): Promise<boolean> {
+  return axios
+    .get('/profile/configuration', { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response && response.status === 200) return response.data as boolean;
+      return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
+async function callUpdateConfiguration(migrate: boolean): Promise<void> {
+  return axios
+    .post('/profile/configuration', { migrate }, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (response && response.status === 200) return Promise.resolve();
+      return reject('Unable to call API');
+    })
+    .catch(reject);
+}
+
 export type { OAuthProvider };
 export {
   retrieveAuthenticatedProfile,
@@ -88,4 +108,6 @@ export {
   callRetrieveLinkedOAuthProviders,
   callFollowUser,
   callUnfollowUser,
+  callRetrieveConfiguration,
+  callUpdateConfiguration,
 };

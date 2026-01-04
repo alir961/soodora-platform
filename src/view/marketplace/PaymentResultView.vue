@@ -20,9 +20,8 @@ async function goToMarketplace() {
 }
 </script>
 <template>
-  <ApplicationViewport :title="props.title || 'Payment'">
+  <ApplicationViewport>
     <div class="payment-result-container">
-      <!-- Ambient Glow Background -->
       <div class="ambient-glow">
         <div class="glow-orb orb-1" :class="{ success: isSuccess }"></div>
         <div class="glow-orb orb-2" :class="{ success: isSuccess }"></div>
@@ -39,7 +38,7 @@ async function goToMarketplace() {
         <h1 class="title">{{ props.title }}</h1>
 
         <ion-button @click="goToMarketplace" class="action-button">
-          <span>{{ props.button || 'Back to Marketplace' }}</span>
+          <span>{{ 'Back to marketplace' }}</span>
         </ion-button>
       </div>
     </div>

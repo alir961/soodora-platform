@@ -28,31 +28,16 @@ const updatePosition = () => {
 
   const padding = 16;
   const popupWidth = 220;
-  const actionHeight = 47; // 14px padding top + 14px padding bottom + 19px content
+  const actionHeight = 47;
   const popupHeight = props.actions.length * actionHeight;
 
   let x = props.x;
   let y = props.y;
 
-  // Adjust if too close to right edge
-  if (x + popupWidth > window.innerWidth - padding) {
-    x = window.innerWidth - popupWidth - padding;
-  }
-
-  // Adjust if too close to bottom edge
-  if (y + popupHeight > window.innerHeight - padding) {
-    y = props.y - popupHeight - 16; // Position above the button instead
-  }
-
-  // Adjust if too close to left edge
-  if (x < padding) {
-    x = padding;
-  }
-
-  // Adjust if too close to top edge (after moving above)
-  if (y < padding) {
-    y = padding;
-  }
+  if (x + popupWidth > window.innerWidth - padding) x = window.innerWidth - popupWidth - padding;
+  if (y + popupHeight > window.innerHeight - padding) y = props.y - popupHeight - 16;
+  if (x < padding) x = padding;
+  if (y < padding) y = padding;
 
   popupStyle.value = {
     left: `${x}px`,
@@ -185,15 +170,5 @@ onMounted(() => {
 
 .popup-action.destructive:active {
   background: rgba(239, 68, 68, 0.15);
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
 }
 </style>

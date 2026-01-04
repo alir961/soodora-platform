@@ -113,7 +113,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <ApplicationViewport :title="headerTitle">
+  <ApplicationViewport>
     <div class="form-header">
       <h2>{{ headerTitle }}</h2>
       <button class="close-btn" @click="closeForm">

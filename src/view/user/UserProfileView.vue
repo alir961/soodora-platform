@@ -2,7 +2,14 @@
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import Header from '@/component/AppHeader.vue';
 import { computed, onMounted, ref, Ref } from 'vue';
-import { briefcaseOutline, closeOutline, ellipsisHorizontal, linkOutline, personCircleOutline } from 'ionicons/icons';
+import {
+  briefcaseOutline,
+  closeOutline,
+  ellipsisHorizontal,
+  linkOutline,
+  mapOutline,
+  personCircleOutline,
+} from 'ionicons/icons';
 import { IonIcon } from '@ionic/vue';
 import { useRoute, useRouter } from 'vue-router';
 import { User } from '@/entity/User';
@@ -85,6 +92,7 @@ const handleLinkHub = async () => {
 const openSettingsPopup = (event: MouseEvent) => {
   const button = event.currentTarget as HTMLElement;
   const rect = button.getBoundingClientRect();
+
   popupX.value = rect.right - 220;
   popupY.value = rect.bottom + 8;
   showActionsPopup.value = true;
@@ -110,8 +118,19 @@ const handleSoodoraKit = async () => {
   }
 };
 
+const handleArtistEvents = async () => {
+  const userSlug = route.params.slug as string;
+
+  await router.push(`/user/${userSlug}/events`);
+};
+
 const actionItems = computed<ActionItem[]>(() => {
   const items: ActionItem[] = [];
+  const userData: User | null = user.value;
+
+  if (!userData) return [];
+  if (!userData.roles.includes('ARTIST')) return [];
+
   items.push(
     {
       icon: linkOutline,
@@ -122,6 +141,11 @@ const actionItems = computed<ActionItem[]>(() => {
       icon: briefcaseOutline,
       label: 'Download Soodora Kit',
       action: handleSoodoraKit,
+    },
+    {
+      icon: mapOutline,
+      label: 'Artist Events',
+      action: handleArtistEvents,
     }
   );
   return items;
@@ -133,7 +157,7 @@ const closeActionsPopup = () => {
 </script>
 
 <template>
-  <ApplicationViewport title="User Profile" back-button>
+  <ApplicationViewport>
     <div class="ambient-glow">
       <div class="glow-orb orb-1"></div>
       <div class="glow-orb orb-2"></div>
@@ -142,7 +166,7 @@ const closeActionsPopup = () => {
 
     <Header :title="headerTitle" :subtitle="userRole" :icon="personCircleOutline">
       <template #actions>
-        <button class="about-btn" @click="openSettingsPopup($event)">
+        <button v-if="actionItems.length > 0" class="actions-button" @click="openSettingsPopup($event)">
           <ion-icon :icon="ellipsisHorizontal" />
         </button>
         <button class="back-button" @click="handleBackButton">

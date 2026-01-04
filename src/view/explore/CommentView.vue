@@ -46,7 +46,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <ApplicationViewport title="Comments Section" back-button>
+  <ApplicationViewport>
     <div class="top-bar">
       <ion-icon :icon="arrowBackOutline" class="back-btn" style="cursor: pointer" @click="$router.back()" />
       <span class="top-bar-title">Join the Conversation</span>

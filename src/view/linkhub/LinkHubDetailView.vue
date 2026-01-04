@@ -86,7 +86,7 @@ onIonViewDidEnter(loadPage);
 </script>
 
 <template>
-  <ApplicationViewport :title="pageData.title || 'Link Hub'">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <Header
         :title="pageData.title"

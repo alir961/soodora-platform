@@ -91,7 +91,7 @@ onActivated(() => {
 </script>
 
 <template>
-  <ApplicationViewport title="My Playlists">
+  <ApplicationViewport>
     <IonContent class="playlists-content">
       <div class="ambient-glow">
         <div class="glow-orb orb-1"></div>

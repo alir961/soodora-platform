@@ -107,7 +107,7 @@ const submitForm = async () => {
 </script>
 
 <template>
-  <ApplicationViewport title="Create Post">
+  <ApplicationViewport>
     <ion-content class="form-content-wrapper">
       <Header
         title="Create Post"
