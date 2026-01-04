@@ -60,6 +60,7 @@ build:
       variables:
         VITE_API_URL: 'https://app.soodora.com/api'
         VITE_ADMINISTRATION_URL: 'https://app.soodora.com/administration'
+        VITE_MAPBOX_GL_TOKEN: $MAPBOX_GL_TOKEN
       when: always
     - when: never
 
