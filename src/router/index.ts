@@ -29,6 +29,8 @@ import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 import AnalyticsView from '@/view/user/AnalyticsView.vue';
 import ArtistEventView from '@/view/event/ArtistEventView.vue';
 import CreateEventView from '@/view/event/CreateEventView.vue';
+import EventListView from '@/view/event/EventListView.vue';
+import EditEventView from '@/view/event/EditEventView.vue';
 import { nextTick } from 'vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -88,13 +90,23 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/user/:slug/events',
-    name: 'Artist Events',
+    name: 'Events Map',
     component: ArtistEventView,
   },
   {
     path: '/user/:slug/events/create',
     name: 'Create Event',
     component: CreateEventView,
+  },
+  {
+    path: '/user/:slug/events/list',
+    name: 'Events List',
+    component: EventListView,
+  },
+  {
+    path: '/user/:slug/events/:eventSlug',
+    name: 'Edit Event',
+    component: EditEventView,
   },
   {
     path: '/marketplace',

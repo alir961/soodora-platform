@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { markRaw, onMounted, onUnmounted, ref, watch } from 'vue';
+import { markRaw, onMounted, onUnmounted, PropType, ref, watch } from 'vue';
 import mapboxgl, { LngLatBounds, Map, Marker, Popup } from 'mapbox-gl';
 import { Event } from '@/entity/Event';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { formatDate } from '@/utils';
 
-const props = defineProps<{
-  events: Event[];
-}>();
+const props = defineProps({
+  events: {
+    type: Array as PropType<Event[]>,
+    required: true,
+  },
+});
 
 const mapContainer = ref<HTMLElement | null>(null);
 const mapInstance = ref<Map | null>(null);
@@ -24,7 +27,7 @@ onMounted(() => {
 
   const map = new Map({
     container: mapContainer.value,
-    style: 'mapbox://styles/mapbox/standard-satellite', // 'mapbox://styles/mapbox/dark-v11',
+    style: 'mapbox://styles/mapbox/standard-satellite',
     center: { lat: 48.85307618688131, lon: 2.3499255436418407 },
     zoom: 4,
   });
@@ -94,7 +97,7 @@ const fitMapToMarkers = () => {
   props.events.forEach((event) => bounds.extend({ lat: event.latitude, lon: event.longitude }));
 
   map.fitBounds(bounds, {
-    padding: 50,
+    padding: 25,
     maxZoom: 15,
   });
 };

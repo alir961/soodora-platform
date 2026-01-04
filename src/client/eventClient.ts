@@ -3,7 +3,7 @@ import { getAuthorizedHeader } from '@/client/authenticationClient';
 import { reject } from '@/utils';
 import { Event } from '@/entity/Event';
 
-export interface CreateEventPayload {
+export interface SaveEventPayload {
   type: string;
   title: string;
   description: string;
@@ -14,7 +14,7 @@ export interface CreateEventPayload {
   dateTime: string;
 }
 
-async function callCreateEvent(event: CreateEventPayload): Promise<void> {
+async function callCreateEvent(event: SaveEventPayload): Promise<void> {
   return axios.post('/events', event, { headers: await getAuthorizedHeader() });
 }
 
@@ -28,4 +28,12 @@ async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
   return reject('Failed to retrieve artist posts.');
 }
 
-export { callCreateEvent, callRetrieveArtistEvents };
+async function callUpdateEvent(eventSlug: string, event: SaveEventPayload): Promise<void> {
+  return axios.put(`/events/${eventSlug}`, event, { headers: await getAuthorizedHeader() });
+}
+
+async function callDeleteEvent(eventSlug: string): Promise<void> {
+  return axios.delete(`/events/${eventSlug}`, { headers: await getAuthorizedHeader() });
+}
+
+export { callCreateEvent, callRetrieveArtistEvents, callUpdateEvent, callDeleteEvent };

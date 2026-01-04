@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { IonDatetime, IonIcon, IonModal } from '@ionic/vue';
+import { IonDatetime, IonIcon, IonModal, onIonViewWillEnter } from '@ionic/vue';
 import { checkmarkOutline } from 'ionicons/icons';
-import { ref, Ref } from 'vue';
-import { EventType } from '@/entity/Event';
+import { onMounted, PropType, ref, Ref } from 'vue';
+import { Event, EventType } from '@/entity/Event';
 import { formatDate, showToast } from '@/utils';
-import { callCreateEvent, CreateEventPayload } from '@/client/eventClient';
+import { callCreateEvent, callUpdateEvent, SaveEventPayload } from '@/client/eventClient';
 import { useRouter } from 'vue-router';
+
+const props = defineProps({
+  editing: Boolean,
+  event: Object as PropType<Event>,
+});
 
 const router = useRouter();
 
@@ -24,8 +29,9 @@ const handleDateChange = (event: CustomEvent) => {
   dateTime.value = event.detail.value;
 };
 
-const createEvent = async () => {
-  const payload: CreateEventPayload = {
+const saveEvent = async () => {
+  const existingEvent: Event | undefined = props.event;
+  const payload: SaveEventPayload = {
     type: type.value,
     title: title.value,
     description: description.value,
@@ -36,15 +42,38 @@ const createEvent = async () => {
     dateTime: dateTime.value,
   };
 
-  callCreateEvent(payload)
-    .then(() => showToast('Event created with success'))
-    .catch(() => showToast('Unable to create event', 'warning'))
-    .finally(() => router.back());
+  if (props.editing && existingEvent)
+    callUpdateEvent(existingEvent.slug, payload)
+      .then(() => showToast('Event updated with success'))
+      .catch(() => showToast('Unable to update event', 'warning'))
+      .finally(() => router.back());
+  else
+    callCreateEvent(payload)
+      .then(() => showToast('Event created with success'))
+      .catch(() => showToast('Unable to create event', 'warning'))
+      .finally(() => router.back());
 };
+
+const loadEvent = () => {
+  const existingEvent: Event | undefined = props.event;
+
+  if (!existingEvent) return;
+  type.value = existingEvent.type.toLowerCase() as EventType;
+  title.value = existingEvent.title;
+  description.value = existingEvent.description;
+  url.value = existingEvent.url;
+  thumbnailUrl.value = existingEvent.thumbnailUrl;
+  latitude.value = existingEvent.latitude;
+  longitude.value = existingEvent.longitude;
+  dateTime.value = existingEvent.dateTime;
+};
+
+onMounted(() => loadEvent());
+onIonViewWillEnter(() => loadEvent());
 </script>
 
 <template>
-  <form id="event-form" @submit.prevent="createEvent">
+  <form id="event-form" @submit.prevent="saveEvent">
     <div class="form-section">
       <div class="field">
         <label for="type">Event Type</label>
@@ -145,7 +174,7 @@ const createEvent = async () => {
 
       <button type="submit" class="save-btn">
         <ion-icon :icon="checkmarkOutline" />
-        Register Event
+        {{ editing ? 'Update Event' : 'Register Event' }}
       </button>
     </div>
   </form>

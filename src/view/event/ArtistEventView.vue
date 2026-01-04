@@ -59,7 +59,7 @@ const handleEditEvent = async () => {
   const user: User | null = authenticatedUser.value;
 
   if (!user) return;
-  await router.push(`/user/${user.slug}/events/edit`);
+  await router.push(`/user/${user.slug}/events/list`);
 };
 
 const actionItems: ActionItem[] = [

@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { calendarNumberOutline } from 'ionicons/icons';
+import { arrowBackOutline } from 'ionicons/icons';
 import AppHeader from '@/component/AppHeader.vue';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import CreateEventForm from '@/component/event/CreateEventForm.vue';
+import SaveEventForm from '@/component/event/SaveEventForm.vue';
+import { Router, useRouter } from 'vue-router';
+
+const router: Router = useRouter();
 </script>
 
 <template>
   <ApplicationViewport>
-    <div id="main-wrapper">
-      <AppHeader title="Artist Events" subtitle="Register your next event here" :icon="calendarNumberOutline" />
+    <AppHeader
+      title="Artist Events"
+      subtitle="Register your next event here"
+      :icon="arrowBackOutline"
+      :on-icon-click="() => router.back()" />
 
-      <CreateEventForm />
-    </div>
+    <SaveEventForm />
   </ApplicationViewport>
 </template>
-
-<style scoped></style>
