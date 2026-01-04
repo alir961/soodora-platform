@@ -55,7 +55,7 @@ watch(
 );
 
 const updateMarkers = () => {
-  const map: Map | null = mapInstance.value;
+  const map: Map | null = mapInstance.value as Map | null;
 
   if (!map) return;
 
