@@ -9,6 +9,7 @@ cache:
 variables:
   VITE_API_URL: 'https://staging.soodora.com/api'
   VITE_ADMINISTRATION_URL: 'https://staging.soodora.com/administration'
+  VITE_MAPBOX_GL_TOKEN: $MAPBOX_GL_TOKEN
 
 stages:
   - install
@@ -46,6 +47,8 @@ lint:
 build:
   stage: build
   script:
+    - echo "Checking if token is set..."
+    - if [ -z "$VITE_MAPBOX_GL_TOKEN" ]; then echo "TOKEN IS EMPTY"; else echo "TOKEN IS SET"; fi
     - npm run build
   artifacts:
     paths:
