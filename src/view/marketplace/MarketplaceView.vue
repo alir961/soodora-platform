@@ -105,7 +105,6 @@ const loadProducts = async (reset = false) => {
 
     const response = await callSearchProducts({
       name: searchInput.value.trim(),
-      description: searchInput.value.trim(),
       page,
       size: PAGE_SIZE,
       sort: selectedSort.value,
