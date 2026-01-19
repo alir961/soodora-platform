@@ -70,7 +70,7 @@ public class UserService implements UserDetailsService {
 
     public User updateUser(Identifier userIdentifier, UserUpdateCommand updateCommand) {
         User user = retrieveUser(userIdentifier);
-        Username username = new Username(updateCommand.username());
+        Username newUsername = new Username(updateCommand.username());
         Url avatarUrl = null;
 
         if (updateCommand.avatar() != null) {
@@ -78,10 +78,20 @@ public class UserService implements UserDetailsService {
 
             avatarUrl = new Url(hostedAvatarUrl);
         }
-        if (userRepository.isUsed(createFromUsername(username.value())))
-            throw new UserUnityException("Username is already used");
-        user.updateUser(username, updateCommand.firstname(), updateCommand.lastname(),
-                updateCommand.description(), avatarUrl);
+
+        userRepository.findByUsername(newUsername.value())
+                .filter(existingUser -> !existingUser.getSlug().equals(user.getSlug()))
+                .ifPresent(existingUser -> {
+                    throw new UserUnityException("Username is already used");
+                });
+
+        user.updateUser(
+                newUsername,
+                updateCommand.firstname(),
+                updateCommand.lastname(),
+                updateCommand.description(),
+                avatarUrl);
+
         return userRepository.save(user);
     }
 

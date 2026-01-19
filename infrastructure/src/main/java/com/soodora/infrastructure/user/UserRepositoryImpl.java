@@ -30,6 +30,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toSet;
 
 import static com.soodora.domain.common.SlugGenerator.generateSlug;
+import static com.soodora.domain.user.value.Identifier.Factory.createFromUsername;
 
 @Repository
 @RequiredArgsConstructor
@@ -109,6 +110,13 @@ public class UserRepositoryImpl implements UserRepository {
         return userRepository.findAll().stream()
                 .map(DomainEntityAdapter::aggregate)
                 .collect(toSet());
+    }
+
+    @Override
+    @Transactional
+    public Optional<User> findByUsername(String username) {
+        return findUserByIdentifier(createFromUsername(username))
+                .map(UserEntity::aggregate);
     }
 
     @Override

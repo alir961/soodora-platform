@@ -20,6 +20,7 @@ public interface UserRepository {
     User find(Identifier identifier);
     User findWithFollowers(Identifier identifier);
     Set<User> findAll();
+    Optional<User> findByUsername(String username);
     Page<User> searchUsersByUsername(String usernameQuery, boolean onlyArtists, Pageable pageable);
 
     void delete(Identifier identifier);
