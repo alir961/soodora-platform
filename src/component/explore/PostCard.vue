@@ -1,15 +1,5 @@
 <script setup lang="ts">
-import {
-  IonAvatar,
-  IonButton,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonCol,
-  IonIcon,
-  IonImg,
-  IonNote,
-} from '@ionic/vue';
+import { IonAvatar, IonButton, IonCard, IonCardContent, IonCardHeader, IonCol, IonIcon, IonNote } from '@ionic/vue';
 import { computed, onMounted, onUnmounted, PropType, ref, Ref, watch } from 'vue';
 import { audioPlayerService } from '@/services/audioPlayerService';
 import { Post, PostAnalytics } from '@/entity/Post';
@@ -41,6 +31,7 @@ import PostAnalyticsCard from '@/component/actions/PostAnalyticsCard.vue';
 import ActionsPopup from '@/component/actions/ActionsPopup.vue';
 import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
 import CommentsSheet from '@/component/explore/CommentsSheet.vue';
+import ImagePreviewOverlay from '@/component/common/ImagePreviewOverlay.vue';
 
 const authStore = useAuthStore();
 
@@ -201,6 +192,19 @@ const postAnalyticsCardRef = ref<InstanceType<typeof PostAnalyticsCard> | null>(
 const unauthModalRef = ref<InstanceType<typeof UnauthenticatedActionCard> | null>(null);
 const commentsSheetRef = ref<InstanceType<typeof CommentsSheet> | null>(null);
 
+// Image preview state
+const showImagePreview = ref(false);
+
+const openImagePreview = () => {
+  if (props.post.imageUrl) {
+    showImagePreview.value = true;
+  }
+};
+
+const closeImagePreview = () => {
+  showImagePreview.value = false;
+};
+
 const openExportModal = () => {
   exportCardRef.value?.open();
 };
@@ -278,7 +282,9 @@ const openActionsPopup = (event: Event) => {
       <ion-card-content>
         <template v-if="!isMusicPost">
           <p>{{ post.content }}</p>
-          <ion-img v-show="post.imageUrl" :src="post.imageUrl" :alt="`Post ${post.title}`" />
+          <div v-if="post.imageUrl" class="post-image-wrapper" @click="openImagePreview">
+            <img :src="post.imageUrl" :alt="`Post ${post.title}`" class="post-image" />
+          </div>
 
           <div class="settings-container">
             <div class="post-actions">
@@ -374,6 +380,13 @@ const openActionsPopup = (event: Event) => {
         </template>
       </ion-card-content>
     </ion-card>
+
+    <!-- Image Preview Overlay -->
+    <ImagePreviewOverlay
+      v-if="showImagePreview"
+      :image-url="post.imageUrl"
+      :alt="`Post ${post.title}`"
+      @close="closeImagePreview" />
 
     <ExportCard :item="post" type="post" ref="exportCardRef" />
 
@@ -643,5 +656,32 @@ ion-avatar img {
 
 .music-actions {
   margin-top: 0;
+}
+
+/* Post Image Styles */
+.post-image-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 250px;
+  overflow: hidden;
+  border-radius: 12px;
+  cursor: zoom-in;
+  margin-top: 0.75rem;
+}
+
+.post-image-wrapper .post-image {
+  width: 100%;
+  max-height: 250px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.post-image-wrapper:hover .post-image {
+  transform: scale(1.02);
+}
+
+.post-image-wrapper:active .post-image {
+  opacity: 0.9;
 }
 </style>

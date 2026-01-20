@@ -152,7 +152,7 @@ const handleEvents = async () => {
   const user: User | null = authStore.getAuthenticatedUser;
 
   if (!user) return;
-  await router.push(`/user/${user.slug}/events`);
+  await router.push(`/user/${user.slug}/events/list`);
 };
 
 const handleAnalytics = async () => {
@@ -215,7 +215,7 @@ const actionItems = computed<ActionItem[]>(() => {
     );
   }
 
-  if (!isArtist.value) items.push({ icon: musicalNotesOutline, label: 'Became Artist', action: handleArtistMigration });
+  if (!isArtist.value) items.push({ icon: musicalNotesOutline, label: 'Become Artist', action: handleArtistMigration });
   items.push(
     { icon: settingsOutline, label: 'Settings', action: handleSettings },
     { icon: logOutOutline, label: 'Sign Out', action: handleSignOut, destructive: true }

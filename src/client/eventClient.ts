@@ -15,7 +15,12 @@ export interface SaveEventPayload {
 }
 
 async function callCreateEvent(event: SaveEventPayload): Promise<void> {
-  return axios.post('/events', event, { headers: await getAuthorizedHeader() });
+  return axios
+    .post('/events', event, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 201) return reject('Unable to create event');
+    })
+    .catch(reject);
 }
 
 async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
@@ -29,7 +34,12 @@ async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
 }
 
 async function callUpdateEvent(eventSlug: string, event: SaveEventPayload): Promise<void> {
-  return axios.put(`/events/${eventSlug}`, event, { headers: await getAuthorizedHeader() });
+  return axios
+    .put(`/events/${eventSlug}`, event, { headers: await getAuthorizedHeader() })
+    .then((response) => {
+      if (!response || response.status !== 200) return reject('Unable to update event');
+    })
+    .catch(reject);
 }
 
 async function callDeleteEvent(eventSlug: string): Promise<void> {

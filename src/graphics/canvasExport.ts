@@ -1,4 +1,7 @@
-import { StaticCanvas, FabricImage, Textbox, Rect, Circle, Group, Gradient, Shadow } from 'fabric';
+import { StaticCanvas, FabricImage, Textbox, Rect, Circle, Group, Gradient, Shadow, Polygon } from 'fabric';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 import { Post } from '@/entity/Post';
 import { Product } from '@/entity/Product';
 
@@ -719,19 +722,23 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     });
     cardElements.push({ element: playButton, relativeTop: currentY + audioHeroHeight / 2 });
 
-    // Play triangle icon
-    const playTriangle = new Textbox('▶', {
-      left: contentX + heroWidth / 2 + 5,
-      top: currentY + audioHeroHeight / 2,
-      width: 50,
-      fontSize: 44,
-      fontFamily: 'Arial, sans-serif',
-      fill: colorTheme.accent,
-      originX: 'center',
-      originY: 'center',
-      selectable: false,
-      textAlign: 'center',
-    });
+    // Play triangle icon - using Polygon instead of text to avoid emoji rendering on iOS
+    const triangleSize = 32;
+    const playTriangle = new Polygon(
+      [
+        { x: -triangleSize / 2, y: -triangleSize / 2 },
+        { x: -triangleSize / 2, y: triangleSize / 2 },
+        { x: triangleSize / 2, y: 0 },
+      ],
+      {
+        left: contentX + heroWidth / 2 + 5,
+        top: currentY + audioHeroHeight / 2,
+        fill: colorTheme.accent,
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+      }
+    );
     cardElements.push({ element: playTriangle, relativeTop: currentY + audioHeroHeight / 2 });
 
     // Dynamic waveform bars - more musical looking
@@ -902,19 +909,23 @@ async function createPostCanvas(post: Post, theme: ExportTheme, customColors?: C
     });
     cardElements.push({ element: playButton, relativeTop: currentY + audioHeroHeight / 2 - 10 });
 
-    // Play triangle icon
-    const playTriangle = new Textbox('▶', {
-      left: contentX + heroWidth / 2 + 6,
-      top: currentY + audioHeroHeight / 2 - 10,
-      width: 60,
-      fontSize: 52,
-      fontFamily: 'Arial, sans-serif',
-      fill: colorTheme.accent,
-      originX: 'center',
-      originY: 'center',
-      selectable: false,
-      textAlign: 'center',
-    });
+    // Play triangle icon - using Polygon instead of text to avoid emoji rendering on iOS
+    const triangleSize = 36;
+    const playTriangle = new Polygon(
+      [
+        { x: -triangleSize / 2, y: -triangleSize / 2 },
+        { x: -triangleSize / 2, y: triangleSize / 2 },
+        { x: triangleSize / 2, y: 0 },
+      ],
+      {
+        left: contentX + heroWidth / 2 + 6,
+        top: currentY + audioHeroHeight / 2 - 10,
+        fill: colorTheme.accent,
+        originX: 'center',
+        originY: 'center',
+        selectable: false,
+      }
+    );
     cardElements.push({ element: playTriangle, relativeTop: currentY + audioHeroHeight / 2 - 10 });
 
     // Dynamic waveform visualization with musical peaks
@@ -1733,16 +1744,43 @@ async function createProductCanvas(
   return canvas;
 }
 
-function downloadCanvas(canvas: StaticCanvas): void {
+async function downloadCanvas(canvas: StaticCanvas): Promise<void> {
   const imageData: string = canvas.toDataURL();
-  const anchor: HTMLAnchorElement = document.createElement('a');
+  const fileName = `Soodora-Export-${Date.now()}.png`;
 
-  anchor.href = imageData;
-  anchor.download = `Export - ${new Date().toDateString()}`;
+  // Check if running on a native platform (iOS or Android)
+  if (Capacitor.isNativePlatform()) {
+    try {
+      // Extract base64 data (remove the data:image/png;base64, prefix)
+      const base64Data = imageData.split(',')[1];
 
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
+      // Write the file to the device's Documents directory
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Documents,
+      });
+
+      // Open the native share sheet so user can save to Photos, share, etc.
+      await Share.share({
+        title: 'Soodora Export',
+        text: 'Check out my Soodora export!',
+        url: savedFile.uri,
+        dialogTitle: 'Share your export',
+      });
+    } catch (error) {
+      console.error('Native download failed:', error);
+      throw error;
+    }
+  } else {
+    // Web fallback: use anchor download
+    const anchor: HTMLAnchorElement = document.createElement('a');
+    anchor.href = imageData;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  }
 }
 
 export { createPostCanvas, createProductCanvas, downloadCanvas };

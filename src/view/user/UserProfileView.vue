@@ -20,6 +20,9 @@ import ActionsPopup, { ActionItem } from '@/component/actions/ActionsPopup.vue';
 import { getUserLinkHub } from '@/client/linkHubClient';
 import { exportSoodoraKitPdf, getSoodoraKitArtistSlug } from '@/client/soodoraKitClient';
 import { showToast } from '@/utils';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 const route = useRoute();
 const router = useRouter();
@@ -104,13 +107,46 @@ const handleSoodoraKit = async () => {
 
   try {
     const blob = await exportSoodoraKitPdf(soodoraKit.slug);
-    const url = URL.createObjectURL(blob);
-    const link = Object.assign(document.createElement('a'), {
-      href: url,
-      download: `soodorakit_${soodoraKit.slug}.pdf`,
-    });
-    link.click();
-    URL.revokeObjectURL(url);
+    const fileName = `soodorakit_${soodoraKit.slug}.pdf`;
+
+    // Check if running on a native platform (iOS or Android)
+    if (Capacitor.isNativePlatform()) {
+      // Convert blob to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(blob);
+      const base64Data = await base64Promise;
+
+      // Write the file to the device's Documents directory
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Documents,
+      });
+
+      // Open the native share sheet
+      await Share.share({
+        title: 'Soodora Kit PDF',
+        text: 'Check out this Soodora Kit!',
+        url: savedFile.uri,
+        dialogTitle: 'Share Soodora Kit',
+      });
+    } else {
+      // Web fallback: use anchor download
+      const url = URL.createObjectURL(blob);
+      const link = Object.assign(document.createElement('a'), {
+        href: url,
+        download: fileName,
+      });
+      link.click();
+      URL.revokeObjectURL(url);
+    }
   } catch (error: unknown) {
     const message =
       'Failed to download PDF, Artist may not have a Soodora Kit. ' + (error instanceof Error ? error.message : '');
