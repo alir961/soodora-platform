@@ -18,6 +18,7 @@ import ExportCard from '@/component/actions/ExportCard.vue';
 import DeleteCard from '@/component/actions/DeleteCard.vue';
 import ProductAnalyticsCard from '@/component/actions/ProductAnalyticsCard.vue';
 import UnauthenticatedActionCard from '@/component/auth/UnauthenticatedActionCard.vue';
+import ImagePreviewOverlay from '@/component/common/ImagePreviewOverlay.vue';
 
 const props = defineProps({
   product: {
@@ -245,14 +246,11 @@ const openActionsPopup = (event: Event) => {
       </div>
     </ion-card>
 
-    <transition name="preview-fade">
-      <div v-if="showImagePreview" class="image-preview-overlay" @click="closeImagePreview">
-        <div class="image-preview-container" @click.stop>
-          <button class="preview-close" @click="closeImagePreview">✕</button>
-          <img :src="productImageUrl" :alt="localProduct.name" />
-        </div>
-      </div>
-    </transition>
+    <ImagePreviewOverlay
+      v-if="showImagePreview"
+      :image-url="productImageUrl"
+      :alt="localProduct.name"
+      @close="closeImagePreview" />
 
     <Teleport to="body">
       <transition name="sheet-slide">
@@ -638,110 +636,6 @@ t .action-icon.edit ion-icon {
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-.image-preview-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-
-.image-preview-container {
-  position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.image-preview-container img {
-  max-width: 100%;
-  max-height: 90vh;
-  object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-.preview-close {
-  position: absolute;
-  top: -16px;
-  right: -16px;
-  appearance: none;
-  border: 0;
-  background: rgba(18, 22, 30, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #ffffff;
-  font-size: 20px;
-  font-weight: 300;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-  transition: all 0.2s ease;
-  z-index: 1;
-}
-
-.preview-close:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  transform: scale(1.05);
-}
-
-.preview-close:active {
-  transform: scale(0.95);
-}
-
-.preview-fade-enter-active {
-  animation: previewFadeIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.preview-fade-leave-active {
-  animation: previewFadeIn 0.2s cubic-bezier(0.8, 0.2, 0.8, 0.2) reverse;
-}
-
-.preview-fade-enter-active .image-preview-container {
-  animation: previewZoomIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.preview-fade-leave-active .image-preview-container {
-  animation: previewZoomIn 0.25s cubic-bezier(0.8, 0.2, 0.8, 0.2) reverse;
-}
-
-@keyframes previewFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes previewZoomIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 .purchase-overlay {
   position: fixed;
   top: 0;
@@ -1038,18 +932,6 @@ t .action-icon.edit ion-icon {
 
   .price-amount {
     font-size: 1.2rem;
-  }
-
-  .image-preview-overlay {
-    padding: 1rem;
-  }
-
-  .preview-close {
-    top: -12px;
-    right: -12px;
-    width: 36px;
-    height: 36px;
-    font-size: 18px;
   }
 
   .purchase-sheet {

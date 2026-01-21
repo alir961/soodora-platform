@@ -9,6 +9,8 @@ import Header from '@/component/AppHeader.vue';
 import { linkOutline, chevronForwardOutline, shareOutline, arrowBackOutline } from 'ionicons/icons';
 import { Link, platformIcons } from '@/entity/Link';
 import UsernameTag from '@/component/user/UsernameTag.vue';
+import { Capacitor } from '@capacitor/core';
+import { Share } from '@capacitor/share';
 
 const route = useRoute();
 const router = useRouter();
@@ -61,17 +63,26 @@ async function loadPage() {
 }
 
 async function shareHub() {
-  const url = window.location.href;
+  // Build the proper share URL
+  const baseUrl = 'https://app.soodora.com';
+  const url = `${baseUrl}/linkhub/${pageSlug.value}`;
+
   try {
-    if (navigator.share) {
+    // Use Capacitor Share on native platforms for proper share sheet
+    if (Capacitor.isNativePlatform()) {
+      await Share.share({
+        url: url,
+        dialogTitle: 'Share Link Hub',
+      });
+    } else if (navigator.share) {
+      // Web Share API - pass just the URL to avoid "title text url" format
       await navigator.share({
-        title: pageData.value.title,
-        text: pageData.value.description,
         url: url,
       });
     } else {
+      // Fallback: copy just the URL to clipboard
       await navigator.clipboard.writeText(url);
-      await showToast('Link Hub URL copied to clipboard !', 'success');
+      await showToast('Link Hub URL copied to clipboard!', 'success');
     }
   } catch (err) {
     console.error('Error sharing:', err);

@@ -23,6 +23,9 @@ import {
   getQuote,
 } from '@/client/quoteClient';
 import Header from '@/component/AppHeader.vue';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Share } from '@capacitor/share';
 
 const deleteCardRef = vueRef();
 const deleteItemCardRefs = vueRef<Record<string, InstanceType<typeof DeleteCard>>>({});
@@ -94,13 +97,46 @@ const downloadPdf = async () => {
   if (!quote.value) return;
   try {
     const blob = await downloadQuotePdf(quote.value.slug);
-    const url = window.URL.createObjectURL(new Blob([blob]));
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `quote-${quote.value.slug}.pdf`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
+    const fileName = `quote-${quote.value.slug}.pdf`;
+
+    // Check if running on a native platform (iOS or Android)
+    if (Capacitor.isNativePlatform()) {
+      // Convert blob to base64
+      const reader = new FileReader();
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(blob);
+      const base64Data = await base64Promise;
+
+      // Write the file to the device's Documents directory
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: base64Data,
+        directory: Directory.Documents,
+      });
+
+      // Open the native share sheet
+      await Share.share({
+        title: 'Quote PDF',
+        text: 'Check out this quote!',
+        url: savedFile.uri,
+        dialogTitle: 'Share your quote',
+      });
+    } else {
+      // Web fallback: use anchor download
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
   } catch {
     await showToast('Failed to download PDF', 'danger');
   }

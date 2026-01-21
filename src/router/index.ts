@@ -28,9 +28,8 @@ import LinkHubEditView from '@/view/linkhub/LinkHubEditView.vue';
 import LinkHubDetailView from '@/view/linkhub/LinkHubDetailView.vue';
 import AnalyticsView from '@/view/user/AnalyticsView.vue';
 import ArtistEventView from '@/view/event/ArtistEventView.vue';
-import CreateEventView from '@/view/event/CreateEventView.vue';
+import EventFormView from '@/view/event/EventFormView.vue';
 import EventListView from '@/view/event/EventListView.vue';
-import EditEventView from '@/view/event/EditEventView.vue';
 import { nextTick } from 'vue';
 
 const routes: Array<RouteRecordRaw> = [
@@ -96,7 +95,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/user/:slug/events/create',
     name: 'Create Event',
-    component: CreateEventView,
+    component: EventFormView,
   },
   {
     path: '/user/:slug/events/list',
@@ -104,9 +103,9 @@ const routes: Array<RouteRecordRaw> = [
     component: EventListView,
   },
   {
-    path: '/user/:slug/events/:eventSlug',
+    path: '/user/:slug/events/:eventSlug/edit',
     name: 'Edit Event',
-    component: EditEventView,
+    component: EventFormView,
   },
   {
     path: '/marketplace',
