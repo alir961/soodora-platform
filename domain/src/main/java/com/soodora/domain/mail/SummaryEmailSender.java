@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface SummaryEmailSender {
 
-    void sendEmail(String to, User user, List<Post> posts);
+    void sendEmail(User user, List<Post> posts);
 
 }

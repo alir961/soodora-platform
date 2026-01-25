@@ -195,7 +195,7 @@ public class UserService implements UserDetailsService {
         List<Post> posts = postRepository.findUserPosts(user.getSlug(), unpaged()).stream()
                 .toList();
 
-        summaryEmailSender.sendEmail(user.getEmail().value(), user, posts);
+        summaryEmailSender.sendEmail(user, posts);
     }
 
 }

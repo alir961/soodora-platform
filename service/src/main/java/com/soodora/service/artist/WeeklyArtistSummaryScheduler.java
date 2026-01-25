@@ -35,10 +35,7 @@ public class WeeklyArtistSummaryScheduler {
 
             if (posts.isEmpty())
                 continue;
-            summaryEmailSender.sendEmail(
-                    artist.getEmail().value(),
-                    artist,
-                    posts);
+            summaryEmailSender.sendEmail(artist, posts);
         }
         log.info("Sending weekly summaries to {} artists", artists.size());
     }
