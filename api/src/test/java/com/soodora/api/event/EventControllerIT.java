@@ -126,9 +126,22 @@ class EventControllerIT {
     }
 
     @Test
-    void givenValidArtistSlug_whenSearchEvents_thenOk() throws Exception {
+    void givenExistingEvents_whenRetrieveAllEvents_thenOk() throws Exception {
         // GIVEN
-        when(eventService.getArtistEvents(ARTIST.slug()))
+        when(eventService.retrieveAllEvents())
+                .thenReturn(singletonList(EVENT));
+
+        // WHEN & THEN
+        mockMvc.perform(get("/events"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].slug").value(EVENT.getSlug()));
+    }
+
+    @Test
+    void givenValidArtistSlug_whenRetrieveFilteredEvents_thenOk() throws Exception {
+        // GIVEN
+        when(eventService.retrieveArtistEvents(ARTIST.slug()))
                 .thenReturn(singletonList(EVENT));
 
         // WHEN & THEN
@@ -140,9 +153,9 @@ class EventControllerIT {
     }
 
     @Test
-    void givenInvalidArtistSlug_whenSearchEvents_thenNotFound() throws Exception {
+    void givenInvalidArtistSlug_whenRetrieveFilteredEvents_thenNotFound() throws Exception {
         // GIVEN
-        when(eventService.getArtistEvents(ARTIST.slug()))
+        when(eventService.retrieveArtistEvents(ARTIST.slug()))
                 .thenThrow(UnknownArtistException.class);
 
         // WHEN & THEN

@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ArtistRepositoryImpl implements ArtistRepository {
 
-    private final ArtistJpaRepository repository;
+    private final ArtistJpaRepository artistRepository;
 
     @Override
     @Transactional
@@ -34,7 +34,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     @Override
     @Transactional
     public List<User> findAll() {
-        return repository.findAll().stream()
+        return artistRepository.findAll().stream()
                 .map(ArtistEntity::getUser)
                 .map(UserEntity::aggregateFollowers)
                 .toList();
@@ -45,7 +45,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     public void delete(String slug) {
         ArtistEntity entity = findArtistBySlugOrThrows(slug);
 
-        repository.delete(entity);
+        artistRepository.delete(entity);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class ArtistRepositoryImpl implements ArtistRepository {
     }
 
     private ArtistEntity findArtistBySlugOrThrows(String slug) throws UnknownIdentifierException {
-        return repository.findByUserSlug(slug)
+        return artistRepository.findByUserSlug(slug)
                 .orElseThrow(() -> new UnknownSlugException("Unable to find artist '" + slug + "'"));
     }
 

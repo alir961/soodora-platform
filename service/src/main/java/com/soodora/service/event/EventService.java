@@ -30,7 +30,11 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public List<Event> getArtistEvents(String artistSlug) {
+    public List<Event> retrieveAllEvents() {
+        return eventRepository.findAll();
+    }
+
+    public List<Event> retrieveArtistEvents(String artistSlug) {
         try {
             return artistRepository.retrieveEvents(artistSlug);
         } catch (UnknownSlugException exception) {

@@ -45,13 +45,13 @@ class EventServiceTest {
     private EventService eventService;
 
     @Test
-    void givenValidArtistSlug_whenGetArtistEvents_thenReturnEvents() {
+    void givenValidArtistSlug_whenRetrieveArtistEvents_thenReturnEvents() {
         // GIVEN
         when(artistRepository.retrieveEvents(ARTIST_SLUG))
                 .thenReturn(singletonList(EVENT));
 
         // WHEN
-        List<Event> events = eventService.getArtistEvents(ARTIST_SLUG);
+        List<Event> events = eventService.retrieveArtistEvents(ARTIST_SLUG);
 
         // THEN
         assertEquals(1, events.size());
@@ -59,13 +59,13 @@ class EventServiceTest {
     }
 
     @Test
-    void givenInvalidArtistSlug_whenGetArtistEvents_thenThrowUnknownArtistException() {
+    void givenInvalidArtistSlug_whenRetrieveArtistEvents_thenThrowUnknownArtistException() {
         // GIVEN
         when(artistRepository.retrieveEvents(ARTIST_SLUG))
                 .thenThrow(UnknownSlugException.class);
 
         // WHEN
-        Executable executable = () -> eventService.getArtistEvents(ARTIST_SLUG);
+        Executable executable = () -> eventService.retrieveArtistEvents(ARTIST_SLUG);
 
         // THEN
         assertThrows(UnknownArtistException.class, executable);
