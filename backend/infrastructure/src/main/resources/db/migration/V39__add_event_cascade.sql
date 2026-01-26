@@ -1,0 +1,8 @@
+ALTER TABLE artists_events
+    DROP CONSTRAINT IF EXISTS FK_ARTISTS_EVENTS_ON_EVENT;
+
+ALTER TABLE artists_events
+    ADD CONSTRAINT FK_ARTISTS_EVENTS_ON_EVENT
+        FOREIGN KEY (event_id)
+            REFERENCES events (id)
+            ON DELETE CASCADE;
