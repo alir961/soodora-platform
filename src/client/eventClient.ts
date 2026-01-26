@@ -18,9 +18,17 @@ async function callCreateEvent(event: SaveEventPayload): Promise<void> {
   return axios
     .post('/events', event, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (!response || response.status !== 201) return reject('Unable to create event');
+      if (!response) return reject('Unable to contact API');
+      if (response.status !== 201) return reject('Unable to create event');
     })
     .catch(reject);
+}
+
+async function callRetrieveAllEvents(): Promise<Event[]> {
+  const response = await axios.get('/events', { headers: await getAuthorizedHeader() });
+
+  if (response.status === 200 && response.data) return response.data as Event[];
+  return reject('Failed to retrieve all events.');
 }
 
 async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
@@ -30,14 +38,15 @@ async function callRetrieveArtistEvents(artistSlug: string): Promise<Event[]> {
   });
 
   if (response.status === 200 && response.data) return response.data as Event[];
-  return reject('Failed to retrieve artist posts.');
+  return reject('Failed to retrieve artist events.');
 }
 
 async function callUpdateEvent(eventSlug: string, event: SaveEventPayload): Promise<void> {
   return axios
     .put(`/events/${eventSlug}`, event, { headers: await getAuthorizedHeader() })
     .then((response) => {
-      if (!response || response.status !== 200) return reject('Unable to update event');
+      if (!response) return reject('Unable to contact API');
+      if (response.status !== 200) return reject('Unable to update event');
     })
     .catch(reject);
 }
@@ -46,4 +55,4 @@ async function callDeleteEvent(eventSlug: string): Promise<void> {
   return axios.delete(`/events/${eventSlug}`, { headers: await getAuthorizedHeader() });
 }
 
-export { callCreateEvent, callRetrieveArtistEvents, callUpdateEvent, callDeleteEvent };
+export { callCreateEvent, callRetrieveAllEvents, callRetrieveArtistEvents, callUpdateEvent, callDeleteEvent };

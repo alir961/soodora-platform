@@ -31,6 +31,7 @@ import ArtistEventView from '@/view/event/ArtistEventView.vue';
 import EventFormView from '@/view/event/EventFormView.vue';
 import EventListView from '@/view/event/EventListView.vue';
 import { nextTick } from 'vue';
+import GlobalEventView from '@/view/event/GlobalEventView.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -89,7 +90,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     path: '/user/:slug/events',
-    name: 'Events Map',
+    name: 'Artist Events Map',
     component: ArtistEventView,
   },
   {
@@ -106,6 +107,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/user/:slug/events/:eventSlug/edit',
     name: 'Edit Event',
     component: EventFormView,
+  },
+  {
+    path: '/events',
+    name: 'Events Map',
+    component: GlobalEventView,
   },
   {
     path: '/marketplace',

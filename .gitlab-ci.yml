@@ -8,6 +8,7 @@ cache:
 
 variables:
   VITE_API_URL: 'https://staging.soodora.com/api'
+  VITE_APPLICATION_URL: 'https://staging.soodora.com'
   VITE_ADMINISTRATION_URL: 'https://staging.soodora.com/administration'
   VITE_MAPBOX_GL_TOKEN: $MAPBOX_GL_TOKEN
 
@@ -62,6 +63,7 @@ build:
     - if: '$CI_COMMIT_BRANCH == "main"'
       variables:
         VITE_API_URL: 'https://app.soodora.com/api'
+        VITE_APPLICATION_URL: 'https://app.soodora.com'
         VITE_ADMINISTRATION_URL: 'https://app.soodora.com/administration'
       when: always
     - when: never

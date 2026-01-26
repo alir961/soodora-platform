@@ -1,19 +1,12 @@
 <script setup lang="ts">
-import { ref, Ref, watch, computed, onMounted, onUnmounted } from 'vue';
-declare global {
-  interface Window {
-    __explorePosts?: Array<{ slug: string }>;
-    __exploreFollowingPosts?: Array<{ slug: string }>;
-  }
-}
-import { IonInfiniteScroll, IonInfiniteScrollContent, IonRow, IonPage, IonIcon, onIonViewWillEnter } from '@ionic/vue';
-import { compassOutline, addCircleOutline } from 'ionicons/icons';
+import { computed, onMounted, provide, ref, Ref, watch } from 'vue';
+import { IonIcon, IonInfiniteScroll, IonInfiniteScrollContent, IonPage, IonRow, onIonViewWillEnter } from '@ionic/vue';
+import { addCircleOutline, compassOutline, ellipsisHorizontal, mapOutline } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Swiper as SwiperClass } from 'swiper';
 import 'swiper/css';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
-import Header from '@/component/AppHeader.vue';
 import PostCard from '@/component/explore/PostCard.vue';
 import { Post } from '@/entity/Post';
 import { callRetrieveFollowingPosts, callRetrieveRecommendedPosts, PostPage } from '@/client/postClient';
@@ -21,6 +14,8 @@ import { showToast } from '@/utils';
 import { useAuthStore } from '@/store/reactiveStorage';
 import { usePlayerStore } from '@/store/playerStore';
 import { audioPlayerService } from '@/services/audioPlayerService';
+import AppHeader from '@/component/AppHeader.vue';
+import ActionsPopup, { ActionItem } from '@/component/actions/ActionsPopup.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -33,17 +28,25 @@ type Tab = 'for-you' | 'following';
 const posts: Ref<Post[]> = ref([]);
 const followingPosts: Ref<Post[]> = ref([]);
 const currentPage = ref(0);
-const currentPageFollowing = ref(0);
 const isLoading = ref(false);
 const hasMore = ref(true);
+
+const currentPageFollowing = ref(0);
 const hasMoreFollowing = ref(true);
+
 const activeTab = ref<Tab>('for-you');
 const swiperInstance = ref<SwiperClass | null>(null);
 
+const showActionsPopup = ref(false);
+const popupX = ref(0);
+const popupY = ref(0);
+
 const canCreateContent = computed(() => {
+  const allowedRoles = new Set(['ADMIN', 'PREMIUM', 'ARTIST']);
   const user = authStore.getAuthenticatedUser;
+
   if (!user) return false;
-  return user.roles.some((role) => ['ADMIN', 'PREMIUM', 'ARTIST'].includes(role));
+  return user.roles.some((role) => allowedRoles.has(role));
 });
 
 const onSwiperInit = (instance: SwiperClass) => {
@@ -64,11 +67,11 @@ const onSlideChange = () => {
   }
 };
 
-const goToTab = (tab: Tab) => {
+const swipeToTab = (tab: Tab) => {
   const swiper = swiperInstance.value;
-  if (!swiper) return;
-
   const index = tab === 'for-you' ? 0 : 1;
+
+  if (!swiper) return;
   swiper.slideTo(index);
 };
 
@@ -94,16 +97,14 @@ const loadPosts = async (tab: Tab, reset: boolean) => {
         hasMoreFollowing.value = postsPage.hasMore;
         currentPageFollowing.value = 1;
       }
+    } else if (tab === 'for-you') {
+      posts.value.push(...postsPage.content);
+      hasMore.value = postsPage.hasMore;
+      currentPage.value++;
     } else {
-      if (tab === 'for-you') {
-        posts.value.push(...postsPage.content);
-        hasMore.value = postsPage.hasMore;
-        currentPage.value++;
-      } else {
-        followingPosts.value.push(...postsPage.content);
-        hasMoreFollowing.value = postsPage.hasMore;
-        currentPageFollowing.value++;
-      }
+      followingPosts.value.push(...postsPage.content);
+      hasMoreFollowing.value = postsPage.hasMore;
+      currentPageFollowing.value++;
     }
   } catch (error: unknown) {
     const message = 'Failed to load feed. ' + (error instanceof Error ? error.message : '');
@@ -118,21 +119,18 @@ const onInfinite = async (ev: CustomEvent<void>) => {
   await (ev.target as HTMLIonInfiniteScrollElement).complete();
 };
 
+const handleEventsMap = () => {
+  router.push('/events');
+};
+
 const handleCreatePost = () => {
   router.push('/explore/post/create');
 };
 
-// Provide context to child components
-import { provide } from 'vue';
-
-// Function to play a track with full context
 const playTrackWithContext = async (post: Post) => {
   if (!post.audioUrl) return;
 
-  // Determine which array to use based on active tab
   const postsArray = activeTab.value === 'for-you' ? posts.value : followingPosts.value;
-
-  // Create context with all audio tracks from the current feed
   const context = {
     contextId: `explore:${activeTab.value}`,
     tracks: postsArray
@@ -164,21 +162,28 @@ const playTrackWithContext = async (post: Post) => {
   );
 };
 
-// Provide the function to child components
+const openActionsPopup = (event: MouseEvent) => {
+  const button = event.currentTarget as HTMLElement;
+  const bounds = button.getBoundingClientRect();
+
+  popupX.value = bounds.right - 220;
+  popupY.value = bounds.bottom + 8;
+  showActionsPopup.value = true;
+};
+
+const closeActionsPopup = () => {
+  showActionsPopup.value = false;
+};
+
 provide('playTrackWithContext', playTrackWithContext);
 
 onMounted(() => {
-  // Initialize audio service
   audioPlayerService.init(playerStore);
-});
-
-onUnmounted(() => {
-  // Cleanup if needed
 });
 
 onIonViewWillEnter(() => {
   loadPosts('for-you', true);
-  // Expose posts for NowPlayingBar next button
+
   if (typeof window !== 'undefined') {
     window.__explorePosts = posts.value.map((p) => ({ slug: p.slug }));
     window.__exploreFollowingPosts = followingPosts.value.map((p) => ({ slug: p.slug }));
@@ -196,6 +201,11 @@ watch(followingPosts, (newPosts: Post[]) => {
     window.__exploreFollowingPosts = newPosts.map((p: Post) => ({ slug: p.slug }));
   }
 });
+
+const ITEMS: ActionItem[] = [
+  { icon: addCircleOutline, label: 'Create Post', action: handleCreatePost },
+  { icon: mapOutline, label: 'Events Map', action: handleEventsMap },
+];
 </script>
 
 <template>
@@ -207,30 +217,35 @@ watch(followingPosts, (newPosts: Post[]) => {
         <div class="glow-orb orb-3"></div>
       </div>
 
-      <Header
+      <AppHeader
         v-if="!authStore.isAuthenticated"
         title="Explore"
         subtitle="Discover new music and connect with artists."
         :icon="compassOutline" />
 
-      <Header v-else :icon="compassOutline">
+      <AppHeader v-else :icon="compassOutline">
         <template #actions>
           <div class="tab-switcher">
-            <div :class="['tab-pill', activeTab === 'for-you' ? 'active' : '']" @click="goToTab('for-you')">
+            <div :class="{ 'tab-pill': true, active: activeTab === 'for-you' }" @click="swipeToTab('for-you')">
               For You
             </div>
-            <div :class="['tab-pill', activeTab === 'following' ? 'active' : '']" @click="goToTab('following')">
+            <div :class="{ 'tab-pill': true, active: activeTab === 'following' }" @click="swipeToTab('following')">
               Following
             </div>
           </div>
-          <button v-if="canCreateContent" class="create-button" @click="handleCreatePost">
-            <ion-icon :icon="addCircleOutline" />
+
+          <button v-if="!canCreateContent" class="events-button" @click="handleEventsMap">
+            <ion-icon :icon="mapOutline" />
+          </button>
+          <button v-else class="actions-button" @click="openActionsPopup">
+            <ion-icon :icon="ellipsisHorizontal" />
           </button>
         </template>
-      </Header>
+      </AppHeader>
 
-      <!-- Swiper for authenticated users -->
-      <swiper
+      <ActionsPopup :is-open="showActionsPopup" :x="popupX" :y="popupY" :actions="ITEMS" @close="closeActionsPopup" />
+
+      <Swiper
         v-if="authStore.isAuthenticated"
         @swiper="onSwiperInit"
         @slideChange="onSlideChange"
@@ -238,7 +253,7 @@ watch(followingPosts, (newPosts: Post[]) => {
         :speed="250"
         :allowTouchMove="true">
         <!-- For You Tab -->
-        <swiper-slide>
+        <SwiperSlide>
           <div class="tab-content">
             <ion-row no-bounce>
               <div
@@ -259,10 +274,10 @@ watch(followingPosts, (newPosts: Post[]) => {
               <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
             </ion-infinite-scroll>
           </div>
-        </swiper-slide>
+        </SwiperSlide>
 
         <!-- Following Tab -->
-        <swiper-slide>
+        <SwiperSlide>
           <div class="tab-content">
             <ion-row no-bounce>
               <div
@@ -284,8 +299,8 @@ watch(followingPosts, (newPosts: Post[]) => {
               <ion-infinite-scroll-content loading-spinner="bubbles" loading-text="Loading more..." />
             </ion-infinite-scroll>
           </div>
-        </swiper-slide>
-      </swiper>
+        </SwiperSlide>
+      </Swiper>
 
       <!-- Single tab for non-authenticated users -->
       <div v-else class="tab-content">
@@ -313,8 +328,6 @@ watch(followingPosts, (newPosts: Post[]) => {
 </template>
 
 <style scoped>
-/* Header styles removed - now using Header component */
-
 .tab-switcher {
   position: absolute;
   left: 50%;
@@ -352,24 +365,19 @@ watch(followingPosts, (newPosts: Post[]) => {
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.create-button-placeholder {
-  width: 38px;
-  height: 38px;
-  justify-self: end;
-}
-
 .tab-content {
   width: 100%;
   height: 100%;
+  min-height: 100%;
   overflow-y: auto;
 }
 
-swiper-container {
+.swiper {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 75px);
 }
 
-swiper-slide {
+.swiper-container {
   width: 100%;
   height: auto;
 }
@@ -397,11 +405,6 @@ swiper-slide {
   margin: 0;
   font-size: 1.2rem;
   color: var(--ion-color-medium);
-}
-
-.no-content-text {
-  text-align: center;
-  width: 100%;
 }
 
 .ambient-glow {
@@ -459,11 +462,6 @@ swiper-slide {
   66% {
     transform: translate(20px, 20px) scale(0.95);
   }
-}
-
-.tab-content {
-  width: 100%;
-  min-height: 100%;
 }
 
 @media (max-width: 640px) {

@@ -91,7 +91,7 @@ const closeFollowList = () => {
   showFollowList.value = { showing: false };
 };
 
-const openSettingsPopup = (event: MouseEvent) => {
+const openActionsPopup = (event: MouseEvent) => {
   const button = event.currentTarget as HTMLElement;
   const bounds = button.getBoundingClientRect();
 
@@ -235,7 +235,7 @@ const headerTitle = computed(() => {
 const headerButtonAction = computed(() => {
   if (showFollowList.value.showing) return closeFollowList;
   if (showEditForm.value) return closeProfileEditor;
-  return openSettingsPopup;
+  return openActionsPopup;
 });
 
 const headerButtonIcon = computed(() => {
