@@ -43,8 +43,14 @@ public class EventController implements EventResource {
 
     @Override
     @GetMapping
-    public List<EventDTO> searchEvents(@RequestParam String artistSlug) {
-        return eventService.getArtistEvents(artistSlug).stream()
+    public List<EventDTO> retrieveFilteredEvents(@RequestParam(required = false) String artistSlug) {
+        List<Event> events;
+
+        if (artistSlug == null)
+            events = eventService.retrieveAllEvents();
+        else
+            events = eventService.retrieveArtistEvents(artistSlug);
+        return events.stream()
                 .map(EventDTO::build)
                 .toList();
     }

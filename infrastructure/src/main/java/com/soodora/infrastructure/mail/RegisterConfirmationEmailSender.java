@@ -61,6 +61,7 @@ public class RegisterConfirmationEmailSender implements ConfirmationEmailSender 
             mailSender.send(mimeMessage);
             log.debug("Email sent to {} with url: {}", email, confirmationUrl);
         } catch (MessagingException exception) {
+            log.error("Failed to send confirmation email to {}: {}", to, exception.getMessage());
             throw new EmailSendingException("Failed to send confirmation email for " + to);
         }
     }

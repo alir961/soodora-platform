@@ -1,6 +1,7 @@
 package com.soodora.service.stripe;
 
 import com.soodora.domain.artist.ArtistRepository;
+import com.soodora.domain.mail.SaleEmailSender;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.SaleRepository;
 import com.soodora.domain.sale.SaveSaleCommand;
@@ -43,6 +44,9 @@ class StripePaymentServiceTest {
     @Mock
     private SaleRepository saleRepository;
 
+    @Mock
+    private SaleEmailSender saleEmailSender;
+
     private StripePaymentService stripePaymentService;
 
     @BeforeEach
@@ -51,7 +55,8 @@ class StripePaymentServiceTest {
                 productRepository,
                 userRepository,
                 artistRepository,
-                saleRepository);
+                saleRepository,
+                saleEmailSender);
     }
 
     @Test

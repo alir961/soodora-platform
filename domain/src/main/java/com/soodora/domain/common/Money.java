@@ -4,12 +4,15 @@ import java.math.BigDecimal;
 
 import org.springframework.lang.NonNull;
 
+import static java.math.BigDecimal.ZERO;
+
+import static com.soodora.domain.common.Currency.UNDEFINED;
+
 public record Money(BigDecimal amount, Currency currency) {
 
     public Money {
-        if (amount == null || currency == null) {
+        if (amount == null || currency == null)
             throw new IllegalArgumentException("Amount and currency must not be null");
-        }
     }
 
     public static Money of(BigDecimal amount, Currency currency) {
@@ -17,33 +20,39 @@ public record Money(BigDecimal amount, Currency currency) {
     }
 
     public static Money zero() {
-        return new Money(BigDecimal.ZERO, Currency.UNDEFINED);
+        return new Money(ZERO, UNDEFINED);
     }
 
     public Money add(Money other) {
-        checkCurrency(other);
-        return new Money(this.amount.add(other.amount), this.currency);
+        assertCurrencyMatching(other);
+        return new Money(amount.add(other.amount), currency);
     }
 
     public Money subtract(Money other) {
-        checkCurrency(other);
-        return new Money(this.amount.subtract(other.amount), this.currency);
+        assertCurrencyMatching(other);
+        return new Money(amount.subtract(other.amount), currency);
     }
 
-    private void checkCurrency(Money other) {
-        if (!this.currency.equals(other.currency)) {
-            throw new CurrenciesMatchException("Currencies must match");
-        }
+    public Money multiply(long factor) {
+        BigDecimal decimalFactor = BigDecimal.valueOf(factor);
+
+        return new Money(amount.multiply(decimalFactor), currency);
     }
 
     public String getSymbol() {
         return currency.getSymbol();
     }
 
-    @Override
     @NonNull
+    @Override
     public String toString() {
         return amount + " " + currency + " " + getSymbol();
+    }
+
+    private void assertCurrencyMatching(Money other) {
+        if (currency.equals(other.currency))
+            return;
+        throw new CurrenciesMatchException("Currencies must match");
     }
 
 }

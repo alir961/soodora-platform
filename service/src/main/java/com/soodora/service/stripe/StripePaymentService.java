@@ -2,6 +2,7 @@ package com.soodora.service.stripe;
 
 import com.soodora.domain.artist.ArtistRepository;
 import com.soodora.domain.common.Money;
+import com.soodora.domain.mail.SaleEmailSender;
 import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.sale.ProductSaleException;
@@ -12,8 +13,6 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.service.artist.UnknownArtistException;
 import com.soodora.service.product.UnknownProductException;
 import com.soodora.service.user.UnknownUserException;
-
-import java.math.BigDecimal;
 
 import org.springframework.stereotype.Service;
 
@@ -38,6 +37,8 @@ public class StripePaymentService {
     private final ArtistRepository artistRepository;
     private final SaleRepository saleRepository;
 
+    private final SaleEmailSender saleEmailSender;
+
     public void handleStripeEvent(Event event) {
         if (SESSION_COMPLETED.equals(event.getType())) {
             Session session = (Session) event.getDataObjectDeserializer()
@@ -60,14 +61,15 @@ public class StripePaymentService {
                 .orElseThrow(() -> new UnknownArtistException("Vendor not found: " + vendorSlug));
         User buyer = ofNullable(userRepository.find(createFromSlug(buyerSlug)))
                 .orElseThrow(() -> new UnknownUserException("Buyer not found: " + buyerSlug));
-        Money price = product.getPrice();
-        Money amount = Money.of(price.amount().multiply(BigDecimal.valueOf(quantityBought)), price.currency());
+        Money price = product.getPrice().multiply(quantityBought);
 
         if (product.getQuantity() >= quantityBought) {
-            SaveSaleCommand sale = new SaveSaleCommand(product, vendor, buyer, quantityBought, amount);
+            SaveSaleCommand sale = new SaveSaleCommand(product, vendor, buyer, quantityBought, price);
 
             productRepository.updateQuantity(productSlug, product.getQuantity() - quantityBought);
             saleRepository.save(sale);
+            saleEmailSender.sendProductBuyEmail(buyer, vendor, product, quantityBought, price);
+            saleEmailSender.sendProductSaleEmail(buyer, vendor, product, quantityBought, price);
             return;
         }
         throw new ProductSaleException("No product quantity remaining");

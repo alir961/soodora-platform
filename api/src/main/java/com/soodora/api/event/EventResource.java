@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,7 +38,7 @@ public interface EventResource {
             @ApiResponse(responseCode = "200", description = "Events retrieved", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventDTO.class)))),
             @ApiResponse(responseCode = "404", description = "Artist with that slug cannot be found", content = @Content)
     })
-    List<EventDTO> searchEvents(String artistSlug);
+    List<EventDTO> retrieveFilteredEvents(@RequestParam(required = false) String artistSlug);
 
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Update event from given slug", responses = {

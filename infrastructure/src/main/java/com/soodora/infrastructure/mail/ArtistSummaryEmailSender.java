@@ -103,7 +103,7 @@ public class ArtistSummaryEmailSender implements SummaryEmailSender {
     private String email;
 
     @Override
-    public void sendEmail(String to, User user, List<Post> posts) {
+    public void sendEmail(User user, List<Post> posts) {
         try {
             PostAnalytics totals = computeTotals(posts);
             Post bestPost = findBestPost(posts);
@@ -131,16 +131,16 @@ public class ArtistSummaryEmailSender implements SummaryEmailSender {
             }
 
             helper.setFrom(email);
-            helper.setTo(to);
-
+            helper.setTo(user.getEmail().value());
             helper.setSubject("Your weekly Soodora summary");
             helper.setText(html, true);
 
             mailSender.send(mimeMessage);
 
-            log.debug("Sent weekly summary email to {}", to);
+            log.debug("Sent weekly summary email to {}", user.getEmail().value());
         } catch (MessagingException exception) {
-            throw new EmailSendingException("Failed to send weekly summary email to " + to);
+            log.error("Failed to send weekly summary email to {}: {}", user.getEmail().value(), exception.getMessage());
+            throw new EmailSendingException("Failed to send weekly summary email.");
         }
     }
 
