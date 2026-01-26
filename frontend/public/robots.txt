@@ -1,0 +1,37 @@
+User-agent: *
+
+Allow: /
+Allow: /explore
+Allow: /events
+Allow: /marketplace
+Allow: /linkhub/
+Allow: /user/
+Allow: /playlists/
+Allow: /quotes/
+
+Disallow: /authentication
+Disallow: /confirm
+Disallow: /profile
+Disallow: /analytics
+Disallow: /maintenance
+Disallow: /search
+
+Disallow: /marketplace/payment/
+Disallow: /marketplace/sales
+
+Disallow: /explore/post/create
+Disallow: /linkhub/create
+Disallow: /linkhub/edit/
+Disallow: /user/*/events/create
+Disallow: /user/*/events/*/edit
+Disallow: /marketplace/product/create
+Disallow: /marketplace/product/*/edit
+Disallow: /soodorakits/create
+Disallow: /soodorakits/*/edit
+Disallow: /soodorakits/*/items/
+Disallow: /playlists/create
+Disallow: /playlists/*/edit
+Disallow: /quotes/create
+Disallow: /quotes/*/edit
+Disallow: /quotes/*/items/
+Disallow: /quotes/me
