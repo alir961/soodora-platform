@@ -41,4 +41,10 @@ public interface IndicatorResource {
     })
     MediaKitIndicatorDTO getMediaKitsIndicators();
 
+    @Operation(summary = "Get User Retention Rate", description = "Computes and returns global user retention rate. Requires ADMIN role.", responses = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved retention rate", content = @Content(mediaType = "application/json", schema = @Schema(implementation = Double.class))),
+            @ApiResponse(responseCode = "403", description = "Forbidden - User does not have the ADMIN role")
+    })
+    double getRetentionRate();
+
 }

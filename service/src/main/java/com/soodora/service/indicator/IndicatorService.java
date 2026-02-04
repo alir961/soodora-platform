@@ -17,9 +17,11 @@ import com.soodora.domain.product.Product;
 import com.soodora.domain.product.ProductRepository;
 import com.soodora.domain.user.ArtistWithoutLinkHubException;
 import com.soodora.domain.user.User;
+import com.soodora.domain.user.UserRepository;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Predicate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -41,6 +43,7 @@ public class IndicatorService {
     private final MediaKitRepository mediaKitRepository;
     private final LinkHubRepository linkHubRepository;
     private final LinkRepository linkRepository;
+    private final UserRepository userRepository;
 
     public ArtistIndicator computeArtistIndicators() {
         List<User> artists = artistRepository.findAll();
@@ -172,6 +175,16 @@ public class IndicatorService {
                 mediaKits.stream()
                         .mapToInt(MediaKit::getDownloadCount)
                         .sum());
+    }
+
+    public double retrieveUserRetentionRate() {
+        Predicate<User> isUserRetained = user -> user.getUpdatedAt().after(user.getCreatedAt());
+        Set<User> users = userRepository.findAll();
+        double userRetainedCount = users.stream()
+                .filter(isUserRetained)
+                .count();
+
+        return userRetainedCount / users.size();
     }
 
     private List<User> filterArtistsWithoutLinkHub(List<User> artists) {

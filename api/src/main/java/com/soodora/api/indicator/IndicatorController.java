@@ -53,4 +53,10 @@ public class IndicatorController implements IndicatorResource {
         return MediaKitIndicatorDTO.build(indicators);
     }
 
+    @Override
+    @GetMapping("/retention")
+    public double getRetentionRate() {
+        return indicatorService.retrieveUserRetentionRate();
+    }
+
 }
