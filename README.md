@@ -1,6 +1,6 @@
 # Soodora — A Platform for Independent Artists
 
-![CI](https://github.com/alir961/soodora/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/alir961/soodora-platform/actions/workflows/ci.yml/badge.svg)
 
 Soodora helps independent artists get discovered and grow their audience, and lets music fans find new talent. Artists publish posts (releases, events, merch drops) that can be exported for social media, build a link page, sell merch in a marketplace, and manage their business with media kits and quotes. Fans follow artists and get a personalised feed.
 

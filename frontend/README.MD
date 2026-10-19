@@ -17,8 +17,8 @@ Before you begin, ensure you have the following installed on your machine:
 1. Clone the repository:
 
 ```sh
-git clone https://github.com/alir961/soodora.git
-cd soodora/frontend
+git clone https://github.com/alir961/soodora-platform.git
+cd soodora-platform/frontend
 ```
 
 2. Install the dependencies:

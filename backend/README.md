@@ -18,7 +18,7 @@ Make sure you have the following installed:
 
 #### 1. Clone the repository
 ```bash
-git clone https://github.com/alir961/soodora.git && cd soodora/backend
+git clone https://github.com/alir961/soodora-platform.git && cd soodora-platform/backend
 ```
 
 #### 2. Install the project dependencies
