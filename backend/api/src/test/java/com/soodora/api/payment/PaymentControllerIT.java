@@ -1,6 +1,6 @@
 package com.soodora.api.payment;
 
-import com.soodora.domain.common.Currency;
+import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.stripe.CheckoutSessionRequest;
 import com.soodora.service.stripe.StripeService;
 
@@ -12,18 +12,27 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.stripe.model.checkout.Session;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import static com.soodora.test.TestConstants.USER;
+
 @SpringBootTest
 @AutoConfigureMockMvc
-public class PaymentControllerIT {
+class PaymentControllerIT {
+
+    // Older clients still send price fields: they must be ignored, the server
+    // prices from the stored product
+    private static final String REQUEST_WITH_CLIENT_PRICE = """
+            {"productSlug": "product-slug", "quantity": 2, "amount": 0.01, "name": "Free stuff",
+             "vendorSlug": "someone", "buyerSlug": "someone-else"}
+            """;
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,38 +40,38 @@ public class PaymentControllerIT {
     @MockitoBean
     private StripeService stripeService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
-    void shouldCreateCheckoutSessionSuccessfully() throws Exception {
-        // GIVEN
-        String fakeUrl = "https://fake.stripe.session/url";
-
+    void givenAuthenticatedBuyer_whenCreateCheckoutSession_thenUsesSlugQuantityAndAuthenticatedUser() throws Exception {
         Session fakeSession = mock(Session.class);
-        when(fakeSession.getUrl()).thenReturn(fakeUrl);
+        when(fakeSession.getUrl()).thenReturn("https://checkout.stripe.test/session");
+        when(stripeService.createCheckoutSession(any(), any())).thenReturn(fakeSession);
 
-        when(stripeService.createCheckoutSession(any()))
-                .thenReturn(fakeSession);
-
-        CheckoutSessionRequest request = new CheckoutSessionRequest(
-                "Produit test",
-                1499.99,
-                Currency.EUR,
-                "https://image.url/test.jpg",
-                "product-slug",
-                "vendor-slug",
-                "buyer-slug",
-                1L);
-
-        String jsonRequest = objectMapper.writeValueAsString(request);
-
-        // WHEN & THEN
         mockMvc.perform(post("/payments/create-checkout-session")
+                .with(user(new UserPrincipal(USER)))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonRequest))
+                .content(REQUEST_WITH_CLIENT_PRICE))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.url").value(fakeUrl));
+                .andExpect(jsonPath("$.url").value("https://checkout.stripe.test/session"));
+
+        verify(stripeService).createCheckoutSession(eq(new CheckoutSessionRequest("product-slug", 2L)), eq(USER));
     }
 
+    @Test
+    void givenAnonymousRequest_whenCreateCheckoutSession_thenForbidden() throws Exception {
+        mockMvc.perform(post("/payments/create-checkout-session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(REQUEST_WITH_CLIENT_PRICE))
+                .andExpect(status().isForbidden());
+
+        verifyNoInteractions(stripeService);
+    }
+
+    @Test
+    void givenInvalidQuantity_whenCreateCheckoutSession_thenBadRequest() throws Exception {
+        mockMvc.perform(post("/payments/create-checkout-session")
+                .with(user(new UserPrincipal(USER)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"productSlug\": \"product-slug\", \"quantity\": 0}"))
+                .andExpect(status().isBadRequest());
+    }
 }

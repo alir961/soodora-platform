@@ -110,13 +110,7 @@ const goToCheckout = async (product: Product) => {
 
   try {
     const response = await createCheckoutSession({
-      name: product.name,
-      amount: product.price.amount,
-      currency: product.price.currency,
-      imageUrl: product.imageUrl,
       productSlug: product.slug,
-      vendorSlug: product.vendor.slug,
-      buyerSlug: authenticatedUserSlug,
       quantity: quantity.value,
     });
     window.location.href = response.url;

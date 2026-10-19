@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import lombok.RequiredArgsConstructor;
 
 import static org.springframework.http.HttpMethod.GET;
+import static org.springframework.http.HttpMethod.POST;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
@@ -75,7 +76,8 @@ public class WebSecurityConfiguration {
                         .requestMatchers(GET, "/link-hubs/**").permitAll()
                         .requestMatchers(GET, "/media-kits/artist/*").permitAll()
                         .requestMatchers("/auth/google").permitAll()
-                        .requestMatchers("/payments/**").permitAll()
+                        // Stripe calls the webhook unauthenticated; it is verified by its signature
+                        .requestMatchers(POST, "/payments/webhook").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)

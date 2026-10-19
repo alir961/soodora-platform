@@ -1,8 +1,10 @@
 package com.soodora.api.payment;
 
+import com.soodora.domain.user.User;
 import com.soodora.service.stripe.CheckoutSessionRequest;
 import com.soodora.service.stripe.StripeService;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.stripe.exception.StripeException;
@@ -23,8 +25,9 @@ public class PaymentController {
 
     @PostMapping("/create-checkout-session")
     public CheckoutSessionResponse createCheckoutSession(
+            @AuthenticationPrincipal User buyer,
             @Valid @RequestBody CheckoutSessionRequest request) throws StripeException {
-        Session session = stripeService.createCheckoutSession(request);
+        Session session = stripeService.createCheckoutSession(request, buyer);
 
         return new CheckoutSessionResponse(session.getUrl());
     }
