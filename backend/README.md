@@ -1,9 +1,7 @@
 # Soodora API
 
-Soodora is a Java-based API for managing musical tracks, users, and playlists, developed with Spring Boot.
+The Soodora REST API (Spring Boot 3, Java 21). See the [root README](../README.md) for the overall project.
 
-[![pipeline status](https://gitlab.com/soodora/api/badges/main/pipeline.svg)](https://gitlab.com/soodora/api/-/commits/main)
-[![coverage report](https://gitlab.com/soodora/api/badges/main/coverage.svg)](https://gitlab.com/soodora/api/-/commits/main) 
 
 ## Getting Started
 
@@ -20,7 +18,7 @@ Make sure you have the following installed:
 
 #### 1. Clone the repository
 ```bash
-git clone git@gitlab.com:soodora/api.git && cd api
+git clone https://github.com/alir961/soodora.git && cd soodora/backend
 ```
 
 #### 2. Install the project dependencies

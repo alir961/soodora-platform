@@ -16,8 +16,8 @@ Before you begin, ensure you have the following installed on your machine:
 1. Clone the repository:
 
 ```sh
-git clone git@gitlab.com:soodora/application.git <directory-name>
-cd <directory-name>
+git clone https://github.com/alir961/soodora.git
+cd soodora/administration
 ```
 
 2. Install the dependencies:
