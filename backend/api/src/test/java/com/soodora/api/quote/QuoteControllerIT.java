@@ -143,7 +143,8 @@ class QuoteControllerIT {
     @Test
     void givenValidRequest_whenUpdateQuote_thenSuccess() throws Exception {
         // GIVEN
-        UpdateQuoteRequest request = new UpdateQuoteRequest("Updated Name", "Client", "email@example.com", "Addr", "123",
+        UpdateQuoteRequest request = new UpdateQuoteRequest("Updated Name", "Client", "email@example.com", "Addr",
+                "123",
                 "Desc");
         when(quoteService.updateQuote(any(), eq(A_QUOTE.slug()), any())).thenReturn(A_QUOTE);
 
