@@ -1,84 +1,70 @@
 package com.soodora.service.quote;
 
-import com.soodora.domain.artist.ArtistDTO;
 import com.soodora.domain.common.Currency;
 import com.soodora.domain.common.Money;
 import com.soodora.domain.common.UnknownSlugException;
 import com.soodora.domain.generator.PdfExporter;
 import com.soodora.domain.quote.*;
-import com.soodora.domain.quotearticle.*;
+import com.soodora.domain.quotearticle.CreateQuoteArticleCommand;
+import com.soodora.domain.quotearticle.QuoteArticleDTO;
+import com.soodora.domain.quotearticle.QuoteArticleRepository;
+import com.soodora.domain.quotearticle.UpdateQuoteArticleCommand;
+import com.soodora.domain.user.User;
+import com.soodora.service.shared.InvalidPermissionException;
 import com.soodora.test.factory.QuoteArticleFactory;
 import com.soodora.test.factory.QuoteFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-import static com.soodora.test.TestConstants.*;
-
-@ExtendWith(MockitoExtension.class)
 class QuoteServiceTest {
 
-    @Mock
+    // Default quotes and articles belong to the artist built by QuoteFactory, under
+    // the "quoteSlug" slug
+    private static final QuoteDTO QUOTE = QuoteFactory.buildDefaultQuote("");
+    private static final QuoteArticleDTO ARTICLE = QuoteArticleFactory.buildDefaultQuoteArticle();
+    private static final Pageable PAGEABLE = PageRequest.of(0, 50);
+
+    private static final CreateQuoteCommand CREATE_COMMAND = new CreateQuoteCommand(QUOTE.name(), QUOTE.clientName(),
+            QUOTE.clientEmail(), QUOTE.clientAddress(), QUOTE.clientPhone(), QUOTE.description());
+    private static final UpdateQuoteCommand UPDATE_COMMAND = new UpdateQuoteCommand("Updated Name", "Updated Client",
+            "client@example.com", "123 Street", "1234567890", "Updated description");
+    private static final CreateQuoteArticleCommand CREATE_ARTICLE_COMMAND = new CreateQuoteArticleCommand(
+            ARTICLE.quoteSlug(), ARTICLE.description(), ARTICLE.quantity(), ARTICLE.unitPrice().amount(),
+            ARTICLE.unitPrice().currency(), ARTICLE.vatPercent());
+    private static final UpdateQuoteArticleCommand UPDATE_ARTICLE_COMMAND = new UpdateQuoteArticleCommand(
+            "Updated Article Description", 10, BigDecimal.valueOf(149.99), Currency.USD, BigDecimal.valueOf(25));
+
     private QuoteRepository quoteRepository;
-
-    @Mock
     private QuoteArticleRepository quoteArticleRepository;
-
-    @Mock
     private PdfExporter pdfExporter;
-
     private QuoteService quoteService;
 
-    private static final QuoteDTO QUOTE_1 = QuoteFactory.buildDefaultQuote("1");
-    private static final QuoteDTO QUOTE_2 = QuoteFactory.buildDefaultQuote("2");
-    private static final QuoteDTO QUOTE_3 = QuoteFactory.buildDefaultQuote("3");
-    private static final QuoteArticleDTO QUOTE_ARTICLE = QuoteArticleFactory.buildDefaultQuoteArticle();
-    private static final String SLUG_1 = "slug1";
-    private static final Pageable PAGEABLE = PageRequest.of(0, 50, Sort.by("slug").ascending());
-    private static final List<QuoteDTO> QUOTES = List.of(QUOTE_1, QUOTE_2, QUOTE_3);
-    private static final Page<QuoteDTO> QUOTES_PAGE = new PageImpl<>(QUOTES, PAGEABLE, QUOTES.size());
-    private static final CreateQuoteCommand CREATE_COMMAND = new CreateQuoteCommand(
-            QUOTE_1.name(),
-            QUOTE_1.clientName(),
-            QUOTE_1.clientEmail(),
-            QUOTE_1.clientAddress(),
-            QUOTE_1.clientPhone(),
-            QUOTE_1.description());
-    private static final UpdateQuoteCommand UPDATE_QUOTE_COMMAND = new UpdateQuoteCommand(
-            "Updated Name",
-            "Updated Client",
-            "client@example.com",
-            "123 Street",
-            "1234567890",
-            "Updated description");
-    private static final CreateQuoteArticleCommand CREATE_QUOTE_ARTICLE_COMMAND = new CreateQuoteArticleCommand(
-            QUOTE_ARTICLE.quoteSlug(),
-            QUOTE_ARTICLE.description(),
-            QUOTE_ARTICLE.quantity(),
-            QUOTE_ARTICLE.unitPrice().amount(),
-            QUOTE_ARTICLE.unitPrice().currency(),
-            QUOTE_ARTICLE.vatPercent());
-    private static final UpdateQuoteArticleCommand UPDATE_QUOTE_ARTICLE_COMMAND = new UpdateQuoteArticleCommand(
-            "Updated Article Description",
-            10,
-            BigDecimal.valueOf(149.99),
-            Currency.USD,
-            BigDecimal.valueOf(25));
+    private final User owner = user(QUOTE.artist().slug(), false);
+    private final User intruder = user("another-artist", false);
+    private final User admin = user("admin", true);
+
+    private static User user(String slug, boolean isAdmin) {
+        User user = mock(User.class);
+        when(user.getSlug()).thenReturn(slug);
+        when(user.isAdmin()).thenReturn(isAdmin);
+        return user;
+    }
 
     @BeforeEach
     void setUp() {
@@ -86,281 +72,163 @@ class QuoteServiceTest {
         quoteArticleRepository = mock(QuoteArticleRepository.class);
         pdfExporter = mock(PdfExporter.class);
         quoteService = new QuoteService(quoteRepository, quoteArticleRepository, pdfExporter);
+        when(quoteRepository.findBySlug(QUOTE.slug())).thenReturn(QUOTE);
+        when(quoteArticleRepository.findBySlug(ARTICLE.slug())).thenReturn(ARTICLE);
+    }
+
+    // ── Quotes ──────────────────────────────────────────────────────────────────
+
+    @Test
+    void ownerCanReadTheirQuote() {
+        assertEquals(QUOTE, quoteService.getQuote(QUOTE.slug(), owner));
     }
 
     @Test
-    void givenQuotesExist_whenGetAllQuotes_thenReturnAllQuotes() {
-        // GIVEN
-        when(quoteRepository.findAll(PAGEABLE)).thenReturn(QUOTES_PAGE);
-
-        // WHEN
-        Page<QuoteDTO> retrievedQuotes = quoteService.getAllQuotes(PAGEABLE);
-
-        // THEN
-        assertEquals(QUOTES, retrievedQuotes.getContent());
+    void adminCanReadAnyQuote() {
+        assertEquals(QUOTE, quoteService.getQuote(QUOTE.slug(), admin));
     }
 
     @Test
-    void givenFilter_whenGetQuotesByFilter_thenReturnFilteredQuotes() {
-        // GIVEN
-        QuoteFilter filter = new QuoteFilter(of(USER.getSlug()), empty(), empty(), empty());
-        List<QuoteDTO> filteredQuotes = List.of(QUOTE_1, QUOTE_3);
-        Page<QuoteDTO> pageFilteredQuotes = new PageImpl<>(filteredQuotes, PAGEABLE, filteredQuotes.size());
-        when(quoteRepository.findByFilter(filter, PAGEABLE)).thenReturn(pageFilteredQuotes);
-
-        // WHEN
-        Page<QuoteDTO> retrievedQuotes = quoteService.getQuotesByFilter(filter, PAGEABLE);
-
-        // THEN
-        assertEquals(2, retrievedQuotes.getContent().size());
-        assertEquals(QUOTE_1, retrievedQuotes.getContent().get(0));
-        assertEquals(QUOTE_3, retrievedQuotes.getContent().get(1));
+    void anotherArtistCannotReadTheQuote() {
+        assertThrows(InvalidPermissionException.class, () -> quoteService.getQuote(QUOTE.slug(), intruder));
     }
 
     @Test
-    void givenQuoteExists_whenGetQuote_thenReturnQuote() {
-        // GIVEN
-        when(quoteRepository.findBySlug(QUOTE_1.slug())).thenReturn(QUOTE_1);
+    void unknownQuoteIsNotFound() {
+        when(quoteRepository.findBySlug("unknown")).thenThrow(UnknownSlugException.class);
 
-        // WHEN
-        QuoteDTO retrievedQuote = quoteService.getQuote(QUOTE_1.slug());
-
-        // THEN
-        assertEquals(QUOTE_1, retrievedQuote);
+        assertThrows(UnknownQuoteException.class, () -> quoteService.getQuote("unknown", owner));
     }
 
     @Test
-    void givenUnknownSlug_whenGetQuote_thenThrowUnknownQuoteException() {
-        // GIVEN
-        when(quoteRepository.findBySlug(anyString())).thenThrow(UnknownSlugException.class);
+    void createQuoteSavesForTheUser() {
+        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), owner.getSlug())).thenReturn(false);
 
-        // WHEN
-        Executable executable = () -> quoteService.getQuote("unknown-slug");
-
-        // THEN
-        assertThrows(UnknownQuoteException.class, executable);
+        assertDoesNotThrow(() -> quoteService.createQuote(CREATE_COMMAND, owner));
+        verify(quoteRepository).save(CREATE_COMMAND, owner);
     }
 
     @Test
-    void givenValidUpdateQuoteCommand_whenUpdateQuote_thenReturnUpdatedQuote() {
-        // GIVEN
-        when(quoteRepository.update(UPDATE_QUOTE_COMMAND, SLUG_1)).thenReturn(QUOTE_1);
+    void createQuoteRejectsADuplicateName() {
+        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), owner.getSlug())).thenReturn(true);
 
-        // WHEN
-        QuoteDTO updatedQuote = quoteService.updateQuote(UPDATE_QUOTE_COMMAND, SLUG_1);
-
-        // THEN
-        assertEquals(QUOTE_1, updatedQuote);
-        verify(quoteRepository).update(UPDATE_QUOTE_COMMAND, SLUG_1);
+        assertThrows(QuoteUnityException.class, () -> quoteService.createQuote(CREATE_COMMAND, owner));
     }
 
     @Test
-    void givenUnknownSlug_whenUpdateQuote_thenThrowUnknownQuoteException() {
-        // GIVEN
-        when(quoteRepository.update(UPDATE_QUOTE_COMMAND, SLUG_1))
-                .thenThrow(new UnknownSlugException("Slug not found"));
+    void ownerCanUpdateTheirQuote() {
+        when(quoteRepository.update(UPDATE_COMMAND, QUOTE.slug())).thenReturn(QUOTE);
 
-        // WHEN & THEN
-        assertThrows(UnknownQuoteException.class, () -> quoteService.updateQuote(UPDATE_QUOTE_COMMAND, SLUG_1));
+        assertEquals(QUOTE, quoteService.updateQuote(UPDATE_COMMAND, QUOTE.slug(), owner));
     }
 
     @Test
-    void givenQuoteSlug_whenDeleteQuote_thenSuccess() {
-        // GIVEN
-        doNothing().when(quoteRepository).deleteQuoteBySlug(QUOTE_1.slug());
-
-        // WHEN
-        Executable executable = () -> quoteService.deleteQuote(QUOTE_1.slug());
-
-        // THEN
-        assertDoesNotThrow(executable);
-        verify(quoteRepository).deleteQuoteBySlug(QUOTE_1.slug());
+    void anotherArtistCannotUpdateTheQuote() {
+        assertThrows(InvalidPermissionException.class,
+                () -> quoteService.updateQuote(UPDATE_COMMAND, QUOTE.slug(), intruder));
+        verify(quoteRepository, never()).update(any(), anyString());
     }
 
     @Test
-    void givenUnknownSlug_whenDeleteQuote_thenThrowUnknownQuoteException() {
-        // GIVEN
-        doThrow(UnknownSlugException.class).when(quoteRepository).deleteQuoteBySlug(anyString());
+    void ownerCanDeleteTheirQuote() {
+        quoteService.deleteQuote(QUOTE.slug(), owner);
 
-        // WHEN
-        Executable executable = () -> quoteService.deleteQuote("unknown-slug");
-
-        // THEN
-        assertThrows(UnknownQuoteException.class, executable);
+        verify(quoteRepository).deleteQuoteBySlug(QUOTE.slug());
     }
 
     @Test
-    void givenValidCreateQuoteCommand_whenCreateQuote_thenSuccess() {
-        // GIVEN
-        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.getSlug())).thenReturn(false);
-
-        // WHEN
-        Executable executable = () -> quoteService.createQuote(CREATE_COMMAND, USER);
-
-        // THEN
-        assertDoesNotThrow(executable);
-        verify(quoteRepository).save(CREATE_COMMAND, USER);
+    void anotherArtistCannotDeleteTheQuote() {
+        assertThrows(InvalidPermissionException.class, () -> quoteService.deleteQuote(QUOTE.slug(), intruder));
+        verify(quoteRepository, never()).deleteQuoteBySlug(anyString());
     }
 
     @Test
-    void givenQuoteNameAlreadyUsed_whenCreateQuote_thenThrowQuoteUnityException() {
-        // GIVEN
-        when(quoteRepository.isQuoteNameUsedByUser(CREATE_COMMAND.name(), USER.getSlug())).thenReturn(true);
+    void searchIsScopedToTheArtistWhateverUserSlugIsSent() {
+        QuoteFilter requested = new QuoteFilter(of("another-artist"), of("Sample"), empty(), empty());
+        QuoteFilter enforced = new QuoteFilter(of(owner.getSlug()), of("Sample"), empty(), empty());
+        Page<QuoteDTO> page = new PageImpl<>(List.of(QUOTE));
+        when(quoteRepository.findByFilter(enforced, PAGEABLE)).thenReturn(page);
 
-        // WHEN
-        Executable executable = () -> quoteService.createQuote(CREATE_COMMAND, USER);
-
-        // THEN
-        assertThrows(QuoteUnityException.class, executable);
+        assertEquals(page, quoteService.getQuotesByFilter(requested, owner, PAGEABLE));
+        verify(quoteRepository, never()).findAll(any(Pageable.class));
     }
 
     @Test
-    void givenQuoteArticleExists_whenGetQuoteArticle_thenReturnQuoteArticle() {
-        // GIVEN
-        QuoteArticleDTO article = QuoteArticleFactory.buildDefaultQuoteArticle();
-        when(quoteArticleRepository.findBySlug("articleSlug")).thenReturn(article);
+    void adminSearchWithoutFilterListsEverything() {
+        Page<QuoteDTO> page = new PageImpl<>(List.of(QUOTE));
+        when(quoteRepository.findAll(PAGEABLE)).thenReturn(page);
 
-        // WHEN
-        QuoteArticleDTO retrieved = quoteService.getQuoteArticle("articleSlug");
+        assertEquals(page, quoteService.getQuotesByFilter(new QuoteFilter(empty(), empty(), empty(), empty()), admin,
+                PAGEABLE));
+    }
 
-        // THEN
-        assertEquals(article, retrieved);
+    // ── Articles ────────────────────────────────────────────────────────────────
+
+    @Test
+    void ownerCanReadAndAddArticles() {
+        when(quoteArticleRepository.save(CREATE_ARTICLE_COMMAND)).thenReturn(ARTICLE);
+
+        assertEquals(ARTICLE, quoteService.getQuoteArticle(ARTICLE.slug(), owner));
+        assertEquals(ARTICLE, quoteService.addQuoteArticle(CREATE_ARTICLE_COMMAND, owner));
     }
 
     @Test
-    void givenUnknownSlug_whenGetQuoteArticle_thenThrowUnknownQuoteArticleException() {
-        // GIVEN
-        when(quoteArticleRepository.findBySlug(anyString())).thenThrow(UnknownSlugException.class);
-
-        // WHEN
-        Executable executable = () -> quoteService.getQuoteArticle("unknown");
-
-        // THEN
-        assertThrows(UnknownQuoteArticleException.class, executable);
+    void anotherArtistCannotTouchArticles() {
+        assertThrows(InvalidPermissionException.class, () -> quoteService.getQuoteArticle(ARTICLE.slug(), intruder));
+        assertThrows(InvalidPermissionException.class,
+                () -> quoteService.addQuoteArticle(CREATE_ARTICLE_COMMAND, intruder));
+        assertThrows(InvalidPermissionException.class,
+                () -> quoteService.updateQuoteArticle(UPDATE_ARTICLE_COMMAND, ARTICLE.slug(), intruder));
+        assertThrows(InvalidPermissionException.class,
+                () -> quoteService.deleteQuoteArticle(ARTICLE.slug(), intruder));
+        verify(quoteArticleRepository, never()).save(any());
+        verify(quoteArticleRepository, never()).update(any(), anyString());
+        verify(quoteArticleRepository, never()).deleteArticleQuoteBySlug(anyString());
     }
 
     @Test
-    void givenValidCreateQuoteArticleCommand_whenAddQuoteArticle_thenSuccess() {
-        // GIVEN
-        QuoteArticleDTO article = QuoteArticleFactory.buildDefaultQuoteArticle();
-        when(quoteArticleRepository.save(CREATE_QUOTE_ARTICLE_COMMAND)).thenReturn(article);
+    void ownerCanUpdateAndDeleteArticles() {
+        when(quoteArticleRepository.update(UPDATE_ARTICLE_COMMAND, ARTICLE.slug())).thenReturn(ARTICLE);
 
-        // WHEN
-        QuoteArticleDTO result = quoteService.addQuoteArticle(CREATE_QUOTE_ARTICLE_COMMAND);
-
-        // THEN
-        assertEquals(article, result);
-        verify(quoteArticleRepository).save(CREATE_QUOTE_ARTICLE_COMMAND);
+        assertEquals(ARTICLE, quoteService.updateQuoteArticle(UPDATE_ARTICLE_COMMAND, ARTICLE.slug(), owner));
+        quoteService.deleteQuoteArticle(ARTICLE.slug(), owner);
+        verify(quoteArticleRepository).deleteArticleQuoteBySlug(ARTICLE.slug());
     }
 
     @Test
-    void givenValidUpdateQuoteArticleCommand_whenUpdateQuoteArticle_thenReturnUpdatedArticle() {
-        // GIVEN
-        QuoteArticleDTO article = QuoteArticleFactory.buildDefaultQuoteArticle();
-        when(quoteArticleRepository.update(UPDATE_QUOTE_ARTICLE_COMMAND, "articleSlug")).thenReturn(article);
+    void unknownArticleIsNotFound() {
+        when(quoteArticleRepository.findBySlug("unknown")).thenThrow(UnknownSlugException.class);
 
-        // WHEN
-        QuoteArticleDTO result = quoteService.updateQuoteArticle(UPDATE_QUOTE_ARTICLE_COMMAND, "articleSlug");
-
-        // THEN
-        assertEquals(article, result);
+        assertThrows(UnknownQuoteArticleException.class, () -> quoteService.getQuoteArticle("unknown", owner));
     }
 
     @Test
-    void givenUnknownSlug_whenUpdateQuoteArticle_thenThrowUnknownQuoteArticleException() {
-        // GIVEN
-        when(quoteArticleRepository.update(UPDATE_QUOTE_ARTICLE_COMMAND, "articleSlug1"))
-                .thenThrow(UnknownSlugException.class);
+    void articleListOnlyContainsTheArtistsOwnArticles() {
+        QuoteArticleDTO foreign = new QuoteArticleDTO("someone-elses-quote", "foreign", "x", 1,
+                Money.of(BigDecimal.ONE, Currency.EUR), BigDecimal.ZERO, Money.of(BigDecimal.ONE, Currency.EUR));
+        when(quoteRepository.findByFilter(any(), any())).thenReturn(new PageImpl<>(List.of(QUOTE)));
+        when(quoteArticleRepository.findAll()).thenReturn(List.of(ARTICLE, foreign));
 
-        // WHEN & THEN
-        assertThrows(UnknownQuoteArticleException.class,
-                () -> quoteService.updateQuoteArticle(UPDATE_QUOTE_ARTICLE_COMMAND, "articleSlug1"));
+        assertEquals(List.of(ARTICLE), quoteService.getAllQuoteArticles(owner, PAGEABLE).getContent());
     }
 
-    @Test
-    void givenQuoteArticleSlug_whenDeleteQuoteArticle_thenSuccess() {
-        // GIVEN
-        doNothing().when(quoteArticleRepository).deleteArticleQuoteBySlug("articleSlug1");
-
-        // WHEN
-        Executable executable = () -> quoteService.deleteQuoteArticle("articleSlug1");
-
-        // THEN
-        assertDoesNotThrow(executable);
-        verify(quoteArticleRepository).deleteArticleQuoteBySlug("articleSlug1");
-    }
+    // ── PDF export ──────────────────────────────────────────────────────────────
 
     @Test
-    void givenUnknownSlug_whenDeleteQuoteArticle_thenThrowUnknownQuoteArticleException() {
-        // GIVEN
-        doThrow(UnknownSlugException.class).when(quoteArticleRepository).deleteArticleQuoteBySlug(anyString());
-
-        // WHEN
-        Executable executable = () -> quoteService.deleteQuoteArticle("unknown-slug");
-
-        // THEN
-        assertThrows(UnknownQuoteArticleException.class, executable);
-    }
-
-    @Test
-    void givenSlug_whenExportQuoteToPdf_thenReturnPdfBytes() throws Exception {
-        // GIVEN
-        String slug = "quote-slug";
-        ArtistDTO artist = new ArtistDTO("slug123", "username123", "description", "avatar");
-        QuoteArticleDTO article = new QuoteArticleDTO(
-                slug,
-                "articleSlug",
-                "Sample Article Description",
-                2,
-                Money.of(BigDecimal.valueOf(50), Currency.EUR),
-                BigDecimal.valueOf(20),
-                Money.of(BigDecimal.valueOf(100), Currency.EUR));
-        QuoteDTO quote = new QuoteDTO(
-                "quoteSlug1",
-                artist,
-                "Sample Quote",
-                "Client Name",
-                "Client Address",
-                "client@email.com",
-                "1234567890",
-                "Quote Description",
-                List.of(article),
-                Money.of(BigDecimal.valueOf(200), Currency.EUR),
-                new Date(),
-                new Date());
-
-        ByteArrayOutputStream byteArray = new ByteArrayOutputStream();
-
-        when(quoteRepository.findBySlug(slug)).thenReturn(quote);
+    void ownerCanExportTheQuote() throws Exception {
+        QuoteArticleDTO article = new QuoteArticleDTO(QUOTE.slug(), "a", "d", 1, Money.of(BigDecimal.ONE, Currency.EUR),
+                BigDecimal.ZERO, Money.of(BigDecimal.ONE, Currency.EUR));
+        ByteArrayOutputStream pdf = new ByteArrayOutputStream();
+        pdf.write("PDF".getBytes());
         when(quoteArticleRepository.findAll()).thenReturn(List.of(article));
+        when(pdfExporter.exportQuote(QUOTE, List.of(article))).thenReturn(pdf);
 
-        byteArray.write("PDF".getBytes());
-        when(pdfExporter.exportQuote(quote, List.of(article))).thenReturn(byteArray);
-
-        // WHEN
-        byte[] result = quoteService.exportQuoteToPdf(slug);
-
-        // THEN
-        assertArrayEquals("PDF".getBytes(), result);
-        verify(quoteRepository).findBySlug(slug);
-        verify(quoteArticleRepository).findAll();
-        verify(pdfExporter).exportQuote(quote, List.of(article));
+        assertArrayEquals("PDF".getBytes(), quoteService.exportQuoteToPdf(QUOTE.slug(), owner));
     }
 
     @Test
-    void givenInvalidSlug_whenExportQuoteToPdf_thenThrowUnknownQuoteException() {
-        // GIVEN
-        String slug = "invalid-quote-slug";
-
-        when(quoteRepository.findBySlug(slug)).thenThrow(UnknownQuoteException.class);
-
-        // WHEN
-        Executable executable = () -> quoteService.exportQuoteToPdf(slug);
-
-        // THEN
-        assertThrows(UnknownQuoteException.class, executable);
-        verify(quoteRepository).findBySlug(slug);
+    void anotherArtistCannotExportTheQuote() {
+        assertThrows(InvalidPermissionException.class, () -> quoteService.exportQuoteToPdf(QUOTE.slug(), intruder));
         verifyNoInteractions(pdfExporter);
     }
-
 }

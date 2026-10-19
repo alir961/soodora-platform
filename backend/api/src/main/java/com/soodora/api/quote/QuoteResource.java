@@ -38,7 +38,7 @@ public interface QuoteResource {
             @ApiResponse(responseCode = "404", description = "Quote not found")
     })
     @PutMapping("/{slug}")
-    ResponseEntity<JsonResponse> updateQuote(@PathVariable String slug,
+    ResponseEntity<JsonResponse> updateQuote(@AuthenticationPrincipal User user, @PathVariable String slug,
             @RequestBody UpdateQuoteRequest request);
 
     @Operation(summary = "Get a quote by slug", security = @SecurityRequirement(name = "bearerAuth"), responses = {
@@ -46,13 +46,13 @@ public interface QuoteResource {
             @ApiResponse(responseCode = "404", description = "Quote not found")
     })
     @GetMapping("/{slug}")
-    ResponseEntity<JsonResponse> getQuote(@PathVariable String slug);
+    ResponseEntity<JsonResponse> getQuote(@AuthenticationPrincipal User user, @PathVariable String slug);
 
     @Operation(summary = "List quotes with optional filters", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Quotes retrieved successfully")
     })
     @GetMapping
-    Page<QuoteDTO> getQuotes(
+    Page<QuoteDTO> getQuotes(@AuthenticationPrincipal User user,
             @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
@@ -64,21 +64,22 @@ public interface QuoteResource {
             @ApiResponse(responseCode = "404", description = "Quote not found")
     })
     @DeleteMapping("/{slug}")
-    void deleteQuote(@PathVariable String slug);
+    void deleteQuote(@AuthenticationPrincipal User user, @PathVariable String slug);
 
     @Operation(summary = "Create a new quote article", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Quote article created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid request")
     })
     @PostMapping("/articles")
-    ResponseEntity<JsonResponse> createQuoteArticle(@RequestBody CreateQuoteArticleRequest request);
+    ResponseEntity<JsonResponse> createQuoteArticle(@AuthenticationPrincipal User user,
+            @RequestBody CreateQuoteArticleRequest request);
 
     @Operation(summary = "Update an existing quote article", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Quote article updated successfully"),
             @ApiResponse(responseCode = "404", description = "Quote article not found")
     })
     @PutMapping("/articles/{slug}")
-    ResponseEntity<JsonResponse> updateQuoteArticle(@PathVariable String slug,
+    ResponseEntity<JsonResponse> updateQuoteArticle(@AuthenticationPrincipal User user, @PathVariable String slug,
             @RequestBody UpdateQuoteArticleRequest request);
 
     @Operation(summary = "Get a quote article by slug", security = @SecurityRequirement(name = "bearerAuth"), responses = {
@@ -86,26 +87,26 @@ public interface QuoteResource {
             @ApiResponse(responseCode = "404", description = "Quote article not found")
     })
     @GetMapping("/articles/{slug}")
-    ResponseEntity<JsonResponse> getQuoteArticle(@PathVariable String slug);
+    ResponseEntity<JsonResponse> getQuoteArticle(@AuthenticationPrincipal User user, @PathVariable String slug);
 
     @Operation(summary = "List all quote articles", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "Quote articles retrieved successfully")
     })
     @GetMapping("/articles")
-    Page<QuoteArticleDTO> getAllQuoteArticles(Pageable pageable);
+    Page<QuoteArticleDTO> getAllQuoteArticles(@AuthenticationPrincipal User user, Pageable pageable);
 
     @Operation(summary = "Delete a quote article by slug", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "204", description = "Quote article deleted successfully"),
             @ApiResponse(responseCode = "404", description = "Quote article not found")
     })
     @DeleteMapping("/articles/{slug}")
-    void deleteQuoteArticle(@PathVariable String slug);
+    void deleteQuoteArticle(@AuthenticationPrincipal User user, @PathVariable String slug);
 
     @Operation(summary = "Export a quote as PDF", security = @SecurityRequirement(name = "bearerAuth"), responses = {
             @ApiResponse(responseCode = "200", description = "PDF exported successfully"),
             @ApiResponse(responseCode = "404", description = "Quote not found")
     })
     @GetMapping("/{slug}/export/pdf")
-    ResponseEntity<?> exportPdf(@PathVariable String slug);
+    ResponseEntity<?> exportPdf(@AuthenticationPrincipal User user, @PathVariable String slug);
 
 }

@@ -50,11 +50,11 @@ public class QuoteController implements QuoteResource {
     }
 
     @PutMapping("/{slug}")
-    public ResponseEntity<JsonResponse> updateQuote(
+    public ResponseEntity<JsonResponse> updateQuote(@AuthenticationPrincipal User user,
             @PathVariable String slug,
             @RequestBody UpdateQuoteRequest request) {
         try {
-            QuoteDTO quote = quoteService.updateQuote(request.toCommand(), slug);
+            QuoteDTO quote = quoteService.updateQuote(request.toCommand(), slug, user);
 
             return new ResponseEntity<>(new QuoteResponse(quote), OK);
         } catch (InvalidRequestException | UnknownQuoteException exception) {
@@ -63,9 +63,9 @@ public class QuoteController implements QuoteResource {
     }
 
     @GetMapping("/{slug}")
-    public ResponseEntity<JsonResponse> getQuote(@PathVariable String slug) {
+    public ResponseEntity<JsonResponse> getQuote(@AuthenticationPrincipal User user, @PathVariable String slug) {
         try {
-            QuoteDTO quote = quoteService.getQuote(slug);
+            QuoteDTO quote = quoteService.getQuote(slug, user);
 
             return new ResponseEntity<>(new QuoteResponse(quote), OK);
         } catch (UnknownQuoteException exception) {
@@ -74,25 +74,27 @@ public class QuoteController implements QuoteResource {
     }
 
     @GetMapping("/search")
-    public Page<QuoteDTO> getQuotes(@RequestParam(value = "userSlug") Optional<String> userSlug,
+    public Page<QuoteDTO> getQuotes(@AuthenticationPrincipal User user,
+            @RequestParam(value = "userSlug") Optional<String> userSlug,
             @RequestParam(value = "name") Optional<String> name,
             @RequestParam(value = "description") Optional<String> description,
             @RequestParam(value = "clientName") Optional<String> clientName,
             Pageable pageable) {
         QuoteFilter filter = new QuoteFilter(userSlug, name, description, clientName);
 
-        return quoteService.getQuotesByFilter(filter, pageable);
+        return quoteService.getQuotesByFilter(filter, user, pageable);
     }
 
     @DeleteMapping("/{slug}")
-    public void deleteQuote(@PathVariable String slug) {
-        quoteService.deleteQuote(slug);
+    public void deleteQuote(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        quoteService.deleteQuote(slug, user);
     }
 
     @PostMapping("/articles")
-    public ResponseEntity<JsonResponse> createQuoteArticle(@RequestBody CreateQuoteArticleRequest request) {
+    public ResponseEntity<JsonResponse> createQuoteArticle(@AuthenticationPrincipal User user,
+            @RequestBody CreateQuoteArticleRequest request) {
         try {
-            QuoteArticleDTO article = quoteService.addQuoteArticle(request.toCommand());
+            QuoteArticleDTO article = quoteService.addQuoteArticle(request.toCommand(), user);
 
             return new ResponseEntity<>(new QuoteArticleResponse(article), CREATED);
         } catch (InvalidRequestException exception) {
@@ -101,11 +103,11 @@ public class QuoteController implements QuoteResource {
     }
 
     @PutMapping("/articles/{slug}")
-    public ResponseEntity<JsonResponse> updateQuoteArticle(
+    public ResponseEntity<JsonResponse> updateQuoteArticle(@AuthenticationPrincipal User user,
             @PathVariable String slug,
             @RequestBody UpdateQuoteArticleRequest request) {
         try {
-            QuoteArticleDTO article = quoteService.updateQuoteArticle(request.toCommand(), slug);
+            QuoteArticleDTO article = quoteService.updateQuoteArticle(request.toCommand(), slug, user);
 
             return new ResponseEntity<>(new QuoteArticleResponse(article), OK);
         } catch (InvalidRequestException | UnknownQuoteArticleException exception) {
@@ -114,9 +116,9 @@ public class QuoteController implements QuoteResource {
     }
 
     @GetMapping("/articles/{slug}")
-    public ResponseEntity<JsonResponse> getQuoteArticle(@PathVariable String slug) {
+    public ResponseEntity<JsonResponse> getQuoteArticle(@AuthenticationPrincipal User user, @PathVariable String slug) {
         try {
-            QuoteArticleDTO article = quoteService.getQuoteArticle(slug);
+            QuoteArticleDTO article = quoteService.getQuoteArticle(slug, user);
 
             return new ResponseEntity<>(new QuoteArticleResponse(article), OK);
         } catch (UnknownQuoteArticleException exception) {
@@ -125,19 +127,21 @@ public class QuoteController implements QuoteResource {
     }
 
     @GetMapping("/articles")
-    public Page<QuoteArticleDTO> getAllQuoteArticles(Pageable pageable) {
-        return quoteService.getAllQuoteArticles(pageable);
+    public Page<QuoteArticleDTO> getAllQuoteArticles(@AuthenticationPrincipal User user, Pageable pageable) {
+        return quoteService.getAllQuoteArticles(user, pageable);
     }
 
     @DeleteMapping("/articles/{slug}")
-    public void deleteQuoteArticle(@PathVariable String slug) {
-        quoteService.deleteQuoteArticle(slug);
+    public void deleteQuoteArticle(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        quoteService.deleteQuoteArticle(slug, user);
     }
 
     @GetMapping("/{slug}/export/pdf")
-    public ResponseEntity<?> exportPdf(@PathVariable String slug) {
+    public ResponseEntity<?> exportPdf(@AuthenticationPrincipal User user, @PathVariable String slug) {
+        // Outside the try: permission and not-found errors keep their own status codes
+        quoteService.getQuote(slug, user);
         try {
-            byte[] pdfBytes = quoteService.exportQuoteToPdf(slug);
+            byte[] pdfBytes = quoteService.exportQuoteToPdf(slug, user);
 
             return ok()
                     .header(CONTENT_DISPOSITION, "attachment; filename=\"quote_" + slug + ".pdf\"")

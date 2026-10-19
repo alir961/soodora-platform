@@ -8,6 +8,7 @@ import com.soodora.domain.user.UserRepository;
 import com.soodora.service.auth.UserPrincipal;
 import com.soodora.service.common.InvalidRequestException;
 import com.soodora.service.quote.*;
+import com.soodora.service.shared.InvalidPermissionException;
 import com.soodora.test.factory.QuoteArticleFactory;
 import com.soodora.test.factory.QuoteFactory;
 
@@ -104,7 +105,7 @@ class QuoteControllerIT {
     @Test
     void givenValidSlug_whenGetQuote_thenSuccess() throws Exception {
         // GIVEN
-        when(quoteService.getQuote(A_QUOTE.slug())).thenReturn(A_QUOTE);
+        when(quoteService.getQuote(eq(A_QUOTE.slug()), any())).thenReturn(A_QUOTE);
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/" + A_QUOTE.slug())
@@ -116,7 +117,7 @@ class QuoteControllerIT {
     @Test
     void givenInvalidSlug_whenGetQuote_thenNotFound() throws Exception {
         // GIVEN
-        doThrow(new UnknownQuoteException("Not found")).when(quoteService).getQuote("invalidSlug");
+        doThrow(new UnknownQuoteException("Not found")).when(quoteService).getQuote(eq("invalidSlug"), any());
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/invalidSlug")
@@ -128,7 +129,7 @@ class QuoteControllerIT {
     void givenValidPage_whenGetQuotes_thenSuccess() throws Exception {
         // GIVEN
         Page<QuoteDTO> page = new PageImpl<>(List.of(A_QUOTE));
-        when(quoteService.getQuotesByFilter(any(QuoteFilter.class), any(Pageable.class))).thenReturn(page);
+        when(quoteService.getQuotesByFilter(any(QuoteFilter.class), any(), any(Pageable.class))).thenReturn(page);
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/search")
@@ -144,7 +145,7 @@ class QuoteControllerIT {
         // GIVEN
         UpdateQuoteRequest request = new UpdateQuoteRequest("Updated Name", "Client", "email@example.com", "Addr", "123",
                 "Desc");
-        when(quoteService.updateQuote(any(), eq(A_QUOTE.slug()))).thenReturn(A_QUOTE);
+        when(quoteService.updateQuote(any(), eq(A_QUOTE.slug()), any())).thenReturn(A_QUOTE);
 
         // WHEN & THEN
         mockMvc.perform(put("/quotes/" + A_QUOTE.slug())
@@ -157,7 +158,7 @@ class QuoteControllerIT {
     @Test
     void givenValidSlug_whenDeleteQuote_thenSuccess() throws Exception {
         // GIVEN
-        doNothing().when(quoteService).deleteQuote(A_QUOTE.slug());
+        doNothing().when(quoteService).deleteQuote(eq(A_QUOTE.slug()), any());
 
         // WHEN & THEN
         mockMvc.perform(delete("/quotes/" + A_QUOTE.slug())
@@ -165,7 +166,7 @@ class QuoteControllerIT {
                 .andExpect(status().isOk());
 
         // THEN
-        verify(quoteService).deleteQuote(A_QUOTE.slug());
+        verify(quoteService).deleteQuote(eq(A_QUOTE.slug()), any());
     }
 
     @Test
@@ -174,7 +175,7 @@ class QuoteControllerIT {
         CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", "Desc", 2,
                 BigDecimal.valueOf(50.0), Currency.EUR,
                 BigDecimal.valueOf(20));
-        when(quoteService.addQuoteArticle(any())).thenReturn(A_QUOTE_ARTICLE);
+        when(quoteService.addQuoteArticle(any(), any())).thenReturn(A_QUOTE_ARTICLE);
 
         // WHEN & THEN
         mockMvc.perform(post("/quotes/articles")
@@ -190,7 +191,7 @@ class QuoteControllerIT {
         // GIVEN
         CreateQuoteArticleRequest request = new CreateQuoteArticleRequest("quoteSlug", null, 0, BigDecimal.valueOf(0.0),
                 null, null);
-        doThrow(InvalidRequestException.class).when(quoteService).addQuoteArticle(any());
+        doThrow(InvalidRequestException.class).when(quoteService).addQuoteArticle(any(), any());
 
         // WHEN & THEN
         mockMvc.perform(post("/quotes/articles")
@@ -203,7 +204,7 @@ class QuoteControllerIT {
     @Test
     void givenValidSlug_whenGetQuoteArticle_thenSuccess() throws Exception {
         // GIVEN
-        when(quoteService.getQuoteArticle(A_QUOTE_ARTICLE.slug())).thenReturn(A_QUOTE_ARTICLE);
+        when(quoteService.getQuoteArticle(eq(A_QUOTE_ARTICLE.slug()), any())).thenReturn(A_QUOTE_ARTICLE);
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/articles/" + A_QUOTE_ARTICLE.slug())
@@ -215,7 +216,7 @@ class QuoteControllerIT {
     @Test
     void givenInvalidSlug_whenGetQuoteArticle_thenNotFound() throws Exception {
         // GIVEN
-        doThrow(UnknownQuoteArticleException.class).when(quoteService).getQuoteArticle("invalid");
+        doThrow(UnknownQuoteArticleException.class).when(quoteService).getQuoteArticle(eq("invalid"), any());
 
         // WHEN & THEN
         mockMvc.perform(get("/quotes/articles/invalid")
@@ -226,7 +227,7 @@ class QuoteControllerIT {
     @Test
     void givenValidSlug_whenDeleteQuoteArticle_thenSuccess() throws Exception {
         // GIVEN
-        doNothing().when(quoteService).deleteQuoteArticle(A_QUOTE_ARTICLE.slug());
+        doNothing().when(quoteService).deleteQuoteArticle(eq(A_QUOTE_ARTICLE.slug()), any());
 
         // WHEN & THEN
         mockMvc.perform(delete("/quotes/articles/" + A_QUOTE_ARTICLE.slug())
@@ -234,14 +235,14 @@ class QuoteControllerIT {
                 .andExpect(status().isOk());
 
         // THEN
-        verify(quoteService).deleteQuoteArticle(A_QUOTE_ARTICLE.slug());
+        verify(quoteService).deleteQuoteArticle(eq(A_QUOTE_ARTICLE.slug()), any());
     }
 
     @Test
     void givenValidQuoteSlug_whenExportQuoteToPdf_thenReturnsPdf() throws Exception {
         // GIVEN
         byte[] pdfData = "PDFDATA".getBytes();
-        when(quoteService.exportQuoteToPdf("quoteSlug1"))
+        when(quoteService.exportQuoteToPdf(eq("quoteSlug1"), any()))
                 .thenReturn(pdfData);
 
         // WHEN & THEN
@@ -262,7 +263,7 @@ class QuoteControllerIT {
     @Test
     void givenQuoteExportFails_whenExportQuoteToPdf_thenReturnsInternalServerError() throws Exception {
         // GIVEN
-        when(quoteService.exportQuoteToPdf("quoteSlug1"))
+        when(quoteService.exportQuoteToPdf(eq("quoteSlug1"), any()))
                 .thenThrow(new RuntimeException("PDF generation failed"));
 
         // WHEN // THEN
@@ -270,6 +271,29 @@ class QuoteControllerIT {
                 .with(user(new UserPrincipal(ARTIST_USER))))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentType(APPLICATION_JSON));
+    }
+
+    @Test
+    void givenAnotherArtistsQuote_whenGetQuote_thenForbidden() throws Exception {
+        // GIVEN
+        doThrow(new InvalidPermissionException("Only the owner")).when(quoteService).getQuote(eq("foreign"), any());
+
+        // WHEN & THEN
+        mockMvc.perform(get("/quotes/foreign")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void givenAnotherArtistsQuote_whenExportQuoteToPdf_thenForbidden() throws Exception {
+        // GIVEN
+        doThrow(new InvalidPermissionException("Only the owner")).when(quoteService).getQuote(eq("foreign"), any());
+
+        // WHEN & THEN
+        mockMvc.perform(get("/quotes/foreign/export/pdf")
+                .with(user(new UserPrincipal(ARTIST_USER))))
+                .andExpect(status().isForbidden());
+        verify(quoteService, never()).exportQuoteToPdf(any(), any());
     }
 
 }
