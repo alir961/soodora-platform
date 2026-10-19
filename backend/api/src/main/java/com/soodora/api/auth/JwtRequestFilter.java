@@ -1,5 +1,6 @@
 package com.soodora.api.auth;
 
+import com.soodora.domain.auth.AuthenticationTokenException;
 import com.soodora.domain.auth.TokenRepository;
 import com.soodora.domain.user.User;
 import com.soodora.domain.user.UserRepository;
@@ -60,7 +61,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     private void authenticateBearerToken(String token) {
-        String email = tokenRepository.getSubjectFromToken(token);
+        String email;
+
+        try {
+            email = tokenRepository.getSubjectFromToken(token);
+        } catch (AuthenticationTokenException exception) {
+            // Expired, forged or malformed: continue unauthenticated instead of failing
+            // with a 500
+            return;
+        }
         User user = userRepository.find(createFromEmail(email));
         boolean isAuthenticated = getContext().getAuthentication() != null;
 

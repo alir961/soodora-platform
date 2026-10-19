@@ -7,6 +7,7 @@ import com.soodora.domain.user.User;
 import java.net.URI;
 import java.security.PublicKey;
 import java.util.Base64;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -22,8 +23,8 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
 
 import static io.jsonwebtoken.Claims.*;
 import static io.jsonwebtoken.Jwts.builder;
@@ -60,8 +61,9 @@ public class JwtTokenRepository implements TokenRepository {
             Claims claims = getAllClaimsFromToken(token);
 
             return claimsResolver.apply(claims);
-        } catch (MalformedJwtException ignored) {
-            throw new AuthenticationTokenException("Malformed provided externalToken");
+        } catch (JwtException | IllegalArgumentException ignored) {
+            // Malformed, expired or wrongly signed
+            throw new AuthenticationTokenException("Invalid provided externalToken");
         }
     }
 
@@ -101,16 +103,18 @@ public class JwtTokenRepository implements TokenRepository {
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        int hourInMillis = 1000 * 60 * 60;
+        long hourInMillis = 1000L * 60 * 60;
         long currentTimeMillis = System.currentTimeMillis();
 
+        // Dates must be set as Date: jjwt reads raw numbers as seconds, so millis made
+        // tokens never expire
         return builder()
                 .claims()
                 .add(claims)
                 .add(SUBJECT, subject)
-                .add(ISSUED_AT, currentTimeMillis)
-                .add(EXPIRATION, currentTimeMillis + hourInMillis)
                 .and()
+                .issuedAt(new Date(currentTimeMillis))
+                .expiration(new Date(currentTimeMillis + hourInMillis))
                 .signWith(getSigningKey())
                 .compact();
     }
