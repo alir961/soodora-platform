@@ -14,6 +14,11 @@ services:
       - "3306:3306"
     volumes:
       - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
     networks:
       - api_network
 
@@ -28,7 +33,17 @@ services:
       ADMINISTRATION_URL: http://localhost:5174
       SPRING_DATASOURCE_URL: jdbc:mariadb://database:3306/database
     depends_on:
-      - database
+      database:
+        # The API runs Flyway migrations at startup: wait until MariaDB accepts connections.
+        condition: service_healthy
+    networks:
+      - api_network
+
+  # Catches the e-mails the API sends in local development: inbox on http://localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.21.8
+    ports:
+      - "8025:8025"
     networks:
       - api_network
 
