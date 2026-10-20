@@ -99,7 +99,7 @@ public class ArtistSummaryEmailSender implements SummaryEmailSender {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:team@example.com}")
+    @Value("${spring.mail.username:no-reply@example.com}")
     private String email;
 
     @Override

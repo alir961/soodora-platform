@@ -52,7 +52,7 @@ public class ProductSaleEmailSender implements SaleEmailSender {
                   <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;" />
                   <p style="font-size: 12px; color: #999; text-align: center;">
                     Order processed by Soodora Marketplace. <br/>
-                    Support: team@example.com
+                    Support: ${supportEmail}
                   </p>
                 </div>
               </div>
@@ -107,7 +107,7 @@ public class ProductSaleEmailSender implements SaleEmailSender {
 
     private final JavaMailSender mailSender;
 
-    @Value("${spring.mail.username:team@example.com}")
+    @Value("${spring.mail.username:no-reply@example.com}")
     private String fromEmail;
 
     @Override
@@ -121,7 +121,8 @@ public class ProductSaleEmailSender implements SaleEmailSender {
                     .replace("${productName}", product.getName())
                     .replace("${productImage}", product.getImageUrl().toString())
                     .replace("${quantity}", String.valueOf(quantity))
-                    .replace("${totalPrice}", price.toString());
+                    .replace("${totalPrice}", price.toString())
+                    .replace("${supportEmail}", fromEmail);
 
             helper.setFrom(fromEmail);
             helper.setTo(buyer.getEmail().value());
