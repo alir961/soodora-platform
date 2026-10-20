@@ -44,6 +44,7 @@ services:
     image: axllent/mailpit:v1.21.8
     ports:
       - "8025:8025"
+      - "1025:1025"  # SMTP, for an API started outside Docker (SMTP_HOST=localhost)
     networks:
       - api_network
 
