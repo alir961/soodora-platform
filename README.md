@@ -61,17 +61,28 @@ Before publishing, I reviewed the API (including code I had written myself) and 
 Requirements: Java 21, Node.js 20, Docker.
 
 ```bash
-# API and database
+# API, database and a local mail catcher
 cd backend
-cp .env.template .env          # fill in your own keys (Stripe, Google, Cloudinary, SMTP)
-docker compose up --build -d   # MariaDB + API on http://localhost:8080 (Swagger UI at /swagger-ui.html)
+cp .env.template .env          # set JWT_SECRET (openssl rand -base64 64); the other keys can stay empty to start
+docker compose up --build -d   # API on http://localhost:8080 (Swagger UI at /swagger-ui.html), mail inbox on http://localhost:8025
 
-# Fan / artist app
-cd ../frontend && cp .env.template .env && npm ci && npm run dev
+# Fan / artist app on http://localhost:5173
+cd ../frontend && cp .env.template .env && npm ci && npm run dev -- --port 5173
 
-# Back office
-cd ../administration && npm ci && npm run dev
+# Back office on http://localhost:5174 (in another terminal)
+cd ../administration && cp .env.template .env && npm ci && npm run dev -- --port 5174
 ```
+
+The API only accepts calls from those two origins (`APPLICATION_URL` / `ADMINISTRATION_URL`), so keep the ports.
+
+**Accounts.** Sign up in the app: the confirmation e-mail lands in the Mailpit inbox (http://localhost:8025), and its link activates the account. To open the back office, give that account the admin role, then log in again:
+
+```bash
+docker exec mariadb mariadb -uuser -ppassword database -e \
+  "INSERT INTO users_roles (user_id, role_id) SELECT id, (SELECT id FROM roles WHERE name = 'ROLE_ADMIN') FROM users WHERE email = 'you@example.com';"
+```
+
+**Optional keys** in `backend/.env`: Stripe (marketplace checkout), Google (sign in with Google), Cloudinary (image and audio uploads), a real SMTP server instead of Mailpit (see the comments in `.env.template`), and `VITE_MAPBOX_GL_TOKEN` in `frontend/.env` for maps.
 
 Run the checks the same way CI does:
 
