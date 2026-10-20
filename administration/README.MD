@@ -1,48 +1,34 @@
-# Soodora - Administration
+# Soodora back office
 
-## Description
+The administration panel: Vue 3 and Vite. Admins manage users and roles and follow the platform indicators. See the [root README](../README.md) for the whole project, the API and how to give an account the admin role.
 
-This project is the **administration panel** for Soodora. It is a web-based dashboard built with Vue.js and Vite that allows administrators to manage users, marketplace, and platform content. The panel provides tools for monitoring application activity, handling moderation tasks, and configuring system settings. Its goal is to offer a clear and efficient interface for maintaining and supervising the Soodora ecosystem.
+## Requirements
 
-## Prerequisites
+- Node.js 20 or later with npm
+- The API running on `VITE_API_URL` (default http://localhost:8080)
 
-Before you begin, ensure you have the following installed on your machine:
+## Setup and run
 
-- [Node.js](https://nodejs.org/) (version 16.x recommended)
-- [NPM](https://www.npmjs.com/)
-
-## Installation
-
-1. Clone the repository:
-
-```sh
-git clone https://github.com/alir961/soodora-platform.git
-cd soodora-platform/administration
+```bash
+cp .env.template .env
+npm ci
+npm run dev -- --port 5174      # http://localhost:5174
 ```
 
-2. Install the dependencies:
+Keep port 5174: the API only accepts this origin (`ADMINISTRATION_URL`). Admins usually open the panel from their profile page in the app, which passes their session token.
 
-```sh
-npm install
-```
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | API base URL |
+| `VITE_APPLICATION_URL` | URL of the fan / artist app |
 
-## Development
+## Scripts
 
-To start the development server:
-
-```sh
-npm run dev
-```
-
-This command will start the development server and open the application in your default browser. Any changes made to the code will automatically reload.
-
-## NPM Scripts
-
-Here are some useful scripts you can use during development:
-
-- `npm start`: Starts the development server.
-- `npm run build`: Compiles the application for production.
-- `npm run test`: Runs tests.
-- `npm run lint`: Lints files.
-- `npm run lint:fix`: Lints and fixes files.
-- `npm run format`: Lints and fixes files.
+| Command | Purpose |
+|---|---|
+| `npm run dev` | development server with hot reload |
+| `npm run build` | type check (`vue-tsc`) and production build in `dist/` |
+| `npm run preview` | serve the production build |
+| `npm run lint` / `npm run lint:fix` | ESLint |
+| `npx vitest run` | unit tests |
+| `npm run test:e2e` | Cypress end-to-end tests |

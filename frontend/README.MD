@@ -1,47 +1,43 @@
-# Soodora - Application
+# Soodora app
 
-## Description
+The fan and artist app: Vue 3, Ionic, Pinia, Vite, and Capacitor for the iOS build. See the [root README](../README.md) for the whole project and the API.
 
-This project is a front-end music management application developed with Ionic and Vue.js. The application allows users to manage their music collections, play audio files, and integrate streaming services.
+## Requirements
 
-## Prerequisites
+- Node.js 20 or later with npm (no Ionic CLI needed)
+- The API running on `VITE_API_URL` (default http://localhost:8080)
+- For iOS only: macOS with Xcode and CocoaPods
 
-Before you begin, ensure you have the following installed on your machine:
+## Setup and run
 
-- [Node.js](https://nodejs.org/) (version 16.x recommended)
-- [NPM](https://www.npmjs.com/)
-- [Ionic CLI](https://ionicframework.com/docs/cli)
-
-## Installation
-
-1. Clone the repository:
-
-```sh
-git clone https://github.com/alir961/soodora-platform.git
-cd soodora-platform/frontend
+```bash
+cp .env.template .env
+npm ci
+npm run dev -- --port 5173      # http://localhost:5173
 ```
 
-2. Install the dependencies:
+Keep port 5173: the API only accepts this origin (`APPLICATION_URL`).
 
-```sh
-npm install
+| Variable | Purpose |
+|---|---|
+| `VITE_API_URL` | API base URL |
+| `VITE_APPLICATION_URL` | public URL of this app (used for link pages) |
+| `VITE_ADMINISTRATION_URL` | back-office URL, opened from the profile page of admins |
+| `VITE_MAPBOX_GL_TOKEN` | Mapbox token for maps (optional) |
+
+## Scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | development server with hot reload |
+| `npm run build` | type check (`vue-tsc`) and production build in `dist/` |
+| `npm run preview` | serve the production build |
+| `npm run lint` / `npm run lint:fix` | ESLint |
+| `npx vitest run` | unit tests (`npm run test:unit` watches) |
+| `npm run test:e2e` | Cypress end-to-end tests (needs the app and the API running) |
+
+## iOS
+
+```bash
+npm run build && npx cap sync ios && npx cap open ios
 ```
-
-## Development
-
-To start the development server:
-
-```sh
-npm run dev
-```
-
-This command will start the development server and open the application in your default browser. Any changes made to the code will automatically reload.
-
-## NPM Scripts
-
-Here are some useful scripts you can use during development:
-
-- `npm start`: Starts the development server.
-- `npm run build`: Compiles the application for production.
-- `npm run test`: Runs tests.
-- `npm run lint`: Lints and fixes files.
