@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
+import com.stripe.model.Refund;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.RequestOptions;
+import com.stripe.param.RefundCreateParams;
 import com.stripe.param.checkout.SessionCreateParams;
 
 import lombok.RequiredArgsConstructor;
@@ -47,6 +50,16 @@ public class StripeService {
 
         Stripe.apiKey = stripeSecretKey;
         return Session.create(buildCheckoutParams(product, quantity, buyer));
+    }
+
+    /**
+     * Refunds a whole payment; the idempotency key makes webhook retries refund it
+     * only once.
+     */
+    public void refund(String paymentIntentId, String idempotencyKey) throws StripeException {
+        Stripe.apiKey = stripeSecretKey;
+        Refund.create(RefundCreateParams.builder().setPaymentIntent(paymentIntentId).build(),
+                RequestOptions.builder().setIdempotencyKey(idempotencyKey).build());
     }
 
     /** Everything charged comes from the stored product, never from the client. */

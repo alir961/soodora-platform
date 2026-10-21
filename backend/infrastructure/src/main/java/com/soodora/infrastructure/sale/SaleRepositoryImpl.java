@@ -50,7 +50,14 @@ public class SaleRepositoryImpl implements SaleRepository {
         entity.setSlug(generateUniqueSlug());
         entity.setVendor(vendorEntity);
         entity.setBuyer(buyerEntity);
+        entity.setPaymentReference(sale.paymentReference());
         return repository.save(entity).aggregate();
+    }
+
+    @Override
+    @Transactional
+    public boolean existsByPaymentReference(String paymentReference) {
+        return paymentReference != null && repository.existsByPaymentReference(paymentReference);
     }
 
     @Override

@@ -17,4 +17,6 @@ public interface SaleJpaRepository extends JpaRepository<SaleEntity, UUID> {
 
     boolean existsByProduct(ProductEntity product);
 
+    boolean existsByPaymentReference(String paymentReference);
+
 }

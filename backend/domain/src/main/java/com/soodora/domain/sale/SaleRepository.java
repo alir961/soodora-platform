@@ -10,6 +10,8 @@ public interface SaleRepository {
 
     Sale save(SaveSaleCommand sale);
 
+    boolean existsByPaymentReference(String paymentReference);
+
     Page<Sale> findAll(Pageable pageable);
     Page<Sale> findArtistSales(Identifier identifier, Pageable pageable);
 

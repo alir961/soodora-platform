@@ -49,6 +49,9 @@ public class SaleEntity implements DomainEntityAdapter<Sale> {
     @Embedded
     private MoneyEmbeddable amount;
 
+    @Column(unique = true)
+    private String paymentReference;
+
     @CreationTimestamp
     @Column(updatable = false)
     private Date createdAt;

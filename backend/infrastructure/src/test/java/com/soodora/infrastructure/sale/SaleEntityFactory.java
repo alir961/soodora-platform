@@ -23,6 +23,7 @@ public class SaleEntityFactory {
                 buildDefaultUserEntity(),
                 100,
                 new MoneyEmbeddable(BigDecimal.valueOf(100.99), Currency.EUR),
+                "cs_test_slug",
                 new Date(),
                 new Date());
     }

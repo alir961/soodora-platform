@@ -10,6 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,5 +28,14 @@ public interface ProductJpaRepository
     Optional<List<ProductEntity>> findProductsByVendorUserSlug(String slug);
 
     Page<ProductEntity> findByVendorUserSlug(String slug, Pageable pageable);
+
+    /**
+     * Check and update in one statement, so two buyers cannot both take the last
+     * item.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("UPDATE products p SET p.quantity = p.quantity - :quantity "
+            + "WHERE p.slug = :slug AND p.quantity >= :quantity")
+    int decreaseQuantity(@Param("slug") String slug, @Param("quantity") long quantity);
 
 }

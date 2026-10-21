@@ -88,12 +88,8 @@ public class ProductRepositoryImpl implements ProductRepository {
 
     @Override
     @Transactional
-    public void updateQuantity(String slug, long quantity) {
-        ProductEntity existingProduct = findProductBySlugOrThrow(slug);
-
-        if (quantity >= 0)
-            existingProduct.setQuantity(quantity);
-        repository.save(existingProduct).aggregate();
+    public boolean decreaseQuantity(String slug, long quantity) {
+        return quantity > 0 && repository.decreaseQuantity(slug, quantity) == 1;
     }
 
     @Override

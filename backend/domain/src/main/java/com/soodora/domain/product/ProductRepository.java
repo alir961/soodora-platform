@@ -10,7 +10,11 @@ public interface ProductRepository {
 
     Product save(CreateProductCommand command, User user, FileData fileData);
     Product update(UpdateProductCommand command, String slug, FileData fileData);
-    void updateQuantity(String slug, long quantity);
+    /**
+     * Atomically takes {@code quantity} from the stock; false when not enough is
+     * left.
+     */
+    boolean decreaseQuantity(String slug, long quantity);
     Product findBySlug(String slug);
     Page<Product> findAll(Pageable pageable);
     Page<Product> findByFilter(ProductFilter filter, Pageable pageable);
