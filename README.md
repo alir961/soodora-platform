@@ -144,3 +144,7 @@ About 270 of the project's commits are mine, across the API and the app:
 ## Team
 
 Ali Raad · Timothé Medico · Mathis Legrand
+
+## License
+
+[MIT](LICENSE)
