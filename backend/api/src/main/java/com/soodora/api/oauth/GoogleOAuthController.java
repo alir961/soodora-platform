@@ -1,5 +1,6 @@
 package com.soodora.api.oauth;
 
+import com.soodora.api.auth.LoginResponse;
 import com.soodora.domain.auth.AuthenticationTokenException;
 import com.soodora.domain.oauth.OAuthAuthorizationException;
 import com.soodora.domain.user.User;
@@ -32,16 +33,30 @@ public class GoogleOAuthController {
     @Value("${application.url:localhost}")
     private String frontUrl;
 
+    /** Sign in with Google. */
     @GetMapping
     @ResponseStatus(FOUND)
-    public HttpHeaders redirectToGoogleOAuthFlow(@RequestParam(required = false) String token) {
+    public HttpHeaders redirectToGoogleOAuthFlow() {
         HttpHeaders headers = new HttpHeaders();
 
-        if (token == null)
-            headers.setLocation(oauthTokenService.retrieveGogoleUnauthorizedOAuthURI());
-        else
-            headers.setLocation(oauthTokenService.retrieveUserGoogleOAuthURI(token));
+        headers.setLocation(oauthTokenService.retrieveGogoleUnauthorizedOAuthURI());
         return headers;
+    }
+
+    /**
+     * Link Google to the signed-in account. The session token travels in the
+     * Authorization header, never in a URL; the browser is then sent to the
+     * returned Google URL.
+     */
+    @PostMapping("/link")
+    public OAuthLinkResponse linkGoogleAccount(@AuthenticationPrincipal User user) {
+        return new OAuthLinkResponse(oauthTokenService.retrieveUserGoogleOAuthURI(user).toString());
+    }
+
+    /** Trades the one-time code from the sign-in redirect for a session token. */
+    @PostMapping("/token")
+    public LoginResponse exchangeLoginCode(@RequestBody OAuthCodeRequest request) {
+        return new LoginResponse(oauthTokenService.exchangeLoginCode(request.code()));
     }
 
     @ResponseStatus(FOUND)

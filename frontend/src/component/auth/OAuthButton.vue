@@ -4,10 +4,9 @@ import { alertController, IonIcon } from '@ionic/vue';
 import { logoGoogle } from 'ionicons/icons';
 import { useRouter } from 'vue-router';
 import { redirectToUrl } from '@/axiosConfiguration';
-import { loadBearerToken } from '@/store/localStorage';
 import { redirectLogin, showToast } from '@/utils';
 import { OAuthProvider } from '@/client/profileClient';
-import { callDeleteProvider } from '@/client/oauthClient';
+import { callDeleteProvider, callLinkProvider } from '@/client/oauthClient';
 
 interface ProviderData {
   provider: OAuthProvider;
@@ -83,8 +82,8 @@ const clickButton = async () => {
 
     await alert.present();
   } else {
-    loadBearerToken()
-      .then((token) => redirectToUrl(`${import.meta.env.VITE_API_URL}/auth/${provider.provider}?token=${token}`))
+    callLinkProvider(provider.provider)
+      .then((url) => redirectToUrl(url))
       .catch(() => redirectLogin(router));
   }
 };

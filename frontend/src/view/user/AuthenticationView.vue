@@ -4,6 +4,7 @@ import { saveBearerToken, loadBearerToken, deleteBearerToken } from '@/store/loc
 import { Ref, ref } from 'vue';
 import { Router, useRouter, useRoute } from 'vue-router';
 import { retrieveAuthenticatedProfile } from '@/client/profileClient';
+import { callExchangeLoginCode } from '@/client/oauthClient';
 import ApplicationViewport from '@/view/ApplicationViewport.vue';
 import AuthenticationForm from '@/component/auth/AuthenticationForm.vue';
 import OAuthButton from '@/component/auth/OAuthButton.vue';
@@ -23,12 +24,20 @@ const errorMessages = {
 };
 
 onIonViewWillEnter(async () => {
-  const token = route.query.token as string | undefined;
+  const code = route.query.code as string | undefined;
   const error = route.query.error as string | undefined;
 
   if (route.query.external) isLogin.value = false;
 
-  if (token) await saveBearerToken(token);
+  if (code) {
+    try {
+      await saveBearerToken(await callExchangeLoginCode('google', code));
+    } catch {
+      await showToast(errorMessages.oauth, 'danger');
+    }
+    // The code is single-use: drop it from the address bar.
+    await router.replace({ query: {} });
+  }
   if (error) {
     const message = error === 'oauth' ? errorMessages.oauth : errorMessages.invalid;
     await showToast(message, 'danger');

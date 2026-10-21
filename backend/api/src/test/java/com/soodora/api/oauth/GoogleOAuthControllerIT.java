@@ -21,10 +21,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static com.soodora.domain.oauth.OAuthProvider.GOOGLE;
@@ -64,24 +67,58 @@ class GoogleOAuthControllerIT {
     @Test
     void redirectToGoogleOAuthFlow_Redirect() throws Exception {
         // GIVEN
-        when(oauthTokenService.retrieveUserGoogleOAuthURI(JWT_TOKEN)).thenReturn(new URI(REDIRECT_URL));
+        when(oauthTokenService.retrieveGogoleUnauthorizedOAuthURI()).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
-        mockMvc.perform(get("/auth/google")
-                .param("token", JWT_TOKEN))
+        mockMvc.perform(get("/auth/google"))
                 .andExpect(status().isFound())
                 .andExpect(header().string("Location", is(REDIRECT_URL)));
     }
 
     @Test
-    void redirectToGoogleOAuthFlow_Unauthorized() throws Exception {
+    void linkGoogleAccount_ReturnsGoogleUrl() throws Exception {
         // GIVEN
-        when(oauthTokenService.retrieveUserGoogleOAuthURI(INVALID_TOKEN))
-                .thenThrow(AuthenticationException.class);
+        when(oauthTokenService.retrieveUserGoogleOAuthURI(USER)).thenReturn(new URI(REDIRECT_URL));
 
         // WHEN & THEN
-        mockMvc.perform(get("/auth/google")
-                .param("token", INVALID_TOKEN))
+        mockMvc.perform(post("/auth/google/link")
+                .with(user(new UserPrincipal(USER))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.url", is(REDIRECT_URL)));
+    }
+
+    @Test
+    void linkGoogleAccount_Unauthorized() throws Exception {
+        // GIVEN
+        when(oauthTokenService.retrieveUserGoogleOAuthURI(null)).thenThrow(AuthenticationException.class);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/google/link"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void exchangeLoginCode_ReturnsSessionToken() throws Exception {
+        // GIVEN
+        when(oauthTokenService.exchangeLoginCode("one-time")).thenReturn(JWT_TOKEN);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/google/token")
+                .contentType(APPLICATION_JSON)
+                .content("{\"code\": \"one-time\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", is(JWT_TOKEN)));
+    }
+
+    @Test
+    void exchangeLoginCode_UnknownCode() throws Exception {
+        // GIVEN
+        when(oauthTokenService.exchangeLoginCode("reused")).thenThrow(AuthenticationException.class);
+
+        // WHEN & THEN
+        mockMvc.perform(post("/auth/google/token")
+                .contentType(APPLICATION_JSON)
+                .content("{\"code\": \"reused\"}"))
                 .andExpect(status().isUnauthorized());
     }
 

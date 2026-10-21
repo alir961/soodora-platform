@@ -55,6 +55,9 @@ Before publishing, I reviewed the API (including code I had written myself) and 
 | Expired or forged tokens threw from the auth filter | Users with an old token got 500 errors, even on public pages | Invalid tokens are treated as anonymous |
 | Checkout price, vendor and buyer taken from the client, on a public route | Merch could be bought for any amount while the sale was recorded at full price | Price and vendor come from the stored product, the buyer from the session; stock and status checks |
 | No ownership check on quotes | Any artist could read, edit, delete or export other artists' quotes, including their clients' personal data | Ownership checks on every quote and article operation, search scoped to the caller |
+| Profile descriptions rendered with `v-html`, event titles and descriptions put raw into map popups | Stored XSS: a profile or event could run script in the viewer's session, admins included | Descriptions rendered as text; popup content escaped and links limited to http(s) |
+| Stripe webhook not idempotent, stock checked then written without a transaction | A retried event recorded the sale twice; two buyers could both get the last item; a buyer paid when stock ran out got nothing | Each Checkout session is recorded once, stock is taken in one conditional update, a sold-out payment is refunded, and the sale records the amount Stripe charged |
+| Google OAuth: session JWT used as the `state` and returned in `?token=`; states from `java.util.Random` kept forever; access tokens cached forever | The token leaked into URLs and history; YouTube calls failed an hour after linking | Random one-time states that expire, linking through an authenticated request, a one-time code instead of the token, access tokens refreshed when they expire |
 
 ## Supported platforms
 
