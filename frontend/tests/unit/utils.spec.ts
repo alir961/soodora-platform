@@ -24,3 +24,28 @@ describe('reject', () => {
     await expect(reject('Unauthorized')).rejects.toBeInstanceOf(Error);
   });
 });
+
+describe('escapeHtml', () => {
+  test('turns markup into text', async () => {
+    const { escapeHtml } = await import('@/utils');
+    expect(escapeHtml(`<img src=x onerror="alert('x')">&`)).toBe(
+      '&lt;img src=x onerror=&quot;alert(&#39;x&#39;)&quot;&gt;&amp;'
+    );
+  });
+});
+
+describe('safeUrl', () => {
+  test('keeps http(s) links and drops other schemes', async () => {
+    const { safeUrl } = await import('@/utils');
+    expect(safeUrl('https://soodora.com/event?id=1')).toBe('https://soodora.com/event?id=1');
+    expect(safeUrl('javascript:alert(1)')).toBeNull();
+    expect(safeUrl('data:text/html,<script>alert(1)</script>')).toBeNull();
+    expect(safeUrl('not a url')).toBeNull();
+    expect(safeUrl(undefined)).toBeNull();
+  });
+
+  test('encodes characters that could leave a CSS url()', async () => {
+    const { safeUrl } = await import('@/utils');
+    expect(safeUrl("https://x.io/a.png')}body{color:red")).toBe('https://x.io/a.png%27%29%7Dbody%7Bcolor:red');
+  });
+});

@@ -40,4 +40,26 @@ const formatDate = (isoDate: string): string => {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
-export { reject, redirectLogin, capitalize, showToast, formatDate };
+// For text placed in HTML strings (e.g. map popups): user content must never become markup.
+const escapeHtml = (value: string): string =>
+  value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+
+// Only http(s) links are kept, so "javascript:" URLs cannot run code. Quotes and
+// parentheses are percent-encoded so the URL can also sit inside CSS url('...').
+const safeUrl = (value: string | undefined | null): string | null => {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+    return url.href.replace(/['"()]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+  } catch {
+    return null;
+  }
+};
+
+export { reject, redirectLogin, capitalize, showToast, formatDate, escapeHtml, safeUrl };

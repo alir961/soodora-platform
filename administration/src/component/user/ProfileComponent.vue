@@ -1,17 +1,15 @@
 <script setup lang="ts">
 import { User } from '@/entity/User';
-import { PropType, computed } from 'vue';
+import { PropType } from 'vue';
 import RoleTagComponent from '@/component/user/RoleTagComponent.vue';
 import FollowCounter from '@/component/follow/FollowCounter.vue';
 
-const props = defineProps({
+defineProps({
   profile: {
     required: true,
     type: Object as PropType<User>,
   },
 });
-
-const formattedDescription = computed(() => props.profile.description?.replace(/\n/g, '<br>') ?? '');
 </script>
 
 <template>
@@ -28,7 +26,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     </header>
 
     <div class="content">
-      <p v-html="formattedDescription" class="description" />
+      <p class="description">{{ profile.description }}</p>
       <FollowCounter :user="profile" class="followers" />
     </div>
   </div>
@@ -75,6 +73,7 @@ const formattedDescription = computed(() => props.profile.description?.replace(/
     .description {
       color: var(--ion-color-medium);
       font-size: 1em;
+      white-space: pre-line;
     }
 
     .followers {

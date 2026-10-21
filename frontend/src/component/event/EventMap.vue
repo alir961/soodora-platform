@@ -2,6 +2,7 @@
 import { markRaw, onMounted, onUnmounted, PropType, ref, shallowRef, watch } from 'vue';
 import mapboxgl, { LngLatBounds, Map, Marker, Popup } from 'mapbox-gl';
 import { Event } from '@/entity/Event';
+import { escapeHtml, safeUrl } from '@/utils';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 const props = defineProps({
@@ -207,19 +208,22 @@ const updateMarkers = () => {
       right: [-(markerRadius + 5 + verticalGap), -30] as [number, number],
     };
 
+    // Title, description and links are user content: escape everything put in the HTML.
+    const thumbnailUrl = safeUrl(event.thumbnailUrl);
+    const eventUrl = safeUrl(event.url);
     const popup = new Popup({ offset: popupOffsets, className: 'soodora-map-popup', closeButton: false }).setHTML(`
       <div class="event-popup-content">
-        ${event.thumbnailUrl ? `<div class="popup-image" style="background-image: url('${event.thumbnailUrl}')"></div>` : ''}
+        ${thumbnailUrl ? `<div class="popup-image" style="background-image: url('${escapeHtml(thumbnailUrl)}')"></div>` : ''}
         
         <div class="popup-body">
           <div class="popup-header">
-            <span class="popup-type">${event.type.replaceAll('_', ' ')}</span>
-            <h3>${event.title}</h3>
+            <span class="popup-type">${escapeHtml(event.type.replaceAll('_', ' '))}</span>
+            <h3>${escapeHtml(event.title)}</h3>
           </div>
 
           <div class="popup-info-row">
             <svg class="popup-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><rect fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" x="48" y="80" width="416" height="384" rx="48"/><path fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32" stroke-linecap="round" d="M128 48v32M384 48v32M464 160H48"/></svg>
-            <span>${formatDateReadable(event.dateTime)}</span>
+            <span>${escapeHtml(formatDateReadable(event.dateTime))}</span>
           </div>
 
           ${
@@ -227,15 +231,15 @@ const updateMarkers = () => {
               ? `
           <div class="popup-info-row description">
             <svg class="popup-icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M368 416H144a16 16 0 01-16-16V112a16 16 0 0116-16h224a16 16 0 0116 16v288a16 16 0 01-16 16z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M176 176h160M176 256h160M176 336h96" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/></svg>
-            <p>${event.description}</p>
+            <p>${escapeHtml(event.description)}</p>
           </div>`
               : ''
           }
 
           ${
-            event.url
+            eventUrl
               ? `
-          <a href="${event.url}" target="_blank" class="popup-action-btn">
+          <a href="${escapeHtml(eventUrl)}" target="_blank" rel="noopener noreferrer" class="popup-action-btn">
             <span>Visit Website</span>
             <svg class="popup-icon-sm" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg"><path d="M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path d="M336 64h112v112M224 288L440 72" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/></svg>
           </a>`

@@ -20,8 +20,6 @@ const canFollow = computed(() => {
   return authStore.getAuthenticatedUserSlug !== props.profile.slug;
 });
 
-const formattedDescription = computed(() => props.profile.description?.replace(/\n/g, '<br>') ?? '');
-
 const followCounterRef = ref<InstanceType<typeof FollowCounter> | null>(null);
 const showingList = ref(false);
 const currentListType = ref<'followers' | 'following'>('followers');
@@ -61,7 +59,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
     </ion-card-header>
 
     <ion-card-content>
-      <p v-html="formattedDescription" class="description" />
+      <p class="description">{{ profile.description }}</p>
       <FollowCounter
         ref="followCounterRef"
         :user="profile"
@@ -127,6 +125,7 @@ defineExpose({ closeList: () => followCounterRef.value?.closeList() });
     .description {
       color: var(--ion-color-medium);
       font-size: 1em;
+      white-space: pre-line;
     }
 
     .followers {
